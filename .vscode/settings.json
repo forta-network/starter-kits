@@ -1,0 +1,7 @@
+{
+    "python.testing.pytestArgs": [
+        "suspicious-contract-creation-py"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}
