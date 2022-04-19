@@ -44,6 +44,9 @@ def get_storage_addresses(w3, address) -> set:
     for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH):
         mem = w3.eth.get_storage_at(Web3.toChecksumAddress(address), i)
         if mem != HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000'):
+            # looking at both areas of the storage slot as - depending on packing - the address could be at the beginning or the end.
+            if is_contract(w3, mem[0:20]): 
+                address_set.add(Web3.toChecksumAddress(mem[0:20].hex()))
             if is_contract(w3, mem[12:]):
                 address_set.add(Web3.toChecksumAddress(mem[12:].hex()))
 
