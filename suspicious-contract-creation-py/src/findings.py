@@ -11,9 +11,7 @@ class SuspiciousContractFindings:
             'alert_id': 'SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH',
             'type': FindingType.Suspicious,
             'severity': FindingSeverity.High,
-            'metadata': {  
-                'addresses_contained_in_created_contract': str(contained_addresses)
-            }
+            'metadata': {"address_contained_in_created_contract_" + str(i): address for i, address in enumerate(contained_addresses, 1)}
         })
 
     @staticmethod
@@ -24,7 +22,5 @@ class SuspiciousContractFindings:
             'alert_id': 'SUSPICIOUS-CONTRACT-CREATION',
             'type': FindingType.Suspicious,
             'severity': FindingSeverity.Low,
-            'metadata': {  
-                'addresses_contained_in_created_contract': str(contained_addresses)
-            }
+            'metadata': {"address_contained_in_created_contract_" + str(i): address for i, address in enumerate(contained_addresses, 1)}
         })
