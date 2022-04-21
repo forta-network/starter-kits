@@ -1,5 +1,6 @@
 from forta_agent import create_transaction_event, FindingSeverity
 import agent
+from findings import SuspiciousContractFindings
 from constants import TORNADO_CASH_ADDRESSES
 from web3_mock import Web3Mock, CONTRACT_NO_ADDRESS, CONTRACT_WITH_ADDRESS, EOA_ADDRESS
 
@@ -153,3 +154,19 @@ class TestSuspiciousContractAgent:
         assert len(findings) == 1, "this should not have triggered a finding"
         finding = next((x for x in findings if x.alert_id == 'SUSPICIOUS-CONTRACT-CREATION'), None)
         assert finding.severity == FindingSeverity.Low
+
+    def test_finding_not_tornado_cash_and_no_contract_creation_empty_set(self):
+        agent.initialize()
+
+        contained_addresses = set()
+        finding = SuspiciousContractFindings.suspicious_contract_creation_tornado_cash("from_address", "contract_address", contained_addresses)
+        assert finding.severity == FindingSeverity.High
+        assert finding.metadata == {}
+
+    def test_finding_not_tornado_cash_and_no_contract_creation(self):
+        agent.initialize()
+
+        contained_addresses = {"address2", "address1"}
+        finding = SuspiciousContractFindings.suspicious_contract_creation_tornado_cash("from_address", "contract_address", contained_addresses)
+        assert finding.severity == FindingSeverity.High
+        assert finding.metadata == {"address_contained_in_created_contract_1": "address1", "address_contained_in_created_contract_2": "address2"}
