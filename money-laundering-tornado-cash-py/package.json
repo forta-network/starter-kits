@@ -1,6 +1,6 @@
 {
   "name": "money-laundering-tornado-cash",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Money Laundering Tornado Cash Bot",
   "chainIds": [
     1
