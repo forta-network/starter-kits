@@ -21,9 +21,10 @@ class TestSuspiciousContractAgent:
             },
             'traces': [
                 {'type': 'call',
+                 'transaction_position': 0,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[1],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[1],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  }
@@ -43,9 +44,10 @@ class TestSuspiciousContractAgent:
             },
             'traces': [
                 {'type': 'call',
+                 'transaction_position': 0,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[1],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[1],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  }
@@ -65,9 +67,10 @@ class TestSuspiciousContractAgent:
             },
             'traces': [
                 {'type': 'call',
+                 'transaction_position': 0,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[1],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[1],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  }
@@ -90,9 +93,10 @@ class TestSuspiciousContractAgent:
             },
             'traces': [
                 {'type': 'call',
+                 'transaction_position': 0,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[1],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[1],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  }
@@ -112,9 +116,10 @@ class TestSuspiciousContractAgent:
             },
             'traces': [
                 {'type': 'call',
+                 'transaction_position': 0,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[1],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[1],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  }
@@ -135,8 +140,8 @@ class TestSuspiciousContractAgent:
             'traces': [
                 {'type': 'call',
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[1],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[1],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  }
@@ -159,9 +164,10 @@ class TestSuspiciousContractAgent:
             },
             'traces': [
                 {'type': 'call',
+                 'transaction_position': 0,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[1],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[1],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  }
@@ -186,23 +192,26 @@ class TestSuspiciousContractAgent:
             },
             'traces': [
                 {'type': 'call',
+                 'transaction_position': 0,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[137],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[137],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  },
                 {'type': 'call',
+                 'transaction_position': 1,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[137],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[137],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  },
                 {'type': 'call',
+                 'transaction_position': 2,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[137],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[137],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  }
@@ -227,23 +236,26 @@ class TestSuspiciousContractAgent:
             },
             'traces': [
                 {'type': 'call',
+                 'transaction_position': 0,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[1],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[1],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  },
                 {'type': 'call',
+                 'transaction_position': 1,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[1],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[1],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  },
                 {'type': 'call',
+                 'transaction_position': 2,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[1],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[1],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  }
@@ -271,23 +283,26 @@ class TestSuspiciousContractAgent:
             },
             'traces': [
                 {'type': 'call',
+                 'transaction_position': 0,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[137],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[137],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  },
                 {'type': 'call',
+                 'transaction_position': 1,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[137],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[137],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  },
                 {'type': 'call',
+                 'transaction_position': 2,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[137],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[137],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }
                  }
@@ -306,9 +321,10 @@ class TestSuspiciousContractAgent:
         traces = []
         for i in range(100):
             traces.append({'type': 'call',
+                 'transaction_position': i,
                  'action': {
-                     'to': TORNADO_CASH_ADDRESSES[137],
-                     'from': EOA_ADDRESS,
+                     'from': TORNADO_CASH_ADDRESSES[137],
+                     'to': EOA_ADDRESS,
                      'value': 1,
                  }})
 

@@ -28,19 +28,25 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
     global ACCOUNT_QUEUE
 
     findings = []
+    processed_traces = []
     accounts_sending_funds = set()
 
     for trace in transaction_event.traces:
+        if trace.transaction_position in processed_traces:
+            continue
+
         if trace.action.to is None:
             continue
 
         account = Web3.toChecksumAddress(trace.action.to)
-        if trace.action.value is not None and trace.action.value > 0 and account == TORNADO_CASH_ADDRESSES[w3.eth.chain_id]:
+        if trace.action.value is not None and trace.action.value > 0 and Web3.toChecksumAddress(trace.action.from_) == TORNADO_CASH_ADDRESSES[w3.eth.chain_id]:
+            processed_traces.append(trace.transaction_position) #  seems like some traces are repeated, so we only want to process each trace once
+
             accounts_sending_funds.add(account)
             ACCOUNT_QUEUE.append(account)
 
             block_to_tx_count = {}
-            if Web3.toChecksumAddress(trace.action.to) not in ACCOUNT_TO_TORNADO_CASH_BLOCKS:
+            if account not in ACCOUNT_TO_TORNADO_CASH_BLOCKS:
                 ACCOUNT_TO_TORNADO_CASH_BLOCKS[account] = block_to_tx_count
             else:
                 block_to_tx_count = ACCOUNT_TO_TORNADO_CASH_BLOCKS[account]
