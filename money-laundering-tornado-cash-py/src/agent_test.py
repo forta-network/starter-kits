@@ -15,6 +15,7 @@ class TestSuspiciousContractAgent:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
+                'from': EOA_ADDRESS,
             },
             'block': {
                 'number': 0
@@ -23,8 +24,8 @@ class TestSuspiciousContractAgent:
                 {'type': 'call',
                  'transaction_position': 0,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[1],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[1],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  }
@@ -38,6 +39,7 @@ class TestSuspiciousContractAgent:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
+                'from': EOA_ADDRESS,
             },
             'block': {
                 'number': 1
@@ -46,8 +48,8 @@ class TestSuspiciousContractAgent:
                 {'type': 'call',
                  'transaction_position': 0,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[1],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[1],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  }
@@ -61,6 +63,7 @@ class TestSuspiciousContractAgent:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
+                'from': EOA_ADDRESS,
             },
             'block': {
                 'number': 2
@@ -69,8 +72,8 @@ class TestSuspiciousContractAgent:
                 {'type': 'call',
                  'transaction_position': 0,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[1],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[1],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  }
@@ -87,6 +90,7 @@ class TestSuspiciousContractAgent:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
+                'from': EOA_ADDRESS,
             },
             'block': {
                 'number': 0
@@ -95,8 +99,8 @@ class TestSuspiciousContractAgent:
                 {'type': 'call',
                  'transaction_position': 0,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[1],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[1],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  }
@@ -110,6 +114,7 @@ class TestSuspiciousContractAgent:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
+                'from': EOA_ADDRESS,
             },
             'block': {
                 'number': 1
@@ -118,8 +123,8 @@ class TestSuspiciousContractAgent:
                 {'type': 'call',
                  'transaction_position': 0,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[1],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[1],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  }
@@ -133,6 +138,7 @@ class TestSuspiciousContractAgent:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
+                'from': EOA_ADDRESS,
             },
             'block': {
                 'number': 101
@@ -140,8 +146,8 @@ class TestSuspiciousContractAgent:
             'traces': [
                 {'type': 'call',
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[1],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[1],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  }
@@ -158,6 +164,7 @@ class TestSuspiciousContractAgent:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
+                'from': EOA_ADDRESS,
             },
             'block': {
                 'number': 0
@@ -166,8 +173,8 @@ class TestSuspiciousContractAgent:
                 {'type': 'call',
                  'transaction_position': 0,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[1],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[1],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  }
@@ -186,6 +193,7 @@ class TestSuspiciousContractAgent:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
+                'from': EOA_ADDRESS,
             },
             'block': {
                 'number': 0
@@ -194,24 +202,24 @@ class TestSuspiciousContractAgent:
                 {'type': 'call',
                  'transaction_position': 0,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[137],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[137],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  },
                 {'type': 'call',
                  'transaction_position': 1,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[137],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[137],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  },
                 {'type': 'call',
                  'transaction_position': 2,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[137],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[137],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  }
@@ -230,6 +238,7 @@ class TestSuspiciousContractAgent:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
+                'from': EOA_ADDRESS,
             },
             'block': {
                 'number': 0
@@ -238,24 +247,24 @@ class TestSuspiciousContractAgent:
                 {'type': 'call',
                  'transaction_position': 0,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[1],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[1],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  },
                 {'type': 'call',
                  'transaction_position': 1,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[1],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[1],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  },
                 {'type': 'call',
                  'transaction_position': 2,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[1],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[1],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  }
@@ -277,6 +286,7 @@ class TestSuspiciousContractAgent:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
+                'from': EOA_ADDRESS,
             },
             'block': {
                 'number': 0
@@ -285,24 +295,24 @@ class TestSuspiciousContractAgent:
                 {'type': 'call',
                  'transaction_position': 0,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[137],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[137],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  },
                 {'type': 'call',
                  'transaction_position': 1,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[137],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[137],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  },
                 {'type': 'call',
                  'transaction_position': 2,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[137],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[137],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }
                  }
@@ -323,14 +333,15 @@ class TestSuspiciousContractAgent:
             traces.append({'type': 'call',
                  'transaction_position': i,
                  'action': {
-                     'from': TORNADO_CASH_ADDRESSES[137],
-                     'to': EOA_ADDRESS,
+                     'to': TORNADO_CASH_ADDRESSES[137],
+                     'from': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
                      'value': 1,
                  }})
 
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
+                'from': EOA_ADDRESS,
             },
             'block': {
                 'number': 0
