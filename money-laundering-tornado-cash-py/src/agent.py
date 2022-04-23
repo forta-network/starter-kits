@@ -29,7 +29,8 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
 
     findings = []
     processed_traces = []
-    accounts_sending_funds = set()
+
+    account = Web3.toChecksumAddress(transaction_event.from_)
 
     for trace in transaction_event.traces:
         if trace.transaction_position in processed_traces:
@@ -38,11 +39,9 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
         if trace.action.to is None:
             continue
 
-        account = Web3.toChecksumAddress(trace.action.to)
-        if trace.action.value is not None and trace.action.value > 0 and Web3.toChecksumAddress(trace.action.from_) == TORNADO_CASH_ADDRESSES[w3.eth.chain_id]:
-            processed_traces.append(trace.transaction_position) #  seems like some traces are repeated, so we only want to process each trace once
+        if trace.action.value is not None and trace.action.value > 0 and Web3.toChecksumAddress(trace.action.to) == TORNADO_CASH_ADDRESSES[w3.eth.chain_id]:
+            processed_traces.append(trace.transaction_position)  # seems like some traces are repeated, so we only want to process each trace once
 
-            accounts_sending_funds.add(account)
             ACCOUNT_QUEUE.append(account)
 
             block_to_tx_count = {}
@@ -66,7 +65,7 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
                 oldest_block = min(block_to_tx_count, key=block_to_tx_count.get)
                 block_to_tx_count.pop(oldest_block, None)
 
-    for account in accounts_sending_funds:
+    if account in ACCOUNT_QUEUE:
         total_txs = sum(ACCOUNT_TO_TORNADO_CASH_BLOCKS[account].values())
         tx_threshold = TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_MATIC if w3.eth.chain_id == 137 else TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_ETH
         if total_txs >= tx_threshold:
