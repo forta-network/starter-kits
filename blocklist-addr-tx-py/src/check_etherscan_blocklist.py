@@ -15,7 +15,7 @@ def update_etherscan_blocklist():
     payload = {"uuid": "d28e0444cf554438a7ada7d377c2d3e1"}
     headers = {"content-type": "application/json"}
     try:
-        print('updating etherscan blocklist...')
+        print(f'updating blocklist: {ETHERSCAN_BLOCKLIST_PATH}')
         response = requests.request("POST", LUABASE_URL, json=payload, headers=headers)
         response.raise_for_status()
         data = response.json()

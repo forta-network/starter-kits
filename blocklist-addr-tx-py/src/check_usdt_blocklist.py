@@ -1,4 +1,4 @@
-from .constants import USDT_TOKEN_ADDRESS, ADDED_BLACKLIST_EVENT_ABI, REMOVED_BLACKLIST_EVENT_ABI
+from .constants import USDT_TOKEN_ADDRESS, USDT_ADDED_BLOCKLIST_EVENT_ABI, USDT_REMOVED_BLOCKLIST_EVENT_ABI
 from .utils import create_finding, get_blocklist, update_blocklist
 
 USDT_BLOCKLIST_PATH = './usdt_blocklist.txt'
@@ -10,15 +10,15 @@ def provide_handle_transaction():
 
         blocklist = get_blocklist(USDT_BLOCKLIST_PATH)
 
-        usdt_blacklist_events = transaction_event.filter_log(
-            [ADDED_BLACKLIST_EVENT_ABI, REMOVED_BLACKLIST_EVENT_ABI],
+        usdt_blocklist_events = transaction_event.filter_log(
+            [USDT_ADDED_BLOCKLIST_EVENT_ABI, USDT_REMOVED_BLOCKLIST_EVENT_ABI],
             USDT_TOKEN_ADDRESS)
 
-        if usdt_blacklist_events:
+        if usdt_blocklist_events:
             blocklisted_addresses = set()
             unblocklisted_addresses = set()
 
-            for event in usdt_blacklist_events:
+            for event in usdt_blocklist_events:
                 account = event['args']['_user'].lower()
                 if event.event == 'AddedBlackList':
                     blocklisted_addresses.add(account)
