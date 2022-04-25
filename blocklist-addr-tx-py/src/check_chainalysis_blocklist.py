@@ -1,4 +1,4 @@
-from .constants import CHAINALYSIS_SANCTIONS_LIST_ADDRESS, SANCTIONED_ADDRESS_ADDED_EVENT_ABI, SANCTIONED_ADDRESS_REMOVED_EVENT_ABI
+from .constants import CHAINALYSIS_SANCTIONS_LIST_ADDRESS, CHAINALYSIS_SANCTIONED_ADDRESS_ADDED_EVENT_ABI, CHAINALYSIS_SANCTIONED_ADDRESS_REMOVED_EVENT_ABI
 from .utils import create_finding, get_blocklist, update_blocklist
 
 CHAINALYSIS_BLOCKLIST_PATH = './chainalysis_blocklist.txt'
@@ -11,7 +11,7 @@ def provide_handle_transaction():
         blocklist = get_blocklist(CHAINALYSIS_BLOCKLIST_PATH)
 
         chainalysis_blocklist_events = transaction_event.filter_log(
-            [SANCTIONED_ADDRESS_ADDED_EVENT_ABI, SANCTIONED_ADDRESS_REMOVED_EVENT_ABI],
+            [CHAINALYSIS_SANCTIONED_ADDRESS_ADDED_EVENT_ABI, CHAINALYSIS_SANCTIONED_ADDRESS_REMOVED_EVENT_ABI],
             CHAINALYSIS_SANCTIONS_LIST_ADDRESS)
 
         if chainalysis_blocklist_events:
@@ -19,7 +19,7 @@ def provide_handle_transaction():
             unblocklisted_addresses = set()
 
             for event in chainalysis_blocklist_events:
-                accounts = event['args']['addrs']
+                accounts = [addr.lower() for addr in event['args']['addrs']]
                 if event.event == 'SanctionedAddressesAdded':
                     blocklisted_addresses.update(accounts)
                 elif event == 'SanctionedAddressesRemoved':

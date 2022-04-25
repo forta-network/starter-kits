@@ -1,5 +1,5 @@
 USDT_TOKEN_ADDRESS = "0xdac17f958d2ee523a2206206994597c13d831ec7"
-ADDED_BLACKLIST_EVENT_ABI = """{
+USDT_ADDED_BLOCKLIST_EVENT_ABI = """{
     "anonymous": false,
     "inputs": [
         {
@@ -11,7 +11,7 @@ ADDED_BLACKLIST_EVENT_ABI = """{
     "name": "AddedBlackList",
     "type": "event"
 }"""
-REMOVED_BLACKLIST_EVENT_ABI = """{
+USDT_REMOVED_BLOCKLIST_EVENT_ABI = """{
     "anonymous": false,
     "inputs": [
         {
@@ -25,7 +25,7 @@ REMOVED_BLACKLIST_EVENT_ABI = """{
 }"""
 
 USDC_TOKEN_ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-BLACKLISTED_EVENT_ABI = """{
+USDC_BLOCKLISTED_EVENT_ABI = """{
     "anonymous": false,
     "inputs": [
         {
@@ -38,7 +38,7 @@ BLACKLISTED_EVENT_ABI = """{
     "name": "Blacklisted",
     "type": "event"
 }"""
-UNBLACKLISTED_EVENT_ABI = """{
+USDC_UNBLOCKLISTED_EVENT_ABI = """{
     "anonymous": false,
     "inputs": [
         {
@@ -53,7 +53,7 @@ UNBLACKLISTED_EVENT_ABI = """{
 }"""
 
 CHAINALYSIS_SANCTIONS_LIST_ADDRESS = "0x40c57923924b5c5c5455c48d93317139addac8fb"
-SANCTIONED_ADDRESS_ADDED_EVENT_ABI = """{
+CHAINALYSIS_SANCTIONED_ADDRESS_ADDED_EVENT_ABI = """{
     "anonymous": false,
     "inputs": [
         {
@@ -67,7 +67,7 @@ SANCTIONED_ADDRESS_ADDED_EVENT_ABI = """{
     "type": "event"
 }
 """
-SANCTIONED_ADDRESS_REMOVED_EVENT_ABI = """{
+CHAINALYSIS_SANCTIONED_ADDRESS_REMOVED_EVENT_ABI = """{
     "anonymous": false,
     "inputs": [
         {
