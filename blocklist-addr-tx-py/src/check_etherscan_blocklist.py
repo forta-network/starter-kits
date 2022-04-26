@@ -6,7 +6,7 @@ from forta_agent import Finding, FindingType, FindingSeverity
 from .utils import create_finding
 
 LUABASE_URL = "https://api.luabase.com/run"
-ETHERSCAN_UPDATE_CADENCE = 60 * 60 # every 1 hr
+ETHERSCAN_UPDATE_CADENCE = 60 # every 1 minute
 ETHERSCAN_BLOCKLIST_PATH = './etherscan_blocklist.csv'
 etherscan_blocklist_update_at = 1650564930 # 04-21-2022
 

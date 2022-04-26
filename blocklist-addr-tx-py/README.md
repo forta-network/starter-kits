@@ -2,18 +2,26 @@
 
 ## Description
 
-This bot detects transactions that involve blocklisted addresses.
+This bot detects transactions that involve blocklisted addresses. The blocklist is generated and updated from 4 data sources listed below.
 
 Blocklist source:
 
-* Blocklisted addresses in [USDC Token Contract](https://etherscan.io/address/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48)
+* Blocklisted addresses in [USDC Token Contract](https://etherscan.io/address/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48).
 * Blocklisted addresses in [USDT Token Contract](https://etherscan.io/address/0xdac17f958d2ee523a2206206994597c13d831ec7)
-* Sanctioned addresses by [Chainalysis Sanction Oracle](https://etherscan.io/address/0x40c57923924b5c5c5455c48d93317139addac8fb)
-* Addresses labeled as `exploit`, `heist`, and `phish/hack` from [Etherscan](https://etherscan.io/labelcloud)
+* Sanctioned addresses by [Chainalysis Sanction Oracle Contract](https://go.chainalysis.com/chainalysis-oracle-docs.html)
+* [Luabase's](https://luabase.com/) `tags` table which includes addresses and wallet tags labeled as `exploit`, `heist`, and `phish/hack` from [Etherscan](https://etherscan.io/labelcloud).
+
+For the first three data sources, the bot listens to each smart contract's blocklisted events and maintains a local list of blocklisted addresses.
+For the blocklisted addresses from Luabase, the bot queries their `tags` table with the following SQL statement every 1 minute and maintains a local csv of addresses.
+
+```sql
+SELECT DISTINCT address as banned_address, tag as wallet_tag, concat('etherscan-', label, '-list') as data_source
+FROM tags WHERE label in ('heist', 'exploit', 'phish-hack')
+```
 
 ## Supported Chains
 
-- Ethereum, BSC, Polygon, Avalanche, Arbitrum, Optimism
+- Ethereum, BSC, Polygon, Avalanche, Arbitrum, Optimism, Fantom
 
 ## Alerts
 
