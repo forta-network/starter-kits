@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Forta Blockedlisted Address Bot",
   "chainIds": [
-    1, 56, 137, 43114, 42161, 10
+    1, 56, 137, 43114, 42161, 10, 250
   ],
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",

@@ -1,0 +1,8 @@
+# python
+__pycache__/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# mac
+.DS_Store
