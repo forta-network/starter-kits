@@ -1,8 +1,4 @@
-# python
-__pycache__/
-
-# Jupyter Notebook
-.ipynb_checkpoints
+.vscode
 
 # mac
 .DS_Store
