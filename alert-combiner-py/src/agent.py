@@ -67,7 +67,6 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
 
         # get time for block to derive date range for query
         end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
-        logging.info(str(block_event.block.timestamp))
         start_date = end_date - timedelta(days=DATE_LOOKBACK_WINDOW_IN_DAYS)
         logging.info(f"Analyzing alerts from {start_date} to {end_date}")
 
