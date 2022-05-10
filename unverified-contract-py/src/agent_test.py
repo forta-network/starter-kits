@@ -40,4 +40,52 @@ class TestUnverifiedContractAgent:
         assert finding.type == FindingType.Suspicious
         assert finding.description == f'{EOA_ADDRESS} created contract 0x728ad672409DA288cA5B9AA85D1A55b803bA97D7'
 
-#todo - negative cases
+    def test_detect_unverified_contract_with_verified_contract(self):
+        tx_event = create_transaction_event({
+            'transaction': {
+                'hash': "0",
+                'from': EOA_ADDRESS,
+                'nonce': 10,  # verified contract
+            },
+            'block': {
+                'number': 0
+            },
+            'traces': [{'type': 'create',
+                        'action': {
+                            'from': EOA_ADDRESS,
+                            'value': 1,
+                        }
+                        }
+                       ],
+            'receipt': {
+                'logs': []}
+        })
+
+        findings = agent.detect_unverified_contract_creation(w3, etherscan, tx_event)
+        assert len(findings) == 0, "should have 0 finding"
+
+
+    def test_detect_unverified_contract_call_only(self):
+        tx_event = create_transaction_event({
+            'transaction': {
+                'hash': "0",
+                'from': EOA_ADDRESS,
+                'nonce': 9,  # unverified contract
+            },
+            'block': {
+                'number': 0
+            },
+            'traces': [{'type': 'call',
+                        'action': {
+                            'from': EOA_ADDRESS,
+                            'to': '0x728ad672409DA288cA5B9AA85D1A55b803bA97D7', #unverified contract
+                            'value': 1,
+                        }
+                        }
+                       ],
+            'receipt': {
+                'logs': []}
+        })
+
+        findings = agent.detect_unverified_contract_creation(w3, etherscan, tx_event)
+        assert len(findings) == 0, "should have 0 finding"
