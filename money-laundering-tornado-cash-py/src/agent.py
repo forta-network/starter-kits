@@ -9,7 +9,6 @@ from src.constants import (BLOCK_RANGE, TORNADO_CASH_ACCOUNTS_QUEUE_SIZE,
                            TORNADO_CASH_ADDRESSES, TORNADO_CASH_DEPOSIT_SIZE,
                            TORNADO_CASH_DEPOSIT_SIZE_MATIC,
                            TORNADO_CASH_DEPOSIT_TOPIC,
-                           TORNADO_CASH_ROUTER_ADDRESS,
                            TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_BSC,
                            TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_ETH,
                            TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_MATIC)
@@ -57,7 +56,7 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
 
     for log in transaction_event.logs:
         if (transaction_event.transaction.value is not None and transaction_event.transaction.value > 0 and
-            Web3.toChecksumAddress(log.address) == TORNADO_CASH_ADDRESSES[w3.eth.chain_id] and TORNADO_CASH_DEPOSIT_TOPIC in log.topics):
+           Web3.toChecksumAddress(log.address) == TORNADO_CASH_ADDRESSES[w3.eth.chain_id] and TORNADO_CASH_DEPOSIT_TOPIC in log.topics):
 
             ACCOUNT_QUEUE.append(account)
 

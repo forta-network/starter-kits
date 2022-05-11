@@ -1,8 +1,8 @@
 BLOCK_RANGE = 100  # what block range should be utilized to assess the TORNADO_CASH_TRANSFER_COUNT_THRESHOLD
 
 # how many tornado cash transfers should be in a block range to be considered suspicious; currently configured to be about 1M USD
-TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_ETH = 3  # 1M USD / (100 ETH * 3000 USD) 
-TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_MATIC = 75  # 1M USD / (10000 MATIC * 1.35 USD) 
+TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_ETH = 3  # 1M USD / (100 ETH * 3000 USD)
+TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_MATIC = 75  # 1M USD / (10000 MATIC * 1.35 USD)
 TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_BSC = 25  # 1M USD / (100 BSC * 400 USD)
 TORNADO_CASH_ACCOUNTS_QUEUE_SIZE = 10000  # how many accounts should be tracked by the bot in memory before dequeuing items
 
@@ -18,4 +18,3 @@ TORNADO_CASH_DEPOSIT_SIZE_MATIC = 100000
 
 
 TORNADO_CASH_DEPOSIT_TOPIC = '0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'
-
