@@ -7,9 +7,9 @@ import pandas as pd
 import logging
 import threading
 import sys
-from forta_explorer import FortaExplorer
-from constants import ADDRESS_QUEUE_SIZE, DATE_LOOKBACK_WINDOW_IN_DAYS, AGENT_IDS, ALERT_ID_STAGE_MAPPING
-from findings import AlertCombinerFinding
+from src.forta_explorer import FortaExplorer
+from src.constants import ADDRESS_QUEUE_SIZE, DATE_LOOKBACK_WINDOW_IN_DAYS, AGENT_IDS, ALERT_ID_STAGE_MAPPING
+from src.findings import AlertCombinerFinding
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 forta_explorer = FortaExplorer()
