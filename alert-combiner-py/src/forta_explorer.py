@@ -1,9 +1,10 @@
-import time
-import requests
 import json
-import pandas as pd
-from datetime import datetime
 import logging
+import time
+from datetime import datetime
+
+import pandas as pd
+import requests
 
 
 class FortaExplorer:
@@ -12,8 +13,7 @@ class FortaExplorer:
         df_forta = pd.DataFrame(columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
         return df_forta
 
-    def alerts_by_agent(self, agent_id: str, start_date: datetime, end_date: datetime, results_limit: int = 0) -> pd.DataFrame:
-        count = 1
+    def alerts_by_agent(self, agent_id: str, start_date: datetime, end_date: datetime) -> pd.DataFrame:
         url = "https://api.forta.network/graphql"
 
         df_forta = self.empty_alerts()
@@ -22,7 +22,6 @@ class FortaExplorer:
         count = 0
         while (json_data == "" or json_data['data']['alerts']['pageInfo']['hasNextPage']):
             query = """query exampleQuery {
-                    # first 5 alerts
                     alerts(
                         input: {
                             first: 2000
@@ -104,8 +103,5 @@ class FortaExplorer:
 
             first_run = False
             count += 1
-
-            if(results_limit != 0 and count * 100 > results_limit):
-                break
 
         return df_forta
