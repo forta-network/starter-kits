@@ -2,6 +2,9 @@ from forta_agent import FindingSeverity, FindingType, create_transaction_event
 
 import agent
 from etherscan_mock import EtherscanMock
+from constants import WAIT_TIME
+from datetime import datetime
+import time
 from web3_mock import (CONTRACT_NO_ADDRESS, CONTRACT_WITH_ADDRESS, EOA_ADDRESS,
                        Web3Mock)
 
@@ -35,14 +38,19 @@ class TestUnverifiedContractAgent:
         assert contract_address == "0x728ad672409DA288cA5B9AA85D1A55b803bA97D7", "should be the same contract address"
 
     def test_detect_unverified_contract_with_unverified_contract(self):
+        agent.initialize()
+        WAIT_TIME = 1
         tx_event = create_transaction_event({
+            
             'transaction': {
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'nonce': 9,
+                
             },
             'block': {
-                'number': 0
+                'number': 0,
+                'timestamp': datetime.now().timestamp(),
             },
             'traces': [{'type': 'create',
                         'action': {
@@ -55,23 +63,29 @@ class TestUnverifiedContractAgent:
                 'logs': []}
         })
 
-        findings = agent.detect_unverified_contract_creation(w3, etherscan, tx_event)
-        assert len(findings) == 1, "should have 1 finding"
-        finding = next((x for x in findings if x.alert_id == 'UNVERIFIED-CODE-CONTRACT-CREATION'), None)
+        agent.cache_contract_creation(w3, etherscan, tx_event)
+        time.sleep(WAIT_TIME * 60 + 10)
+        agent.detect_unverified_contract_creation(w3, etherscan, infinite=False)
+        assert len(agent.FINDINGS_CACHE) == 1, "should have 1 finding"
+        finding = next((x for x in agent.FINDINGS_CACHE if x.alert_id == 'UNVERIFIED-CODE-CONTRACT-CREATION'), None)
         assert finding.severity == FindingSeverity.Medium
         assert finding.type == FindingType.Suspicious
         assert finding.description == f'{EOA_ADDRESS} created contract 0x728ad672409DA288cA5B9AA85D1A55b803bA97D7'
         assert len(finding.metadata) > 0
 
     def test_detect_unverified_contract_with_verified_contract(self):
+        agent.initialize()
+        WAIT_TIME = 1
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'nonce': 10,  # verified contract
+                
             },
             'block': {
-                'number': 0
+                'number': 0,
+                'timestamp': datetime.now().timestamp(),
             },
             'traces': [{'type': 'create',
                         'action': {
@@ -84,10 +98,15 @@ class TestUnverifiedContractAgent:
                 'logs': []}
         })
 
-        findings = agent.detect_unverified_contract_creation(w3, etherscan, tx_event)
-        assert len(findings) == 0, "should have 0 finding"
+        agent.cache_contract_creation(w3, etherscan, tx_event)
+        time.sleep(WAIT_TIME * 60 + 10)
+        agent.detect_unverified_contract_creation(w3, etherscan, infinite=False)
+
+        assert len(agent.FINDINGS_CACHE) == 0, "should have 0 finding"
 
     def test_detect_unverified_contract_call_only(self):
+        agent.initialize()
+        WAIT_TIME = 1
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
@@ -95,7 +114,8 @@ class TestUnverifiedContractAgent:
                 'nonce': 9,  # unverified contract
             },
             'block': {
-                'number': 0
+                'number': 0,
+                'timestamp': datetime.now().timestamp(),
             },
             'traces': [{'type': 'call',
                         'action': {
@@ -109,5 +129,7 @@ class TestUnverifiedContractAgent:
                 'logs': []}
         })
 
-        findings = agent.detect_unverified_contract_creation(w3, etherscan, tx_event)
-        assert len(findings) == 0, "should have 0 finding"
+        agent.cache_contract_creation(w3, etherscan, tx_event)
+        time.sleep(WAIT_TIME * 60 + 10)
+        agent.detect_unverified_contract_creation(w3, etherscan, infinite=False)
+        assert len(agent.FINDINGS_CACHE) == 0, "should have 0 finding"
