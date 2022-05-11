@@ -1,15 +1,19 @@
-import forta_agent
-from forta_agent import get_json_rpc_url
-from web3 import Web3
-from datetime import timedelta, datetime
-from hexbytes import HexBytes
-import pandas as pd
 import logging
-import threading
 import sys
-from src.forta_explorer import FortaExplorer
-from src.constants import ADDRESS_QUEUE_SIZE, DATE_LOOKBACK_WINDOW_IN_DAYS, AGENT_IDS, ALERT_ID_STAGE_MAPPING
+import threading
+from datetime import datetime, timedelta
+
+import forta_agent
+import pandas as pd
+from forta_agent import get_json_rpc_url
+from hexbytes import HexBytes
+from web3 import Web3
+
+from src.constants import (ADDRESS_QUEUE_SIZE, AGENT_IDS,
+                           ALERT_ID_STAGE_MAPPING,
+                           DATE_LOOKBACK_WINDOW_IN_DAYS)
 from src.findings import AlertCombinerFinding
+from src.forta_explorer import FortaExplorer
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 forta_explorer = FortaExplorer()
@@ -89,7 +93,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
         for potential_attacker_address in addresses:
             logging.debug(potential_attacker_address)
             # if address is a contract or null address, skip
-            if(is_contract(w3, potential_attacker_address) or potential_attacker_address[0:12] == '0x0000000000'):
+            if(is_contract(w3, potential_attacker_address) or potential_attacker_address.startswith('0x0000000000')):
                 continue
 
             # map each alert to 4 stages
