@@ -7,9 +7,9 @@ import pandas as pd
 import logging
 import threading
 import sys
-from src.forta_explorer import FortaExplorer
-from src.constants import ADDRESS_QUEUE_SIZE, DATE_LOOKBACK_WINDOW_IN_DAYS, AGENT_IDS, ALERT_ID_STAGE_MAPPING
-from src.findings import AlertCombinerFinding
+from forta_explorer import FortaExplorer
+from constants import ADDRESS_QUEUE_SIZE, DATE_LOOKBACK_WINDOW_IN_DAYS, AGENT_IDS, ALERT_ID_STAGE_MAPPING
+from findings import AlertCombinerFinding
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 forta_explorer = FortaExplorer()
@@ -89,7 +89,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
         for potential_attacker_address in addresses:
             logging.debug(potential_attacker_address)
             # if address is a contract or null address, skip
-            if(is_contract(w3, potential_attacker_address) or potential_attacker_address == '0x0000000000000000000000000000000000000000'):
+            if(is_contract(w3, potential_attacker_address) or potential_attacker_address[0:12] == '0x0000000000'):
                 continue
 
             # map each alert to 4 stages
@@ -107,7 +107,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
             logging.info(f"Address {potential_attacker_address} stages: {stages}")
 
             # if all 4 stages are observed, update the address alerted list and add a finding
-            if len(stages) == 4:
+            if len(stages) == 4 and potential_attacker_address not in ALERTED_ADDRESSES:
                 update_alerted_addresses(w3, potential_attacker_address)
                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids))
                 logging.info(f"Findings count {len(FINDINGS_CACHE)}")
