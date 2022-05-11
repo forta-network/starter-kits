@@ -1,10 +1,13 @@
 import forta_agent
-from pyevmasm import disassemble_hex
-from forta_agent import get_json_rpc_url
-from web3 import Web3
-from hexbytes import HexBytes
 import rlp
-from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, TORNADO_CASH_ADDRESSES, TORNADO_CASH_FUNDED_ACCOUNTS_QUEUE_SIZE
+from forta_agent import get_json_rpc_url
+from hexbytes import HexBytes
+from pyevmasm import disassemble_hex
+from web3 import Web3
+
+from src.constants import (CONTRACT_SLOT_ANALYSIS_DEPTH,
+                           TORNADO_CASH_ADDRESSES,
+                           TORNADO_CASH_FUNDED_ACCOUNTS_QUEUE_SIZE)
 from src.findings import SuspiciousContractFindings
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
