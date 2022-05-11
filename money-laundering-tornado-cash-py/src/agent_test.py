@@ -1,8 +1,8 @@
-from forta_agent import create_transaction_event, FindingSeverity
-import agent
-from constants import TORNADO_CASH_ADDRESSES, TORNADO_CASH_ROUTER_ADDRESS
-from web3_mock import Web3Mock, EOA_ADDRESS
+from forta_agent import FindingSeverity, create_transaction_event
 
+import agent
+from constants import TORNADO_CASH_ADDRESSES
+from web3_mock import EOA_ADDRESS, Web3Mock
 
 w3 = Web3Mock()
 
@@ -17,7 +17,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 0
@@ -38,7 +38,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 1
@@ -59,7 +59,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 2
@@ -86,7 +86,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 0
@@ -107,7 +107,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 1
@@ -128,7 +128,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 101
@@ -152,7 +152,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 2
@@ -178,7 +178,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 0
@@ -190,7 +190,7 @@ class TestSuspiciousContractAgent:
             ],
             'receipt': {
                 'logs': []}
-        })        
+        })
         findings = agent.detect_money_laundering(w3, tx_event)
         assert len(findings) == 0, "this should have triggered a finding"
 
@@ -199,7 +199,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 1
@@ -211,7 +211,7 @@ class TestSuspiciousContractAgent:
             ],
             'receipt': {
                 'logs': []}
-        })        
+        })
         findings = agent.detect_money_laundering(w3, tx_event)
         assert len(findings) == 0, "this should have triggered a finding"
 
@@ -220,7 +220,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 2
@@ -232,12 +232,9 @@ class TestSuspiciousContractAgent:
             ],
             'receipt': {
                 'logs': []}
-        })        
+        })
         findings = agent.detect_money_laundering(w3, tx_event)
         assert len(findings) == 0, "this should have triggered a finding"
-
-
-
 
     def test_detect_money_laundering_below_threshold_polygon(self):
         agent.initialize()
@@ -249,7 +246,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 0
@@ -261,7 +258,7 @@ class TestSuspiciousContractAgent:
             ],
             'receipt': {
                 'logs': []}
-        })        
+        })
         findings = agent.detect_money_laundering(w3, tx_event)
         assert len(findings) == 0, "this should have triggered a finding"
 
@@ -270,7 +267,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 1
@@ -282,7 +279,7 @@ class TestSuspiciousContractAgent:
             ],
             'receipt': {
                 'logs': []}
-        })        
+        })
         findings = agent.detect_money_laundering(w3, tx_event)
         assert len(findings) == 0, "this should have triggered a finding"
 
@@ -291,7 +288,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ROUTER_ADDRESS,
+                'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
                 'number': 2
@@ -303,7 +300,7 @@ class TestSuspiciousContractAgent:
             ],
             'receipt': {
                 'logs': []}
-        })        
+        })
         findings = agent.detect_money_laundering(w3, tx_event)
         assert len(findings) == 0, "this should have triggered a finding"
 
@@ -312,26 +309,25 @@ class TestSuspiciousContractAgent:
 
         w3.eth.chain_id = 137
 
-        traces = []
         for i in range(100):
             tx_event = create_transaction_event({
                 'transaction': {
                     'hash': "0",
                     'from': EOA_ADDRESS,
                     'value': 100000000000000000000,
-                    'to': TORNADO_CASH_ROUTER_ADDRESS,
+                    'to': TORNADO_CASH_ADDRESSES,
                 },
                 'block': {
                     'number': i
                 },
                 'logs': [
                     {'address': TORNADO_CASH_ADDRESSES[137],
-                    'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                    }
+                     'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
+                     }
                 ],
                 'receipt': {
                     'logs': []}
-            })        
+            })
             findings = agent.detect_money_laundering(w3, tx_event)
 
         assert len(findings) == 1, "this should have triggered a finding"
