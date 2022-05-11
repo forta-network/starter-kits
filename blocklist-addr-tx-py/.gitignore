@@ -3,4 +3,6 @@ dist
 forta.config.json
 __pycache__
 .pytest_cache
-.vscode
+.ipynb_checkpoints
+test*
+publish.log
