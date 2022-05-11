@@ -12,10 +12,10 @@ from hexbytes import HexBytes
 from pyevmasm import disassemble_hex
 from web3 import Web3
 
-from constants import (CONTRACT_SLOT_ANALYSIS_DEPTH, ETHERSCAN_API_KEY,
+from src.constants import (CONTRACT_SLOT_ANALYSIS_DEPTH, ETHERSCAN_API_KEY,
                            WAIT_TIME)
-from etherscan import Etherscan
-from findings import UnverifiedCodeContractFindings
+from src.etherscan import Etherscan
+from src.findings import UnverifiedCodeContractFindings
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 etherscan = Etherscan(ETHERSCAN_API_KEY)
