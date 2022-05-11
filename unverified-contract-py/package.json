@@ -1,7 +1,7 @@
 {
-  "name": "forta-agent-starter",
-  "version": "0.0.1",
-  "description": "Forta Agent Python starter project",
+  "name": "unverified-contract-creation",
+  "version": "0.0.2",
+  "description": "Forta agent raising alerts on unverified contract creations.",
   "chainIds": [
     1
   ],

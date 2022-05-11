@@ -2,3 +2,14 @@
 
 # mac
 .DS_Store
+alert-combiner-py/src/__pycache__/agent_test.cpython-38-pytest-6.2.5.pyc
+alert-combiner-py/src/__pycache__/agent.cpython-38.pyc
+alert-combiner-py/src/__pycache__/constants.cpython-38.pyc
+alert-combiner-py/src/__pycache__/findings.cpython-38.pyc
+alert-combiner-py/src/__pycache__/forta_explorer_mock.cpython-38.pyc
+alert-combiner-py/src/__pycache__/forta_explorer_test.cpython-38-pytest-6.2.5.pyc
+alert-combiner-py/src/__pycache__/forta_explorer.cpython-38.pyc
+alert-combiner-py/src/__pycache__/web3_mock.cpython-38.pyc
+.gitignore
+.gitignore
+suspicious-contract-creation-py/src/web3_mock.py
