@@ -3,7 +3,7 @@ import logging
 
 import requests
 
-from src.constants import BSC_API_KEY, ETHERSCAN_API_KEY, POLYGON_API_KEY
+from src.api_keys import BSC_API_KEY, ETHERSCAN_API_KEY, POLYGON_API_KEY
 
 
 class BlockExplorer:
