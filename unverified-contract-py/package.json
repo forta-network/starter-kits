@@ -1,6 +1,6 @@
 {
   "name": "unverified-contract-creation",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Forta agent raising alerts on unverified contract creations.",
   "chainIds": [
     1
