@@ -1,9 +1,7 @@
 import logging
-import struct
 import sys
 import threading
 from datetime import datetime, timedelta
-from typing import NamedTuple
 
 import forta_agent
 import rlp
@@ -12,13 +10,12 @@ from hexbytes import HexBytes
 from pyevmasm import disassemble_hex
 from web3 import Web3
 
-from src.constants import (CONTRACT_SLOT_ANALYSIS_DEPTH, ETHERSCAN_API_KEY,
-                           WAIT_TIME)
-from src.etherscan import Etherscan
+from src.blockexplorer import BlockExplorer
+from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, WAIT_TIME
 from src.findings import UnverifiedCodeContractFindings
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
-etherscan = Etherscan(ETHERSCAN_API_KEY)
+blockexplorer = BlockExplorer(web3.eth.chain_id)
 
 FINDINGS_CACHE = []
 MUTEX = False
@@ -111,7 +108,7 @@ def get_opcode_addresses(w3, address) -> set:
     return address_set
 
 
-def cache_contract_creation(w3, etherscan, transaction_event: forta_agent.transaction_event.TransactionEvent):
+def cache_contract_creation(w3, blockexplorer, transaction_event: forta_agent.transaction_event.TransactionEvent):
     global CREATED_CONTRACTS
 
     logging.info(f"Scanning transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
@@ -127,7 +124,7 @@ def cache_contract_creation(w3, etherscan, transaction_event: forta_agent.transa
                 CREATED_CONTRACTS[created_contract_address] = transaction_event
 
 
-def detect_unverified_contract_creation(w3, etherscan, infinite=True):
+def detect_unverified_contract_creation(w3, blockexplorer, infinite=True):
     global CREATED_CONTRACTS
     global FINDINGS_CACHE
     global MUTEX
@@ -145,10 +142,12 @@ def detect_unverified_contract_creation(w3, etherscan, infinite=True):
                             if(created_contract_address == calc_created_contract_address):
                                 if datetime.fromtimestamp(transaction_event.timestamp) > datetime.now() - timedelta(minutes=WAIT_TIME):
                                     logging.info(f"Evaluating contract {created_contract_address} from cache. Is old enough.")
-                                    if not etherscan.is_verified(created_contract_address):
+                                    if not blockexplorer.is_verified(created_contract_address):
                                         logging.info(f"Identified unverified contract: {created_contract_address}")
                                         storage_addresses = get_storage_addresses(w3, created_contract_address)
                                         opcode_addresses = get_opcode_addresses(w3, created_contract_address)
+
+                                        created_contract_addresses.append(created_contract_address.lower())
 
                                         FINDINGS_CACHE.append(UnverifiedCodeContractFindings.unverified_code(trace.action.from_, created_contract_address, set.union(storage_addresses, opcode_addresses)))
                                         CREATED_CONTRACTS.pop(created_contract_address)
@@ -162,17 +161,17 @@ def detect_unverified_contract_creation(w3, etherscan, infinite=True):
         MUTEX = False
 
 
-def provide_handle_transaction(w3, etherscan):
+def provide_handle_transaction(w3, blockexplorer):
     def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
         global FINDINGS_CACHE
         global MUTEX
 
         if not MUTEX:
             MUTEX = True
-            thread = threading.Thread(target=detect_unverified_contract_creation, args=(w3, etherscan, transaction_event))
+            thread = threading.Thread(target=detect_unverified_contract_creation, args=(w3, blockexplorer, transaction_event))
             thread.start()
 
-        cache_contract_creation(w3, etherscan, transaction_event)
+        cache_contract_creation(w3, blockexplorer, transaction_event)
         # uncomment for local testing; otherwise the process will exit
         # while (thread.is_alive()):
         #    pass
@@ -184,7 +183,7 @@ def provide_handle_transaction(w3, etherscan):
     return handle_transaction
 
 
-real_handle_transaction = provide_handle_transaction(web3, etherscan)
+real_handle_transaction = provide_handle_transaction(web3, blockexplorer)
 
 
 def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent):
