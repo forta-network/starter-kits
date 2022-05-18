@@ -111,7 +111,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
             logging.info(f"Address {potential_attacker_address} stages: {stages}")
 
             # if all 4 stages are observed, update the address alerted list and add a finding
-            if len(stages) == 4 and potential_attacker_address not in ALERTED_ADDRESSES:
+            if len(stages) == 4 and Web3.toChecksumAddress(potential_attacker_address) not in ALERTED_ADDRESSES:
                 update_alerted_addresses(w3, potential_attacker_address)
                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids))
                 logging.info(f"Findings count {len(FINDINGS_CACHE)}")
