@@ -19,8 +19,6 @@ WORKDIR /app
 
 # add all blocklists
 COPY etherscan_blocklist.csv ./
-COPY usdt_blocklist.txt ./
-COPY usdc_blocklist.txt ./
 COPY chainalysis_blocklist.txt ./
 
 COPY ./src ./src

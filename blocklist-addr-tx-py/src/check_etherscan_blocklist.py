@@ -51,7 +51,9 @@ def provide_handle_transaction():
         # update list
         now = time.time()
         if now - etherscan_blocklist_update_at >= ETHERSCAN_UPDATE_CADENCE:
+            print("updating start")
             update_etherscan_blocklist()
+            print("updating end")
             etherscan_blocklist_update_at = now
 
         return findings
