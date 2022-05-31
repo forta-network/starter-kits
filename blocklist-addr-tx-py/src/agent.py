@@ -8,7 +8,6 @@ def provide_handle_transaction(check_etherscan_blocklist,
         findings = (check_etherscan_blocklist(transaction_event) +
                     check_chainalysis_blocklist(transaction_event))
 
-
         return findings
     return handle_transaction
 
