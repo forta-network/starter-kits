@@ -9,7 +9,7 @@ handle_transaction = provide_handle_transaction(mock_check_etherscan_blocklist,
                                                 mock_check_chainalysis_blocklist)
 mock_tx_event = create_transaction_event({})
 
-class TestTetherTransferAgent:
+class TestBlocklistAddressTxBot:
     def test_returns_findings_from_large_transfer_event_agent_and_transfer_from_function_agent(self):
         mock_finding = {'some': 'finding'}
         mock_check_etherscan_blocklist.return_value = [mock_finding]
