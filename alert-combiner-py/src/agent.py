@@ -9,7 +9,7 @@ from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 
-from src.constants import (ADDRESS_QUEUE_SIZE, AGENT_IDS,
+from src.constants import (ADDRESS_QUEUE_SIZE, BOT_IDS,
                            ALERT_ID_STAGE_MAPPING,
                            DATE_LOOKBACK_WINDOW_IN_DAYS)
 from src.findings import AlertCombinerFinding
@@ -76,10 +76,10 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
 
         # get all alerts for date range
         df_forta_alerts = forta_explorer.empty_alerts()
-        for agent_id in AGENT_IDS:
-            agent_alerts = forta_explorer.alerts_by_agent(agent_id, start_date, end_date)
-            df_forta_alerts = pd.concat([df_forta_alerts, agent_alerts])
-            logging.info(f"Fetched {len(agent_alerts)} for agent {agent_id}")
+        for bot_id in BOT_IDS:
+            bot_alerts = forta_explorer.alerts_by_bot(bot_id, start_date, end_date)
+            df_forta_alerts = pd.concat([df_forta_alerts, bot_alerts])
+            logging.info(f"Fetched {len(bot_alerts)} for bot {bot_id}")
 
         # get all addresses that were part of the alerts
         # to optimize, we only check money laundering addresses as this is required to fullfill all 4 stage requirements
@@ -99,22 +99,23 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
             # map each alert to 4 stages
             stages = set()
             involved_addresses = set()
-            address_alerts = df_forta_alerts[df_forta_alerts["addresses"].apply(lambda x: potential_attacker_address in x)]
-            involved_alert_ids = address_alerts["alertId"].unique()
-            for alert_id in involved_alert_ids:
-                if alert_id in ALERT_ID_STAGE_MAPPING.keys():
-                    stage = ALERT_ID_STAGE_MAPPING[alert_id]
-                    stages.add(stage)
-                    # get addresses from address field to add to involved_addresses
-                    address_alerts[address_alerts["alertId"] == alert_id]["addresses"].apply(lambda x: involved_addresses.update(set(x)))
+            if(len(df_forta_alerts) > 0):
+                address_alerts = df_forta_alerts[df_forta_alerts["addresses"].apply(lambda x: potential_attacker_address in x if x is not None else False)]
+                involved_alert_ids = address_alerts["alertId"].unique()
+                for alert_id in involved_alert_ids:
+                    if alert_id in ALERT_ID_STAGE_MAPPING.keys():
+                        stage = ALERT_ID_STAGE_MAPPING[alert_id]
+                        stages.add(stage)
+                        # get addresses from address field to add to involved_addresses
+                        address_alerts[address_alerts["alertId"] == alert_id]["addresses"].apply(lambda x: involved_addresses.update(set(x)))
 
-            logging.info(f"Address {potential_attacker_address} stages: {stages}")
+                logging.info(f"Address {potential_attacker_address} stages: {stages}")
 
-            # if all 4 stages are observed, update the address alerted list and add a finding
-            if len(stages) == 4 and Web3.toChecksumAddress(potential_attacker_address) not in ALERTED_ADDRESSES:
-                update_alerted_addresses(w3, potential_attacker_address)
-                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids))
-                logging.info(f"Findings count {len(FINDINGS_CACHE)}")
+                # if all 4 stages are observed, update the address alerted list and add a finding
+                if len(stages) == 4 and Web3.toChecksumAddress(potential_attacker_address) not in ALERTED_ADDRESSES:
+                    update_alerted_addresses(w3, potential_attacker_address)
+                    FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids))
+                    logging.info(f"Findings count {len(FINDINGS_CACHE)}")
 
         MUTEX = False
 
@@ -144,8 +145,8 @@ def provide_handle_block(w3, forta_explorer):
             thread.start()
 
         # uncomment for local testing; otherwise the process will exit
-        # while (thread.is_alive()):
-        #     pass
+        #while (thread.is_alive()):
+        #    pass
         findings = FINDINGS_CACHE
         FINDINGS_CACHE = []
         return findings
