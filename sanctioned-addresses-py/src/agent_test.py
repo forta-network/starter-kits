@@ -2,15 +2,15 @@ from unittest.mock import Mock
 from forta_agent import create_transaction_event
 from .agent import provide_handle_transaction
 
-mock_check_etherscan_blocklist = Mock()
+mock_check_chainalysis_oracle = Mock()
 
-handle_transaction = provide_handle_transaction(mock_check_etherscan_blocklist)
+handle_transaction = provide_handle_transaction(mock_check_chainalysis_oracle)
 mock_tx_event = create_transaction_event({})
 
-class TestExploiterAddressTxBot:
+class TestSanctionedAddressTxBot:
     def test_returns_findings(self):
         mock_finding = {'some': 'finding'}
-        mock_check_etherscan_blocklist.return_value = [mock_finding]
+        mock_check_chainalysis_oracle.return_value = [mock_finding]
 
         findings = handle_transaction(mock_tx_event)
 
@@ -18,4 +18,4 @@ class TestExploiterAddressTxBot:
         for finding in findings:
             assert finding == mock_finding
 
-        mock_check_etherscan_blocklist.assert_called_once_with(mock_tx_event)
+        mock_check_chainalysis_oracle.assert_called_once_with(mock_tx_event)
