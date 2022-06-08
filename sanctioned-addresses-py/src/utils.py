@@ -1,21 +1,5 @@
 import json
 
-from forta_agent import Finding, FindingType, FindingSeverity
-
-def create_finding(address, description: str, wallet_tag: str, data_source: str) -> Finding:
-    return Finding({
-        'name': 'Blocklisted Address',
-        'description': description,
-        'alert_id': 'FORTA-BLOCKLIST-ADDR-TX',
-        'severity': FindingSeverity.High,
-        'type': FindingType.Suspicious,
-        'metadata': {
-            'blocklisted_address': address,
-            'wallet_tag': wallet_tag,
-            'data_source': data_source
-        }
-    })
-
 
 def get_blocklist(filepath: str):
     with open(filepath, 'r') as f:

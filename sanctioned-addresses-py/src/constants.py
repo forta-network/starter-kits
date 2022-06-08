@@ -27,3 +27,4 @@ CHAINALYSIS_SANCTIONED_ADDRESS_REMOVED_EVENT_ABI = """{
     "type": "event"
 }
 """
+

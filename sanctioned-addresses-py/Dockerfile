@@ -20,7 +20,6 @@ ENV NODE_ENV=production
 LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
 # add all blocklists
-COPY etherscan_blocklist.csv ./
 COPY chainalysis_blocklist.txt ./
 COPY ./src ./src
 COPY package*.json ./
