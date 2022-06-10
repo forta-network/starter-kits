@@ -15,8 +15,10 @@ BOT_IDS = ["0xd9fe61cfe875470b80318a96cc0a94ba3adbe1eb4a14827fa018f14925e7da64",
              "0x20d57d727a2d7bf4b447d1952d7ea44efeda0920e45e779d298d5385f3b36cfa",  # Transaction Volume Anomaly Detection
              "0x55636f5577694c83b84b0687eb77863850c50bd9f6072686c8463a0cbc5566e0",  # Flashloan Detection Bot
              "0x2c8452ff81b4fa918a8df4441ead5fedd1d4302d7e43226f79cb812ea4962ece",  # Large Mint Borrow Volume Anomaly Detection
+             "0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127",  # Token Impersonation
+             "0x0f21668ebd017888e7ee7dd46e9119bdd2bc7f48dbabc375d96c9b415267534c",  # Smart Price Change Bot
              "0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3"  # unverified contract creation
-             ]
+            ]
 
 ALERT_ID_STAGE_MAPPING = {"ICE-PHISHING-PREV-APPROVED-TRANSFERED": "Exploitation",  # ice phishing
                           "ICE-PHISHING-HIGH-NUM-APPROVALS": "Preparation",  # ice phishing
@@ -38,5 +40,7 @@ ALERT_ID_STAGE_MAPPING = {"ICE-PHISHING-PREV-APPROVED-TRANSFERED": "Exploitation
                           "FLASHLOAN-ATTACK": "Exploitation",  # Flashloan Detection Bot
                           "HIGH-MINT-VALUE": "Exploitation",  # Large Mint Borrow Volume Anomaly Detection
                           "HIGH-BORROW-VALUE": "Exploitation",  # Large Mint Borrow Volume Anomaly Detection
+                          "IMPERSONATED-TOKEN-DEPLOYMENT": "Preparation",  # Token Impersonation
+                          "SMART-PRICE-CHANGES": "Preparation",  # Smart Price Change Bot
                           "UNVERIFIED-CODE-CONTRACT-CREATION": "Preparation"  # unverified contract creation
                           }
