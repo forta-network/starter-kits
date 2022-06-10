@@ -1,4 +1,4 @@
-# USDT and USDC Blacklist Related Events
+# USDT and USDC Blocklist Related Events
 
 ## Description
 
