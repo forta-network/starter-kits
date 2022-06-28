@@ -26,15 +26,15 @@ The detection bot will alert on alert frequencies of the underlyign detection bo
 
 - UPSIDE-BREAKOUT
   - Fired when the alert freuqncy breaks out to the upside of the expected range.
-  - Severity is always set to one level higher than the alert of the underlying detection bot.
+  - Severity is passed through from alert of the underlying detection bot.
   - Type is always set to the type of the underying deteciton bot.
-  - Meta data will contain information about the expected value, the range boundary, and the actual value observed as well as the historical time series data and parameters of the model.
+  - Meta data will contain information about the expected value, the range boundary, and the actual value observed.
 
 - DOWNSIDE-BREAKOUT
   - Fired when the alert freuqncy breaks out to the upside of the expected range.
-  - Severity is always set to one level higher than the alert of the underlying detection bot.
+  - Severity is passed through from alert of the underlying detection bot.
   - Type is always set to the type of the underying deteciton bot.
-  - Meta data will contain information about the expected value, the range boundary, and the actual value observed as well as the historical time series data and parameters of the model.
+  - Meta data will contain information about the expected value, the range boundary, and the actual value observed.
 
 ## Test Data
 

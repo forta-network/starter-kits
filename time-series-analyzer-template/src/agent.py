@@ -11,6 +11,8 @@ from web3 import Web3
 from constants import (BOT_ID, ALERT_NAME, CONTRACT_ADDRESS, BUCKET_WINDOW_IN_MINUTES, TRAINING_WINDOW_IN_BUCKET_SIZE, INTERVAL_WIDTH)
 from findings import TimeSeriesAnalyzerFinding
 from forta_explorer import FortaExplorer
+from prophet import Prophet
+from forta_agent import FindingSeverity, FindingType
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 forta_explorer = FortaExplorer()
@@ -57,14 +59,41 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
         logging.info(f"Analyzing alerts from {start_date} to {end_date}")
 
         # get all alerts for date range
-        bot_alerts = forta_explorer.alerts_by_bot(BOT_ID, ALERT_NAME, CONTRACT_ADDRESS, start_date, end_date)
-        logging.info(f"Fetched {len(bot_alerts)} for bot_id {BOT_ID}, alert_id {ALERT_NAME}, contract_address {CONTRACT_ADDRESS}")
+        df_bot_alerts = forta_explorer.alerts_by_bot(BOT_ID, ALERT_NAME, CONTRACT_ADDRESS, start_date, end_date)
+        logging.info(f"Fetched {len(df_bot_alerts)} for bot_id {BOT_ID}, alert_id {ALERT_NAME}, contract_address {CONTRACT_ADDRESS}")
 
         # build time series model without last bucket
-        timeseries = bot_alerts.resample('5min', on='createdAt').count()["hash"].reset_index()
-        print(timeseries)
+        df_timeseries = df_bot_alerts.resample(str(BUCKET_WINDOW_IN_MINUTES)+'min', on='createdAt').count()["hash"].reset_index()
+        df_timeseries['createdAt'] = df_timeseries['createdAt'].dt.tz_localize(None)
 
-        # fix missing values
+        df_timeseries = df_timeseries[df_timeseries["createdAt"] < df_timeseries["createdAt"].max()] # this row could be incomplete, so we discard
+        df_current_value = df_timeseries[df_timeseries["createdAt"] == df_timeseries["createdAt"].max()]  
+        df_timeseries = df_timeseries[df_timeseries["createdAt"] < df_timeseries["createdAt"].max()] # this row is what we want to assess against the model, so we discard
+        
+        # TODO - fix missing values
+
+        df_timeseries.rename(columns={'createdAt': 'ds', 'hash': 'y'}, inplace=True)
+        df_timeseries['ds'] = df_timeseries['ds'].dt.tz_localize(None)
+
+        m = Prophet(interval_width=INTERVAL_WIDTH)
+        m.fit(df_timeseries)
+        future = m.make_future_dataframe(periods=1, freq=str(BUCKET_WINDOW_IN_MINUTES)+'min')
+        model = m.predict(future)
+        #forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail()
+
+        current_value = df_current_value["hash"].iloc[0]
+        forecast = model[model["ds"] == df_current_value["createdAt"].iloc[0]]
+        yhat = forecast["yhat"].iloc[0]
+        yhat_lower = forecast["yhat_lower"].iloc[0]
+        yhat_upper = forecast["yhat_upper"].iloc[0]
+
+
+        if current_value > yhat_upper:
+            logging.info(f"Alert detected for {CONTRACT_ADDRESS}")
+            FINDINGS_CACHE.append(TimeSeriesAnalyzerFinding.breakout("Upside", yhat, yhat_upper, current_value, CONTRACT_ADDRESS, BOT_ID, ALERT_NAME, FindingType.Info, FindingSeverity.Low))  # TODO - pass through finding type and severity
+        if current_value < yhat_lower:
+            logging.info(f"Alert detected for {CONTRACT_ADDRESS}")
+            FINDINGS_CACHE.append(TimeSeriesAnalyzerFinding.breakout("Downside", yhat, yhat_lower, current_value, CONTRACT_ADDRESS, BOT_ID, ALERT_NAME, FindingType.Info, FindingSeverity.Low))
 
         # assess whether last bucket is a breakout and alert if so
         #            FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids))

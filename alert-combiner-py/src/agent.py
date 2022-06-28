@@ -145,8 +145,8 @@ def provide_handle_block(w3, forta_explorer):
             thread.start()
 
         # uncomment for local testing; otherwise the process will exit
-        #while (thread.is_alive()):
-        #    pass
+        while (thread.is_alive()):
+            pass
         findings = FINDINGS_CACHE
         FINDINGS_CACHE = []
         return findings
