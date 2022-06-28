@@ -54,9 +54,9 @@ class TestAlertCombiner:
         assert agent.FINDINGS_CACHE[0].type == FindingType.Suspicious, "this should have been a suspicious finding"
         assert agent.FINDINGS_CACHE[0].severity == FindingSeverity.High, "this should have been a high severity finding"
         assert agent.FINDINGS_CACHE[0].description == 'Upside breakout on bot 0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9, alert Reentrancy calls detected'
-        assert agent.FINDINGS_CACHE[0].metadata["Observed_value"] == 20, "this should have been value of 20"
-        assert agent.FINDINGS_CACHE[0].metadata["Range_boundary"] > 10, "this should have been value greater than 10"
-        assert agent.FINDINGS_CACHE[0].metadata["Expected_value"] == 10, "this should have been 10"
+        assert agent.FINDINGS_CACHE[0].metadata["Observed_value"] == "20", "this should have been value of 20"
+        assert float(agent.FINDINGS_CACHE[0].metadata["Range_boundary"]) > 10, "this should have been value greater than 10"
+        assert agent.FINDINGS_CACHE[0].metadata["Expected_value"] == "10.0", "this should have been 10"
         assert agent.FINDINGS_CACHE[0].metadata["Contract_address"] == "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45", "this should have been contract 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
 
     def test_detect_alert_pos_finding_with_missing_values(self):
@@ -104,9 +104,9 @@ class TestAlertCombiner:
         assert agent.FINDINGS_CACHE[0].type == FindingType.Suspicious, "this should have been a suspicious finding"
         assert agent.FINDINGS_CACHE[0].severity == FindingSeverity.High, "this should have been a high severity finding"
         assert agent.FINDINGS_CACHE[0].description == 'Upside breakout on bot 0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9, alert Reentrancy calls detected'
-        assert agent.FINDINGS_CACHE[0].metadata["Observed_value"] == 20, "this should have been value of 20"
-        assert agent.FINDINGS_CACHE[0].metadata["Range_boundary"] > 10, "this should have been value greater than 10"
-        assert agent.FINDINGS_CACHE[0].metadata["Expected_value"] == 10, "this should have been 10"
+        assert agent.FINDINGS_CACHE[0].metadata["Observed_value"] == "20", "this should have been value of 20"
+        assert float(agent.FINDINGS_CACHE[0].metadata["Range_boundary"]) > 10, "this should have been value greater than 10"
+        assert agent.FINDINGS_CACHE[0].metadata["Expected_value"] == "10.0", "this should have been 10"
         assert agent.FINDINGS_CACHE[0].metadata["Contract_address"] == "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45", "this should have been contract 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
 
     def test_detect_alert_pos_no_repeat_finding(self):
@@ -250,7 +250,7 @@ class TestAlertCombiner:
         assert agent.FINDINGS_CACHE[0].type == FindingType.Suspicious, "this should have been a suspicious finding"
         assert agent.FINDINGS_CACHE[0].severity == FindingSeverity.High, "this should have been a high severity finding"
         assert agent.FINDINGS_CACHE[0].description == 'Upside breakout on bot 0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9, alert Reentrancy calls detected'
-        assert agent.FINDINGS_CACHE[0].metadata["Observed_value"] == 20, "this should have been value of 20"
-        assert agent.FINDINGS_CACHE[0].metadata["Range_boundary"] > 10, "this should have been value greater than 10"
-        assert agent.FINDINGS_CACHE[0].metadata["Expected_value"] == 10, "this should have been 10"
+        assert agent.FINDINGS_CACHE[0].metadata["Observed_value"] == "20", "this should have been value of 20"
+        assert float(agent.FINDINGS_CACHE[0].metadata["Range_boundary"]) > 10, "this should have been value greater than 10"
+        assert agent.FINDINGS_CACHE[0].metadata["Expected_value"] == "10.0", "this should have been 10"
         assert agent.FINDINGS_CACHE[0].metadata["Contract_address"] == "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45", "this should have been contract 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"

@@ -160,6 +160,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
         yhat = forecast["yhat"].iloc[0]
         yhat_lower = forecast["yhat_lower"].iloc[0]
         yhat_upper = forecast["yhat_upper"].iloc[0]
+        logging.info(f"Forecast: yhat={yhat}, yhat_lower={yhat_lower}, yhat_upper={yhat_upper}; current_value={current_value}")
 
         finding_type = get_finding_type(df_bot_alerts.iloc[0]["findingType"])
         finding_severity = get_finding_severity(df_bot_alerts.iloc[0]["severity"])
@@ -168,7 +169,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
             if current_value > yhat_upper:
                 logging.info(f"Alert detected for {CONTRACT_ADDRESS}")
                 FINDINGS_CACHE.append(TimeSeriesAnalyzerFinding.breakout("Upside", yhat, yhat_upper, current_value, CONTRACT_ADDRESS, BOT_ID, ALERT_NAME, finding_type, finding_severity))
-            if current_value < yhat_lower:
+            if current_value < yhat_lower and current_value != 0:
                 logging.info(f"Alert detected for {CONTRACT_ADDRESS}")
                 FINDINGS_CACHE.append(TimeSeriesAnalyzerFinding.breakout("Downside", yhat, yhat_lower, current_value, CONTRACT_ADDRESS, BOT_ID, ALERT_NAME, finding_type, finding_severity))
 
