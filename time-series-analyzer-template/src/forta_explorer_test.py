@@ -1,5 +1,6 @@
-from forta_explorer import FortaExplorer
 from datetime import datetime, timedelta
+
+from forta_explorer import FortaExplorer
 
 
 class TestFortaExplorer:

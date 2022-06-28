@@ -106,7 +106,6 @@ class FortaExplorer:
             df_forta = pd.concat([pd.DataFrame(df_data), df_forta])
             df_forta["createdAt"] = pd.to_datetime(df_forta["createdAt"], utc=True)
 
-
             first_run = False
             count += 1
 
