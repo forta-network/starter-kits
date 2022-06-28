@@ -10,7 +10,8 @@ from prophet import Prophet
 from web3 import Web3
 
 from src.constants import (ALERT_NAME, BOT_ID, BUCKET_WINDOW_IN_MINUTES,
-                           CONTRACT_ADDRESS, INTERVAL_WIDTH, TIMESTAMP_QUEUE_SIZE,
+                           CONTRACT_ADDRESS, INTERVAL_WIDTH,
+                           TIMESTAMP_QUEUE_SIZE,
                            TRAINING_WINDOW_IN_BUCKET_SIZE)
 from src.findings import TimeSeriesAnalyzerFinding
 from src.forta_explorer import FortaExplorer
@@ -153,7 +154,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
         future = m.make_future_dataframe(periods=1, freq=str(BUCKET_WINDOW_IN_MINUTES) + 'min')
         model = m.predict(future)
         logging.info("Built model.")
-        
+
         current_value = df_current_value["hash"].iloc[0]
         forecast = model[model["ds"] == df_current_value["createdAt"].iloc[0]]
         yhat = forecast["yhat"].iloc[0]
