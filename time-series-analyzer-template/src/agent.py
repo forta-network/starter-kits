@@ -20,6 +20,7 @@ web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 forta_explorer = FortaExplorer()
 
 FINDINGS_CACHE = []
+ALERTED_TIMESTAMP = []
 MUTEX = False
 
 root = logging.getLogger()
@@ -89,10 +90,11 @@ def update_alerted_timestamp(timestamp: datetime):
 
 def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.BlockEvent):
     """
-    this function returns finding for any address for which alerts in 4 stages were observed in a given time window
+    this function returns finding for any alert frequency for the most recent BUCKET that breaks out the predicted range by the Prophet time series model.
     :return: findings: list
     """
-    global ALERTED_ADDRESSES
+    global ALERTED_TIMESTAMP
+    global FINDINGS_CACHE
     global MUTEX
 
     if not MUTEX:
