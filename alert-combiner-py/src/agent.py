@@ -9,8 +9,7 @@ from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 
-from src.constants import (ADDRESS_QUEUE_SIZE, BOT_IDS,
-                           ALERT_ID_STAGE_MAPPING,
+from src.constants import (ADDRESS_QUEUE_SIZE, ALERT_ID_STAGE_MAPPING, BOT_IDS,
                            DATE_LOOKBACK_WINDOW_IN_DAYS)
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
@@ -145,8 +144,8 @@ def provide_handle_block(w3, forta_explorer):
             thread.start()
 
         # uncomment for local testing; otherwise the process will exit
-        #while (thread.is_alive()):
-        #    pass
+        while (thread.is_alive()):
+            pass
         findings = FINDINGS_CACHE
         FINDINGS_CACHE = []
         return findings
