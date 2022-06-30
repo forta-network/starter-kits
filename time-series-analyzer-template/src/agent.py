@@ -136,7 +136,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
         current_date = start_date - timedelta(minutes=start_date.minute % BUCKET_WINDOW_IN_MINUTES,
                                               seconds=start_date.second,
                                               microseconds=start_date.microsecond)
-        current_date += timedelta(minutes=5)
+        current_date += timedelta(minutes=BUCKET_WINDOW_IN_MINUTES)
 
         # first ensure we have values that span start to end date
         count = 0
@@ -149,7 +149,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
 
         # for any values we do have that are 0, replace with median
         logging.info(f"Replaced {len(df_timeseries[df_timeseries['y'] == 0])} values with median.")
-        df_timeseries.replace(0, df_timeseries['y'].median(), inplace=True)
+        df_timeseries.replace(0, median, inplace=True)
 
         m = Prophet(interval_width=INTERVAL_WIDTH)
         m.fit(df_timeseries)
@@ -171,7 +171,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
             if current_value > yhat_upper:
                 logging.info(f"Alert detected for {CONTRACT_ADDRESS}")
                 FINDINGS_CACHE.append(TimeSeriesAnalyzerFinding.breakout("Upside", yhat, yhat_upper, current_value, CONTRACT_ADDRESS, BOT_ID, ALERT_NAME, finding_type, finding_severity))
-            if current_value < yhat_lower and current_value != 0:
+            if current_value < yhat_lower and current_value != 0:  # don't alert if current value is 0 because there are reliability issues leading to bot not running and resulting in 0 alerts. Once the reliability increases, this condition can be removed.
                 logging.info(f"Alert detected for {CONTRACT_ADDRESS}")
                 FINDINGS_CACHE.append(TimeSeriesAnalyzerFinding.breakout("Downside", yhat, yhat_lower, current_value, CONTRACT_ADDRESS, BOT_ID, ALERT_NAME, finding_type, finding_severity))
 
