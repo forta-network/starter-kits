@@ -1,0 +1,416 @@
+
+> alert-combiner-beta@0.0.12 start
+> npm run start:dev
+
+
+> alert-combiner-beta@0.0.12 start:dev
+> nodemon --watch src --watch forta.config.json -e py --exec "forta-agent run"
+
+[33m[nodemon] 2.0.16[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): src/**/* forta.config.json[39m
+[33m[nodemon] watching extensions: py[39m
+[32m[nodemon] starting `forta-agent run`[39m
+listening for blockchain data...
+initializing agent...
+fetching block 15058900...
+2022-07-01 14:10:53,421 - root - INFO - Analyzing alerts from 2022-06-30 21:10:08 to 2022-07-01 21:10:08
+2022-07-01 14:11:30,737 - root - INFO - Fetched 34334 for bot 0xd9fe61cfe875470b80318a96cc0a94ba3adbe1eb4a14827fa018f14925e7da64
+2022-07-01 14:11:33,575 - root - INFO - Fetched 1456 for bot 0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99
+2022-07-01 14:11:34,027 - root - INFO - Fetched 0 for bot 0xaedda4252616d971d570464a3ae4a9f0a9d72a57d8581945fff648d03cd30a7d
+2022-07-01 14:11:36,496 - root - INFO - Fetched 1361 for bot 0x4cc272e78a685e27abcccdb40578f91f43baecc43e3c465460991a9dcdcb9756
+2022-07-01 14:11:44,773 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:11:44,780 - root - WARNING - Sleeping 30sec. Count 1.
+2022-07-01 14:11:44,787 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:12:21,563 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:12:29,823 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:12:29,824 - root - WARNING - Sleeping 30sec. Count 4.
+2022-07-01 14:12:29,824 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:13:06,564 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:13:06,565 - root - WARNING - Sleeping 30sec. Count 5.
+2022-07-01 14:13:06,565 - root - WARNING - Reducing chunk size to 1500
+2022-07-01 14:13:43,784 - root - WARNING - Increasing chunk size to 3000
+2022-07-01 14:13:52,826 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:13:55,722 - root - INFO - Fetched 8221 for bot 0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a
+2022-07-01 14:14:10,609 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:14:10,609 - root - WARNING - Sleeping 30sec. Count 3.
+2022-07-01 14:14:10,609 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:14:45,119 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:14:51,192 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:14:51,192 - root - WARNING - Sleeping 30sec. Count 6.
+2022-07-01 14:14:51,192 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:15:26,921 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:15:33,226 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:15:33,226 - root - WARNING - Sleeping 30sec. Count 9.
+2022-07-01 14:15:33,226 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:16:07,263 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:16:13,146 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:16:13,147 - root - WARNING - Sleeping 30sec. Count 12.
+2022-07-01 14:16:13,147 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:16:49,109 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:16:53,914 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:16:53,914 - root - WARNING - Sleeping 30sec. Count 15.
+2022-07-01 14:16:53,914 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:17:30,340 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:17:54,058 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:17:54,058 - root - WARNING - Sleeping 30sec. Count 22.
+2022-07-01 14:17:54,058 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:18:30,049 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:18:38,884 - root - INFO - Fetched 40987 for bot 0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9
+2022-07-01 14:18:40,096 - root - INFO - Fetched 500 for bot 0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2
+2022-07-01 14:18:40,748 - root - INFO - Fetched 0 for bot 0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b514c7
+2022-07-01 14:18:41,219 - root - INFO - Fetched 72 for bot 0xe27867c40008e0e3533d6dba7d3c1f26a61a3923bc016747d131f868f8f34555
+2022-07-01 14:18:46,735 - root - INFO - Fetched 5460 for bot 0xbf953b115fd214e1eb5c4d6f556ea30f0df47bd86bf35ce1fdaeff03dc7df5b7
+2022-07-01 14:18:47,484 - root - INFO - Fetched 286 for bot 0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4
+2022-07-01 14:18:47,921 - root - INFO - Fetched 0 for bot 0x20d57d727a2d7bf4b447d1952d7ea44efeda0920e45e779d298d5385f3b36cfa
+2022-07-01 14:18:48,680 - root - INFO - Fetched 83 for bot 0x55636f5577694c83b84b0687eb77863850c50bd9f6072686c8463a0cbc5566e0
+2022-07-01 14:18:49,220 - root - INFO - Fetched 0 for bot 0x2c8452ff81b4fa918a8df4441ead5fedd1d4302d7e43226f79cb812ea4962ece
+2022-07-01 14:18:50,850 - root - INFO - Fetched 821 for bot 0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127
+2022-07-01 14:18:55,348 - root - INFO - Fetched 1544 for bot 0x0f21668ebd017888e7ee7dd46e9119bdd2bc7f48dbabc375d96c9b415267534c
+2022-07-01 14:20:26,559 - root - INFO - Fetched 76445 for bot 0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5
+2022-07-01 14:20:27,438 - root - INFO - Fetched 286 for bot 0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4
+2022-07-01 14:20:27,878 - root - INFO - Fetched 0 for bot 0xfcf3ee41d04eee52f7944387010bc8aa6f22d54c36576c9a05db7e6cafda41f9
+2022-07-01 14:20:28,319 - root - INFO - Fetched 0 for bot 0xca504ee43501fe7c20084aa3112f8f57dd8c1e0e8a85d3884b66c252d6fc4f5b
+2022-07-01 14:20:28,743 - root - INFO - Fetched 0 for bot 0xa4b00d881c92526ef9a1db39cd3da2b7f32958eab2d7bb807546b7fd1a520748
+2022-07-01 14:20:29,177 - root - INFO - Fetched 0 for bot 0x942c63db47285d28f01fba0a4e998f815f9784bf246fd981694fd1bcbc0e75c8
+2022-07-01 14:20:29,625 - root - INFO - Fetched 0 for bot 0x6f07249485378615abb12b352f7f0e9c68e6bab2de57475b963445e5639fced3
+2022-07-01 14:20:30,323 - root - INFO - Fetched 0 for bot 0x4db4efcb505c19e076f1716f9c79d919ffb6a9802769b470e8d461066730c723
+2022-07-01 14:20:30,884 - root - INFO - Fetched 0 for bot 0x3f5d0e780a99c3058b58884844e4c71df34b2b739fd957847facc77f69e9f2cc
+2022-07-01 14:20:31,417 - root - INFO - Fetched 0 for bot 0x59cc55fc71711d81d99be376618e072fa34e1ddbda7401840542d9a584a78d08
+2022-07-01 14:20:31,965 - root - INFO - Fetched 0 for bot 0x94f879d399f7fe7a06682d3abd58a955624ec08b9164c3838851bf6788d27e33
+2022-07-01 14:20:33,062 - root - INFO - Fetched 0 for bot 0x5474812f32fa8206c178864bb7f95f737ab9cdb1e4125af2e86ad8dd8c5fbf31
+2022-07-01 14:20:33,512 - root - INFO - Fetched 0 for bot 0x966929e33d640fead63ed3307ee802e1a45a5b3fabe8c796acf1d6bceb2c757e
+2022-07-01 14:20:33,925 - root - INFO - Fetched 0 for bot 0xb9008e67f9a2425dc0e11f80d8d26880ec83880b9a169c9542a8e8d74337bb44
+2022-07-01 14:20:34,333 - root - INFO - Fetched 0 for bot 0xee1a0da8184264ed000c2d33f0a6e0df3aa43ad515c21b8320a00aea8c3ae457
+2022-07-01 14:20:35,004 - root - INFO - Fetched 0 for bot 0xe4cee68ce6b2d75ce17a2c727b92838a32e698eacb8848caaf6dade6f9330c12
+2022-07-01 14:20:35,567 - root - INFO - Fetched 0 for bot 0xdac6f4a16776648ef48b0c9850800507059e201139c2aa898b47d51ca0ebdaae
+2022-07-01 14:20:36,131 - root - INFO - Fetched 0 for bot 0x742da1d837ac91905ec470d4e9d92e9c31a3104aa05a014a8f51ba355135bf8a
+2022-07-01 14:20:36,658 - root - INFO - Fetched 0 for bot 0x7b69174f32b91731d9b6245faaff945637c47f729a850fa312a27238bc98f383
+2022-07-01 14:20:37,100 - root - INFO - Fetched 0 for bot 0xc10fe54aa93d43702eece2c439550ee079b5fa045aa03e08d47df6a3837e172b
+2022-07-01 14:20:37,673 - root - INFO - Fetched 0 for bot 0xf947dfa6387710dd316cb9b1afec82d1f49d187426c8f6370000cddc2bec945d
+2022-07-01 14:20:38,094 - root - INFO - Fetched 0 for bot 0x3d1242fb8af0cdd548e7b5e073534f298f7ddaebbafe931a3506ab0be0e67e87
+2022-07-01 14:20:38,648 - root - INFO - Fetched 0 for bot 0x0b069cddde485c14666b35e13c0e0919e6bbb00ea7b0df711e45701b77841492
+2022-07-01 14:20:39,267 - root - INFO - Fetched 0 for bot 0x19f468cbd6924a77fcb375a130e3bd1d3764366e42d4d7e6db0717a2229bfeba
+2022-07-01 14:20:41,143 - root - INFO - Fetched 1114 for bot 0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3
+2022-07-01 14:20:42,027 - root - INFO - Address 0xEc3e23E7a7782B1B2D77901C478823C701d912eA stages: set()
+2022-07-01 14:20:42,344 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0xf560e095598fc2a68d7e9b5f908532992d11b33d
+2022-07-01 14:20:42,350 - root - INFO - Address 0xf560e095598fc2a68d7e9b5f908532992d11b33d stages: {'MoneyLaundering'}
+2022-07-01 14:20:42,686 - root - INFO - Address 0xCAe28F9b0baffd335DF032bA714A97a71eEfC5d6 stages: set()
+2022-07-01 14:20:42,994 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0x393a0ef293ae6d8c11f49744b081ddd343debbd0
+2022-07-01 14:20:42,995 - root - INFO - Address 0x393a0ef293ae6d8c11f49744b081ddd343debbd0 stages: {'MoneyLaundering'}
+2022-07-01 14:20:43,287 - root - INFO - Address 0x569C6530a8fdbcf8a9967795Bed367f785E32d07 stages: set()
+2022-07-01 14:20:43,600 - root - INFO - Address 0x4FD7d95f721dac5B01dAF306fa686b1f8c4dd66a stages: set()
+2022-07-01 14:20:43,887 - root - INFO - Address 0x8BAB0B7962Fb7537E7766175F211D8E4F7AFa834 stages: set()
+2022-07-01 14:20:44,190 - root - INFO - Address 0x718FdF375E1930Ba386852E35F5bAFC31df3AE66 stages: set()
+2022-07-01 14:20:44,517 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0x8a8e9730646efd1e57453054f1a6366897d7cb1c
+2022-07-01 14:20:44,517 - root - INFO - Address 0x8a8e9730646efd1e57453054f1a6366897d7cb1c stages: {'MoneyLaundering'}
+2022-07-01 14:20:44,839 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0x4602d107b9963418ca3d3d95c4b7e304845739c4
+2022-07-01 14:20:44,839 - root - INFO - Address 0x4602d107b9963418ca3d3d95c4b7e304845739c4 stages: {'MoneyLaundering'}
+2022-07-01 14:20:45,139 - root - INFO - Address 0xe71d5Fa89D1086d5C3b0ab03EEEE2483d2D5ca97 stages: set()
+2022-07-01 14:20:45,464 - root - INFO - Address 0x482f32c3E1a851A1DC08931E3087AC5A209F3342 stages: set()
+2022-07-01 14:20:45,794 - root - INFO - Address 0x111111200Ed2055B2a87B3d86E5a386d59Ffd05C stages: set()
+2022-07-01 14:20:46,111 - root - INFO - Address 0x7A7ebe060943650C64c5A25311BB3F89cB31C384 stages: set()
+2022-07-01 14:20:46,421 - root - INFO - Address 0x97B2bB85d797ADd22dABda43EdA8570091ED4b03 stages: set()
+2022-07-01 14:20:46,724 - root - INFO - Found alert NETHFORTA-25 in stage Exploitation for address 0x5f3b5ec9a063a0d94e3d1ab3b0accc8db8d110da
+2022-07-01 14:20:46,725 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0x5f3b5ec9a063a0d94e3d1ab3b0accc8db8d110da
+2022-07-01 14:20:46,725 - root - INFO - Address 0x5f3b5ec9a063a0d94e3d1ab3b0accc8db8d110da stages: {'MoneyLaundering', 'Exploitation'}
+2022-07-01 14:20:47,041 - root - INFO - Address 0x06ac16FF8cAa7c7A4d66F506A4C74D4DA9e8569e stages: set()
+2022-07-01 14:20:47,349 - root - INFO - Address 0x530deFD6c816809F54F6CfA6FE873646F6EcF930 stages: set()
+0 findings for block 0x7667aac6683813518eaf2c46f7b63f72406e090db5060c9cadc8485a4b20da23 
+fetching block 15058901...
+2022-07-01 14:20:48,993 - root - INFO - Analyzing alerts from 2022-06-30 21:10:17 to 2022-07-01 21:10:17
+2022-07-01 14:21:26,710 - root - INFO - Fetched 34378 for bot 0xd9fe61cfe875470b80318a96cc0a94ba3adbe1eb4a14827fa018f14925e7da64
+2022-07-01 14:21:29,094 - root - INFO - Fetched 1457 for bot 0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99
+2022-07-01 14:21:29,507 - root - INFO - Fetched 0 for bot 0xaedda4252616d971d570464a3ae4a9f0a9d72a57d8581945fff648d03cd30a7d
+2022-07-01 14:21:32,593 - root - INFO - Fetched 1365 for bot 0x4cc272e78a685e27abcccdb40578f91f43baecc43e3c465460991a9dcdcb9756
+2022-07-01 14:21:43,504 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:21:43,504 - root - WARNING - Sleeping 30sec. Count 1.
+2022-07-01 14:21:43,504 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:22:20,356 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:22:29,076 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:22:29,076 - root - WARNING - Sleeping 30sec. Count 4.
+2022-07-01 14:22:29,076 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:23:06,432 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:23:06,438 - root - WARNING - Sleeping 30sec. Count 5.
+2022-07-01 14:23:06,438 - root - WARNING - Reducing chunk size to 1500
+2022-07-01 14:23:43,600 - root - WARNING - Increasing chunk size to 3000
+2022-07-01 14:23:52,944 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:23:54,809 - root - INFO - Fetched 8233 for bot 0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a
+2022-07-01 14:24:10,082 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:24:10,082 - root - WARNING - Sleeping 30sec. Count 3.
+2022-07-01 14:24:10,082 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:24:44,325 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:24:50,386 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:24:50,387 - root - WARNING - Sleeping 30sec. Count 6.
+2022-07-01 14:24:50,387 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:25:24,872 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:25:29,573 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:25:29,573 - root - WARNING - Sleeping 30sec. Count 9.
+2022-07-01 14:25:29,573 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:26:04,850 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:26:11,073 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:26:11,073 - root - WARNING - Sleeping 30sec. Count 12.
+2022-07-01 14:26:11,073 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:26:47,091 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:26:53,376 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:26:53,383 - root - WARNING - Sleeping 30sec. Count 15.
+2022-07-01 14:26:53,389 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:27:28,920 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:27:54,241 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:27:54,241 - root - WARNING - Sleeping 30sec. Count 22.
+2022-07-01 14:27:54,241 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:28:29,301 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:28:38,232 - root - INFO - Fetched 41121 for bot 0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9
+2022-07-01 14:28:40,832 - root - INFO - Fetched 500 for bot 0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2
+2022-07-01 14:28:41,288 - root - INFO - Fetched 0 for bot 0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b514c7
+2022-07-01 14:28:42,031 - root - INFO - Fetched 72 for bot 0xe27867c40008e0e3533d6dba7d3c1f26a61a3923bc016747d131f868f8f34555
+2022-07-01 14:28:49,017 - root - INFO - Fetched 5473 for bot 0xbf953b115fd214e1eb5c4d6f556ea30f0df47bd86bf35ce1fdaeff03dc7df5b7
+2022-07-01 14:28:49,885 - root - INFO - Fetched 286 for bot 0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4
+2022-07-01 14:28:50,594 - root - INFO - Fetched 0 for bot 0x20d57d727a2d7bf4b447d1952d7ea44efeda0920e45e779d298d5385f3b36cfa
+2022-07-01 14:28:51,430 - root - INFO - Fetched 84 for bot 0x55636f5577694c83b84b0687eb77863850c50bd9f6072686c8463a0cbc5566e0
+2022-07-01 14:28:51,899 - root - INFO - Fetched 0 for bot 0x2c8452ff81b4fa918a8df4441ead5fedd1d4302d7e43226f79cb812ea4962ece
+2022-07-01 14:28:53,876 - root - INFO - Fetched 824 for bot 0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127
+2022-07-01 14:28:56,945 - root - INFO - Fetched 1554 for bot 0x0f21668ebd017888e7ee7dd46e9119bdd2bc7f48dbabc375d96c9b415267534c
+2022-07-01 14:30:36,823 - root - INFO - Fetched 76658 for bot 0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5
+2022-07-01 14:30:37,664 - root - INFO - Fetched 286 for bot 0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4
+2022-07-01 14:30:38,158 - root - INFO - Fetched 0 for bot 0xfcf3ee41d04eee52f7944387010bc8aa6f22d54c36576c9a05db7e6cafda41f9
+2022-07-01 14:30:38,711 - root - INFO - Fetched 0 for bot 0xca504ee43501fe7c20084aa3112f8f57dd8c1e0e8a85d3884b66c252d6fc4f5b
+2022-07-01 14:30:39,141 - root - INFO - Fetched 0 for bot 0xa4b00d881c92526ef9a1db39cd3da2b7f32958eab2d7bb807546b7fd1a520748
+2022-07-01 14:30:39,563 - root - INFO - Fetched 0 for bot 0x942c63db47285d28f01fba0a4e998f815f9784bf246fd981694fd1bcbc0e75c8
+2022-07-01 14:30:40,119 - root - INFO - Fetched 0 for bot 0x6f07249485378615abb12b352f7f0e9c68e6bab2de57475b963445e5639fced3
+2022-07-01 14:30:40,665 - root - INFO - Fetched 0 for bot 0x4db4efcb505c19e076f1716f9c79d919ffb6a9802769b470e8d461066730c723
+2022-07-01 14:30:41,181 - root - INFO - Fetched 0 for bot 0x3f5d0e780a99c3058b58884844e4c71df34b2b739fd957847facc77f69e9f2cc
+2022-07-01 14:30:41,586 - root - INFO - Fetched 0 for bot 0x59cc55fc71711d81d99be376618e072fa34e1ddbda7401840542d9a584a78d08
+2022-07-01 14:30:42,047 - root - INFO - Fetched 0 for bot 0x94f879d399f7fe7a06682d3abd58a955624ec08b9164c3838851bf6788d27e33
+2022-07-01 14:30:42,508 - root - INFO - Fetched 0 for bot 0x5474812f32fa8206c178864bb7f95f737ab9cdb1e4125af2e86ad8dd8c5fbf31
+2022-07-01 14:30:43,072 - root - INFO - Fetched 0 for bot 0x966929e33d640fead63ed3307ee802e1a45a5b3fabe8c796acf1d6bceb2c757e
+2022-07-01 14:30:43,484 - root - INFO - Fetched 0 for bot 0xb9008e67f9a2425dc0e11f80d8d26880ec83880b9a169c9542a8e8d74337bb44
+2022-07-01 14:30:43,869 - root - INFO - Fetched 0 for bot 0xee1a0da8184264ed000c2d33f0a6e0df3aa43ad515c21b8320a00aea8c3ae457
+2022-07-01 14:30:44,422 - root - INFO - Fetched 0 for bot 0xe4cee68ce6b2d75ce17a2c727b92838a32e698eacb8848caaf6dade6f9330c12
+2022-07-01 14:30:44,962 - root - INFO - Fetched 0 for bot 0xdac6f4a16776648ef48b0c9850800507059e201139c2aa898b47d51ca0ebdaae
+2022-07-01 14:30:45,497 - root - INFO - Fetched 0 for bot 0x742da1d837ac91905ec470d4e9d92e9c31a3104aa05a014a8f51ba355135bf8a
+2022-07-01 14:30:45,979 - root - INFO - Fetched 0 for bot 0x7b69174f32b91731d9b6245faaff945637c47f729a850fa312a27238bc98f383
+2022-07-01 14:30:46,393 - root - INFO - Fetched 0 for bot 0xc10fe54aa93d43702eece2c439550ee079b5fa045aa03e08d47df6a3837e172b
+2022-07-01 14:30:46,889 - root - INFO - Fetched 0 for bot 0xf947dfa6387710dd316cb9b1afec82d1f49d187426c8f6370000cddc2bec945d
+2022-07-01 14:30:47,463 - root - INFO - Fetched 0 for bot 0x3d1242fb8af0cdd548e7b5e073534f298f7ddaebbafe931a3506ab0be0e67e87
+2022-07-01 14:30:47,902 - root - INFO - Fetched 0 for bot 0x0b069cddde485c14666b35e13c0e0919e6bbb00ea7b0df711e45701b77841492
+2022-07-01 14:30:48,283 - root - INFO - Fetched 0 for bot 0x19f468cbd6924a77fcb375a130e3bd1d3764366e42d4d7e6db0717a2229bfeba
+2022-07-01 14:30:50,307 - root - INFO - Fetched 1114 for bot 0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3
+2022-07-01 14:30:50,771 - root - INFO - Address 0xEc3e23E7a7782B1B2D77901C478823C701d912eA stages: set()
+2022-07-01 14:30:51,078 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0xf560e095598fc2a68d7e9b5f908532992d11b33d
+2022-07-01 14:30:51,084 - root - INFO - Address 0xf560e095598fc2a68d7e9b5f908532992d11b33d stages: {'MoneyLaundering'}
+2022-07-01 14:30:51,374 - root - INFO - Address 0xCAe28F9b0baffd335DF032bA714A97a71eEfC5d6 stages: set()
+2022-07-01 14:30:51,685 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0x393a0ef293ae6d8c11f49744b081ddd343debbd0
+2022-07-01 14:30:51,685 - root - INFO - Address 0x393a0ef293ae6d8c11f49744b081ddd343debbd0 stages: {'MoneyLaundering'}
+2022-07-01 14:30:51,996 - root - INFO - Address 0x569C6530a8fdbcf8a9967795Bed367f785E32d07 stages: set()
+2022-07-01 14:30:52,301 - root - INFO - Address 0x4FD7d95f721dac5B01dAF306fa686b1f8c4dd66a stages: set()
+2022-07-01 14:30:52,613 - root - INFO - Address 0x8BAB0B7962Fb7537E7766175F211D8E4F7AFa834 stages: set()
+2022-07-01 14:30:52,917 - root - INFO - Address 0x718FdF375E1930Ba386852E35F5bAFC31df3AE66 stages: set()
+2022-07-01 14:30:53,203 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0x8a8e9730646efd1e57453054f1a6366897d7cb1c
+2022-07-01 14:30:53,203 - root - INFO - Address 0x8a8e9730646efd1e57453054f1a6366897d7cb1c stages: {'MoneyLaundering'}
+2022-07-01 14:30:53,505 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0x4602d107b9963418ca3d3d95c4b7e304845739c4
+2022-07-01 14:30:53,512 - root - INFO - Address 0x4602d107b9963418ca3d3d95c4b7e304845739c4 stages: {'MoneyLaundering'}
+2022-07-01 14:30:53,806 - root - INFO - Address 0xe71d5Fa89D1086d5C3b0ab03EEEE2483d2D5ca97 stages: set()
+2022-07-01 14:30:54,105 - root - INFO - Address 0x482f32c3E1a851A1DC08931E3087AC5A209F3342 stages: set()
+2022-07-01 14:30:54,420 - root - INFO - Address 0x111111200Ed2055B2a87B3d86E5a386d59Ffd05C stages: set()
+2022-07-01 14:30:54,708 - root - INFO - Address 0x7A7ebe060943650C64c5A25311BB3F89cB31C384 stages: set()
+2022-07-01 14:30:55,013 - root - INFO - Address 0x97B2bB85d797ADd22dABda43EdA8570091ED4b03 stages: set()
+2022-07-01 14:30:55,320 - root - INFO - Found alert NETHFORTA-25 in stage Exploitation for address 0x5f3b5ec9a063a0d94e3d1ab3b0accc8db8d110da
+2022-07-01 14:30:55,320 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0x5f3b5ec9a063a0d94e3d1ab3b0accc8db8d110da
+2022-07-01 14:30:55,320 - root - INFO - Address 0x5f3b5ec9a063a0d94e3d1ab3b0accc8db8d110da stages: {'MoneyLaundering', 'Exploitation'}
+2022-07-01 14:30:55,618 - root - INFO - Address 0x06ac16FF8cAa7c7A4d66F506A4C74D4DA9e8569e stages: set()
+2022-07-01 14:30:55,918 - root - INFO - Address 0x530deFD6c816809F54F6CfA6FE873646F6EcF930 stages: set()
+0 findings for block 0x64d1ccf75053d55dfa3b17a7f41f364635e85c9408019a0bb9046614fc806dde 
+fetching block 15058902...
+2022-07-01 14:30:57,169 - root - INFO - Analyzing alerts from 2022-06-30 21:11:06 to 2022-07-01 21:11:06
+2022-07-01 14:31:32,085 - root - INFO - Fetched 34418 for bot 0xd9fe61cfe875470b80318a96cc0a94ba3adbe1eb4a14827fa018f14925e7da64
+2022-07-01 14:31:34,359 - root - INFO - Fetched 1458 for bot 0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99
+2022-07-01 14:31:34,746 - root - INFO - Fetched 0 for bot 0xaedda4252616d971d570464a3ae4a9f0a9d72a57d8581945fff648d03cd30a7d
+2022-07-01 14:31:36,929 - root - INFO - Fetched 1369 for bot 0x4cc272e78a685e27abcccdb40578f91f43baecc43e3c465460991a9dcdcb9756
+2022-07-01 14:31:46,959 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:31:46,959 - root - WARNING - Sleeping 30sec. Count 1.
+2022-07-01 14:31:46,959 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:32:24,677 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:32:32,821 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:32:32,821 - root - WARNING - Sleeping 30sec. Count 4.
+2022-07-01 14:32:32,821 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:33:09,658 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:33:09,658 - root - WARNING - Sleeping 30sec. Count 5.
+2022-07-01 14:33:09,658 - root - WARNING - Reducing chunk size to 1500
+2022-07-01 14:33:44,964 - root - WARNING - Increasing chunk size to 3000
+2022-07-01 14:33:52,528 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:33:57,587 - root - INFO - Fetched 8245 for bot 0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a
+2022-07-01 14:34:14,001 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:34:14,001 - root - WARNING - Sleeping 30sec. Count 3.
+2022-07-01 14:34:14,001 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:34:50,840 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:34:57,099 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:34:57,099 - root - WARNING - Sleeping 30sec. Count 6.
+2022-07-01 14:34:57,099 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:35:33,885 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:35:40,703 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:35:40,703 - root - WARNING - Sleeping 30sec. Count 9.
+2022-07-01 14:35:40,703 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:36:16,599 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:36:22,883 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:36:22,883 - root - WARNING - Sleeping 30sec. Count 12.
+2022-07-01 14:36:22,883 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:36:58,635 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:37:04,709 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:37:04,709 - root - WARNING - Sleeping 30sec. Count 15.
+2022-07-01 14:37:04,709 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:37:39,361 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:38:05,111 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:38:05,111 - root - WARNING - Sleeping 30sec. Count 22.
+2022-07-01 14:38:05,111 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:38:41,200 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:38:49,966 - root - INFO - Fetched 41250 for bot 0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9
+2022-07-01 14:38:51,498 - root - INFO - Fetched 501 for bot 0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2
+2022-07-01 14:38:52,055 - root - INFO - Fetched 0 for bot 0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b514c7
+2022-07-01 14:38:52,655 - root - INFO - Fetched 72 for bot 0xe27867c40008e0e3533d6dba7d3c1f26a61a3923bc016747d131f868f8f34555
+2022-07-01 14:38:59,374 - root - INFO - Fetched 5495 for bot 0xbf953b115fd214e1eb5c4d6f556ea30f0df47bd86bf35ce1fdaeff03dc7df5b7
+2022-07-01 14:39:00,246 - root - INFO - Fetched 286 for bot 0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4
+2022-07-01 14:39:00,800 - root - INFO - Fetched 0 for bot 0x20d57d727a2d7bf4b447d1952d7ea44efeda0920e45e779d298d5385f3b36cfa
+2022-07-01 14:39:01,681 - root - INFO - Fetched 84 for bot 0x55636f5577694c83b84b0687eb77863850c50bd9f6072686c8463a0cbc5566e0
+2022-07-01 14:39:02,082 - root - INFO - Fetched 0 for bot 0x2c8452ff81b4fa918a8df4441ead5fedd1d4302d7e43226f79cb812ea4962ece
+2022-07-01 14:39:05,551 - root - INFO - Fetched 826 for bot 0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127
+2022-07-01 14:39:08,121 - root - INFO - Fetched 1561 for bot 0x0f21668ebd017888e7ee7dd46e9119bdd2bc7f48dbabc375d96c9b415267534c
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `forta-agent run`[39m
+[32m[nodemon] still waiting for 1 sub-process to finish...[39m
+listening for blockchain data...
+initializing agent...
+fetching block 15059010...
+2022-07-01 14:39:42,248 - root - INFO - Analyzing alerts from 2022-06-30 21:39:32 to 2022-07-01 21:39:32
+2022-07-01 14:40:18,378 - root - INFO - Fetched 34492 for bot 0xd9fe61cfe875470b80318a96cc0a94ba3adbe1eb4a14827fa018f14925e7da64
+2022-07-01 14:40:20,710 - root - INFO - Fetched 1459 for bot 0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99
+2022-07-01 14:40:21,189 - root - INFO - Fetched 0 for bot 0xaedda4252616d971d570464a3ae4a9f0a9d72a57d8581945fff648d03cd30a7d
+2022-07-01 14:40:23,779 - root - INFO - Fetched 1369 for bot 0x4cc272e78a685e27abcccdb40578f91f43baecc43e3c465460991a9dcdcb9756
+2022-07-01 14:40:35,390 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:40:35,390 - root - WARNING - Sleeping 30sec. Count 1.
+2022-07-01 14:40:35,390 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:41:11,217 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:41:19,555 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:41:19,555 - root - WARNING - Sleeping 30sec. Count 4.
+2022-07-01 14:41:19,555 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:41:54,682 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:41:54,682 - root - WARNING - Sleeping 30sec. Count 5.
+2022-07-01 14:41:54,682 - root - WARNING - Reducing chunk size to 1500
+2022-07-01 14:42:30,862 - root - WARNING - Increasing chunk size to 3000
+2022-07-01 14:42:39,457 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:42:41,189 - root - INFO - Fetched 8266 for bot 0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a
+2022-07-01 14:42:56,222 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:42:56,222 - root - WARNING - Sleeping 30sec. Count 3.
+2022-07-01 14:42:56,222 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:43:31,846 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:43:38,295 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:43:38,296 - root - WARNING - Sleeping 30sec. Count 6.
+2022-07-01 14:43:38,296 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:44:12,245 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:44:16,818 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:44:16,818 - root - WARNING - Sleeping 30sec. Count 9.
+2022-07-01 14:44:16,818 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:44:52,786 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:44:58,754 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:44:58,754 - root - WARNING - Sleeping 30sec. Count 12.
+2022-07-01 14:44:58,754 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:45:35,030 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:45:40,821 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:45:40,821 - root - WARNING - Sleeping 30sec. Count 15.
+2022-07-01 14:45:40,821 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:46:16,073 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:46:40,375 - root - WARNING - Unable to retrieve alerts 500 , status code: 500
+2022-07-01 14:46:40,375 - root - WARNING - Sleeping 30sec. Count 22.
+2022-07-01 14:46:40,375 - root - WARNING - Reducing chunk size to 3000
+2022-07-01 14:47:16,212 - root - WARNING - Increasing chunk size to 6000
+2022-07-01 14:47:24,358 - root - INFO - Fetched 41331 for bot 0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9
+2022-07-01 14:47:26,476 - root - INFO - Fetched 501 for bot 0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2
+2022-07-01 14:47:27,256 - root - INFO - Fetched 0 for bot 0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b514c7
+2022-07-01 14:47:27,853 - root - INFO - Fetched 72 for bot 0xe27867c40008e0e3533d6dba7d3c1f26a61a3923bc016747d131f868f8f34555
+2022-07-01 14:47:34,492 - root - INFO - Fetched 5510 for bot 0xbf953b115fd214e1eb5c4d6f556ea30f0df47bd86bf35ce1fdaeff03dc7df5b7
+2022-07-01 14:47:36,100 - root - INFO - Fetched 286 for bot 0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4
+2022-07-01 14:47:36,558 - root - INFO - Fetched 0 for bot 0x20d57d727a2d7bf4b447d1952d7ea44efeda0920e45e779d298d5385f3b36cfa
+2022-07-01 14:47:37,358 - root - INFO - Fetched 84 for bot 0x55636f5577694c83b84b0687eb77863850c50bd9f6072686c8463a0cbc5566e0
+2022-07-01 14:47:37,783 - root - INFO - Fetched 0 for bot 0x2c8452ff81b4fa918a8df4441ead5fedd1d4302d7e43226f79cb812ea4962ece
+2022-07-01 14:47:39,519 - root - INFO - Fetched 828 for bot 0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127
+2022-07-01 14:47:42,305 - root - INFO - Fetched 1562 for bot 0x0f21668ebd017888e7ee7dd46e9119bdd2bc7f48dbabc375d96c9b415267534c
+2022-07-01 14:49:32,318 - root - INFO - Fetched 77123 for bot 0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5
+2022-07-01 14:49:33,404 - root - INFO - Fetched 286 for bot 0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4
+2022-07-01 14:49:33,929 - root - INFO - Fetched 0 for bot 0xfcf3ee41d04eee52f7944387010bc8aa6f22d54c36576c9a05db7e6cafda41f9
+2022-07-01 14:49:35,241 - root - INFO - Fetched 0 for bot 0xca504ee43501fe7c20084aa3112f8f57dd8c1e0e8a85d3884b66c252d6fc4f5b
+2022-07-01 14:49:36,084 - root - INFO - Fetched 0 for bot 0xa4b00d881c92526ef9a1db39cd3da2b7f32958eab2d7bb807546b7fd1a520748
+2022-07-01 14:49:36,664 - root - INFO - Fetched 0 for bot 0x942c63db47285d28f01fba0a4e998f815f9784bf246fd981694fd1bcbc0e75c8
+2022-07-01 14:49:37,188 - root - INFO - Fetched 0 for bot 0x6f07249485378615abb12b352f7f0e9c68e6bab2de57475b963445e5639fced3
+2022-07-01 14:49:37,709 - root - INFO - Fetched 0 for bot 0x4db4efcb505c19e076f1716f9c79d919ffb6a9802769b470e8d461066730c723
+2022-07-01 14:49:38,156 - root - INFO - Fetched 0 for bot 0x3f5d0e780a99c3058b58884844e4c71df34b2b739fd957847facc77f69e9f2cc
+2022-07-01 14:49:38,632 - root - INFO - Fetched 0 for bot 0x59cc55fc71711d81d99be376618e072fa34e1ddbda7401840542d9a584a78d08
+2022-07-01 14:49:39,043 - root - INFO - Fetched 0 for bot 0x94f879d399f7fe7a06682d3abd58a955624ec08b9164c3838851bf6788d27e33
+2022-07-01 14:49:39,516 - root - INFO - Fetched 0 for bot 0x5474812f32fa8206c178864bb7f95f737ab9cdb1e4125af2e86ad8dd8c5fbf31
+2022-07-01 14:49:39,918 - root - INFO - Fetched 0 for bot 0x966929e33d640fead63ed3307ee802e1a45a5b3fabe8c796acf1d6bceb2c757e
+2022-07-01 14:49:42,059 - root - INFO - Fetched 0 for bot 0xb9008e67f9a2425dc0e11f80d8d26880ec83880b9a169c9542a8e8d74337bb44
+2022-07-01 14:49:42,794 - root - INFO - Fetched 0 for bot 0xee1a0da8184264ed000c2d33f0a6e0df3aa43ad515c21b8320a00aea8c3ae457
+2022-07-01 14:49:43,427 - root - INFO - Fetched 0 for bot 0xe4cee68ce6b2d75ce17a2c727b92838a32e698eacb8848caaf6dade6f9330c12
+2022-07-01 14:49:43,967 - root - INFO - Fetched 0 for bot 0xdac6f4a16776648ef48b0c9850800507059e201139c2aa898b47d51ca0ebdaae
+2022-07-01 14:49:44,517 - root - INFO - Fetched 0 for bot 0x742da1d837ac91905ec470d4e9d92e9c31a3104aa05a014a8f51ba355135bf8a
+2022-07-01 14:49:44,930 - root - INFO - Fetched 0 for bot 0x7b69174f32b91731d9b6245faaff945637c47f729a850fa312a27238bc98f383
+2022-07-01 14:49:45,504 - root - INFO - Fetched 0 for bot 0xc10fe54aa93d43702eece2c439550ee079b5fa045aa03e08d47df6a3837e172b
+2022-07-01 14:49:46,050 - root - INFO - Fetched 0 for bot 0xf947dfa6387710dd316cb9b1afec82d1f49d187426c8f6370000cddc2bec945d
+2022-07-01 14:49:48,539 - root - INFO - Fetched 0 for bot 0x3d1242fb8af0cdd548e7b5e073534f298f7ddaebbafe931a3506ab0be0e67e87
+2022-07-01 14:49:48,944 - root - INFO - Fetched 0 for bot 0x0b069cddde485c14666b35e13c0e0919e6bbb00ea7b0df711e45701b77841492
+2022-07-01 14:49:49,344 - root - INFO - Fetched 0 for bot 0x19f468cbd6924a77fcb375a130e3bd1d3764366e42d4d7e6db0717a2229bfeba
+2022-07-01 14:49:51,106 - root - INFO - Fetched 1115 for bot 0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3
+2022-07-01 14:49:51,948 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0x718fdf375e1930ba386852e35f5bafc31df3ae66
+2022-07-01 14:49:51,948 - root - INFO - Address 0x718fdf375e1930ba386852e35f5bafc31df3ae66 stages: {'MoneyLaundering'}
+2022-07-01 14:49:52,252 - root - INFO - Found alert NETHFORTA-25 in stage Exploitation for address 0x97b2bb85d797add22dabda43eda8570091ed4b03
+2022-07-01 14:49:52,252 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0x97b2bb85d797add22dabda43eda8570091ed4b03
+2022-07-01 14:49:52,252 - root - INFO - Found alert SMART-PRICE-CHANGES in stage Preparation for address 0x97b2bb85d797add22dabda43eda8570091ed4b03
+2022-07-01 14:49:52,253 - root - INFO - Found alert FLASHBOT-TRANSACTION in stage Exploitation for address 0x97b2bb85d797add22dabda43eda8570091ed4b03
+2022-07-01 14:49:52,253 - root - INFO - Address 0x97b2bb85d797add22dabda43eda8570091ed4b03 stages: {'Preparation', 'MoneyLaundering', 'Exploitation'}
+2022-07-01 14:49:52,555 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0x482f32c3e1a851a1dc08931e3087ac5a209f3342
+2022-07-01 14:49:52,555 - root - INFO - Address 0x482f32c3e1a851a1dc08931e3087ac5a209f3342 stages: {'MoneyLaundering'}
+2022-07-01 14:49:52,835 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0xf560e095598fc2a68d7e9b5f908532992d11b33d
+2022-07-01 14:49:52,835 - root - INFO - Address 0xf560e095598fc2a68d7e9b5f908532992d11b33d stages: {'MoneyLaundering'}
+2022-07-01 14:49:53,121 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0x8bab0b7962fb7537e7766175f211d8e4f7afa834
+2022-07-01 14:49:53,122 - root - INFO - Found alert NETHFORTA-2 in stage Exploitation for address 0x8bab0b7962fb7537e7766175f211d8e4f7afa834
+2022-07-01 14:49:53,122 - root - INFO - Address 0x8bab0b7962fb7537e7766175f211d8e4f7afa834 stages: {'MoneyLaundering', 'Exploitation'}
+2022-07-01 14:49:53,415 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0xe71d5fa89d1086d5c3b0ab03eeee2483d2d5ca97
+2022-07-01 14:49:53,415 - root - INFO - Address 0xe71d5fa89d1086d5c3b0ab03eeee2483d2d5ca97 stages: {'MoneyLaundering'}
+2022-07-01 14:49:53,701 - root - INFO - Found alert NETHFORTA-25 in stage Exploitation for address 0x530defd6c816809f54f6cfa6fe873646f6ecf930
+2022-07-01 14:49:53,702 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0x530defd6c816809f54f6cfa6fe873646f6ecf930
+2022-07-01 14:49:53,702 - root - INFO - Address 0x530defd6c816809f54f6cfa6fe873646f6ecf930 stages: {'MoneyLaundering', 'Exploitation'}
+2022-07-01 14:49:53,993 - root - INFO - Found alert NETHFORTA-25 in stage Exploitation for address 0x7a7ebe060943650c64c5a25311bb3f89cb31c384
+2022-07-01 14:49:53,994 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0x7a7ebe060943650c64c5a25311bb3f89cb31c384
+2022-07-01 14:49:54,001 - root - INFO - Found alert FLASHBOT-TRANSACTION in stage Exploitation for address 0x7a7ebe060943650c64c5a25311bb3f89cb31c384
+2022-07-01 14:49:54,001 - root - INFO - Address 0x7a7ebe060943650c64c5a25311bb3f89cb31c384 stages: {'MoneyLaundering', 'Exploitation'}
+2022-07-01 14:49:54,284 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0x8a8e9730646efd1e57453054f1a6366897d7cb1c
+2022-07-01 14:49:54,284 - root - INFO - Address 0x8a8e9730646efd1e57453054f1a6366897d7cb1c stages: {'MoneyLaundering'}
+2022-07-01 14:49:54,587 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0x569c6530a8fdbcf8a9967795bed367f785e32d07
+2022-07-01 14:49:54,587 - root - INFO - Found alert NETHFORTA-2 in stage Exploitation for address 0x569c6530a8fdbcf8a9967795bed367f785e32d07
+2022-07-01 14:49:54,588 - root - INFO - Address 0x569c6530a8fdbcf8a9967795bed367f785e32d07 stages: {'MoneyLaundering', 'Exploitation'}
+2022-07-01 14:49:54,890 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0x4fd7d95f721dac5b01daf306fa686b1f8c4dd66a
+2022-07-01 14:49:54,891 - root - INFO - Found alert NETHFORTA-2 in stage Exploitation for address 0x4fd7d95f721dac5b01daf306fa686b1f8c4dd66a
+2022-07-01 14:49:54,891 - root - INFO - Found alert FLASHBOT-TRANSACTION in stage Exploitation for address 0x4fd7d95f721dac5b01daf306fa686b1f8c4dd66a
+2022-07-01 14:49:54,891 - root - INFO - Address 0x4fd7d95f721dac5b01daf306fa686b1f8c4dd66a stages: {'MoneyLaundering', 'Exploitation'}
+2022-07-01 14:49:55,182 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0xcae28f9b0baffd335df032ba714a97a71eefc5d6
+2022-07-01 14:49:55,183 - root - INFO - Found alert NETHFORTA-2 in stage Exploitation for address 0xcae28f9b0baffd335df032ba714a97a71eefc5d6
+2022-07-01 14:49:55,183 - root - INFO - Address 0xcae28f9b0baffd335df032ba714a97a71eefc5d6 stages: {'MoneyLaundering', 'Exploitation'}
+2022-07-01 14:49:55,493 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0x393a0ef293ae6d8c11f49744b081ddd343debbd0
+2022-07-01 14:49:55,493 - root - INFO - Address 0x393a0ef293ae6d8c11f49744b081ddd343debbd0 stages: {'MoneyLaundering'}
+2022-07-01 14:49:55,800 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0x4602d107b9963418ca3d3d95c4b7e304845739c4
+2022-07-01 14:49:55,800 - root - INFO - Address 0x4602d107b9963418ca3d3d95c4b7e304845739c4 stages: {'MoneyLaundering'}
+2022-07-01 14:49:56,147 - root - INFO - Found alert NETHFORTA-25 in stage Exploitation for address 0x5f3b5ec9a063a0d94e3d1ab3b0accc8db8d110da
+2022-07-01 14:49:56,147 - root - INFO - Found alert forta-text-messages-possible-hack in stage MoneyLaundering for address 0x5f3b5ec9a063a0d94e3d1ab3b0accc8db8d110da
+2022-07-01 14:49:56,147 - root - INFO - Address 0x5f3b5ec9a063a0d94e3d1ab3b0accc8db8d110da stages: {'MoneyLaundering', 'Exploitation'}
+2022-07-01 14:49:56,432 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0xec3e23e7a7782b1b2d77901c478823c701d912ea
+2022-07-01 14:49:56,432 - root - INFO - Address 0xec3e23e7a7782b1b2d77901c478823c701d912ea stages: {'MoneyLaundering'}
+2022-07-01 14:49:56,729 - root - INFO - Found alert NETHFORTA-25 in stage Exploitation for address 0x06ac16ff8caa7c7a4d66f506a4c74d4da9e8569e
+2022-07-01 14:49:56,730 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0x06ac16ff8caa7c7a4d66f506a4c74d4da9e8569e
+2022-07-01 14:49:56,730 - root - INFO - Found alert SMART-PRICE-CHANGES in stage Preparation for address 0x06ac16ff8caa7c7a4d66f506a4c74d4da9e8569e
+2022-07-01 14:49:56,730 - root - INFO - Found alert FLASHBOT-TRANSACTION in stage Exploitation for address 0x06ac16ff8caa7c7a4d66f506a4c74d4da9e8569e
+2022-07-01 14:49:56,730 - root - INFO - Address 0x06ac16ff8caa7c7a4d66f506a4c74d4da9e8569e stages: {'Preparation', 'MoneyLaundering', 'Exploitation'}
+2022-07-01 14:49:57,022 - root - INFO - Found alert POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH in stage MoneyLaundering for address 0x111111200ed2055b2a87b3d86e5a386d59ffd05c
+2022-07-01 14:49:57,023 - root - INFO - Found alert NETHFORTA-2 in stage Exploitation for address 0x111111200ed2055b2a87b3d86e5a386d59ffd05c
+2022-07-01 14:49:57,023 - root - INFO - Address 0x111111200ed2055b2a87b3d86e5a386d59ffd05c stages: {'MoneyLaundering', 'Exploitation'}
+0 findings for block 0x5b21ec5a6f4c73ea21e67105dac29148fda72784777b2fa367708dc38a07218f 
+fetching block 15059011...
+2022-07-01 14:49:58,459 - root - INFO - Analyzing alerts from 2022-06-30 21:39:39 to 2022-07-01 21:39:39
