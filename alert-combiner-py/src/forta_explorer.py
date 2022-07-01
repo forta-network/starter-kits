@@ -15,6 +15,7 @@ class FortaExplorer:
 
     def alerts_by_bot(self, bot_id: str, start_date: datetime, end_date: datetime) -> pd.DataFrame:
         url = "https://api.forta.network/graphql"
+        chunk_size = 6000
 
         df_forta = self.empty_alerts()
         json_data = ""
@@ -24,7 +25,7 @@ class FortaExplorer:
             query = """query exampleQuery {
                     alerts(
                         input: {
-                            first: 2000
+                            CHUNKSIZE
                             AFTER_CLAUSE
                             BLOCK_RANGE_CLAUSE
                             BOT_CLAUSE
@@ -74,6 +75,7 @@ class FortaExplorer:
                 after_clause = """after: {{blockNumber:{0}, alertId:"{1}"}}""".format(blockNumber, alertId)
 
             # this is a bit hacky
+            query = query.replace("CHUNKSIZE", f"first: {chunk_size},")
             query = query.replace("AFTER_CLAUSE", after_clause)
             query = query.replace("BLOCK_RANGE_CLAUSE", """blockDateRange: {{ startDate: "{0}", endDate: "{1}" }}""".format(datetime.strftime(start_date, "%Y-%m-%d"), datetime.strftime(end_date, "%Y-%m-%d")))
             query = query.replace("BOT_CLAUSE", f"""bots: ["{bot_id}"]""")
@@ -87,11 +89,20 @@ class FortaExplorer:
                     r = requests.post(url, json={'query': query})
                     if r.status_code == 200:
                         success = True
+                        if chunk_size < 5000:
+                            chunk_size *= 2
+                            logging.warning(f"Increasing chunk size to {chunk_size}")
                     else:
                         raise Exception("status code: {}".format(r.status_code))
                 except Exception as e:
-                    logging.warn(f"Unable to retrieve alerts {r.status_code} , {e}")
-                    logging.warn("Sleeping 30sec" + str(count))
+                    logging.warning(f"Unable to retrieve alerts {r.status_code} , {e}")
+                    logging.warning(f"Sleeping {wait}sec. Count {count}.")
+                    old_chunk_size = chunk_size
+                    chunk_size = int(chunk_size / 2)
+                    if(chunk_size < 1):
+                        chunk_size = 1
+                    query = query.replace(f"first: {old_chunk_size},", f"first: {chunk_size},")
+                    logging.warning(f"Reducing chunk size to {chunk_size}")
                     time.sleep(wait)
                     retries += 1
                     if retries > 30:

@@ -57,6 +57,22 @@ def is_contract(w3, address) -> bool:
     return code != HexBytes('0x')
 
 
+def is_address(w3, address: str) -> bool:
+    """
+    this function determines whether address is a valid address
+    :return: is_address: bool
+    """
+    if address is None:
+        return True
+
+    for c in ['a', 'b', 'c', 'd', 'e', 'f', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+        test_str = c + c + c + c + c + c + c + c + c  # make a string of length 9; I know this is ugly, but regex didnt work
+        if test_str in address.lower():
+            return False
+
+    return True
+
+
 def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.BlockEvent):
     """
     this function returns finding for any address for which alerts in 4 stages were observed in a given time window
@@ -82,17 +98,21 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
 
         # get all addresses that were part of the alerts
         # to optimize, we only check money laundering addresses as this is required to fullfill all 4 stage requirements
-        money_laundering = df_forta_alerts[df_forta_alerts["alertId"] == "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH"]
+        money_laundering_tc = df_forta_alerts[df_forta_alerts["alertId"] == "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH"]
+        txt_msg_high = df_forta_alerts[(df_forta_alerts["alertId"] == "forta-text-messages-possible-hack") & (df_forta_alerts["severity"] == "HIGH")]
 
         addresses = set()
-        for index, row in money_laundering.iterrows():
+        for index, row in txt_msg_high.iterrows():
             addresses = addresses.union(set(row['addresses']))
+
+        for index, row in money_laundering_tc.iterrows():
+            addresses.add(row["description"][0:42].lower())  # the money laundering TC bot transaction may not be the transaction that contains the TC transfer and therefore a set of addresses unrelated, so we parse the address from the description
 
         # analyze each address' alerts
         for potential_attacker_address in addresses:
             logging.debug(potential_attacker_address)
-            # if address is a contract or null address, skip
-            if(is_contract(w3, potential_attacker_address) or potential_attacker_address.startswith('0x0000000000')):
+            # if address is a contract or unlikely address, skip
+            if(is_contract(w3, potential_attacker_address) or not is_address(w3, potential_attacker_address)):
                 continue
 
             # map each alert to 4 stages
@@ -107,6 +127,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
                         stages.add(stage)
                         # get addresses from address field to add to involved_addresses
                         address_alerts[address_alerts["alertId"] == alert_id]["addresses"].apply(lambda x: involved_addresses.update(set(x)))
+                        logging.info(f"Found alert {alert_id} in stage {stage} for address {potential_attacker_address}")
 
                 logging.info(f"Address {potential_attacker_address} stages: {stages}")
 
@@ -144,8 +165,8 @@ def provide_handle_block(w3, forta_explorer):
             thread.start()
 
         # uncomment for local testing; otherwise the process will exit
-        while (thread.is_alive()):
-            pass
+        # while (thread.is_alive()):
+        #     pass
         findings = FINDINGS_CACHE
         FINDINGS_CACHE = []
         return findings
