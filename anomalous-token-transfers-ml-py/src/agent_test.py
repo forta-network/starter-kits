@@ -5,8 +5,13 @@ import agent
 mock_tx_event = create_transaction_event({'transaction': {'from': '0xbeef'}, 'block': {'timestamp': 1655403557}})
 mock_tx_event.filter_log = Mock()
 
+USDT_TOKEN_ADDR = '0xdac17f958d2ee523a2206206994597c13d831ec7'
+USDT_TRANSFER = {
+    'args': {'value': 1700000000, 'from': '0x123', 'to': '0xabc'},
+    'address': USDT_TOKEN_ADDR
+}
 
-# INITIALIZE MODEL
+
 class TestAnomalousTokenTransfers:
     def test_returns_empty_findings_if_no_erc20_transfers(self):
         mock_tx_event.filter_log.return_value = []
@@ -23,12 +28,7 @@ class TestAnomalousTokenTransfers:
         mock_tx_event.filter_log.reset_mock()
         from_address = mock_tx_event.from_
 
-        amount = 1700000000
-        USDT_TOKEN_ADDR = '0xdac17f958d2ee523a2206206994597c13d831ec7'
-        transfer_events = [{
-            'args': {'value': amount, 'from': '0x123', 'to': '0xabc'},
-            'address': USDT_TOKEN_ADDR
-        }]
+        transfer_events = [USDT_TRANSFER]
         mock_tx_event.filter_log.return_value = transfer_events
         token_transfer_count =len(transfer_events)
 
@@ -55,6 +55,18 @@ class TestAnomalousTokenTransfers:
         assert finding.metadata['model_score'] == 0.189
         assert finding.metadata['model_prediction'] == 'NORMAL'
 
+    @patch('agent.get_first_tx_timestamp')
+    @patch('agent.get_token_info')
+    def test_returns_low_findings_if_invalid_model_features(self, mock_get_token_info, mock_get_first_tx_timestamp):
+        mock_tx_event.filter_log.reset_mock()
+        mock_tx_event.filter_log.return_value = [USDT_TRANSFER]
+
+        mock_get_first_tx_timestamp.return_value = -1
+        mock_get_token_info.return_value = ('Tether USD', 'USDT', 6)
+        findings = agent.handle_transaction(mock_tx_event)
+
+        assert len(findings) == 1
+        mock_tx_event.filter_log.assert_called_once_with(agent.ERC20_TRANSFER_EVENT)
 
     def test_returns_critical_finding_for_anomalous_transfers(self):
         pass
