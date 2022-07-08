@@ -1,5 +1,6 @@
 from collections import namedtuple
 from functools import lru_cache
+import pickle
 
 
 from forta_agent import Finding, FindingType, FindingSeverity, get_web3_provider
@@ -61,8 +62,19 @@ TOP_20_TOKENS = {
 LUABASE_ENDPOINT = "https://api.luabase.com/run"
 ETHPLORER_KEY = ""
 ETHPLORER_ENDPOINT = "https://api.ethplorer.io"
+ML_MODEL = None
 
 # TODO add logging and log errors
+
+def initialize():
+    """
+    this function initializes the ml model
+    it is called from test to reset state between tests
+    """
+    global ML_MODEL
+    with open('isolation_forest.pkl', 'rb') as f:
+        ML_MODEL = pickle.load(f)
+
 
 @lru_cache(maxsize=1_000_000)
 def get_first_tx_timestamp(address) -> int:
@@ -177,7 +189,11 @@ def handle_transaction(transaction_event):
         metadata.update(features_metadata)
 
         if valid_features:
-            # feed to model input
+            raw_score = ML_MODEL.decision_function([features])[0]
+            prediction = 'ANOMALY' if ML_MODEL.predict([features])[0] == -1 else 'NORMAL'
+            metadata['model_prediction'] = prediction
+            metadata['model_score'] = round(raw_score, 3)
+
             findings.append(Finding({
                 'name': 'Normal Tx with Token Transfers',
                 'description': f'{from_address} executed {len(transfer_events)} token transfers',
