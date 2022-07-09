@@ -1,11 +1,13 @@
 from collections import namedtuple
+from datetime import datetime
 from functools import lru_cache
 import pickle
 
-
-from forta_agent import Finding, FindingType, FindingSeverity, get_web3_provider
 import requests
 
+from findings import AnomalousTransaction, NormalTransaction, InvalidModelFeatures
+
+# TODO create constants file
 ERC20_TRANSFER_EVENT = '{"name":"Transfer","type":"event","anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}]}'
 
 MODEL_FEATURES = [
@@ -55,10 +57,6 @@ MODEL_FEATURES = [
     'tokens_type_counts',
     'transfer_counts']
 
-TOP_20_TOKENS = {
-    'address': 'USDT'
-}
-
 LUABASE_ENDPOINT = "https://api.luabase.com/run"
 ETHPLORER_KEY = ""
 ETHPLORER_ENDPOINT = "https://api.ethplorer.io"
@@ -75,7 +73,7 @@ def initialize():
     with open('isolation_forest.pkl', 'rb') as f:
         ML_MODEL = pickle.load(f)
 
-
+# TODO create data_processing.py and move all functions below
 @lru_cache(maxsize=1_000_000)
 def get_first_tx_timestamp(address) -> int:
     '''Gets address's first tx timestamp from Luabase in unix.'''
@@ -101,6 +99,7 @@ def get_first_tx_timestamp(address) -> int:
 
     if "data" in data and len(data["data"]) > 0:
         first_tx_timestamp = data["data"][0]["first_tx_timestamp"]
+        first_tx_timestamp = datetime.fromisoformat(first_tx_timestamp).timestamp()
 
     return first_tx_timestamp
 
@@ -131,7 +130,6 @@ def get_token_info(token_address) -> tuple:
 
 def get_features(from_address, tx_timestamp, transfer_events) -> tuple:
     features = {}
-    features_metadata = {}
 
     features['transfer_counts'] = len(transfer_events)
     features['account_age_in_minutes'] = get_account_age(from_address, tx_timestamp)
@@ -148,7 +146,7 @@ def get_features(from_address, tx_timestamp, transfer_events) -> tuple:
         token_transfers = f'{token_symbol}_transfers'
         token_value = f'{token_symbol}_value'
         if decimals != 'NO_DECIMALS': # token is likely not an erc20
-            normalized_value = value / (10 ** int(decimals))
+            normalized_value = round(value / (10 ** int(decimals)), 3)
             features[token_transfers] = features.get(token_transfers, 0) + 1
             features[token_value] = features.get(token_value, 0) + normalized_value
             token_types.add(f"{token_name}-{token_symbol}")
@@ -158,8 +156,8 @@ def get_features(from_address, tx_timestamp, transfer_events) -> tuple:
                 max_token_transfers_count = features[token_transfers]
                 max_token_transfers_value = features[token_value]
 
-    features_metadata['token_types'] = list(token_types)
-    features_metadata['max_single_token_transfers_name'] = max_token_transfers_name
+    features['token_types'] = sorted(list(token_types))
+    features['max_single_token_transfers_name'] = max_token_transfers_name
 
     features['tokens_type_counts'] = len(token_types)
     features['max_single_token_transfers'] = max_token_transfers_count
@@ -167,11 +165,11 @@ def get_features(from_address, tx_timestamp, transfer_events) -> tuple:
 
     valid = valid_features(features)
 
-    return valid, [features.get(key, 0) for key in MODEL_FEATURES], features_metadata
+    return valid, features
 
 def valid_features(features) -> bool:
     '''Evaluate model input values'''
-    if features['account_age_in_minutes'] == -1:
+    if features['account_age_in_minutes'] < 0:
         return False
 
     return True
@@ -184,27 +182,22 @@ def handle_transaction(transaction_event):
     from_address = transaction_event.from_
 
     if len(transfer_events) > 0:
-        valid_features, features, features_metadata = get_features(from_address, transaction_event.timestamp, transfer_events)
-        metadata = {'from': from_address, 'model_input': features}
-        metadata.update(features_metadata)
+        valid_features, features = get_features(from_address, transaction_event.timestamp, transfer_events)
+        model_input = [[features.get(key, 0) for key in MODEL_FEATURES]]
+        metadata = {'from': from_address}
+        metadata.update(features)
 
         if valid_features:
-            raw_score = ML_MODEL.decision_function([features])[0]
-            prediction = 'ANOMALY' if ML_MODEL.predict([features])[0] == -1 else 'NORMAL'
+            raw_score = ML_MODEL.decision_function(model_input)[0]
+            prediction = 'ANOMALY' if ML_MODEL.predict(model_input)[0] == -1 else 'NORMAL'
             metadata['model_prediction'] = prediction
             metadata['model_score'] = round(raw_score, 3)
 
-            findings.append(Finding({
-                'name': 'Normal Tx with Token Transfers',
-                'description': f'{from_address} executed {len(transfer_events)} token transfers',
-                'alert_id': 'NORMAL-TOKEN-TRANSFERS-TX',
-                'severity': FindingSeverity.Low,
-                'type': FindingType.Info,
-                'metadata': metadata
-            }))
+            if prediction == 'ANOMALY':
+                findings.append(AnomalousTransaction(metadata, from_address).emit_finding())
+            else:
+                findings.append(NormalTransaction(metadata, from_address).emit_finding())
         else:
-            # TODO output error finding
-            pass
-
+            findings.append(InvalidModelFeatures(metadata, from_address).emit_finding())
 
     return findings
