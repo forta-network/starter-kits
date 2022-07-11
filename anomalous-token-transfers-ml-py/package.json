@@ -1,7 +1,7 @@
 {
-  "name": "forta-agent-starter",
+  "name": "anomalous-tx-model",
   "version": "0.0.1",
-  "description": "Forta Agent Python starter project",
+  "description": "ML Anomaly Detection of Transactions with Token Transfers",
   "chainIds": [
     1
   ],

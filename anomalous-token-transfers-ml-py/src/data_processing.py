@@ -4,8 +4,8 @@ from timeit import default_timer as timer
 
 import requests
 
-from constants import ETHPLORER_KEY, ETHPLORER_ENDPOINT, LUABASE_ENDPOINT
-from logger import logger
+from .constants import ETHPLORER_KEY, ETHPLORER_ENDPOINT, LUABASE_ENDPOINT
+from .logger import logger
 
 @lru_cache(maxsize=1_000_000)
 def get_first_tx_timestamp(address) -> int:
