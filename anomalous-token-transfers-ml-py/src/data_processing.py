@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import lru_cache
 from timeit import default_timer as timer
 
@@ -32,7 +32,8 @@ def get_first_tx_timestamp(address) -> int:
 
     if "data" in data and len(data["data"]) > 0:
         first_tx_timestamp = data["data"][0]["first_tx_timestamp"]
-        first_tx_timestamp = datetime.fromisoformat(first_tx_timestamp).timestamp()
+        first_tx_timestamp = datetime.fromisoformat(first_tx_timestamp).replace(tzinfo=timezone.utc).timestamp()
+
 
     return first_tx_timestamp
 
