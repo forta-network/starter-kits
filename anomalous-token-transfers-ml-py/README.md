@@ -98,11 +98,85 @@ MODEL_FEATURES = [
 
 ```bash
 $ npm run tx 0x404666af36d5f2e11f763391be0a5b40ae78dfd4304b4f22e3a53c369e779bf1
+
+1 findings for transaction 0x404666af36d5f2e11f763391be0a5b40ae78dfd4304b4f22e3a53c369e779bf1 {
+  "name": "Normal Transaction",
+  "description": "0x1b4006139cfd127822ff9b26a0f89532977b3a42 executed normal tx with token transfers",
+  "alertId": "NORMAL-TOKEN-TRANSFERS-TX",
+  "protocol": "ethereum",
+  "severity": "Info",
+  "type": "Info",
+  "metadata": {
+    "from": "0x1b4006139cfd127822ff9b26a0f89532977b3a42",
+    "transfer_counts": 1,
+    "account_age_in_minutes": 0,
+    "USDT_transfers": 1,
+    "USDT_value": 1700,
+    "token_types": [
+      "Tether USD-USDT"
+    ],
+    "max_single_token_transfers_name": "Tether USD",
+    "tokens_type_counts": 1,
+    "max_single_token_transfers": 1,
+    "max_single_token_transfers_value": 1700,
+    "feature_generation_response_time": 3.8916723749999997,
+    "model_prediction": "NORMAL",
+    "model_score": 0.189,
+    "model_pred_response_time": 0.019546082999999825
+  },
+  "addresses": []
+}
 ```
 
 
 ### Anomalous Tx Example
 
 ```bash
-$ npm run tx
+$ npm run tx 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56
+
+1 findings for transaction 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56 {
+  "name": "Anomalous Transaction",
+  "description": "0x63341ba917de90498f3903b199df5699b4a55ac0 executed anomalous tx with token transfers",
+  "alertId": "ANOMALOUS-TOKEN-TRANSFERS-TX",
+  "protocol": "ethereum",
+  "severity": "Critical",
+  "type": "Suspicious",
+  "metadata": {
+    "from": "0x63341ba917de90498f3903b199df5699b4a55ac0",
+    "transfer_counts": 37,
+    "account_age_in_minutes": 1.8333333333333333,
+    "USDC_transfers": 8,
+    "USDC_value": 80585621.27700001,
+    "dUSDC_transfers": 2,
+    "dUSDC_value": 0,
+    "SUSD_transfers": 11,
+    "SUSD_value": 149377797.167,
+    "saddleUSD-V2_transfers": 10,
+    "saddleUSD-V2_value": 67319643.022,
+    "DAI_transfers": 2,
+    "DAI_value": 3621446.912,
+    "USDT_transfers": 2,
+    "USDT_value": 3060977.952,
+    "WETH_transfers": 2,
+    "WETH_value": 6751.346,
+    "token_types": [
+      "Dai-DAI",
+      "Euler Debt: USD Coin-dUSDC",
+      "Saddle DAI/USDC/USDT V2-saddleUSD-V2",
+      "Tether USD-USDT",
+      "USD Coin-USDC",
+      "WETH-WETH",
+      "sUSD-SUSD"
+    ],
+    "max_single_token_transfers_name": "sUSD",
+    "tokens_type_counts": 7,
+    "max_single_token_transfers": 11,
+    "max_single_token_transfers_value": 149377797.167,
+    "feature_generation_response_time": 8.970852166,
+    "model_prediction": "ANOMALY",
+    "model_score": -0.165,
+    "model_pred_response_time": 0.020986167000000222
+  },
+  "addresses": []
+}
 ```
