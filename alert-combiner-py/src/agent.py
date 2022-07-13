@@ -10,7 +10,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from src.constants import (ADDRESS_QUEUE_SIZE, ALERT_ID_STAGE_MAPPING, BOT_IDS,
-                           DATE_LOOKBACK_WINDOW_IN_DAYS)
+                           DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD)
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
 
@@ -106,7 +106,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
             addresses = addresses.union(set(row['addresses']))
 
         for index, row in money_laundering_tc.iterrows():
-            addresses.add(row["description"][0:42].lower())  # the money laundering TC bot transaction may not be the transaction that contains the TC transfer and therefore a set of addresses unrelated, so we parse the address from the description
+            addresses.add(Web3.toChecksumAddress(row["description"][0:42]))  # the money laundering TC bot transaction may not be the transaction that contains the TC transfer and therefore a set of addresses unrelated, so we parse the address from the description
 
         # analyze each address' alerts
         for potential_attacker_address in addresses:
@@ -133,6 +133,10 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
 
                 # if all 4 stages are observed, update the address alerted list and add a finding
                 if len(stages) == 4 and Web3.toChecksumAddress(potential_attacker_address) not in ALERTED_ADDRESSES:
+                    tx_count = w3.eth.get_transaction_count(Web3.toChecksumAddress(potential_attacker_address))
+                    if tx_count > TX_COUNT_FILTER_THRESHOLD:
+                        logging.info(f"Address {potential_attacker_address} transacton count: {tx_count}")
+                        continue
                     update_alerted_addresses(w3, potential_attacker_address)
                     FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids))
                     logging.info(f"Findings count {len(FINDINGS_CACHE)}")
@@ -164,7 +168,7 @@ def provide_handle_block(w3, forta_explorer):
             thread = threading.Thread(target=detect_attack, args=(w3, forta_explorer, block_event))
             thread.start()
 
-        # uncomment for local testing; otherwise the process will exit
+        # uncomment for local testing of tx/block ranges (ok for npm run start); otherwise the process will exit
         # while (thread.is_alive()):
         #     pass
         findings = FINDINGS_CACHE
