@@ -1,6 +1,6 @@
 {
-  "name": "alert-combiner",
-  "version": "0.0.13",
+  "name": "alert-combiner-beta",
+  "version": "0.0.14",
   "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
   "chainIds": [
     1
