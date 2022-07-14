@@ -1,5 +1,6 @@
 import logging
 import sys
+import json
 import threading
 from datetime import datetime, timedelta
 
@@ -9,10 +10,7 @@ from forta_agent import FindingSeverity, FindingType, get_json_rpc_url
 from prophet import Prophet
 from web3 import Web3
 
-from src.constants import (ALERT_NAME, BOT_ID, BUCKET_WINDOW_IN_MINUTES,
-                           CONTRACT_ADDRESS, INTERVAL_WIDTH,
-                           TIMESTAMP_QUEUE_SIZE,
-                           TRAINING_WINDOW_IN_BUCKET_SIZE)
+from src.constants import (TIMESTAMP_QUEUE_SIZE)
 from src.findings import TimeSeriesAnalyzerFinding
 from src.forta_explorer import FortaExplorer
 
@@ -22,6 +20,13 @@ forta_explorer = FortaExplorer()
 FINDINGS_CACHE = []
 ALERTED_TIMESTAMP = []
 MUTEX = False
+
+ALERT_NAME = ""
+BOT_ID = ""
+BUCKET_WINDOW_IN_MINUTES = 0
+CONTRACT_ADDRESS = ""
+INTERVAL_WIDTH = 0.8
+TRAINING_WINDOW_IN_BUCKET_SIZE = 0
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -47,6 +52,19 @@ def initialize():
     global MUTEX
     MUTEX = False
 
+    config = json.load(open("src/agent-config.json"))
+    global ALERT_NAME
+    ALERT_NAME = config["ALERT_NAME"]
+    global BOT_ID
+    BOT_ID = config["BOT_ID"]
+    global BUCKET_WINDOW_IN_MINUTES
+    BUCKET_WINDOW_IN_MINUTES = config["BUCKET_WINDOW_IN_MINUTES"]
+    global CONTRACT_ADDRESS
+    CONTRACT_ADDRESS = config["CONTRACT_ADDRESS"]
+    global INTERVAL_WIDTH
+    INTERVAL_WIDTH = config["INTERVAL_WIDTH"]
+    global TRAINING_WINDOW_IN_BUCKET_SIZE
+    TRAINING_WINDOW_IN_BUCKET_SIZE = config["TRAINING_WINDOW_IN_BUCKET_SIZE"]
 
 def get_finding_type(finding_type: str) -> FindingType:
     if finding_type == "EXPLOIT":
@@ -96,6 +114,13 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
     global ALERTED_TIMESTAMP
     global FINDINGS_CACHE
     global MUTEX
+
+    global ALERT_NAME
+    global BOT_ID
+    global BUCKET_WINDOW_IN_MINUTES
+    global CONTRACT_ADDRESS
+    global INTERVAL_WIDTH
+    global TIMESTAMP_QUEUE_SIZE
 
     if not MUTEX:
         MUTEX = True
