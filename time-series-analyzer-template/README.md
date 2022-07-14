@@ -11,7 +11,7 @@ To configure the template, specify the variables in the constants.py:
 - CONTRACT_ADDRESS: the contract address filter to be applied (in other words, only consider the alerts where the contract address appears in the address list)
 
 - BUCKET_WINDOW_IN_MIN: the period in minutes to which alerts will be aggregated to
-- TRAINING_WINDOW_IN_BUCKET_SIZE: the training period time; since periodicity may be contained in the data, a sufficiently large window ought to be configured to capture this periodicity
+- TRAINING_WINDOW_IN_BUCKET_SIZE: the training period time; recommended to cover training period during which the periodicity can be observed, so in case of a bucket_window_in_minutes of 5 minnutes, 12 * 24 * 7 = 1 week period. This is the lookback period the time series model will be built on. It is recommended to at least have 7 days so weekly periodicity can be taken into account.
 - INTERVAL_WIDTH: the confidence interval size (default is 0.8) ranging from 0-1.0 where larger values indicate a narrow prediction band
 - TIMESTAMP_QUEUE_SIZE: the number of timestamps that are held in the queue
 

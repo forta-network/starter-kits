@@ -1,0 +1,8 @@
+{
+    "BOT_ID": "",
+    "CONTRACT_ADDRESS": "",
+    "ALERT_NAME": "",
+    "BUCKET_WINDOW_IN_MINUTES": 0,
+    "TRAINING_WINDOW_IN_BUCKET_SIZE": 0,
+    "INTERVAL_WIDTH": 0.80
+}
