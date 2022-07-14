@@ -138,7 +138,46 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
                         logging.info(f"Address {potential_attacker_address} transacton count: {tx_count}")
                         continue
                     update_alerted_addresses(w3, potential_attacker_address)
-                    FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids))
+                    FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids, 'ALERT-COMBINER-1'))
+                    logging.info(f"Findings count {len(FINDINGS_CACHE)}")
+
+        # alert combiner 2 alert
+        attack_simulation = df_forta_alerts[df_forta_alerts["alertId"] == "AK-ATTACK-SIMULATION-0"]
+        addresses = set()
+        for index, row in attack_simulation.iterrows():
+            addresses = addresses.union(set(row['addresses']))
+
+        # analyze each address' alerts
+        for potential_attacker_address in addresses:
+            logging.debug(potential_attacker_address)
+            # if address is a contract or unlikely address, skip
+            if(is_contract(w3, potential_attacker_address) or not is_address(w3, potential_attacker_address)):
+                continue
+
+            # map each alert to 4 stages
+            stages = set()
+            involved_addresses = set()
+            if(len(df_forta_alerts) > 0):
+                address_alerts = df_forta_alerts[df_forta_alerts["addresses"].apply(lambda x: potential_attacker_address in x if x is not None else False)]
+                involved_alert_ids = address_alerts["alertId"].unique()
+                for alert_id in involved_alert_ids:
+                    if alert_id in ALERT_ID_STAGE_MAPPING.keys():
+                        stage = ALERT_ID_STAGE_MAPPING[alert_id]
+                        stages.add(stage)
+                        # get addresses from address field to add to involved_addresses
+                        address_alerts[address_alerts["alertId"] == alert_id]["addresses"].apply(lambda x: involved_addresses.update(set(x)))
+                        logging.info(f"Found alert {alert_id} in stage {stage} for address {potential_attacker_address}")
+
+                logging.info(f"Address {potential_attacker_address} stages: {stages}")
+
+                # if funding stage is also observed, update the address alerted list and add a finding
+                if 'Funding' in stages and Web3.toChecksumAddress(potential_attacker_address) not in ALERTED_ADDRESSES:
+                    tx_count = w3.eth.get_transaction_count(Web3.toChecksumAddress(potential_attacker_address))
+                    if tx_count > TX_COUNT_FILTER_THRESHOLD:
+                        logging.info(f"Address {potential_attacker_address} transacton count: {tx_count}")
+                        continue
+                    update_alerted_addresses(w3, potential_attacker_address)
+                    FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids, 'ALERT-COMBINER-2'))
                     logging.info(f"Findings count {len(FINDINGS_CACHE)}")
 
         MUTEX = False
