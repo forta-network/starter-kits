@@ -6,7 +6,7 @@ from datetime import datetime
 class AlertCombinerFinding:
 
     @staticmethod
-    def alert_combiner(attacker_address: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set) -> Finding:
+    def alert_combiner(attacker_address: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set, alert_id: str) -> Finding:
         attacker_address = {"attacker_address": attacker_address}
         start_date = {"start_date": start_date.strftime("%Y-%m-%d")}
         end_date = {"end_date": end_date.strftime("%Y-%m-%d")}
@@ -17,7 +17,7 @@ class AlertCombinerFinding:
         return Finding({
             'name': 'Alert combiner identified an EOA with past alerts mapping to attack behavior (funding, preparation, exploitation, money laundering)',
             'description': f'{attacker_address} likely involved in an attack',
-            'alert_id': 'ALERT-COMBINER-1',
+            'alert_id': alert_id,
             'type': FindingType.Exploit,
             'severity': FindingSeverity.Critical,
             'metadata': meta_data
