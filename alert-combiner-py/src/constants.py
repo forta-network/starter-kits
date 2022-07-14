@@ -43,6 +43,7 @@ BOT_IDS = ["0xd9fe61cfe875470b80318a96cc0a94ba3adbe1eb4a14827fa018f14925e7da64",
            "0x3d1242fb8af0cdd548e7b5e073534f298f7ddaebbafe931a3506ab0be0e67e87",  # balance decrease for bridge: Multichain/Anyswap  (Marlin POND) - FTM
            "0x0b069cddde485c14666b35e13c0e0919e6bbb00ea7b0df711e45701b77841492",  # balance decrease for bridge: Multichain/Anyswap (USDT) - Ethereum Mainnet
            "0x19f468cbd6924a77fcb375a130e3bd1d3764366e42d4d7e6db0717a2229bfeba",  # balance decrease for bridge: Multichain/Anyswap (USDT) - Polygon
+           "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6",  # attack simulation
            "0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3"  # unverified contract creation
            ]
 
@@ -71,5 +72,6 @@ ALERT_ID_STAGE_MAPPING = {"ICE-PHISHING-PREV-APPROVED-TRANSFERED": "Exploitation
                           "forta-text-messages-possible-hack": "MoneyLaundering",  # text message agent - high severity only
                           "BALANCE-DECREASE-ASSETS-ALL-REMOVED": "Exploitation",  # balance decrease for bridges
                           "BALANCE-DECREASE-ASSETS-PORTION-REMOVED": "Exploitation",  # balance decrease for bridges
+                          "AK-ATTACK-SIMULATION-0": "Preparation",  # Attack Simulation
                           "UNVERIFIED-CODE-CONTRACT-CREATION": "Preparation"  # unverified contract creation
                           }
