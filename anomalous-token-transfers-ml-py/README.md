@@ -2,7 +2,7 @@
 
 ## Description
 
-This bot utilizes machine learning to detect anomalous transactions with erc20 token transfers.
+This bot utilizes the [Isolation Forest](https://scikit-learn.org/stable/modules/outlier_detection.html#isolation-forest) machine learning technique to detect anomalous transactions with erc20 token transfer. The Isolation Forest can efficiently detect outliers in high-dimensional datasets.
 
 ### Machine Learning Model Description
 
