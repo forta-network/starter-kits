@@ -19,10 +19,13 @@ An [Isolation Forest](https://scikit-learn.org/stable/modules/generated/sklearn.
 * '0x600373f67521324c8068cfd025f121a0843d57ec813411661b07edc5ff781842', # Inverse Finance Exploit 1
 * '0xe0b0c2672b760bef4e2851e91c69c8c0ad135c6987bbf1f43f5846d89e691428', # Revest Finance Exploit
 
-The model was trained on 14,469 transactions with the following 45 features:
+The model was trained on 14,469 Ethereum mainnet transactions executed on and after 12-01-21.
+The training dataset comprises 45 features for each transaction:
 ```
 MODEL_FEATURES = [
-    'APE_transfers', # top 20 erc20 token transfer counts and values from txs on and after 12-01-21.
+    # First 40 features are selected erc20 token transfer counts and values in the tx that's being evaluated..
+    # Top 20 tokens by number of token transfers on and after 12-01-21 were selected.
+    'APE_transfers',
     'APE_value',
     'CRV_transfers',
     'CRV_value',
@@ -62,13 +65,14 @@ MODEL_FEATURES = [
     'WBTC_value',
     'WETH_transfers',
     'WETH_value',
-    'account_age_in_minutes', # diff between tx from address's first and tx that's being evaluated
+    'account_age_in_minutes', # diff between tx from address's first and tx that's being evaluated.
     'max_single_token_transfers', # max token transfer count and value. Could be a token that's not in the top 20.
     'max_single_token_transfers_value',
-    'tokens_type_counts', # unique number of token types transferred
-    'transfer_counts' # total number of token transfer events
+    'tokens_type_counts', # unique number of token types transferred.
+    'transfer_counts' # total number of token transfer events in the tx that's being evaluated.
 ]
 ```
+The transactions .
 
 ## Supported Chains
 
