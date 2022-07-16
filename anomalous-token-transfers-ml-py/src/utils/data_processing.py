@@ -4,14 +4,14 @@ from timeit import default_timer as timer
 
 import requests
 
-from .constants import ETHPLORER_KEY, ETHPLORER_ENDPOINT, LUABASE_ENDPOINT
+from .constants import ETHPLORER_KEY, ETHPLORER_ENDPOINT, LUABASE_ENDPOINT, LUABASE_QUERY_UUID
 from .logger import logger
 
 @lru_cache(maxsize=1_000_000)
 def get_first_tx_timestamp(address) -> int:
     '''Gets address's first tx timestamp from Luabase in unix.'''
     payload = {
-        "uuid": "BACON",
+        "uuid": LUABASE_QUERY_UUID,
         "parameters": {
             "address": {
                 "key": "address",

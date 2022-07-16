@@ -10,7 +10,9 @@ This bot utilizes the [Isolation Forest](https://scikit-learn.org/stable/modules
 IsolationForest(random_state=42, n_estimators=100)
 ```
 
-An [Isolation Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html#sklearn.ensemble.IsolationForest) model was trained to detect anomalous tx with erc20 token transfers. The model returns -1 for outliers and 1 for inliers, and the int values are mapped to string labels `ANOMALY` and `NORMAL` for human readability. The model considered 0.387% of the training dataset to be anomalous, including 4 of the following known exploit transactions:
+An [Isolation Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html#sklearn.ensemble.IsolationForest) model was trained to detect anomalous tx with erc20 token transfers. The model outputs an anomaly score that then gets normalized returning a score between 0 and 1 (inclusive). Scores closer to 1 are considered anomalies. A threshold variable called `ANOMALY_THRESHOLD` is set to only consider alerting anomalies if the score exceeds the specified threshold. If the threshold is exceeded, the tx is considered anomalous. If not, the tx is considered normal. The metadata will output model predictions as string labels `ANOMALY` and `NORMAL` for human readability.
+
+The model considered 0.387% of the training dataset to be anomalous for `ANOMALY_THRESHOLD=0.5`, including 4 of the following known exploit transactions:
 
 * (DETECTED) '0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56', # SaddleFinance Exploit
 * (DETECTED) '0xcd314668aaa9bbfebaf1a0bd2b6553d01dd58899c508d4729fa7311dc5d33ad7', # Beanstalk Flashloan Exploit
@@ -72,7 +74,14 @@ MODEL_FEATURES = [
     'transfer_counts' # total number of token transfer events in the tx that's being evaluated.
 ]
 ```
-The transactions .
+
+### Retraining the Machine Learning Model
+
+TODO
+
+### Updating Anomaly Alerting Threshold
+
+TODO
 
 ## Supported Chains
 
@@ -123,10 +132,10 @@ $ npm run tx 0x404666af36d5f2e11f763391be0a5b40ae78dfd4304b4f22e3a53c369e779bf1
     "tokens_type_counts": 1,
     "max_single_token_transfers": 1,
     "max_single_token_transfers_value": 1700,
-    "feature_generation_response_time": 3.8916723749999997,
-    "model_prediction": "NORMAL",
-    "model_score": 0.189,
-    "model_pred_response_time": 0.019546082999999825
+    "feature_generation_response_time": 1.292835959,
+    "prediction": "NORMAL",
+    "anomaly_score": 0.311,
+    "model_pred_response_time": 0.024292124999999887
   },
   "addresses": []
 }
@@ -176,10 +185,10 @@ $ npm run tx 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56
     "tokens_type_counts": 7,
     "max_single_token_transfers": 11,
     "max_single_token_transfers_value": 149377797.167,
-    "feature_generation_response_time": 8.970852166,
-    "model_prediction": "ANOMALY",
-    "model_score": -0.165,
-    "model_pred_response_time": 0.020986167000000222
+    "feature_generation_response_time": 4.560809292,
+    "prediction": "ANOMALY",
+    "anomaly_score": 0.665,
+    "model_pred_response_time": 0.023057041999999583
   },
   "addresses": []
 }
