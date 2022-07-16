@@ -1,9 +1,12 @@
+ANOMALY_THRESHOLD = 0.5
+
 ERC20_TRANSFER_EVENT = '{"name":"Transfer","type":"event","anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}]}'
 
 ETHPLORER_KEY = "BACON"
 ETHPLORER_ENDPOINT = "https://api.ethplorer.io"
 
 LUABASE_ENDPOINT = "https://api.luabase.com/run"
+LUABASE_QUERY_UUID = "BACON"
 
 MODEL_FEATURES = [
     'APE_transfers',

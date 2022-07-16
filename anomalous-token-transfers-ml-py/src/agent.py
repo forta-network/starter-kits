@@ -1,10 +1,10 @@
 import pickle
 from timeit import default_timer as timer
 
-from .constants import ERC20_TRANSFER_EVENT, MODEL_FEATURES
-from .data_processing import get_features
-from .findings import AnomalousTransaction, NormalTransaction, InvalidModelFeatures
-from .logger import logger
+from .utils.constants import ANOMALY_THRESHOLD, ERC20_TRANSFER_EVENT, MODEL_FEATURES
+from .utils.data_processing import get_features
+from .utils.findings import AnomalousTransaction, NormalTransaction, InvalidModelFeatures
+from .utils.logger import logger
 
 
 ML_MODEL = None
@@ -23,10 +23,14 @@ def initialize():
 def get_prediction(features) -> tuple:
     start = timer()
     model_input = [[features.get(key, 0) for key in MODEL_FEATURES]]
-    raw_score = ML_MODEL.decision_function(model_input)[0]
-    prediction = 'ANOMALY' if ML_MODEL.predict(model_input)[0] == -1 else 'NORMAL'
+    # score_samples output the opposite of the anomaly score defined in the original paper.
+    # https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf
+    raw_score = ML_MODEL.score_samples(model_input)[0]
+    # normalize to return score between 0 and 1 (inclusive)
+    normalized_score = abs(raw_score)
+    prediction = 'ANOMALY' if normalized_score >= ANOMALY_THRESHOLD else 'NORMAL'
     end = timer()
-    return raw_score, prediction, end - start
+    return normalized_score, prediction, end - start
 
 def handle_transaction(transaction_event):
     findings = []
@@ -40,9 +44,9 @@ def handle_transaction(transaction_event):
         metadata.update(features)
 
         if valid_features:
-            raw_score, prediction_label, pred_response_time = get_prediction(features)
-            metadata['model_prediction'] = prediction_label
-            metadata['model_score'] = round(raw_score, 3)
+            anomaly_score, prediction_label, pred_response_time = get_prediction(features)
+            metadata['prediction'] = prediction_label
+            metadata['anomaly_score'] = round(anomaly_score, 3)
             metadata['model_pred_response_time'] = pred_response_time
 
             if prediction_label == 'ANOMALY':
