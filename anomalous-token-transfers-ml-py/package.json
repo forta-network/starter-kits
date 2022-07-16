@@ -1,6 +1,6 @@
 {
   "name": "anomalous-tx-model",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "ML Anomaly Detection of Transactions with Token Transfers",
   "chainIds": [
     1
