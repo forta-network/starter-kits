@@ -75,13 +75,12 @@ MODEL_FEATURES = [
 ]
 ```
 
-### Retraining the Machine Learning Model
+### When to update the ML model?
 
-TODO
+The model was trained on a sample of transactions executed between December - July 2022. As time passes, the model performance can degrade due to shifts in real world data distribution. In this case, the model can start considering more transactions as anomalous if the more recent transactions no longer share similar patterns or characteristics as the transactions the model was trained on. For example, drastic changes in majority transactions' token transfer count and value can affect the model to start considering normal transactions as anomalous.
 
-### Updating Anomaly Alerting Threshold
+Once the model is deployed, it's important to frequently monitor the anomaly rate to detect any deviations from the anomaly rate seen during training. If it deviates, it's recommended to retrain the model with new transaction data to learn the new 'normal' and 'anomalous' patterns.
 
-TODO
 
 ## Supported Chains
 
