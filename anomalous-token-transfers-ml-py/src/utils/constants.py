@@ -8,6 +8,7 @@ ETHPLORER_ENDPOINT = "https://api.ethplorer.io"
 LUABASE_ENDPOINT = "https://api.luabase.com/run"
 LUABASE_QUERY_UUID = "BACON"
 
+MODEL_CREATED_TIMESTAMP = "1657669403" # Tuesday, July 12, 2022 11:43:23 PM
 MODEL_FEATURES = [
     'APE_transfers',
     'APE_value',
