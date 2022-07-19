@@ -134,7 +134,9 @@ $ npm run tx 0x404666af36d5f2e11f763391be0a5b40ae78dfd4304b4f22e3a53c369e779bf1
     "feature_generation_response_time": 1.292835959,
     "prediction": "NORMAL",
     "anomaly_score": 0.311,
-    "model_pred_response_time": 0.024292124999999887
+    "model_pred_response_time": 0.024292124999999887,
+    "model_version": "1657669403",
+    "anomaly_threshold": 0.5
   },
   "addresses": []
 }
@@ -187,7 +189,9 @@ $ npm run tx 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56
     "feature_generation_response_time": 4.560809292,
     "prediction": "ANOMALY",
     "anomaly_score": 0.665,
-    "model_pred_response_time": 0.023057041999999583
+    "model_pred_response_time": 0.023057041999999583,
+    "model_version": "1657669403",
+    "anomaly_threshold": 0.5
   },
   "addresses": []
 }
