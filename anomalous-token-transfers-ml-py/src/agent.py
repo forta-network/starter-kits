@@ -47,7 +47,7 @@ def handle_transaction(transaction_event):
             anomaly_score, prediction_label, pred_response_time = get_prediction(features)
             metadata['prediction'] = prediction_label
             metadata['anomaly_score'] = round(anomaly_score, 3)
-            metadata['model_pred_response_time'] = pred_response_time
+            metadata['model_pred_response_time_sec'] = pred_response_time
 
             if prediction_label == 'ANOMALY':
                 findings.append(AnomalousTransaction(metadata, from_address).emit_finding())
