@@ -1,13 +1,15 @@
 from forta_agent import Finding, FindingType, FindingSeverity
 
-from .constants import MODEL_CREATED_TIMESTAMP
+from .constants import MODEL_CREATED_TIMESTAMP, ANOMALY_THRESHOLD
 
 class TokenTransfersTxFinding:
     def __init__(self):
         self.model_version = MODEL_CREATED_TIMESTAMP
+        self.anomaly_threshold = ANOMALY_THRESHOLD
 
     def emit_finding(self):
         self.metadata['model_version'] = self.model_version
+        self.metadata['anomaly_threshold'] = self.anomaly_threshold
 
         return Finding({
             'name': self.name,
