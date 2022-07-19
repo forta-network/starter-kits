@@ -52,7 +52,7 @@ def initialize():
     global MUTEX
     MUTEX = False
 
-    config = json.load(open("src/agent-config.json"))
+    config = json.load(open("bot-config.json"))
     global ALERT_NAME
     ALERT_NAME = config["ALERT_NAME"]
     global BOT_ID
