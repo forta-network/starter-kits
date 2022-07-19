@@ -104,7 +104,7 @@ def get_features(from_address, tx_timestamp, transfer_events) -> tuple:
     valid = valid_features(features)
 
     end = timer()
-    features['feature_generation_response_time'] = end - start
+    features['feature_generation_response_time_sec'] = end - start
 
     return valid, features
 
