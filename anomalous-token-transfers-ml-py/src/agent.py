@@ -1,10 +1,10 @@
 import pickle
 from timeit import default_timer as timer
 
-from .utils.constants import ANOMALY_THRESHOLD, ERC20_TRANSFER_EVENT, MODEL_FEATURES
-from .utils.data_processing import get_features
-from .utils.findings import AnomalousTransaction, NormalTransaction, InvalidModelFeatures
-from .utils.logger import logger
+from src.utils.constants import ANOMALY_THRESHOLD, ERC20_TRANSFER_EVENT, MODEL_FEATURES
+from src.utils.data_processing import get_features
+from src.utils.findings import AnomalousTransaction, NormalTransaction, InvalidModelFeatures
+from src.utils.logger import logger
 
 
 ML_MODEL = None

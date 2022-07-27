@@ -2,11 +2,8 @@ ANOMALY_THRESHOLD = 0.5
 
 ERC20_TRANSFER_EVENT = '{"name":"Transfer","type":"event","anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}]}'
 
-ETHPLORER_KEY = "BACON"
 ETHPLORER_ENDPOINT = "https://api.ethplorer.io"
-
 LUABASE_ENDPOINT = "https://api.luabase.com/run"
-LUABASE_QUERY_UUID = "BACON"
 
 MODEL_CREATED_TIMESTAMP = "1657669403" # Tuesday, July 12, 2022 11:43:23 PM
 MODEL_FEATURES = [
@@ -50,8 +47,8 @@ MODEL_FEATURES = [
     'WBTC_value',
     'WETH_transfers',
     'WETH_value',
-    'account_age_in_minutes',
-    'max_single_token_transfers',
+    'account_active_period_in_minutes',
+    'max_single_token_transfers_count',
     'max_single_token_transfers_value',
     'tokens_type_counts',
     'transfer_counts']

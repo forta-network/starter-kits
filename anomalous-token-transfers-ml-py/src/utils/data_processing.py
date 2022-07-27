@@ -38,7 +38,7 @@ def get_first_tx_timestamp(address) -> int:
 
     return first_tx_timestamp
 
-def get_account_age(address, recent_tx_timestamp) -> float:
+def get_account_active_period(address, recent_tx_timestamp) -> float:
     '''Return difference between first and recent transaction timestamp in minutes.'''
     first_tx_timestamp = get_first_tx_timestamp(address)
     logger.info(f"get_first_tx_timestamp: {get_first_tx_timestamp.cache_info()}")
@@ -70,12 +70,12 @@ def get_features(from_address, tx_timestamp, transfer_events) -> tuple:
     features = {}
 
     features['transfer_counts'] = len(transfer_events)
-    features['account_age_in_minutes'] = get_account_age(from_address, tx_timestamp)
+    features['account_active_period_in_minutes'] = get_account_active_period(from_address, tx_timestamp)
 
     token_types = set()
     max_token_transfers_name = ''
-    max_token_transfers_count = 0
-    max_token_transfers_value = 0
+    max_single_token_transfers_count = 0
+    max_single_token_transfers_value = 0
 
     for transfer in transfer_events:
         token_address = transfer['address']
@@ -90,17 +90,17 @@ def get_features(from_address, tx_timestamp, transfer_events) -> tuple:
             features[token_value] = features.get(token_value, 0) + normalized_value
             token_types.add(f"{token_name}-{token_symbol}")
 
-            if features[token_transfers] > max_token_transfers_count:
+            if features[token_transfers] > max_single_token_transfers_count:
                 max_token_transfers_name = token_name
-                max_token_transfers_count = features[token_transfers]
-                max_token_transfers_value = features[token_value]
+                max_single_token_transfers_count = features[token_transfers]
+                max_single_token_transfers_value = features[token_value]
 
     features['token_types'] = sorted(list(token_types))
     features['max_single_token_transfers_name'] = max_token_transfers_name
 
     features['tokens_type_counts'] = len(token_types)
-    features['max_single_token_transfers'] = max_token_transfers_count
-    features['max_single_token_transfers_value'] = max_token_transfers_value
+    features['max_single_token_transfers_count'] = max_single_token_transfers_count
+    features['max_single_token_transfers_value'] = max_single_token_transfers_value
 
     valid = valid_features(features)
 
@@ -111,7 +111,7 @@ def get_features(from_address, tx_timestamp, transfer_events) -> tuple:
 
 def valid_features(features) -> bool:
     '''Evaluate model input values'''
-    if features['account_age_in_minutes'] < 0:
+    if features['account_active_period_in_minutes'] < 0:
         return False
 
     return True
