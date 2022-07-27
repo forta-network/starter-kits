@@ -25,7 +25,6 @@ def get_first_tx_timestamp(address) -> int:
 
     if "result" in data and len(data["result"]) == 1:
         first_tx_timestamp = int(data["result"][0]["timeStamp"])
-        # first_tx_timestamp = datetime.fromisoformat(first_tx_timestamp).replace(tzinfo=timezone.utc).timestamp()
 
     return first_tx_timestamp
 
