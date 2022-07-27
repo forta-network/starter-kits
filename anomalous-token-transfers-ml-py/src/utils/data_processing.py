@@ -1,40 +1,31 @@
 from datetime import datetime, timezone
 from functools import lru_cache
 from timeit import default_timer as timer
+from random import randint
 
 import requests
 
-from src.utils.constants import ETHPLORER_ENDPOINT, LUABASE_ENDPOINT
-from src.utils.keys import ETHPLORER_KEY, LUABASE_QUERY_UUID
+from src.utils.constants import ETHPLORER_ENDPOINT, ETHERSCAN_ENDPOINT
+from src.utils.keys import ETHPLORER_KEY, ETHERSCAN_KEYS
 from src.utils.logger import logger
 
 @lru_cache(maxsize=1_000_000)
 def get_first_tx_timestamp(address) -> int:
-    '''Gets address's first tx timestamp from Luabase in unix.'''
-    payload = {
-        "uuid": LUABASE_QUERY_UUID,
-        "parameters": {
-            "address": {
-                "key": "address",
-                "type": "value",
-                "value": f"{address}"
-            }
-        }
-    }
-
+    '''Gets address's first tx timestamp from Etherscan in unix.'''
     first_tx_timestamp = -1
     data = {}
+    api_key = ETHERSCAN_KEYS[randint(0, 1)]
+    addr_first_tx_endpoint = f"{ETHERSCAN_ENDPOINT}&address={address}&apikey={api_key}"
     try:
-        r = requests.request("POST", LUABASE_ENDPOINT, json=payload)
+        r = requests.get(addr_first_tx_endpoint)
         r.raise_for_status()
         data = r.json()
     except requests.exceptions.RequestException or Exception as err:
         logger.warn(f"Request failed for addr: {address}, err: {err}")
 
-    if "data" in data and len(data["data"]) > 0:
-        first_tx_timestamp = data["data"][0]["first_tx_timestamp"]
-        first_tx_timestamp = datetime.fromisoformat(first_tx_timestamp).replace(tzinfo=timezone.utc).timestamp()
-
+    if "result" in data and len(data["result"]) == 1:
+        first_tx_timestamp = int(data["result"][0]["timeStamp"])
+        # first_tx_timestamp = datetime.fromisoformat(first_tx_timestamp).replace(tzinfo=timezone.utc).timestamp()
 
     return first_tx_timestamp
 
@@ -45,6 +36,7 @@ def get_account_active_period(address, recent_tx_timestamp) -> float:
 
     if first_tx_timestamp == -1:
         return -1
+
     return (recent_tx_timestamp - first_tx_timestamp) / 60
 
 @lru_cache(maxsize=1_000_000)

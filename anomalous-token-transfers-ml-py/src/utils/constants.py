@@ -3,7 +3,7 @@ ANOMALY_THRESHOLD = 0.5
 ERC20_TRANSFER_EVENT = '{"name":"Transfer","type":"event","anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}]}'
 
 ETHPLORER_ENDPOINT = "https://api.ethplorer.io"
-LUABASE_ENDPOINT = "https://api.luabase.com/run"
+ETHERSCAN_ENDPOINT = "https://api.etherscan.io/api?module=account&action=txlist&page=1&offset=1&sort=asc"
 
 MODEL_CREATED_TIMESTAMP = "1657669403" # Tuesday, July 12, 2022 11:43:23 PM
 MODEL_FEATURES = [
