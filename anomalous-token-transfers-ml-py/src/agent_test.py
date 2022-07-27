@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 from forta_agent import FindingSeverity, FindingType, create_transaction_event
 import agent
-from utils import data_processing
+from src.utils import data_processing
 
 mock_tx_event = create_transaction_event({'transaction': {'from': '0xbeef'}, 'block': {'timestamp': 1655403557}})
 mock_tx_event.filter_log = Mock()
@@ -27,8 +27,8 @@ class TestAnomalousTokenTransfers:
         assert len(findings) == 0
         mock_tx_event.filter_log.assert_called_once_with(agent.ERC20_TRANSFER_EVENT)
 
-    @patch('utils.data_processing.get_first_tx_timestamp')
-    @patch('utils.data_processing.get_token_info')
+    @patch('src.utils.data_processing.get_first_tx_timestamp')
+    @patch('src.utils.data_processing.get_token_info')
     def test_returns_finding_for_normal_transfers(self, mock_get_token_info, mock_get_first_tx_timestamp):
         agent.initialize()
         mock_tx_event.filter_log.reset_mock()
@@ -53,7 +53,7 @@ class TestAnomalousTokenTransfers:
         assert finding.type == FindingType.Info
 
         assert finding.metadata['from'] == from_address
-        assert finding.metadata['account_age_in_minutes'] == 0
+        assert finding.metadata['account_active_period_in_minutes'] == 0
         assert finding.metadata['USDT_transfers'] == 1
         assert finding.metadata['USDT_value'] == 1700
         assert finding.metadata['token_types'] == ["Tether USD-USDT"]
@@ -61,8 +61,8 @@ class TestAnomalousTokenTransfers:
         assert finding.metadata['anomaly_score'] == 0.311
         assert finding.metadata['prediction'] == 'NORMAL'
 
-    @patch('utils.data_processing.get_first_tx_timestamp')
-    @patch('utils.data_processing.get_token_info')
+    @patch('src.utils.data_processing.get_first_tx_timestamp')
+    @patch('src.utils.data_processing.get_token_info')
     def test_returns_findings_if_invalid_model_features(self, mock_get_token_info, mock_get_first_tx_timestamp):
         mock_tx_event.filter_log.reset_mock()
         mock_tx_event.filter_log.return_value = [USDT_TRANSFER]
@@ -81,8 +81,8 @@ class TestAnomalousTokenTransfers:
         assert finding.severity == FindingSeverity.Low
         assert finding.type == FindingType.Info
 
-    @patch('utils.data_processing.get_first_tx_timestamp')
-    @patch('utils.data_processing.get_token_info')
+    @patch('src.utils.data_processing.get_first_tx_timestamp')
+    @patch('src.utils.data_processing.get_token_info')
     def test_returns_finding_for_anomalous_transfers(self, mock_get_token_info, mock_get_first_tx_timestamp):
         mock_tx_event.filter_log.reset_mock()
         mock_tx_event.filter_log.return_value = [USDT_TRANSFER] * 1_000 + [USDC_TRANSFER] * 1_000

@@ -67,8 +67,8 @@ MODEL_FEATURES = [
     'WBTC_value',
     'WETH_transfers',
     'WETH_value',
-    'account_age_in_minutes', # diff between tx from address's first and tx that's being evaluated.
-    'max_single_token_transfers', # max token transfer count and value. Could be a token that's not in the top 20.
+    'account_active_period_in_minutes', # diff between tx from address's first and tx that's being evaluated.
+    'max_single_token_transfers_count', # max token transfer count and value. Could be a token that's not in the top 20.
     'max_single_token_transfers_value',
     'tokens_type_counts', # unique number of token types transferred.
     'transfer_counts' # total number of token transfer events in the tx that's being evaluated.
@@ -121,7 +121,7 @@ $ npm run tx 0x404666af36d5f2e11f763391be0a5b40ae78dfd4304b4f22e3a53c369e779bf1
   "metadata": {
     "from": "0x1b4006139cfd127822ff9b26a0f89532977b3a42",
     "transfer_counts": 1,
-    "account_age_in_minutes": 0,
+    "account_active_period_in_minutes": 0,
     "USDT_transfers": 1,
     "USDT_value": 1700,
     "token_types": [
@@ -129,7 +129,7 @@ $ npm run tx 0x404666af36d5f2e11f763391be0a5b40ae78dfd4304b4f22e3a53c369e779bf1
     ],
     "max_single_token_transfers_name": "Tether USD",
     "tokens_type_counts": 1,
-    "max_single_token_transfers": 1,
+    "max_single_token_transfers_count": 1,
     "max_single_token_transfers_value": 1700,
     "feature_generation_response_time_sec": 1.292835959,
     "prediction": "NORMAL",
@@ -158,7 +158,7 @@ $ npm run tx 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56
   "metadata": {
     "from": "0x63341ba917de90498f3903b199df5699b4a55ac0",
     "transfer_counts": 37,
-    "account_age_in_minutes": 1.8333333333333333,
+    "account_active_period_in_minutes": 1.8333333333333333,
     "USDC_transfers": 8,
     "USDC_value": 80585621.27700001,
     "dUSDC_transfers": 2,
@@ -184,7 +184,7 @@ $ npm run tx 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56
     ],
     "max_single_token_transfers_name": "sUSD",
     "tokens_type_counts": 7,
-    "max_single_token_transfers": 11,
+    "max_single_token_transfers_count": 11,
     "max_single_token_transfers_value": 149377797.167,
     "feature_generation_response_time_sec": 4.560809292,
     "prediction": "ANOMALY",

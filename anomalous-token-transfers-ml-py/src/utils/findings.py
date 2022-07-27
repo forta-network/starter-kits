@@ -1,6 +1,6 @@
 from forta_agent import Finding, FindingType, FindingSeverity
 
-from .constants import MODEL_CREATED_TIMESTAMP, ANOMALY_THRESHOLD
+from src.utils.constants import MODEL_CREATED_TIMESTAMP, ANOMALY_THRESHOLD
 
 class TokenTransfersTxFinding:
     def __init__(self):
