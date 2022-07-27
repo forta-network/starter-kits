@@ -121,7 +121,7 @@ $ npm run tx 0x404666af36d5f2e11f763391be0a5b40ae78dfd4304b4f22e3a53c369e779bf1
   "metadata": {
     "from": "0x1b4006139cfd127822ff9b26a0f89532977b3a42",
     "transfer_counts": 1,
-    "account_active_period_in_minutes": 0,
+    "account_active_period_in_minutes": 1019,
     "USDT_transfers": 1,
     "USDT_value": 1700,
     "token_types": [
@@ -131,10 +131,10 @@ $ npm run tx 0x404666af36d5f2e11f763391be0a5b40ae78dfd4304b4f22e3a53c369e779bf1
     "tokens_type_counts": 1,
     "max_single_token_transfers_count": 1,
     "max_single_token_transfers_value": 1700,
-    "feature_generation_response_time_sec": 1.292835959,
+    "feature_generation_response_time_sec": 1.500233542,
     "prediction": "NORMAL",
-    "anomaly_score": 0.311,
-    "model_pred_response_time_sec": 0.024292124999999887,
+    "anomaly_score": 0.312,
+    "model_pred_response_time_sec": 0.025190459000000054,
     "model_version": "1657669403",
     "anomaly_threshold": 0.5
   },
@@ -186,10 +186,10 @@ $ npm run tx 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56
     "tokens_type_counts": 7,
     "max_single_token_transfers_count": 11,
     "max_single_token_transfers_value": 149377797.167,
-    "feature_generation_response_time_sec": 4.560809292,
+    "feature_generation_response_time_sec": 4.036314624999999,
     "prediction": "ANOMALY",
     "anomaly_score": 0.665,
-    "model_pred_response_time_sec": 0.023057041999999583,
+    "model_pred_response_time_sec": 0.02241645800000036,
     "model_version": "1657669403",
     "anomaly_threshold": 0.5
   },
