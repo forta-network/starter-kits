@@ -81,6 +81,9 @@ The model was trained on a sample of transactions executed between December - Ju
 
 Once the model is deployed, it's important to frequently monitor the anomaly rate to detect any deviations from the anomaly rate seen during training. If it deviates, it's recommended to retrain the model with new transaction data to learn the new 'normal' and 'anomalous' patterns.
 
+### Model Explanations
+
+The model uses [Local Interpretable Model-Agnostic Explanations (LIME)](https://www.oreilly.com/content/introduction-to-local-interpretable-model-agnostic-explanations-lime/) to explain the predictions. LIME produces a list of features and their weights to indicate the feature's influence on the prediction. Negative weights influence output 'NORMAL' whereas positive weights influence output 'ANOMALY'.
 
 ## Supported Chains
 
@@ -92,12 +95,12 @@ Once the model is deployed, it's important to frequently monitor the anomaly rat
   - Fired when a transaction is predicted as normal/inlier.
   - Severity is always set to "info"
   - Type is always set to "info"
-  - Metadata will include features and model prediction values. It will also include feature generation and prediction response times.
+  - Metadata will include features, model prediction values, and explanations. It will also include feature generation and prediction response times.
 - ANOMALOUS-TOKEN-TRANSFERS-TX
   - Fired when a transaction is predicted as anomalous/outlier.
   - Severity is always set to "low" (mention any conditions where it could be something else)
   - Type is always set to "info" (mention any conditions where it could be something else)
-  - Metadata will include features and model prediction values. It will also include feature generation and prediction response times.
+  - Metadata will include features, model prediction values, and explanations. It will also include feature generation and prediction response times.
 - INVALID-TOKEN-TRANSFERS-TX
   - Fired when bot fails to generate valid model features. Model will not make predictions on invalid features.
   - Severity is always set to "low"
@@ -131,10 +134,22 @@ $ npm run tx 0x404666af36d5f2e11f763391be0a5b40ae78dfd4304b4f22e3a53c369e779bf1
     "tokens_type_counts": 1,
     "max_single_token_transfers_count": 1,
     "max_single_token_transfers_value": 1700,
-    "feature_generation_response_time_sec": 1.500233542,
+    "feature_generation_response_time_sec": 0.871986666,
     "prediction": "NORMAL",
     "anomaly_score": 0.312,
-    "model_pred_response_time_sec": 0.025190459000000054,
+    "model_pred_response_time_sec": 6.372663291,
+    "model_explanations": [
+      "('HEX_value <= 0.60', -0.061278045359871774)",
+      "('SAITAMA_value <= 0.01', -0.05665229797986415)",
+      "('SHIB_value <= 10.00', -0.05563934805996183)",
+      "('MATIC_value <= 0.14', -0.0554794862214986)",
+      "('APE_transfers <= 0.50', -0.05388146379630828)",
+      "('SHIB_transfers <= 0.50', -0.05097646505087623)",
+      "('GALA_transfers <= 0.50', -0.04918743015546346)",
+      "('STRONG_transfers <= 0.50', -0.04658443858480614)",
+      "('DAI_value <= 0.00', -0.04651456240852903)",
+      "('STRONG_value <= 0.07', -0.04450359118074049)"
+    ],
     "model_version": "1657669403",
     "anomaly_threshold": 0.5
   },
@@ -186,10 +201,22 @@ $ npm run tx 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56
     "tokens_type_counts": 7,
     "max_single_token_transfers_count": 11,
     "max_single_token_transfers_value": 149377797.167,
-    "feature_generation_response_time_sec": 4.036314624999999,
+    "feature_generation_response_time_sec": 5.533689084,
     "prediction": "ANOMALY",
     "anomaly_score": 0.665,
-    "model_pred_response_time_sec": 0.02241645800000036,
+    "model_pred_response_time_sec": 6.2372900829999995,
+    "model_explanations": [
+      "('USDC_value > 62509772.00', 0.12213264393414446)",
+      "('HEX_value <= 0.60', -0.0637445896438693)",
+      "('SAITAMA_value <= 0.01', -0.05967154871304491)",
+      "('MATIC_value <= 0.14', -0.056293374770684246)",
+      "('SHIB_value <= 10.00', -0.05383222089390225)",
+      "('max_single_token_transfers_value > 149137672.00', 0.05229129708653286)",
+      "('APE_transfers <= 0.50', -0.051374238198322514)",
+      "('SHIB_transfers <= 0.50', -0.04978936562711818)",
+      "('STRONG_value <= 0.07', -0.04593217308486382)",
+      "('WBTC_value <= 0.00', -0.04366651743234217)"
+    ],
     "model_version": "1657669403",
     "anomaly_threshold": 0.5
   },
