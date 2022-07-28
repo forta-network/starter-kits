@@ -20,6 +20,7 @@ ENV NODE_ENV=production
 LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
 COPY ./isolation_forest.pkl ./
+COPY ./model_explainer.pkl ./
 COPY ./src ./src
 COPY package*.json ./
 RUN npm ci --production
