@@ -2,3 +2,4 @@ forta_agent>=0.1.1
 setuptools>=61.3.1
 rlp>=2.0.1
 hexbytes>=0.2.2
+pandas>=1.4.2
