@@ -93,7 +93,7 @@ Check out your bot's `Alert Severities` breakdown on [the bot details page](http
 
 With the [Forta API](https://docs.forta.network/en/latest/forta-api-reference/), you can calculate a more precise anomaly rate and any other custom model statistics for a specific timeframe. For example, this bot has an anomaly rate of 0.387%, and if we want to track slight rate increases or even a 100% rate increase (= 0.734%), this option will clearly tell you the deviation than the bot details page.
 
-This notebook: [Daily Model Stats](TODO), uses the Forta API to query previous day's alerts, look into model's anomaly rate, and find any model issues.
+This notebook: [Daily Model Stats](https://github.com/forta-network/starter-kits/tree/main/anomalous-token-transfers-ml-py/daily_model_stats.ipynb), uses the Forta API to query previous day's alerts, look into model's anomaly rate, and find any model issues.
 
 ### Model Explanations
 
