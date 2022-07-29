@@ -81,6 +81,20 @@ The model was trained on a sample of transactions executed between December - Ju
 
 Once the model is deployed, it's important to frequently monitor the anomaly rate to detect any deviations from the anomaly rate seen during training. If it deviates, it's recommended to retrain the model with new transaction data to learn the new 'normal' and 'anomalous' patterns.
 
+### How to monitor anomaly rate?
+
+There are two options to monitoring anomaly rate:
+
+#### Option 1: Monitor `Alert Severities` breakdown on bot details page
+
+Check out your bot's `Alert Severities` breakdown on [the bot details page](https://explorer.forta.network/bot/0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8). For this particular bot, severity level `CRITICAL` is assigned to only anomalous transactions, and `INFO` assigned to normal transactions. We can tell roughly from the pie chart that the `CRITICAL` findings rate (= anomaly rate) is <1%.
+
+#### Option 2: Query the Forta API
+
+With the [Forta API](https://docs.forta.network/en/latest/forta-api-reference/), you can calculate a more precise anomaly rate and any other custom model statistics for a specific timeframe. For example, this bot has an anomaly rate of 0.387%, and if we want to track slight rate increases or even a 100% rate increase (= 0.734%), this option will clearly tell you the deviation than the bot details page.
+
+This notebook: [Daily Model Stats](TODO), uses the Forta API to query previous day's alerts, look into model's anomaly rate, and find any model issues.
+
 ### Model Explanations
 
 The model uses [Local Interpretable Model-Agnostic Explanations (LIME)](https://www.oreilly.com/content/introduction-to-local-interpretable-model-agnostic-explanations-lime/) to explain the predictions. LIME produces a list of features and their weights to indicate the feature's influence on the prediction. Negative weights influence output 'NORMAL' whereas positive weights influence output 'ANOMALY'.
