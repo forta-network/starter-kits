@@ -85,7 +85,8 @@ The following bots are considered by the combiner and mapped to the stages in th
 | 0x0b069cddde485c14666b35e13c0e0919e6bbb00ea7b0df711e45701b77841492 | balance decrease for bridge: Multichain/Anyswap (USDT) - Ethereum Mainnet | BALANCE-DECREASE-ASSETS-PORTION-REMOVED | Exploitation |
 | 0x19f468cbd6924a77fcb375a130e3bd1d3764366e42d4d7e6db0717a2229bfeba | balance decrease for bridge: Multichain/Anyswap (USDT) - Polygon |
 | 0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6 | attack simulation - Ethereum Mainnet | AK-ATTACK-SIMULATION-0 | Preparation |
-
+| 0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8 | Social Engineering Contract Creation Bot | SOCIAL-ENG-CONTRACT-CREATION | Preparation |
+| 0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8 | Anomalous Token Transfers Detection Machine Learning Bot | ANOMALOUS-TOKEN-TRANSFERS-TX | Exploitation |
 
 
 As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
