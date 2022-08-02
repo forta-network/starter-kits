@@ -92,22 +92,24 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
         # get all alerts for date range
         df_forta_alerts = forta_explorer.empty_alerts()
         for bot_id in BOT_IDS:
-            bot_alerts = forta_explorer.alerts_by_bot(bot_id, start_date, end_date)
-            df_forta_alerts = pd.concat([df_forta_alerts, bot_alerts])
-            logging.info(f"Fetched {len(bot_alerts)} for bot {bot_id}")
+            for alert_id in ALERT_ID_STAGE_MAPPING.keys():
+                bot_alerts = forta_explorer.alerts_by_bot(bot_id, alert_id, start_date, end_date)
+                df_forta_alerts = pd.concat([df_forta_alerts, bot_alerts])
+                logging.info(f"Fetched {len(bot_alerts)} for bot {bot_id}, alert_id {alert_id}")
 
         # get all addresses that were part of the alerts
         # to optimize, we only check money laundering addresses as this is required to fullfill all 4 stage requirements
         money_laundering_tc = df_forta_alerts[df_forta_alerts["alertId"] == "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH"]
         txt_msg_high = df_forta_alerts[(df_forta_alerts["alertId"] == "forta-text-messages-possible-hack") & (df_forta_alerts["severity"] == "HIGH")]
 
+        
         addresses = set()
         for index, row in txt_msg_high.iterrows():
             addresses = addresses.union(set(row['addresses']))
-
+            
         for index, row in money_laundering_tc.iterrows():
             addresses.add(Web3.toChecksumAddress(row["description"][0:42]))  # the money laundering TC bot transaction may not be the transaction that contains the TC transfer and therefore a set of addresses unrelated, so we parse the address from the description
-
+            
         # analyze each address' alerts
         for potential_attacker_address in addresses:
             logging.debug(potential_attacker_address)
@@ -117,6 +119,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
 
             # map each alert to 4 stages
             stages = set()
+            hashes = set()
             involved_addresses = set()
             if(len(df_forta_alerts) > 0):
                 address_alerts = df_forta_alerts[df_forta_alerts["addresses"].apply(lambda x: potential_attacker_address in x if x is not None else False)]
@@ -127,6 +130,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
                         stages.add(stage)
                         # get addresses from address field to add to involved_addresses
                         address_alerts[address_alerts["alertId"] == alert_id]["addresses"].apply(lambda x: involved_addresses.update(set(x)))
+                        address_alerts[address_alerts["alertId"] == alert_id]["hash"].apply(lambda x: hashes.add(x))
                         logging.info(f"Found alert {alert_id} in stage {stage} for address {potential_attacker_address}")
 
                 logging.info(f"Address {potential_attacker_address} stages: {stages}")
@@ -138,7 +142,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
                         logging.info(f"Address {potential_attacker_address} transacton count: {tx_count}")
                         continue
                     update_alerted_addresses(w3, potential_attacker_address)
-                    FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids, 'ALERT-COMBINER-1'))
+                    FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids, 'ALERT-COMBINER-1', hashes))
                     logging.info(f"Findings count {len(FINDINGS_CACHE)}")
 
         # alert combiner 2 alert
@@ -146,7 +150,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
         addresses = set()
         for index, row in attack_simulation.iterrows():
             addresses = addresses.union(set(row['addresses']))
-
+            
         # analyze each address' alerts
         for potential_attacker_address in addresses:
             logging.debug(potential_attacker_address)
@@ -157,6 +161,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
             # map each alert to 4 stages
             stages = set()
             involved_addresses = set()
+            hashes = set()
             if(len(df_forta_alerts) > 0):
                 address_alerts = df_forta_alerts[df_forta_alerts["addresses"].apply(lambda x: potential_attacker_address in x if x is not None else False)]
                 involved_alert_ids = address_alerts["alertId"].unique()
@@ -166,6 +171,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
                         stages.add(stage)
                         # get addresses from address field to add to involved_addresses
                         address_alerts[address_alerts["alertId"] == alert_id]["addresses"].apply(lambda x: involved_addresses.update(set(x)))
+                        address_alerts[address_alerts["alertId"] == alert_id]["hash"].apply(lambda x: hashes.add(x))
                         logging.info(f"Found alert {alert_id} in stage {stage} for address {potential_attacker_address}")
 
                 logging.info(f"Address {potential_attacker_address} stages: {stages}")
@@ -177,7 +183,7 @@ def detect_attack(w3, forta_explorer, block_event: forta_agent.block_event.Block
                         logging.info(f"Address {potential_attacker_address} transacton count: {tx_count}")
                         continue
                     update_alerted_addresses(w3, potential_attacker_address)
-                    FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids, 'ALERT-COMBINER-2'))
+                    FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids, 'ALERT-COMBINER-2', hashes))
                     logging.info(f"Findings count {len(FINDINGS_CACHE)}")
 
         MUTEX = False
@@ -208,8 +214,8 @@ def provide_handle_block(w3, forta_explorer):
             thread.start()
 
         # uncomment for local testing of tx/block ranges (ok for npm run start); otherwise the process will exit
-        # while (thread.is_alive()):
-        #     pass
+        #while (thread.is_alive()):
+        #    pass
         findings = FINDINGS_CACHE
         FINDINGS_CACHE = []
         return findings

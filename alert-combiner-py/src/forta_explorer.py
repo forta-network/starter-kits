@@ -13,7 +13,7 @@ class FortaExplorer:
         df_forta = pd.DataFrame(columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
         return df_forta
 
-    def alerts_by_bot(self, bot_id: str, start_date: datetime, end_date: datetime) -> pd.DataFrame:
+    def alerts_by_bot(self, bot_id: str, alert_id: str, start_date: datetime, end_date: datetime) -> pd.DataFrame:
         url = "https://api.forta.network/graphql"
         chunk_size = 6000
 
@@ -28,6 +28,7 @@ class FortaExplorer:
                             CHUNKSIZE
                             AFTER_CLAUSE
                             BLOCK_RANGE_CLAUSE
+                            ALERT_ID_CLAUSE
                             BOT_CLAUSE
                         }
                     ) {
@@ -79,6 +80,7 @@ class FortaExplorer:
             query = query.replace("AFTER_CLAUSE", after_clause)
             query = query.replace("BLOCK_RANGE_CLAUSE", """blockDateRange: {{ startDate: "{0}", endDate: "{1}" }}""".format(datetime.strftime(start_date, "%Y-%m-%d"), datetime.strftime(end_date, "%Y-%m-%d")))
             query = query.replace("BOT_CLAUSE", f"""bots: ["{bot_id}"]""")
+            query = query.replace("ALERT_ID_CLAUSE", f"""alertId: "{alert_id}" """)
 
             retries = 1
             wait = 30
