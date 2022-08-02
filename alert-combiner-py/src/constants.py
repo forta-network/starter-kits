@@ -44,7 +44,9 @@ BOT_IDS = ["0xd9fe61cfe875470b80318a96cc0a94ba3adbe1eb4a14827fa018f14925e7da64",
            "0x0b069cddde485c14666b35e13c0e0919e6bbb00ea7b0df711e45701b77841492",  # balance decrease for bridge: Multichain/Anyswap (USDT) - Ethereum Mainnet
            "0x19f468cbd6924a77fcb375a130e3bd1d3764366e42d4d7e6db0717a2229bfeba",  # balance decrease for bridge: Multichain/Anyswap (USDT) - Polygon
            "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6",  # attack simulation
-           "0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3"  # unverified contract creation
+           "0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3",  # unverified contract creation
+           "0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8",  # anomalous transaction bot
+           "0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8"  # social eng contract creation
            ]
 
 ALERT_ID_STAGE_MAPPING = {"ICE-PHISHING-PREV-APPROVED-TRANSFERED": "Exploitation",  # ice phishing
@@ -73,5 +75,7 @@ ALERT_ID_STAGE_MAPPING = {"ICE-PHISHING-PREV-APPROVED-TRANSFERED": "Exploitation
                           "BALANCE-DECREASE-ASSETS-ALL-REMOVED": "Exploitation",  # balance decrease for bridges
                           "BALANCE-DECREASE-ASSETS-PORTION-REMOVED": "Exploitation",  # balance decrease for bridges
                           "AK-ATTACK-SIMULATION-0": "Preparation",  # Attack Simulation
-                          "UNVERIFIED-CODE-CONTRACT-CREATION": "Preparation"  # unverified contract creation
+                          "UNVERIFIED-CODE-CONTRACT-CREATION": "Preparation",  # unverified contract creation
+                          "ANOMALOUS-TOKEN-TRANSFERS-TX": "Exploitation",  # Anomalous Token Transfer
+                          "SOCIAL-ENG-CONTRACT-CREATION": "Preparation"  # Social Engineering Contract Creation
                           }
