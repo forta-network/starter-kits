@@ -2,11 +2,20 @@ from functools import lru_cache
 from timeit import default_timer as timer
 from random import randint
 
+import backoff
 import requests
 
 from src.utils.constants import ETHPLORER_ENDPOINT, ETHERSCAN_ENDPOINT
 from src.utils.keys import ETHPLORER_KEY, ETHERSCAN_KEYS
 from src.utils.logger import logger
+
+
+@backoff.on_exception(backoff.expo,
+                      requests.exceptions.RequestException,
+                      max_tries=3,
+                      jitter=None)
+def get_endpoint_result(url):
+    return requests.get(url)
 
 @lru_cache(maxsize=1_000_000)
 def get_first_tx_timestamp(address) -> int:
@@ -16,7 +25,7 @@ def get_first_tx_timestamp(address) -> int:
     api_key = ETHERSCAN_KEYS[randint(0, 1)]
     addr_first_tx_endpoint = f"{ETHERSCAN_ENDPOINT}&address={address}&apikey={api_key}"
     try:
-        r = requests.get(addr_first_tx_endpoint)
+        r = get_endpoint_result(addr_first_tx_endpoint)
         r.raise_for_status()
         data = r.json()
     except requests.exceptions.RequestException or Exception as err:
@@ -43,7 +52,7 @@ def get_token_info(token_address) -> tuple:
     token_info_endpoint = f"{ETHPLORER_ENDPOINT}/getTokenInfo/{token_address}?apiKey={ETHPLORER_KEY}"
     data = {}
     try:
-        r = requests.get(token_info_endpoint)
+        r = get_endpoint_result(token_info_endpoint)
         r.raise_for_status()
         data = r.json()
     except requests.exceptions.RequestException or Exception as err:
