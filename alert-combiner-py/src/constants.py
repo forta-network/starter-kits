@@ -3,7 +3,7 @@ ADDRESS_QUEUE_SIZE = 10000
 
 TX_COUNT_FILTER_THRESHOLD = 500  # ignore EOAs with tx count larger than this threshold to mitigate FPs
 
-BOT_IDS = ["0xd9fe61cfe875470b80318a96cc0a94ba3adbe1eb4a14827fa018f14925e7da64",  # ice phishing
+BOT_IDS = ["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14",  # ice phishing
            "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99",  # suspicious contract creation
            "0xaedda4252616d971d570464a3ae4a9f0a9d72a57d8581945fff648d03cd30a7d",  # blocklisted account tx
            "0x4cc272e78a685e27abcccdb40578f91f43baecc43e3c465460991a9dcdcb9756",  # tornado cash withdrawl
