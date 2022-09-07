@@ -1,6 +1,6 @@
 {
   "name": "malicious-smart-contract-ml",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Forta Agent Python starter project",
   "chainIds": [
     1
