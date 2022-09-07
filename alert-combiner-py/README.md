@@ -15,8 +15,8 @@ As such, this detection bot combines previously raised alerts under the initiati
 The following bots are considered by the combiner and mapped to the stages in the following way:
 | BotID | Name | AlertId | Stage |
 |-------|------|---------|-------|
-| 0xd9fe61cfe875470b80318a96cc0a94ba3adbe1eb4a14827fa018f14925e7da64 | ice phishing | ICE-PHISHING-HIGH-NUM-APPROVALS | Preparation |
-| 0xd9fe61cfe875470b80318a96cc0a94ba3adbe1eb4a14827fa018f14925e7da64 | ice phishing | ICE-PHISHING-PREV-APPROVED-TRANSFERED | Exploitation |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-HIGH-NUM-APPROVALS | Preparation |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PREV-APPROVED-TRANSFERED | Exploitation |
 | 0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99 | suspicious contract creation | SUSPICIOUS-CONTRACT-CREATION | Preparation |
 | 0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99 | suspicious contract creation | SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH | Preparation |
 | 0xaedda4252616d971d570464a3ae4a9f0a9d72a57d8581945fff648d03cd30a7d | blocklisted account tx | FORTA-BLOCKLIST-ADDR-TX | Preparation |
