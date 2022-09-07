@@ -77,7 +77,7 @@ class TestMaliciousSmartContractML:
         })
         findings = agent.detect_malicious_contract_creations(w3, tx_event)
         assert len(findings) == 1, "this should have triggered a finding"
-        finding = next((x for x in findings if x.alert_id == 'MALICIOUS-CONTRACT-CREATION'), None)
+        finding = next((x for x in findings if x.alert_id == 'SUSPICIOUS-CONTRACT-CREATION'), None)
         assert finding.severity == FindingSeverity.High
 
     def test_detect_malicious_contract_benign(self):

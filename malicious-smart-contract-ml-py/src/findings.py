@@ -10,9 +10,9 @@ class MaliciousContractFindings:
         metadata["model_threshold"] = str(model_threshold)
 
         return Finding({
-            'name': 'Malcious Contract Creation',
+            'name': 'Suspicious Contract Creation',
             'description': f'{from_address} created contract {contract_address}',
-            'alert_id': 'MALICIOUS-CONTRACT-CREATION',
+            'alert_id': 'SUSPICIOUS-CONTRACT-CREATION',
             'type': FindingType.Suspicious,
             'severity': FindingSeverity.High,
             'metadata': metadata

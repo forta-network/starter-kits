@@ -2,7 +2,7 @@
 
 ## Description
 
-This detection bot detects when a malicious smart contract is deployed. It uses an offline trained machine learning model that was built based on function signature hashes contained in malicious and benign smart contracts.
+This detection bot detects when a suspicious smart contract is deployed. It uses an offline trained machine learning model that was built based on function signature hashes contained in malicious and benign smart contracts.
 
 ## Supported Chains
 
@@ -16,7 +16,7 @@ This detection bot detects when a malicious smart contract is deployed. It uses 
 
 Describe each of the type of alerts fired by this agent
 
-- MALICIOUS-CONTRACT-CREATION
+- SUSPICIOUS-CONTRACT-CREATION
   - Fired when a new contract is created
   - Metadata will contain the addresses observed in the created contract (either through storage or static analysis) as well as the machine learning score
   - Findings severity will be High
