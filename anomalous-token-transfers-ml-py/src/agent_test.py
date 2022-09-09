@@ -68,7 +68,7 @@ class TestAnomalousTokenTransfers:
         mock_tx_event.filter_log.return_value = [USDT_TRANSFER]
         from_address = mock_tx_event.from_
 
-        mock_get_first_tx_timestamp.return_value = -1 # invalid first tx timestamp value
+        mock_get_first_tx_timestamp.return_value = "Max rate limit reached" # invalid first tx timestamp value
         mock_get_token_info.return_value = ('Tether USD', 'USDT', 6)
         findings = agent.handle_transaction(mock_tx_event)
 
