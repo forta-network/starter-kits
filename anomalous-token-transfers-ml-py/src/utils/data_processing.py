@@ -2,11 +2,29 @@ from functools import lru_cache
 from timeit import default_timer as timer
 from random import randint
 
+import backoff
 import requests
 
 from src.utils.constants import ETHPLORER_ENDPOINT, ETHERSCAN_ENDPOINT
 from src.utils.keys import ETHPLORER_KEY, ETHERSCAN_KEYS
 from src.utils.logger import logger
+
+
+
+# Retry if etherscan api response status is not ok = 0.
+@backoff.on_predicate(backoff.expo,
+                      lambda x: int(x.json().get('status', 0)) == 0,
+                      max_tries=3,
+                      jitter=None)
+def get_first_tx(url):
+    return requests.get(url)
+
+@backoff.on_exception(backoff.expo,
+                      requests.exceptions.RequestException,
+                      max_tries=3,
+                      jitter=None)
+def get_token_data(url):
+    return requests.get(url)
 
 @lru_cache(maxsize=1_000_000)
 def get_first_tx_timestamp(address) -> int:
@@ -16,14 +34,16 @@ def get_first_tx_timestamp(address) -> int:
     api_key = ETHERSCAN_KEYS[randint(0, 1)]
     addr_first_tx_endpoint = f"{ETHERSCAN_ENDPOINT}&address={address}&apikey={api_key}"
     try:
-        r = requests.get(addr_first_tx_endpoint)
+        r = get_first_tx(addr_first_tx_endpoint)
         r.raise_for_status()
         data = r.json()
     except requests.exceptions.RequestException or Exception as err:
         logger.warn(f"Request failed for addr: {address}, err: {err}")
 
-    if "result" in data and len(data["result"]) == 1:
+    if int(data["status"]) == 1:
         first_tx_timestamp = int(data["result"][0]["timeStamp"])
+    else:
+        first_tx_timestamp = data["result"]
 
     return first_tx_timestamp
 
@@ -32,8 +52,8 @@ def get_account_active_period(address, recent_tx_timestamp) -> float:
     first_tx_timestamp = get_first_tx_timestamp(address)
     logger.info(f"get_first_tx_timestamp: {get_first_tx_timestamp.cache_info()}")
 
-    if first_tx_timestamp == -1:
-        return -1
+    if isinstance(first_tx_timestamp, str):
+        return first_tx_timestamp
 
     return (recent_tx_timestamp - first_tx_timestamp) / 60
 
@@ -43,7 +63,7 @@ def get_token_info(token_address) -> tuple:
     token_info_endpoint = f"{ETHPLORER_ENDPOINT}/getTokenInfo/{token_address}?apiKey={ETHPLORER_KEY}"
     data = {}
     try:
-        r = requests.get(token_info_endpoint)
+        r = get_token_data(token_info_endpoint)
         r.raise_for_status()
         data = r.json()
     except requests.exceptions.RequestException or Exception as err:
@@ -101,7 +121,7 @@ def get_features(from_address, tx_timestamp, transfer_events) -> tuple:
 
 def valid_features(features) -> bool:
     '''Evaluate model input values'''
-    if features['account_active_period_in_minutes'] < 0:
+    if isinstance(features['account_active_period_in_minutes'], str):
         return False
 
     return True
