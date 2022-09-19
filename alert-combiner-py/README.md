@@ -10,7 +10,14 @@ It does so with the realization that an attack usually consists of 4 distinct ph
 - exploitation (e.g. draining funds from a contract)
 - money laundering (e.g. sending funds to tornado cash)
 
-As such, this detection bot combines previously raised alerts under the initiating address (i.e. the attacker address) for a given time window (2 calendar days, so between 24-48h) and emits a cricial alert when alerts from all four phases have been observed or a certain combination of the first two stages (i.e. funding with tornado cash and attack simulation fired) 
+As such, this detection bot combines previously raised alerts under the initiating address (i.e. the attacker address) for a given time window (2 calendar days, so between 24-48h) and emits a cricial alert when 
+- alerts from all four phases have been observed 
+- a certain combination of the first two stages (i.e. funding with tornado cash and attack simulation fired)
+- a certain combination associated with ice phishing fired:
+  - ice phishing & sleep minting 
+  - ice phishing & TC interaction
+  - ice phishing & (unverified contract & flashbot)
+  - ice phishing & malicious address
 
 The following bots are considered by the combiner and mapped to the stages in the following way:
 | BotID | Name | AlertId | Stage |
@@ -86,7 +93,11 @@ The following bots are considered by the combiner and mapped to the stages in th
 | 0x19f468cbd6924a77fcb375a130e3bd1d3764366e42d4d7e6db0717a2229bfeba | balance decrease for bridge: Multichain/Anyswap (USDT) - Polygon |
 | 0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6 | attack simulation - Ethereum Mainnet | AK-ATTACK-SIMULATION-0 | Preparation |
 | 0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8 | Social Engineering Contract Creation Bot | SOCIAL-ENG-CONTRACT-CREATION | Preparation |
+| 0xd935a697faab13282b3778b2cb8dd0aa4a0dde07877f9425f3bf25ac7b90b895 | Malicious Address Bot | AE-MALICIOUS-ADDR | Exploitation |
+| 0x46ce98e921e2766a922840a56e89f24409001052c284e0bd6cbaa4fecd95e9b6 | Sleep Minting | SLEEPMINT-2, SLEEPMINT-1 | Preparation |
+| 0xeab3b34f9c32e9a5cafb76fccbd98f98f441d9e0499d93c4b476ba754f8f0773 | Suspicious Contract Creation ML | SUSPICIOUS-CONTRACT-CREATION | Preparation | 
 | 0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8 | Anomalous Token Transfers Detection Machine Learning Bot | ANOMALOUS-TOKEN-TRANSFERS-TX | Exploitation |
+| 0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f | Assets Drained | FORTA-1 | Exploitation |
 
 
 As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
@@ -107,8 +118,16 @@ Describe each of the type of alerts fired by this bot
   - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
   - Note: the detection bot will only alert once per EOA observed
 
-  - ALERT-COMBINER-2
+- ALERT-COMBINER-2
   - Fired when alerts mapping to funding and preparation stages (attack simulation bot needs to fire) under one common EOA (the attacker address) have been observed
+  - Severity is always set to "critical" 
+  - Type is always set to "exploit" 
+  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
+  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
+  - Note: the detection bot will only alert once per EOA observed
+
+- ALERT-COMBINER-ICE-PHISHING
+  - Fired when alert combination is observed that points to an ice phishing attack
   - Severity is always set to "critical" 
   - Type is always set to "exploit" 
   - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
