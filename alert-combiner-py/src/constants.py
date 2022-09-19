@@ -50,7 +50,8 @@ BOT_IDS = ["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14",
            "0x46ce98e921e2766a922840a56e89f24409001052c284e0bd6cbaa4fecd95e9b6",  # sleep minting
            "0xeab3b34f9c32e9a5cafb76fccbd98f98f441d9e0499d93c4b476ba754f8f0773",  # suspicious contract creation ML
            "0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8",  # social eng contract creation
-           "0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f"  # assets drained
+           "0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f",  # assets drained
+           "0xaf9ac4c204eabdd39e9b00f91c8383dc01ef1783e010763cad05cc39e82643bb"  # large native transfer out
            ]
 
 ALERT_ID_STAGE_MAPPING = {"ICE-PHISHING-PREV-APPROVED-TRANSFERED": "Exploitation",  # ice phishing
@@ -88,4 +89,5 @@ ALERT_ID_STAGE_MAPPING = {"ICE-PHISHING-PREV-APPROVED-TRANSFERED": "Exploitation
                           "SUSPICIOUS-CONTRACT-CREATION": "Preparation",  # suspicious contract creation ML
                           "SOCIAL-ENG-CONTRACT-CREATION": "Preparation",  # Social Engineering Contract Creation
                           "FORTA-1": "Exploitation",  # assets drained
+                          "LARGE-TRANSFER-OUT": "MoneyLaundering"  # Large Transfer Out
                           }
