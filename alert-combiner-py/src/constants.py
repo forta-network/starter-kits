@@ -46,11 +46,16 @@ BOT_IDS = ["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14",
            "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6",  # attack simulation
            "0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3",  # unverified contract creation
            "0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8",  # anomalous transaction bot
-           "0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8"  # social eng contract creation
+           "0xd935a697faab13282b3778b2cb8dd0aa4a0dde07877f9425f3bf25ac7b90b895",  # malicious address bot
+           "0x46ce98e921e2766a922840a56e89f24409001052c284e0bd6cbaa4fecd95e9b6",  # sleep minting
+           "0xeab3b34f9c32e9a5cafb76fccbd98f98f441d9e0499d93c4b476ba754f8f0773",  # suspicious contract creation ML
+           "0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8",  # social eng contract creation
+           "0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f"  # assets drained
            ]
 
 ALERT_ID_STAGE_MAPPING = {"ICE-PHISHING-PREV-APPROVED-TRANSFERED": "Exploitation",  # ice phishing
                           "ICE-PHISHING-HIGH-NUM-APPROVALS": "Preparation",  # ice phishing
+                          "ICE-PHISHING-APPROVAL-FOR-ALL": "Preparation",  # ice phishing
                           "SUSPICIOUS-CONTRACT-CREATION": "Preparation",  # suspicious contract creation
                           "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH": "Preparation",  # suspicious contract creation
                           "FORTA-BLOCKLIST-ADDR-TX": "Preparation",  # blocklisted accountn tx
@@ -77,5 +82,10 @@ ALERT_ID_STAGE_MAPPING = {"ICE-PHISHING-PREV-APPROVED-TRANSFERED": "Exploitation
                           "AK-ATTACK-SIMULATION-0": "Preparation",  # Attack Simulation
                           "UNVERIFIED-CODE-CONTRACT-CREATION": "Preparation",  # unverified contract creation
                           "ANOMALOUS-TOKEN-TRANSFERS-TX": "Exploitation",  # Anomalous Token Transfer
-                          "SOCIAL-ENG-CONTRACT-CREATION": "Preparation"  # Social Engineering Contract Creation
+                          "AE-MALICIOUS-ADDR": "Preparation",  # malicious address bot
+                          "SLEEPMINT-1": "Preparation",  # sleep minting
+                          "SLEEPMINT-2": "Preparation",  # sleep minting
+                          "SUSPICIOUS-CONTRACT-CREATION": "Preparation",  # suspicious contract creation ML
+                          "SOCIAL-ENG-CONTRACT-CREATION": "Preparation",  # Social Engineering Contract Creation
+                          "FORTA-1": "Exploitation",  # assets drained
                           }
