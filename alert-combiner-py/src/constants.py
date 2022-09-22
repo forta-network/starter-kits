@@ -72,6 +72,7 @@ ALERT_ID_STAGE_MAPPING = {"ICE-PHISHING-PREV-APPROVED-TRANSFERED": "Exploitation
                           "FAILED-TRANSACTION-VOL-INCREASE": "Exploitation",  # Transaction Volume Anomaly Detection
                           "FAILED-TRANSACTION-VOL-INCREASE": "Exploitation",  # Transaction Volume Anomaly Detection
                           "FLASHLOAN-ATTACK": "Exploitation",  # Flashloan Detection Bot
+                          "FLASHLOAN-ATTACK-WITH-HIGH-PROFIT": "Exploitation",  # Flashloan Detection Bot
                           "HIGH-MINT-VALUE": "Exploitation",  # Large Mint Borrow Volume Anomaly Detection
                           "HIGH-BORROW-VALUE": "Exploitation",  # Large Mint Borrow Volume Anomaly Detection
                           "IMPERSONATED-TOKEN-DEPLOYMENT": "Preparation",  # Token Impersonation

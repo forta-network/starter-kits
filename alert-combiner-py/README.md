@@ -39,7 +39,7 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0x20d57d727a2d7bf4b447d1952d7ea44efeda0920e45e779d298d5385f3b36cfa | tx volume anomaly bot |  SUCCESSFUL-TRANSACTION-VOL-INCREASE | Exploitation |
 | 0x20d57d727a2d7bf4b447d1952d7ea44efeda0920e45e779d298d5385f3b36cfa | tx volume anomaly bot | FAILED-TRANSACTION-VOL-INCREASE | Exploitation |
 | 0x20d57d727a2d7bf4b447d1952d7ea44efeda0920e45e779d298d5385f3b36cfa | tx volume anomaly bot | FAILED-INTERNAL-TRANSACTION-VOL-INCREASE | Exploitation |
-| 0x55636f5577694c83b84b0687eb77863850c50bd9f6072686c8463a0cbc5566e0 | flashloan detector | FLASHLOAN-ATTACK | Exploitation |
+| 0x55636f5577694c83b84b0687eb77863850c50bd9f6072686c8463a0cbc5566e0 | flashloan detector | FLASHLOAN-ATTACK, FLASHLOAN-ATTACK-WITH-HIGH-PROFIT | Exploitation |
 | 0x2c8452ff81b4fa918a8df4441ead5fedd1d4302d7e43226f79cb812ea4962ece | Large Mint Borrow Volume Anomaly Detection | HIGH-BORROW-VALUE | Exploitation |
 | 0x2c8452ff81b4fa918a8df4441ead5fedd1d4302d7e43226f79cb812ea4962ece | Large Mint Borrow Volume Anomaly Detection | HIGH-MINT-VALUE | Exploitation |
 | 0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3 | unverified contract creation | UNVERIFIED-CODE-CONTRACT-CREATION | Preparation |
@@ -110,7 +110,7 @@ As a result, the precision of this alert is quite high, but also some attacks ma
 
 Describe each of the type of alerts fired by this bot
 
-- ALERT-COMBINER-1
+- ATTACK-DETECTOR-1
   - Fired when alerts mapping to all 4 stages under one common EOA (the attacker address) have been observed
   - Severity is always set to "critical" 
   - Type is always set to "exploit" 
@@ -118,7 +118,7 @@ Describe each of the type of alerts fired by this bot
   - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
   - Note: the detection bot will only alert once per EOA observed
 
-- ALERT-COMBINER-2
+- ATTACK-DETECTOR-2
   - Fired when alerts mapping to funding and preparation stages (attack simulation bot needs to fire) under one common EOA (the attacker address) have been observed
   - Severity is always set to "critical" 
   - Type is always set to "exploit" 
@@ -126,7 +126,7 @@ Describe each of the type of alerts fired by this bot
   - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
   - Note: the detection bot will only alert once per EOA observed
 
-- ALERT-COMBINER-ICE-PHISHING
+- ATTACK-DETECTOR-ICE-PHISHING
   - Fired when alert combination is observed that points to an ice phishing attack
   - Severity is always set to "critical" 
   - Type is always set to "exploit" 
