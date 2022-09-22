@@ -162,7 +162,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             logging.info(f"Address {potential_attacker_address} transacton count: {tx_count}")
                             continue
                         update_alerted_addresses(w3, potential_attacker_address)
-                        FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids, 'ALERT-COMBINER-1', hashes))
+                        FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids, 'ATTACK-DETECTOR-1', hashes))
                         logging.info(f"Findings count {len(FINDINGS_CACHE)}")
             except: # Exception as e:
                 #logging.warn(f"Error processing address combiner alert 1 {potential_attacker_address}: {e}")
@@ -214,7 +214,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             logging.info(f"Address {potential_attacker_address} transacton count: {tx_count}")
                             continue
                         update_alerted_addresses(w3, potential_attacker_address)
-                        FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids, 'ALERT-COMBINER-2', hashes))
+                        FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids, 'ATTACK-DETECTOR-2', hashes))
                         logging.info(f"Findings count {len(FINDINGS_CACHE)}")
             except: # Exception as e:
                 #logging.warn(f"Error processing address combiner alert 1 {potential_attacker_address}: {e}")
@@ -222,10 +222,9 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                 continue
 
         # alert combiner 3 alert - ice phishing
-        attack_simulation = df_forta_alerts[(df_forta_alerts["alertId"] == "ICE-PHISHING-PREV-APPROVED-TRANSFERED") | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-APPROVAL-FOR-ALL")]
+        ice_phishing = df_forta_alerts[(df_forta_alerts["alertId"] == "ICE-PHISHING-PREV-APPROVED-TRANSFERED") | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-APPROVAL-FOR-ALL")]
         addresses = set()
-        for index, row in attack_simulation.iterrows():
-            addresses = addresses.union(set(row['addresses']))
+        ice_phishing["description"].apply(lambda x: addresses.add(get_ice_phishing_attacker_address(x)))
 
         for potential_attacker_address in addresses:
             try:
@@ -268,7 +267,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                                 logging.info(f"Address {potential_attacker_address} transacton count: {tx_count}")
                                 continue
                             update_alerted_addresses(w3, potential_attacker_address)
-                            FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids, 'ALERT-COMBINER-ICE-PHISHING', hashes))
+                            FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_address, start_date, end_date, involved_addresses, involved_alert_ids, 'ATTACK-DETECTOR-ICE-PHISHING', hashes))
                             logging.info(f"Findings count {len(FINDINGS_CACHE)}")
             except: # Exception as e:
                 #logging.warn(f"Error processing address combiner alert 1 {potential_attacker_address}: {e}")
@@ -278,11 +277,18 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         MUTEX = False
 
 
+def get_ice_phishing_attacker_address(description: str) -> str:
+    # 0x7DA4580bF3168A78f5e30d9bb82f7Ce46daB2dE7 obtained transfer approval for 3 assets by 6 accounts over period of 2 days. ICE-PHISHING-HIGH-NUM-APPROVALS
+    # 0x2f993D27649d935cCcD44E6591eee3f7175866cf obtained transfer approval for all tokens from 0xf45CFeaf03BD53C8e5Ff5524a58d974126284c67. ICE-PHISHING-APPROVAL-FOR-ALL
+    # 0x0899935fe73759DCBd7CCd18982980A0733A01Aa transferred 3 assets from 1 accounts over period of 1 days. ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS
+    return description[:42].lower()
+
+
 def contains_attacker_addresses_ice_phishing(alert: pd.Series, potential_attacker_address: str) -> bool:
     global ICE_PHISHING_MAPPINGS_DF
     # iterate over ice phishing mappings and assess whether the potential attacker address is involved according to the mapping
     if "ICE-PHISHING" in alert["alertId"]:
-        return False
+        return True
 
     for index, row in ICE_PHISHING_MAPPINGS_DF.iterrows():
         #  bot_id,alert_id,location,attacker_address_location_in_description,metadata_field
