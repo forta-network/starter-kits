@@ -1,6 +1,6 @@
 {
-  "name": "alert-combiner-beta",
-  "version": "0.0.21",
+  "name": "attack-detector-feed",
+  "version": "0.0.23",
   "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
   "chainIds": [
     1

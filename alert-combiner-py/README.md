@@ -1,8 +1,8 @@
-# Alert Combiner
+# Attack Detector Feed
 
 ## Description
 
-Individual alerts can have low precision (in other words raise false positives). This bot combines past alerts to separate the signal from noise. 
+Individual alerts can have low precision (in other words raise false positives). This feed combines past alerts to separate the signal from noise. 
 
 It does so with the realization that an attack usually consists of 4 distinct phases:
 - funding (e.g. tornado cash funding)
@@ -10,7 +10,7 @@ It does so with the realization that an attack usually consists of 4 distinct ph
 - exploitation (e.g. draining funds from a contract)
 - money laundering (e.g. sending funds to tornado cash)
 
-As such, this detection bot combines previously raised alerts under the initiating address (i.e. the attacker address) for a given time window (2 calendar days, so between 24-48h) and emits a cricial alert when 
+As such, this feed combines previously raised alerts under the initiating address (i.e. the attacker address) for a given time window (2 calendar days, so between 24-48h) and emits a cricial alert when 
 - alerts from all four phases have been observed 
 - a certain combination of the first two stages (i.e. funding with tornado cash and attack simulation fired)
 - a certain combination associated with ice phishing fired:
@@ -19,7 +19,7 @@ As such, this detection bot combines previously raised alerts under the initiati
   - ice phishing & (unverified contract & flashbot)
   - ice phishing & malicious address
 
-The following bots are considered by the combiner and mapped to the stages in the following way:
+The following bots are considered by the Attack Detector Feed and mapped to the stages in the following way:
 | BotID | Name | AlertId | Stage |
 |-------|------|---------|-------|
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-HIGH-NUM-APPROVALS | Preparation |

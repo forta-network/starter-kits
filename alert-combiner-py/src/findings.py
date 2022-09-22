@@ -20,8 +20,8 @@ class AlertCombinerFinding:
         meta_data = {**attacker_address, **start_date, **end_date, **involved_addresses, **involved_alert_ids, **involved_alert_hashes}
 
         return Finding({
-            'name': 'Alert combiner identified an EOA with past alerts mapping to attack behavior',
-            'description': f'{attacker_address} likely involved in an attack',
+            'name': 'Attack detector identified an EOA with past alerts mapping to attack behavior',
+            'description': f'{attacker_address} likely involved in an attack ({alert_id})',
             'alert_id': alert_id,
             'type': FindingType.Exploit,
             'severity': FindingSeverity.Critical,
