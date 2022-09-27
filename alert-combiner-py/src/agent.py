@@ -10,7 +10,7 @@ from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 
-from src.constants import (ADDRESS_QUEUE_SIZE, ALERT_ID_STAGE_MAPPING, BOT_IDS,
+from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, SCAM_DETECTOR, ATTACK_DETECTOR,
                            DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD)
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
@@ -92,10 +92,6 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
     global ALERTED_ADDRESSES
     global MUTEX
 
-    is_protocol_attack_detector = False
-    is_end_user_attack_detector = False
-
-
     if not MUTEX:
         MUTEX = True
 
@@ -104,20 +100,21 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         start_date = end_date - timedelta(days=DATE_LOOKBACK_WINDOW_IN_DAYS)
         logging.info(f"Analyzing alerts from {start_date} to {end_date}")
 
+        ALERT_ID_STAGE_MAPPING = dict([ (alert_id, stage) for bot_id, alert_id, stage in BASE_BOTS])
+
         # get all alerts for date range
         df_forta_alerts = forta_explorer.empty_alerts()
-        for bot_id in BOT_IDS:
-            for alert_id in ALERT_ID_STAGE_MAPPING.keys():
-                bot_alerts = forta_explorer.alerts_by_bot(bot_id, alert_id, start_date, end_date)
-                df_forta_alerts = pd.concat([df_forta_alerts, bot_alerts])
-                if len(bot_alerts) > 0:
-                    logging.info(f"Fetched {len(bot_alerts)} for bot {bot_id}, alert_id {alert_id}")
+        for bot_id, alert_id, stage in BASE_BOTS:
+            bot_alerts = forta_explorer.alerts_by_bot(bot_id, alert_id, start_date, end_date)
+            df_forta_alerts = pd.concat([df_forta_alerts, bot_alerts])
+            if len(bot_alerts) > 0:
+                logging.info(f"Fetched {len(bot_alerts)} for bot {bot_id}, alert_id {alert_id}")
 
         df_forta_alerts["bot_id"] = df_forta_alerts["source"].apply(lambda x: x["bot"]["id"])
 
         # get all addresses that were part of the alerts
         # to optimize, we only check money laundering addresses as this is required to fullfill all 4 stage requirements
-        if is_protocol_attack_detector:
+        if ATTACK_DETECTOR:
             money_laundering_tc = df_forta_alerts[df_forta_alerts["alertId"] == "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH"]
             txt_msg_high = df_forta_alerts[(df_forta_alerts["alertId"] == "forta-text-messages-possible-hack") & (df_forta_alerts["severity"] == "HIGH")]
 
@@ -227,7 +224,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                     continue
 
         # alert combiner 3 alert - ice phishing
-        if is_end_user_attack_detector:
+        if SCAM_DETECTOR:
             ice_phishing = df_forta_alerts[(df_forta_alerts["alertId"] == "ICE-PHISHING-PREV-APPROVED-TRANSFERED") | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-APPROVAL-FOR-ALL")]
             addresses = set()
             ice_phishing["description"].apply(lambda x: addresses.add(get_ice_phishing_attacker_address(x)))
