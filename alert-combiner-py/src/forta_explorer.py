@@ -10,7 +10,7 @@ import requests
 class FortaExplorer:
 
     def empty_alerts(self) -> pd.DataFrame:
-        df_forta = pd.DataFrame(columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+        df_forta = pd.DataFrame(columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash', 'bot_id'])
         return df_forta
 
     def alerts_by_bot(self, bot_id: str, alert_id: str, start_date: datetime, end_date: datetime) -> pd.DataFrame:
@@ -117,4 +117,5 @@ class FortaExplorer:
             first_run = False
             count += 1
 
+        df_forta["bot_id"] = df_forta["source"].apply(lambda x: x["bot"]["id"])
         return df_forta
