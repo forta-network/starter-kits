@@ -50,6 +50,9 @@ def add_address(w3, address):
     if address is None:
         return
 
+    if "00000000" in address:
+        return
+
     checksum_address = Web3.toChecksumAddress(address)
     if w3.eth.get_transaction_count(checksum_address) <= MAX_NONCE:
         if checksum_address in GRAPH.nodes:
