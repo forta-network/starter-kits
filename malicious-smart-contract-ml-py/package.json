@@ -1,9 +1,9 @@
 {
   "name": "malicious-smart-contract-ml",
-  "version": "0.0.2",
-  "description": "Forta Agent Python starter project",
+  "version": "1.0.0",
+  "description": "Malicious Smart Contract Detection Bot",
   "chainIds": [
-    1
+    1, 56, 137, 43114, 42161, 10, 250
   ],
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
