@@ -114,7 +114,9 @@ def exec_model(opcodes: str) -> float:
 def detect_malicious_contract_creations(
     w3, transaction_event: forta_agent.transaction_event.TransactionEvent
 ) -> list:
+    all_findings = []
     created_contract_addresses = []
+
     for trace in transaction_event.traces:
         if trace.type == "create":
             if (
@@ -131,11 +133,11 @@ def detect_malicious_contract_creations(
                 )
                 logger.info(f"Contract created {created_contract_address}")
                 created_contract_addresses.append(created_contract_address.lower())
-                return detect_malicious_contract(
+                all_findings.extend(detect_malicious_contract(
                     w3, trace.action.from_, created_contract_address
-                )
+                ))
 
-    return []
+    return all_findings
 
 
 def detect_malicious_contract(w3, from_, created_contract_address) -> list:
