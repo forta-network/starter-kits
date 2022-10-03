@@ -85,6 +85,9 @@ class TestMaliciousSmartContractML:
                             "from": MALICIOUS_CONTRACT_DEPLOYER,
                             "value": 1,
                         },
+                        "result": {
+                            "address": MALICIOUS_CONTRACT
+                        }
                     }
                 ],
                 "receipt": {"logs": []},
