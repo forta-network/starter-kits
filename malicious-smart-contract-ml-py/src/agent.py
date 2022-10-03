@@ -105,7 +105,6 @@ def exec_model(opcodes: str) -> float:
     :return: score: float
     """
     features = get_features(opcodes)
-    logger.info(features)
     score = ML_MODEL.predict_proba([features])[0][1]
     logger.info(score)
     return score
