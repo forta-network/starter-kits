@@ -123,15 +123,19 @@ def detect_malicious_contract_creations(
                 transaction_event.from_ == trace.action.from_
                 or trace.action.from_ in created_contract_addresses
             ):
-                nonce = (
-                    transaction_event.transaction.nonce
-                    if transaction_event.from_ == trace.action.from_
-                    else 1
-                )  # for contracts creating other contracts, the nonce would be 1
-                created_contract_address = calc_contract_address(
-                    w3, trace.action.from_, nonce
-                )
+                created_contract_address = trace.result.address if trace.result else None
+                error = trace.error if trace.error else None
                 logger.info(f"Contract created {created_contract_address}")
+                if error is not None:
+                    nonce = (
+                        transaction_event.transaction.nonce
+                        if transaction_event.from_ == trace.action.from_
+                        else 1
+                    )  # for contracts creating other contracts, the nonce would be 1
+                    contract_address = calc_contract_address(
+                        w3, trace.action.from_, nonce
+                    )
+                    logger.warn(f"Contract {contract_address} creation failed with tx {trace.transactionHash}: {error}")
                 created_contract_addresses.append(created_contract_address.lower())
                 all_findings.extend(detect_malicious_contract(
                     w3, trace.action.from_, created_contract_address
