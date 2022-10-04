@@ -23,6 +23,9 @@ class EthMock:
             return 501
         return 0
 
+    def chain_id(self):
+        return 1
+
     def get_code(self, address):
         if address == EOA_ADDRESS:
             return HexBytes('0x')

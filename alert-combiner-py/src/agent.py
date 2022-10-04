@@ -116,8 +116,8 @@ def get_max_transaction_count(w3, cluster: str) -> int:
     return max_transaction_count
 
 
-def get_clusters_exploded(start_date: datetime, end_date: datetime, forta_explorer: FortaExplorer) -> pd.DataFrame:
-    df_address_clusters_alerts = forta_explorer.alerts_by_bot(ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_ALERT_ID, start_date, end_date)  #  metadate entity_addresses: "address1, address2, address3" (web3 checksum)
+def get_clusters_exploded(start_date: datetime, end_date: datetime, forta_explorer: FortaExplorer, chain_id: int) -> pd.DataFrame:
+    df_address_clusters_alerts = forta_explorer.alerts_by_bot(ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_ALERT_ID, chain_id, start_date, end_date)  #  metadate entity_addresses: "address1, address2, address3" (web3 checksum)
     logging.info(f"Fetched {len(df_address_clusters_alerts)} for entity clusters")
 
     df_address_clusters = pd.DataFrame()
@@ -129,33 +129,34 @@ def get_clusters_exploded(start_date: datetime, end_date: datetime, forta_explor
 
     return df_address_clusters
 
-def get_forta_alerts(start_date: datetime, end_date: datetime, df_address_clusters: pd.DataFrame, forta_explorer: FortaExplorer) -> pd.DataFrame:
-        logging.info(f"Analyzing alerts from {start_date} to {end_date}")
 
-        # get all alerts for date range
-        df_forta_alerts = forta_explorer.empty_alerts()
-        for bot_id, alert_id, stage in BASE_BOTS:
-            bot_alerts = forta_explorer.alerts_by_bot(bot_id, alert_id, start_date, end_date)
-            df_forta_alerts = pd.concat([df_forta_alerts, bot_alerts])
-            if len(bot_alerts) > 0:
-                logging.info(f"Fetched {len(bot_alerts)} for bot {bot_id}, alert_id {alert_id}")
+def get_forta_alerts(start_date: datetime, end_date: datetime, df_address_clusters: pd.DataFrame, forta_explorer: FortaExplorer, chain_id: int) -> pd.DataFrame:
+    logging.info(f"Analyzing alerts from {start_date} to {end_date}, chain_id: {chain_id}")
 
-        # add a new field cluster_identifiers where all addresses are replaced with cluster identifiers if they exist
-        df_forta_alerts.drop(columns=["createdAt", "name", "protocol", "findingType", "source", "contracts"], inplace=True)
-        df_forta_alerts_exploded = df_forta_alerts.explode("addresses")
-        df_forta_alerts_exploded["addresses"] = df_forta_alerts_exploded["addresses"].apply(lambda x: x.lower())
-        df_forta_alerts_exploded = df_forta_alerts_exploded.set_index("addresses")
+    # get all alerts for date range
+    df_forta_alerts = forta_explorer.empty_alerts()
+    for bot_id, alert_id, stage in BASE_BOTS:
+        bot_alerts = forta_explorer.alerts_by_bot(bot_id, alert_id, chain_id, start_date, end_date)
+        df_forta_alerts = pd.concat([df_forta_alerts, bot_alerts])
+        if len(bot_alerts) > 0:
+            logging.info(f"Fetched {len(bot_alerts)} for bot {bot_id}, alert_id {alert_id}, chain_id {chain_id}")
 
-        df_forta_alerts_clusters_joined = df_forta_alerts_exploded.join(df_address_clusters, on="addresses", how="left", lsuffix="_alert", rsuffix="_cluster")
-        df_forta_alerts_clusters_joined = df_forta_alerts_clusters_joined.reset_index()
-        df_forta_alerts_clusters_joined["cluster_identifiers"] = df_forta_alerts_clusters_joined.apply(lambda x: x["addresses"] if pd.isnull(x["entity_addresses"]) else x["entity_addresses"], axis=1)
-        df_forta_alerts_clusters_joined.drop(columns=["entity_addresses_arr", "entity_addresses"], inplace=True)
+    # add a new field cluster_identifiers where all addresses are replaced with cluster identifiers if they exist
+    df_forta_alerts.drop(columns=["createdAt", "name", "protocol", "findingType", "source", "contracts"], inplace=True)
+    df_forta_alerts_exploded = df_forta_alerts.explode("addresses")
+    df_forta_alerts_exploded["addresses"] = df_forta_alerts_exploded["addresses"].apply(lambda x: x.lower())
+    df_forta_alerts_exploded = df_forta_alerts_exploded.set_index("addresses")
 
-        df_forta_alerts = df_forta_alerts_clusters_joined.groupby(['hash']).agg({"cluster_identifiers": lambda x: x.tolist(), "severity": "first", "alertId": "first", "bot_id": "first", "description": "first", "metadata": "first"})
-        df_forta_alerts.reset_index(inplace=True)
-        logging.info("Added cluster identifiers to alerts")
+    df_forta_alerts_clusters_joined = df_forta_alerts_exploded.join(df_address_clusters, on="addresses", how="left", lsuffix="_alert", rsuffix="_cluster")
+    df_forta_alerts_clusters_joined = df_forta_alerts_clusters_joined.reset_index()
+    df_forta_alerts_clusters_joined["cluster_identifiers"] = df_forta_alerts_clusters_joined.apply(lambda x: x["addresses"] if pd.isnull(x["entity_addresses"]) else x["entity_addresses"], axis=1)
+    df_forta_alerts_clusters_joined.drop(columns=["entity_addresses_arr", "entity_addresses"], inplace=True)
 
-        return df_forta_alerts
+    df_forta_alerts = df_forta_alerts_clusters_joined.groupby(['hash']).agg({"cluster_identifiers": lambda x: x.tolist(), "severity": "first", "alertId": "first", "bot_id": "first", "description": "first", "metadata": "first"})
+    df_forta_alerts.reset_index(inplace=True)
+    logging.info("Added cluster identifiers to alerts")
+
+    return df_forta_alerts
 
 
 def swap_addresses_with_clusters(addresses: list, df_address_clusters_exploded: pd.DataFrame) -> list:
@@ -189,11 +190,11 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         # get alerts from API and exchange addresses with clusters from the entity cluster bot
         end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
         start_date = end_date - timedelta(days=ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS)
-        df_address_clusters_exploded = get_clusters_exploded(start_date=start_date, end_date=end_date, forta_explorer=forta_explorer)
+        df_address_clusters_exploded = get_clusters_exploded(start_date=start_date, end_date=end_date, forta_explorer=forta_explorer, chain_id=w3.eth.chain_id)
 
         end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
         start_date = end_date - timedelta(days=DATE_LOOKBACK_WINDOW_IN_DAYS)
-        df_forta_alerts = get_forta_alerts(start_date=start_date, end_date=end_date, df_address_clusters=df_address_clusters_exploded, forta_explorer=forta_explorer)
+        df_forta_alerts = get_forta_alerts(start_date=start_date, end_date=end_date, df_address_clusters=df_address_clusters_exploded, forta_explorer=forta_explorer, chain_id=w3.eth.chain_id)
 
 
         # get all addresses that were part of the alerts
