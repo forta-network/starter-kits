@@ -11,7 +11,7 @@ class TestFortaExplorer:
         start_date = datetime.now()
         end_date = start_date + timedelta(days=1)
 
-        df = FortaExplorer().alerts_by_bot("0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", start_date, end_date)
+        df = FortaExplorer().alerts_by_bot("0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", 1, start_date, end_date)
         assert len(df) > 0, "no alerts returned"
 
         alerts = df["alertId"].unique()
