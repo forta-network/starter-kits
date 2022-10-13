@@ -45,6 +45,16 @@ class TestEntityClusterBot:
 
         assert len(agent.GRAPH.nodes) == 1, "Address should have been added to graph. Its nonce is within range"
 
+    def test_persist(self):
+        agent.initialize()
+
+        agent.add_address(w3, EOA_ADDRESS_SMALL_TX)
+        agent.persist_state()  # will perist state
+
+        agent.initialize()  # will load state
+        assert len(agent.GRAPH.nodes) == 1, "Address should have been added to graph. Its nonce is within range"
+
+
     def test_add_directed_edges_without_add(self):
         agent.initialize()
 

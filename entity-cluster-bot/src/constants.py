@@ -1,3 +1,7 @@
 MAX_NONCE = 500
 ENTITY_CLUSTER_WINDOW_IN_DAYS = 2
 MAX_AGE_IN_DAYS = 7
+
+ALERTED_ADDRESSES_KEY = "alerted_addresses_key"
+FINDINGS_CACHE_KEY = "findings_cache_key"
+GRAPH_KEY = "graph_key"
