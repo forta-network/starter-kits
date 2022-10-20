@@ -117,7 +117,7 @@ def prune_graph():
 
     #  looks at each node in the graph and assesses how old it is
     #  if its older than MAX_AGE_IN_DAYS, it will be removed from the graph
-    #  note, if the nonce is larger than MAX_NONCE, it will not be removed from the graph 
+    #  note, if the nonce is larger than MAX_NONCE, it will not be removed from the graph
     #  as the nonce is only assessed when the node is created
 
     nodes_to_remove = set()
