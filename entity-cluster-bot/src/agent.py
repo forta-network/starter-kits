@@ -269,7 +269,9 @@ def persist_state():
 def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
     logging.info(f"Handling block {block_event.block_number}.")
 
-    persist_state()
+    if block_event.block_number % 240 == 0:
+        logging.info(f"Persisting block {block_event.block_number}.")
+        persist_state()
 
     findings = []
     return findings

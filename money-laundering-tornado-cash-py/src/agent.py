@@ -59,6 +59,7 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
            Web3.toChecksumAddress(log.address) == TORNADO_CASH_ADDRESSES[w3.eth.chain_id] and TORNADO_CASH_DEPOSIT_TOPIC in log.topics):
 
             ACCOUNT_QUEUE.append(account)
+            logging.info(f"Identified account {account} on chain {w3.eth.chain_id}")
 
             block_to_tx_count = {}
             if account not in ACCOUNT_TO_TORNADO_CASH_BLOCKS:
@@ -76,14 +77,15 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
                 acc = ACCOUNT_QUEUE.pop(0)
                 ACCOUNT_TO_TORNADO_CASH_BLOCKS.pop(acc, None)
 
-            while max(block_to_tx_count.keys()) - min(block_to_tx_count.keys()) > BLOCK_RANGE:
+            while max(block_to_tx_count.keys()) - min(block_to_tx_count.keys()) > BLOCK_RANGE[w3.eth.chain_id]:
                 #  remove the oldest blocks
                 oldest_block = min(block_to_tx_count, key=block_to_tx_count.get)
                 block_to_tx_count.pop(oldest_block, None)
 
     if account in ACCOUNT_QUEUE:
         total_txs = sum(ACCOUNT_TO_TORNADO_CASH_BLOCKS[account].values())
-
+        logging.info(f"Account {account} total txs {total_txs}")
+            
         tx_threshold = TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_ETH
         deposit_size = TORNADO_CASH_DEPOSIT_SIZE
         if w3.eth.chain_id == 137:
@@ -95,6 +97,8 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
         if total_txs >= tx_threshold:
             findings.append(MoneyLaunderingTornadoCashFindings.possible_money_laundering_tornado_cash(account, total_txs * deposit_size))
 
+    logging.info(f"Return {transaction_event.transaction.hash}")
+            
     return findings
 
 
