@@ -99,6 +99,8 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8 | Anomalous Token Transfers Detection Machine Learning Bot | ANOMALOUS-TOKEN-TRANSFERS-TX | Exploitation |
 | 0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f | Assets Drained | FORTA-1 | Exploitation |
 | 0xaf9ac4c204eabdd39e9b00f91c8383dc01ef1783e010763cad05cc39e82643bb | Large Native Token Transfers Out | LARGE-TRANSFER-OUT | Money Laundering |
+| 0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef | Aztec funded contract interaction | AK-AZTEC-PROTOCOL-FUNDED-ACCOUNT-INTERACTION-0 | Exploitation |
+| 0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f | Aztec money laundering | AK-AZTEC-PROTOCOL-POSSIBLE-MONEY-LAUNDERING-NATIVE | Money Laundering |
 
 As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
 
