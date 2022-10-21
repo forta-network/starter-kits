@@ -1,4 +1,4 @@
-Mon, 09 May 2022 12:26:47 GMT: successfully added agent id 0x80ed808b586aeebe9cdd4088ea4dea0a8e322909c0e4493c993e060e89c09ed1 with manifest QmUaYio6SJxb9NsXcFJfLWhZnJftoZ36J7du68uvratYvc
+git config --global --unset-allMon, 09 May 2022 12:26:47 GMT: successfully added agent id 0x80ed808b586aeebe9cdd4088ea4dea0a8e322909c0e4493c993e060e89c09ed1 with manifest QmUaYio6SJxb9NsXcFJfLWhZnJftoZ36J7du68uvratYvc
 Mon, 09 May 2022 14:49:01 GMT: successfully updated agent id 0x80ed808b586aeebe9cdd4088ea4dea0a8e322909c0e4493c993e060e89c09ed1 with manifest QmRiUkM374vJTEdSnadzPkQadNsJL83Xk1iSntRbrJqA6T
 Mon, 16 May 2022 20:40:02 GMT: successfully pushed image with reference bafybeidvf5zmktir6oschx3nmbj7bzsgfb4jilj4hw3hhfrepaxsubbi2e@sha256:28cb92fbee75976453a2df232da69c10b00a9a15c5225d90e0fa98c2f9176d24
 Wed, 18 May 2022 20:57:08 GMT: successfully pushed image with reference bafybeif2cne564zhv4r6mrbyu6hsjmc6unbaldxexmrqxwb5ll2anxfuya@sha256:e92ba292a4c0d6fa7529cc20521c8784311333dfa90258d4e58044d2dfd14688
@@ -32,5 +32,3 @@ Thu, 29 Sep 2022 05:38:25 GMT: successfully updated agent id 0x79af4d8e0ea9bd28e
 Thu, 29 Sep 2022 16:24:45 GMT: successfully updated agent id 0x79af4d8e0ea9bd28ed971f0c54bcfe2e1ba0e6de39c4f3d35726b15843990a51 with manifest QmYRaAM3cfpmt4GadZSQL72Zeduke4NBka3KfvYy4Si8VN
 Mon, 03 Oct 2022 21:55:56 GMT: successfully updated agent id 0x79af4d8e0ea9bd28ed971f0c54bcfe2e1ba0e6de39c4f3d35726b15843990a51 with manifest QmQZKErg6uxmn98Sz6m39DJggs9iDd8DberN7dRGX6n2mp
 Tue, 04 Oct 2022 22:46:24 GMT: successfully updated agent id 0x79af4d8e0ea9bd28ed971f0c54bcfe2e1ba0e6de39c4f3d35726b15843990a51 with manifest QmQ6KSKpZYvcVwzBzRFqAV5bgjrTD5S85HHNmpyX6KiYqU
-Fri, 21 Oct 2022 17:01:41 GMT: successfully updated agent id 0x79af4d8e0ea9bd28ed971f0c54bcfe2e1ba0e6de39c4f3d35726b15843990a51 with manifest QmZ1bYtRzHRXKpncUjL4dhHVAi3BZ58TNyMcmGcq7CaWwt
-Fri, 21 Oct 2022 17:06:21 GMT: successfully updated agent id 0x80ed808b586aeebe9cdd4088ea4dea0a8e322909c0e4493c993e060e89c09ed1 with manifest QmaNSDWR7iVqBRiWy5BBNKxdq32ci9hyuc96oHZKnUebGA
