@@ -5,11 +5,17 @@ from datetime import datetime, timedelta
 import forta_agent
 import networkx as nx
 import rlp
+import requests
 from forta_agent import Finding, FindingSeverity, FindingType, get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
+import pickle
+import os
 
-from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE
+from dotenv import load_dotenv
+load_dotenv()
+
+from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, ALERTED_ADDRESSES_KEY, FINDINGS_CACHE_KEY, GRAPH_KEY
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
@@ -26,6 +32,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
+DATABASE = "https://research.forta.network/database/bot/"
 ERC20_TRANSFER_EVENT = '{"name":"Transfer","type":"event","anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}]}'
 
 
@@ -35,13 +42,55 @@ def initialize():
     it is called from test to reset state between tests
     """
     global ALERTED_ADDRESSES
-    ALERTED_ADDRESSES = []
+    alerted_address = load(ALERTED_ADDRESSES_KEY)
+    ALERTED_ADDRESSES = [] if alerted_address is None else list(alerted_address)
 
     global FINDINGS_CACHE
-    FINDINGS_CACHE = []
+    findings_cache = load(FINDINGS_CACHE_KEY)
+    FINDINGS_CACHE = [] if findings_cache is None else findings_cache
 
     global GRAPH
-    GRAPH = nx.DiGraph()
+    graph = load(GRAPH_KEY)
+    GRAPH = nx.DiGraph() if graph is None else nx.DiGraph(graph)
+
+
+
+def persist(obj: object, key: str):
+    if os.environ.get('LOCAL_NODE') is None:
+        logging.info(f"Persisting {key} using API")
+        bytes = pickle.dumps(obj)
+        token = forta_agent.fetch_jwt({})
+
+        headers = {"Authorization": f"Bearer {token}"}
+        res = requests.post(f"{DATABASE}{key}", data=bytes, headers=headers)
+        logging.info(f"Persisting {key} to database. Response: {res}")
+        return
+    else:
+        logging.info(f"Persisting {key} locally")
+        pickle.dump(obj, open(key, "wb"))
+
+
+def load(key: str) -> object:
+    if os.environ.get('LOCAL_NODE') is None:
+        logging.info(f"Loading {key} using API")
+        token = forta_agent.fetch_jwt({})
+        logging.info("Fetched token")
+        logging.info(token)
+        headers = {"Authorization": f"Bearer {token}"}
+        res = requests.get(f"{DATABASE}{key}", headers=headers)
+        logging.info(f"Loaded {key}. Response: {res}")
+        if res.status_code==200 and len(res.content) > 0:
+            return pickle.loads(res.content)
+        else:
+            logging.info(f"{key} does not exist")
+    else:
+        # load locally
+        logging.info(f"Loading {key} locally")
+        if os.path.exists(key):
+            return pickle.load(open(key, "rb"))
+        else:
+            logging.info(f"File {key} does not exist")
+    return None
 
 
 def add_address(w3, address):
@@ -68,7 +117,7 @@ def prune_graph():
 
     #  looks at each node in the graph and assesses how old it is
     #  if its older than MAX_AGE_IN_DAYS, it will be removed from the graph
-    #  note, if the nonce is larger than MAX_NONCE, it will not be removed from the graph 
+    #  note, if the nonce is larger than MAX_NONCE, it will not be removed from the graph
     #  as the nonce is only assessed when the node is created
 
     nodes_to_remove = set()
@@ -207,6 +256,25 @@ def provide_handle_transaction(w3):
 
 real_handle_transaction = provide_handle_transaction(web3)
 
+def persist_state():
+    global GRAPH
+    global ALERTED_ADDRESSES
+    global FINDINGS_CACHE
 
-def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent):
+    persist(GRAPH, GRAPH_KEY)
+    persist(FINDINGS_CACHE, FINDINGS_CACHE_KEY)
+    persist(ALERTED_ADDRESSES, ALERTED_ADDRESSES_KEY)
+    logging.info(f"Persisted bot state.")
+
+def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
+    logging.info(f"Handling block {block_event.block_number}.")
+
+    if block_event.block_number % 240 == 0:
+        logging.info(f"Persisting block {block_event.block_number}.")
+        persist_state()
+
+    findings = []
+    return findings
+
+def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     return real_handle_transaction(transaction_event)
