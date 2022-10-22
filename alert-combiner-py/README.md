@@ -121,7 +121,7 @@ Describe each of the type of alerts fired by this bot
   - Note: the detection bot will only alert once per EOA observed
 
 - ATTACK-DETECTOR-2
-  - Fired when alerts mapping to funding and preparation stages (attack simulation bot needs to fire) under one common EOA (the attacker address) have been observed
+  - Fired when alerts mapping to funding and preparation stages (attack simulation bot or smart contract ML v2 bot needs to fire) under one common EOA (the attacker address) have been observed
   - Severity is always set to "critical" 
   - Type is always set to "exploit" 
   - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
