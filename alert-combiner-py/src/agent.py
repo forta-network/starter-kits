@@ -263,7 +263,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
             # alert combiner 2 alert
             logging.info("Attack detector - 2 stages")
 
-            attack_simulation = df_forta_alerts[df_forta_alerts["alertId"] == "AK-ATTACK-SIMULATION-0"]
+            attack_simulation = df_forta_alerts[(df_forta_alerts["alertId"] == "AK-ATTACK-SIMULATION-0") | ((df_forta_alerts["alertId"] == "SUSPICIOUS-CONTRACT-CREATION") & (df_forta_alerts["bot_id"] == "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91"))]
             addresses = set()
             for index, row in attack_simulation.iterrows():
                 addresses = addresses.union(set(row['cluster_identifiers']))
