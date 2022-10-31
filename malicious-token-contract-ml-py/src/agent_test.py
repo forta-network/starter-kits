@@ -88,6 +88,7 @@ class TestMaliciousSmartContractML:
                         "type": "create",
                         "action": {
                             "from": MALICIOUS_TOKEN_CONTRACT_DEPLOYER,
+                            "init": w3.eth.get_code(MALICIOUS_TOKEN_CONTRACT),
                             "value": 1,
                         },
                         "result": {"address": MALICIOUS_TOKEN_CONTRACT},
@@ -106,14 +107,16 @@ class TestMaliciousSmartContractML:
 
     def test_detect_malicious_token_contract_benign(self):
         agent.initialize()
+        bytecode = w3.eth.get_code(BENIGN_CONTRACT)
         findings = agent.detect_malicious_token_contract(
-            w3, EOA_ADDRESS, BENIGN_CONTRACT
+            w3, EOA_ADDRESS, BENIGN_CONTRACT, bytecode
         )
         assert len(findings) == 0, "this should not have triggered a finding"
 
     def test_detect_malicious_token_contract_short(self):
         agent.initialize()
+        bytecode = w3.eth.get_code(SHORT_CONTRACT)
         findings = agent.detect_malicious_token_contract(
-            w3, EOA_ADDRESS, SHORT_CONTRACT
+            w3, EOA_ADDRESS, SHORT_CONTRACT, bytecode
         )
         assert len(findings) == 0, "this should not have triggered a finding"

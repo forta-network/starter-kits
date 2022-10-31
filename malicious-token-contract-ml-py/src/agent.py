@@ -143,7 +143,6 @@ def detect_malicious_token_contract_tx(
     w3, transaction_event: forta_agent.transaction_event.TransactionEvent
 ) -> list:
     all_findings = []
-
     if len(transaction_event.traces) > 0:
         for trace in transaction_event.traces:
             if trace.type == "create":
@@ -164,11 +163,14 @@ def detect_malicious_token_contract_tx(
                     logger.warn(
                         f"Contract {contract_address} creation failed with tx {trace.transactionHash}: {error}"
                     )
+                # creation bytecode contains both initialization and run-time bytecode.
+                creation_bytecode = trace.action.init
                 all_findings.extend(
                     detect_malicious_token_contract(
                         w3,
                         trace.action.from_,
                         created_contract_address,
+                        creation_bytecode,
                     )
                 )
     else:  # Trace isn't supported, To improve coverage, process contract creations from EOAs.
@@ -177,25 +179,28 @@ def detect_malicious_token_contract_tx(
             created_contract_address = calc_contract_address(
                 w3, transaction_event.from_, nonce
             )
+            runtime_bytecode = w3.eth.get_code(
+                Web3.toChecksumAddress(created_contract_address)
+            ).hex()
             all_findings.extend(
                 detect_malicious_token_contract(
                     w3,
                     transaction_event.from_,
                     created_contract_address,
+                    runtime_bytecode,
                 )
             )
 
     return all_findings
 
 
-def detect_malicious_token_contract(w3, from_, created_contract_address) -> list:
+def detect_malicious_token_contract(w3, from_, created_contract_address, code) -> list:
     findings = []
 
     if created_contract_address is not None:
-        code = w3.eth.get_code(Web3.toChecksumAddress(created_contract_address))
         if len(code) > BYTE_CODE_LENGTH_THRESHOLD:
             try:
-                opcodes = EvmBytecode(code.hex()).disassemble()
+                opcodes = EvmBytecode(code).disassemble()
             except Exception as e:
                 logger.warn(f"Error disassembling evm bytecode: {e}")
             # obtain all the addresses contained in the created contract and propagate to the findings
