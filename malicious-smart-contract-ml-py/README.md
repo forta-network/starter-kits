@@ -33,8 +33,8 @@ This ML bot detected two hacks before they happened:
 The agent behaviour can be verified with the following transactions:
 
 Ethereum Mainnet Transactions
+- 0x36da5eed299bb5507759e9773ffd93d752f25a1c4c5fd60fcfbf41ec158742b2 (Phishing Scammer Monkey Drainer)
 - 0xf4f51d7c1536d6b7729803ebe87aad5baad0053a505ecba88632a453f38cb6cc (Wintermute 2 Exploit)
 - 0x3d6c7922d402b89a8970e943ac3d6d39f2fb6a9114fb8abc373385473eca31ac (Audius Exploit)
 - 0xfb5a4d1aef98458f673f301c2e713613662ad621e8f57065a4da58a6401c0b4d (Inverse Finance Exploit)
 - 0x3b88b285bf45740052ff71a74e74b60f564a46cffaaea3a56172702b085fc96d (Multichain exploiter)
-
