@@ -110,35 +110,57 @@ def exec_model(opcodes: str) -> float:
     return score
 
 
-def detect_malicious_contract_creations(
+def detect_malicious_contract_tx(
     w3, transaction_event: forta_agent.transaction_event.TransactionEvent
 ) -> list:
     all_findings = []
     created_contract_addresses = []
 
-    for trace in transaction_event.traces:
-        if trace.type == "create":
-            if (
-                transaction_event.from_ == trace.action.from_
-                or trace.action.from_ in created_contract_addresses
-            ):
-                created_contract_address = trace.result.address if trace.result else None
-                error = trace.error if trace.error else None
-                logger.info(f"Contract created {created_contract_address}")
-                if error is not None:
-                    nonce = (
-                        transaction_event.transaction.nonce
-                        if transaction_event.from_ == trace.action.from_
-                        else 1
-                    )  # for contracts creating other contracts, the nonce would be 1
-                    contract_address = calc_contract_address(
-                        w3, trace.action.from_, nonce
+    if len(transaction_event.traces) > 0:
+        for trace in transaction_event.traces:
+            if trace.type == "create":
+                if (
+                    transaction_event.from_ == trace.action.from_
+                    or trace.action.from_ in created_contract_addresses
+                ):
+                    created_contract_address = (
+                        trace.result.address if trace.result else None
                     )
-                    logger.warn(f"Contract {contract_address} creation failed with tx {trace.transactionHash}: {error}")
-                created_contract_addresses.append(created_contract_address.lower())
-                all_findings.extend(detect_malicious_contract(
-                    w3, trace.action.from_, created_contract_address
-                ))
+                    error = trace.error if trace.error else None
+                    logger.info(f"Contract created {created_contract_address}")
+                    if error is not None:
+                        nonce = (
+                            transaction_event.transaction.nonce
+                            if transaction_event.from_ == trace.action.from_
+                            else 1
+                        )  # for contracts creating other contracts, the nonce would be 1. WARN: this doesn't handle create2 tx
+                        contract_address = calc_contract_address(
+                            w3, trace.action.from_, nonce
+                        )
+                        logger.warn(
+                            f"Contract {contract_address} creation failed with tx {trace.transactionHash}: {error}"
+                        )
+                    created_contract_addresses.append(created_contract_address.lower())
+                    all_findings.extend(
+                        detect_malicious_contract(
+                            w3,
+                            trace.action.from_,
+                            created_contract_address,
+                        )
+                    )
+    else:  # Trace isn't supported, To improve coverage, process contract creations from EOAs.
+        if transaction_event.to is None:
+            nonce = transaction_event.transaction.nonce
+            created_contract_address = calc_contract_address(
+                w3, transaction_event.from_, nonce
+            )
+            all_findings.extend(
+                detect_malicious_contract(
+                    w3,
+                    transaction_event.from_,
+                    created_contract_address,
+                )
+            )
 
     return all_findings
 
@@ -148,7 +170,6 @@ def detect_malicious_contract(w3, from_, created_contract_address) -> list:
 
     if created_contract_address is not None:
         code = w3.eth.get_code(Web3.toChecksumAddress(created_contract_address))
-
         if len(code) > BYTE_CODE_LENGTH_THRESHOLD:
             opcodes = disassemble_hex(code.hex())
             # obtain all the addresses contained in the created contract and propagate to the findings
@@ -184,7 +205,7 @@ def provide_handle_transaction(w3):
     def handle_transaction(
         transaction_event: forta_agent.transaction_event.TransactionEvent,
     ) -> list:
-        return detect_malicious_contract_creations(w3, transaction_event)
+        return detect_malicious_contract_tx(w3, transaction_event)
 
     return handle_transaction
 
