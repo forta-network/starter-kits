@@ -38,7 +38,7 @@ Using stratified 5-fold cross validation and decision threshold=0.5, the model p
 
 ## Alerts
 
-- SUSPICIOUS-CONTRACT-CREATION
+- SUSPICIOUS-TOKEN-CONTRACT-CREATION
   - Fired when a new (erc20/erc721/erc1155/erc777) token contract is created and predicted as malicious.
   - The metadata will contain the addresses observed in the created contract (either through storage or static analysis) as well as the machine learning score.
   - Finding type: Suspicious
