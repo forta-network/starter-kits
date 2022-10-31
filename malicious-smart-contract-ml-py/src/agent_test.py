@@ -85,15 +85,13 @@ class TestMaliciousSmartContractML:
                             "from": MALICIOUS_CONTRACT_DEPLOYER,
                             "value": 1,
                         },
-                        "result": {
-                            "address": MALICIOUS_CONTRACT
-                        }
+                        "result": {"address": MALICIOUS_CONTRACT},
                     }
                 ],
                 "receipt": {"logs": []},
             }
         )
-        findings = agent.detect_malicious_contract_creations(w3, tx_event)
+        findings = agent.detect_malicious_contract_tx(w3, tx_event)
         assert len(findings) == 1, "this should have triggered a finding"
         finding = next(
             (x for x in findings if x.alert_id == "SUSPICIOUS-CONTRACT-CREATION"), None
