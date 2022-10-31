@@ -1,19 +1,25 @@
 import forta_agent
+from fsspec import get_fs_token_paths
 import numpy as np
 import pandas as pd
 import rlp
 from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from joblib import load
-from pyevmasm import disassemble_hex
+from evmdasm import EvmBytecode
 from web3 import Web3
 
 from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
     CONTRACT_SLOT_ANALYSIS_DEPTH,
     MODEL_THRESHOLD,
+    TOKEN_TYPES,
+    ERC721_SIGHASHES,
+    ERC20_SIGHASHES,
+    ERC1155_SIGHASHES,
+    ERC777_SIGHASHES,
 )
-from src.findings import MaliciousContractFindings
+from src.findings import MaliciousTokenContractFindings
 from src.logger import logger
 
 
@@ -27,7 +33,7 @@ def initialize():
     """
     global ML_MODEL
     logger.info("Start loading model")
-    ML_MODEL = load("model.joblib")
+    ML_MODEL = load("malicious_token_model_sighashes_10_29_22.joblib")
     logger.info("Complete loading model")
 
 
@@ -67,50 +73,73 @@ def get_storage_addresses(w3, address) -> set:
     return address_set
 
 
-def get_opcode_addresses(w3, opcodes) -> set:
+def get_contract_type(opcodes: str, function_sighashes: set) -> str:
     """
-    this function returns the addresses that are references in the opcodes of a contract
-    :return: address_list: list (only returning contract addresses)
+    this function determines contract type based on available sighashes.
+    :return: contract_type: str
     """
-    address_set = set()
-    for op in opcodes.splitlines():
-        for param in op.split(" "):
-            if param.startswith("0x") and len(param) == 42:
-                if is_contract(w3, param):
-                    address_set.add(Web3.toChecksumAddress(param))
+    if function_sighashes.intersection(ERC777_SIGHASHES):
+        return "erc777"
+    elif function_sighashes.intersection(ERC1155_SIGHASHES):
+        return "erc1155"
+    elif function_sighashes.intersection(ERC721_SIGHASHES):
+        return "erc721"
+    elif function_sighashes.intersection(ERC20_SIGHASHES):
+        return "erc20"
+    elif "DELEGATECALL" in opcodes:
+        return "proxy"
+    else:
+        return "non-token-or-proxy"
 
-    return address_set
 
-
-def get_features(opcodes) -> list:
+def get_features(w3, opcodes) -> list:
     """
-    this function returns the opcodes contained in the contract
+    this function returns the opcodes + function hashes contained in the contract
     :return: features: list
     """
     features = []
-    for op in opcodes.splitlines():
-        opcode = op.split(" ")[0].strip() if op else ""
-        if opcode:
-            # treat unique unknown and invalid opcodes as UNKNOWN OR INVALID
-            if opcode.startswith("UNKNOWN") or opcode.startswith("INVALID"):
-                opcode = opcode.split("_")[0]
-            features.append(opcode)
+    function_sighashes = set()
+    opcode_addresses = set()
 
-    return " ".join(features)
+    for i, opcode in enumerate(opcodes):
+        opcode_name = opcode.name
+        # treat unique unknown and invalid opcodes as UNKNOWN OR INVALID
+        if opcode_name.startswith("UNKNOWN") or opcode_name.startswith("INVALID"):
+            opcode_name = opcode.name.split("_")[0]
+        features.append(opcode_name)
+        if len(opcode.operand) == 40 and is_contract(w3, opcode.operand):
+            opcode_addresses.add(Web3.toChecksumAddress(f"0x{opcode.operand}"))
+
+        if i < (len(opcodes) - 3):
+            if (
+                opcodes[i].name == "PUSH4"
+                and opcodes[i + 1].name == "EQ"
+                and opcodes[i + 2].name == "PUSH2"
+                and opcodes[i + 3].name == "JUMPI"
+            ):  # add function sighashes
+                features.append(opcode.operand)
+                function_sighashes.add(opcode.operand)
+    features = " ".join(features)
+    contract_type = get_contract_type(features, function_sighashes)
+
+    return features, opcode_addresses, contract_type
 
 
-def exec_model(opcodes: str) -> float:
+def exec_model(w3, opcodes: str) -> tuple:
     """
     this function executes the model to obtain the score for the contract
     :return: score: float
     """
-    features = get_features(opcodes)
-    score = ML_MODEL.predict_proba([features])[0][1]
-    logger.info(score)
-    return score
+    score = None
+    features, opcode_addresses, contract_type = get_features(w3, opcodes)
+    if contract_type in TOKEN_TYPES:
+        score = ML_MODEL.predict_proba([features])[0][1]
+    logger.info(f"{contract_type}: {score}")
+
+    return score, opcode_addresses, contract_type
 
 
-def detect_malicious_contract_tx(
+def detect_malicious_token_contract_tx(
     w3, transaction_event: forta_agent.transaction_event.TransactionEvent
 ) -> list:
     all_findings = []
@@ -136,7 +165,7 @@ def detect_malicious_contract_tx(
                         f"Contract {contract_address} creation failed with tx {trace.transactionHash}: {error}"
                     )
                 all_findings.extend(
-                    detect_malicious_contract(
+                    detect_malicious_token_contract(
                         w3,
                         trace.action.from_,
                         created_contract_address,
@@ -149,7 +178,7 @@ def detect_malicious_contract_tx(
                 w3, transaction_event.from_, nonce
             )
             all_findings.extend(
-                detect_malicious_contract(
+                detect_malicious_token_contract(
                     w3,
                     transaction_event.from_,
                     created_contract_address,
@@ -159,22 +188,24 @@ def detect_malicious_contract_tx(
     return all_findings
 
 
-def detect_malicious_contract(w3, from_, created_contract_address) -> list:
+def detect_malicious_token_contract(w3, from_, created_contract_address) -> list:
     findings = []
 
     if created_contract_address is not None:
         code = w3.eth.get_code(Web3.toChecksumAddress(created_contract_address))
         if len(code) > BYTE_CODE_LENGTH_THRESHOLD:
-            opcodes = disassemble_hex(code.hex())
+            try:
+                opcodes = EvmBytecode(code.hex()).disassemble()
+            except Exception as e:
+                logger.warn(f"Error disassembling evm bytecode: {e}")
             # obtain all the addresses contained in the created contract and propagate to the findings
             storage_addresses = get_storage_addresses(w3, created_contract_address)
-            opcode_addresses = get_opcode_addresses(w3, opcodes)
-
-            model_score = exec_model(opcodes)
-            if model_score >= MODEL_THRESHOLD:
+            model_score, opcode_addresses, contract_type = exec_model(w3, opcodes)
+            if model_score is not None and model_score >= MODEL_THRESHOLD:
                 findings.append(
-                    MaliciousContractFindings.malicious_contract_creation(
+                    MaliciousTokenContractFindings.malicious_contract_creation(
                         from_,
+                        contract_type,
                         created_contract_address,
                         set.union(storage_addresses, opcode_addresses),
                         model_score,
@@ -199,7 +230,7 @@ def provide_handle_transaction(w3):
     def handle_transaction(
         transaction_event: forta_agent.transaction_event.TransactionEvent,
     ) -> list:
-        return detect_malicious_contract_tx(w3, transaction_event)
+        return detect_malicious_token_contract_tx(w3, transaction_event)
 
     return handle_transaction
 
