@@ -4,6 +4,11 @@
 
 This detection bot detects when a suspicious smart contract is deployed. It uses an offline trained machine learning model that was built based opcodes contained in malicious and benign smart contracts.
 
+This ML bot detected two hacks before they happened:
+
+- [$16M Team Finance Hack](https://twitter.com/FortaNetwork/status/1586044760476696577?s=20&t=x3ctj_DtFGWRQQCV9Jcujw)
+- [$300K Olympus DAO Hack](https://twitter.com/FortaNetwork/status/1583559233852739584?s=20&t=x3ctj_DtFGWRQQCV9Jcujw)
+
 ## Supported Chains
 
 - Ethereum
