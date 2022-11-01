@@ -1,7 +1,4 @@
 import forta_agent
-from fsspec import get_fs_token_paths
-import numpy as np
-import pandas as pd
 import rlp
 from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
