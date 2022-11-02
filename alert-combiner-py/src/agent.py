@@ -11,10 +11,10 @@ from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 
-from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, SCAM_DETECTOR, ATTACK_DETECTOR, ENTITY_CLUSTER_BOT_ALERT_ID,
+from constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, SCAM_DETECTOR, ATTACK_DETECTOR, ENTITY_CLUSTER_BOT_ALERT_ID,
                            DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD, ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS)
-from src.findings import AlertCombinerFinding
-from src.forta_explorer import FortaExplorer
+from findings import AlertCombinerFinding
+from forta_explorer import FortaExplorer
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 forta_explorer = FortaExplorer()
@@ -263,13 +263,19 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
             # alert combiner 2 alert
             logging.info("Attack detector - 2 stages")
 
-            attack_simulation = df_forta_alerts[(df_forta_alerts["alertId"] == "AK-ATTACK-SIMULATION-0") | ((df_forta_alerts["alertId"] == "SUSPICIOUS-CONTRACT-CREATION") & (df_forta_alerts["bot_id"] == "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91"))]
+            attack_simulation = df_forta_alerts[(df_forta_alerts["alertId"] == "AK-ATTACK-SIMULATION-0")]
+            suspicious_smart_contract_ml = df_forta_alerts[((df_forta_alerts["alertId"] == "SUSPICIOUS-CONTRACT-CREATION") & (df_forta_alerts["bot_id"] == "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91"))]
+
             addresses = set()
             for index, row in attack_simulation.iterrows():
-                addresses = addresses.union(set(row['cluster_identifiers']))
+                addresses.add(row["description"][62:104].lower())  #  "Invocation of the function 0x53000000 of the created contract 0xfd0000000100069ad1670066004306009b487ad7 "
+  
+            for index, row in suspicious_smart_contract_ml.iterrows():
+                addresses.add(row["description"][0:42].lower())
 
+            # replace with cluster identifiers if they exist
             clusters = swap_addresses_with_clusters(list(addresses), df_address_clusters_exploded)
-                
+
             # analyze each address' alerts
             for potential_attacker_cluster_lower in clusters:
                 try:
