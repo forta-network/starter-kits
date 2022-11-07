@@ -1,6 +1,6 @@
 {
   "name": "entity-cluster-bot",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "A bot that clusters entities",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
