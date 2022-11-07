@@ -99,7 +99,7 @@ class TestEntityClusterBot:
         filtered_graph = nx.subgraph_view(agent.GRAPH, filter_edge=agent.filter_edge)
         assert len(filtered_graph.edges) == 2, "Edges should not have been filtered out"
 
-    def test_finding(self):
+    def test_finding_bidirectional(self):
         TestEntityClusterBot.remove_persistent_state()
         agent.initialize()
 
@@ -144,3 +144,54 @@ class TestEntityClusterBot:
 
         findings = agent.cluster_entities(w3, native_transfer2)
         assert len(findings) == 1, "Finding should be returned as it is bidirectional"
+
+    def test_nofinding_onedirectional_below_threshold(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent.initialize()
+
+        native_transfer1 = create_transaction_event({
+
+                'transaction': {
+                    'hash': "0",
+                    'from': EOA_ADDRESS_NEW,
+                    'to': EOA_ADDRESS_OLD,
+                    'value': 40000000000000000000,
+                    'nonce': 8,
+
+                },
+                'block': {
+                    'number': 0,
+                    'timestamp': datetime.now().timestamp(),
+                },
+                'receipt': {
+                    'logs': []}
+            })
+
+        findings = agent.cluster_entities(w3, native_transfer1)
+        assert len(findings) == 0, "No findings should be returned as it is below eth threshold"
+
+    def test_finding_onedirectional_above_threshold(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent.initialize()
+
+        native_transfer1 = create_transaction_event({
+
+                'transaction': {
+                    'hash': "0",
+                    'from': EOA_ADDRESS_NEW,
+                    'to': EOA_ADDRESS_OLD,
+                    'value': 60000000000000000000,
+                    'nonce': 8,
+
+                },
+                'block': {
+                    'number': 0,
+                    'timestamp': datetime.now().timestamp(),
+                },
+                'receipt': {
+                    'logs': []}
+            })
+
+        findings = agent.cluster_entities(w3, native_transfer1)
+        assert len(findings) == 1, "Findings should be returned as it is above eth threshold even though its onedirectional"
+

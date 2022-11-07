@@ -15,7 +15,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, ALERTED_ADDRESSES_KEY, FINDINGS_CACHE_KEY, GRAPH_KEY
+from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, ALERTED_ADDRESSES_KEY, FINDINGS_CACHE_KEY, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
@@ -180,7 +180,17 @@ def cluster_entities(w3, transaction_event) -> list:
         logging.info(f"Observing native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
         if not is_contract(w3, transaction_event.transaction.to) and not is_contract(w3, transaction_event.transaction.from_):
             add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
-            print("0")
+            finding = create_finding(transaction_event.transaction.from_)
+            if finding is not None:
+                findings.append(finding)
+
+    #  add edges for large native transfers; will treat as bidirectional transfer
+    if transaction_event.transaction.value > ONE_WAY_WEI_TRANSFER_THRESHOLD:
+        logging.info(f"Observing large native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
+        if not is_contract(w3, transaction_event.transaction.to) and not is_contract(w3, transaction_event.transaction.from_):
+            add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
+            add_directed_edge(w3, transaction_event.transaction.to, transaction_event.transaction.from_)
+
             finding = create_finding(transaction_event.transaction.from_)
             if finding is not None:
                 findings.append(finding)
