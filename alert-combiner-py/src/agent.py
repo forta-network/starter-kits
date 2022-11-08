@@ -11,10 +11,10 @@ from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 
-from constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, SCAM_DETECTOR, ATTACK_DETECTOR, ENTITY_CLUSTER_BOT_ALERT_ID,
+from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, SCAM_DETECTOR, ATTACK_DETECTOR, ENTITY_CLUSTER_BOT_ALERT_ID,
                            DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD, ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS)
-from findings import AlertCombinerFinding
-from forta_explorer import FortaExplorer
+from src.findings import AlertCombinerFinding
+from src.forta_explorer import FortaExplorer
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 forta_explorer = FortaExplorer()
