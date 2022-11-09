@@ -51,8 +51,8 @@ class TestAlertCombiner:
              "HIGH", {}, "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x12abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
 
             ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a"}},
-             "HIGH", {}, "TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
+             "HIGH", {}, "FUNDING-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
 
             ["2022-04-30T23:55:17.284158264Z", "Reentrancy", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9"}},
@@ -86,8 +86,8 @@ class TestAlertCombiner:
              "HIGH", {}, "AK-ATTACK-SIMULATION-0", "Invocation of the function 0x53000000 of the created contract 0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
 
             ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02618", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a"}},
-             "HIGH", {}, "TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION", "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4 description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"]
+             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02618", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
+             "HIGH", {}, "FUNDING-TORNADO-CASH", "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4 description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"]
         ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
 
         forta_explorer.set_df(df_forta)
@@ -113,8 +113,8 @@ class TestAlertCombiner:
              "HIGH", {}, "ICE-PHISHING-APPROVAL-FOR-ALL", "0x21E13f16838e2fe78056f5fd50251ffd6e7098b4 obtained transfer approval for 3 assets by 6 accounts over period of 2 days.", ["0x21e13f16838e2fe78056f5fd50251ffd6e7098b4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
 
             ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02618", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a"}},
-             "HIGH", {}, "TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION", "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4 interacted with contract 0xcc5f573a93fcab719640f660173b8217664605d3", ["0x21e13f16838e2fe78056f5fd50251ffd6e7098b4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"]
+             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02618", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
+             "HIGH", {}, "FUNDING-TORNADO-CASH", "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4 interacted with contract 0xcc5f573a93fcab719640f660173b8217664605d3", ["0x21e13f16838e2fe78056f5fd50251ffd6e7098b4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"]
         ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
 
         forta_explorer.set_df(df_forta)
@@ -192,8 +192,8 @@ class TestAlertCombiner:
              "HIGH", {}, "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "description", [EOA_ADDRESS_LARGE_TX], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
 
             ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a"}},
-             "HIGH", {}, "TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION", "description", [EOA_ADDRESS_LARGE_TX], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
+             "HIGH", {}, "FUNDING-TORNADO-CASH", "description", [EOA_ADDRESS_LARGE_TX], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
 
             ["2022-04-30T23:55:17.284158264Z", "Reentrancy", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9"}},
@@ -228,8 +228,8 @@ class TestAlertCombiner:
              "HIGH", {}, "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x12abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
 
             ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a"}},
-             "HIGH", {}, "TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
+             "HIGH", {}, "FUNDING-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
 
             ["2022-04-30T23:55:17.284158264Z", "Reentrancy", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9"}},
@@ -267,8 +267,8 @@ class TestAlertCombiner:
              "HIGH", {}, "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
 
             ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a"}},
-             "HIGH", {}, "TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
+             "HIGH", {}, "FUNDING-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
 
             ["2022-04-30T23:55:17.284158264Z", "Money Laundering", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2"}},
@@ -305,8 +305,8 @@ class TestAlertCombiner:
              "HIGH", {}, "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "description", ["0x7A2a13C269b3B908Ca5599956A248c5789Cc953f"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
 
             ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02619", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a"}},
-             "HIGH", {}, "TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION", "description", ["0x91C1B58F24F5901276b1F2CfD197a5B73e31F96E"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02619", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
+             "HIGH", {}, "FUNDING-TORNADO-CASH", "description", ["0x91C1B58F24F5901276b1F2CfD197a5B73e31F96E"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
 
             ["2022-04-30T23:55:17.284158264Z", "Reentrancy", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02620", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9"}},
