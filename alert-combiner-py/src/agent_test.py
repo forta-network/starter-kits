@@ -110,7 +110,7 @@ class TestAlertCombiner:
         df_forta = pd.DataFrame([
             ["2022-04-30T23:55:17.284158264Z", "Account got approval for all tokens", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6"}},
-             "HIGH", {}, "ICE-PHISHING-APPROVAL-FOR-ALL", "0x21E13f16838e2fe78056f5fd50251ffd6e7098b4 obtained transfer approval for 3 assets by 6 accounts over period of 2 days.", ["0x21e13f16838e2fe78056f5fd50251ffd6e7098b4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+             "HIGH", {}, "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL", "0x21E13f16838e2fe78056f5fd50251ffd6e7098b4 obtained transfer approval for 3 assets by 6 accounts over period of 2 days.", ["0x21e13f16838e2fe78056f5fd50251ffd6e7098b4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
 
             ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02618", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
@@ -137,7 +137,7 @@ class TestAlertCombiner:
         df_forta = pd.DataFrame([
             ["2022-04-30T23:55:17.284158264Z", "Account got approval for all tokens", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6"}},
-             "HIGH", {}, "ICE-PHISHING-APPROVAL-FOR-ALL", "0x21E13f16838e2fe78056f5fd50251ffd6e7098b4 obtained transfer approval for 3 assets by 6 accounts over period of 2 days.", ["0x21e13f16838e2fe78056f5fd50251ffd6e7098b4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+             "HIGH", {}, "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL", "0x21E13f16838e2fe78056f5fd50251ffd6e7098b4 obtained transfer approval for 3 assets by 6 accounts over period of 2 days.", ["0x21e13f16838e2fe78056f5fd50251ffd6e7098b4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
 
             ["2022-04-30T23:55:17.284158264Z", "Malicious Address", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02618", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xd935a697faab13282b3778b2cb8dd0aa4a0dde07877f9425f3bf25ac7b90b895"}},
@@ -163,7 +163,7 @@ class TestAlertCombiner:
         df_forta = pd.DataFrame([
             ["2022-04-30T23:55:17.284158264Z", "Account got approval for all tokens", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6"}},
-             "HIGH", {}, "ICE-PHISHING-APPROVAL-FOR-ALL", "0x21E13f16838e2fe78056f5fd50251ffd6e7098b4 obtained transfer approval for 3 assets by 6 accounts over period of 2 days.", ["0x21e13f16838e2fe78056f5fd50251ffd6e7098b4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+             "HIGH", {}, "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL", "0x21E13f16838e2fe78056f5fd50251ffd6e7098b4 obtained transfer approval for 3 assets by 6 accounts over period of 2 days.", ["0x21e13f16838e2fe78056f5fd50251ffd6e7098b4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
 
             ["2022-04-30T23:55:17.284158264Z", "Text message agent", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02618", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4"}},
