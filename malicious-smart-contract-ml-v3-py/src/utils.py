@@ -1,3 +1,4 @@
+from cachetools import cached, TTLCache
 from hexbytes import HexBytes
 import rlp
 import requests
@@ -144,6 +145,8 @@ def luabase_request(chain_name, query_uuid):
     return data
 
 
+# cache anomaly scores for no longer than 30 minutes
+@cached(cache=TTLCache(maxsize=10, ttl=1800))
 def get_anomaly_score(chain_id):
     anomaly_score = 0
     alert_count = 0
