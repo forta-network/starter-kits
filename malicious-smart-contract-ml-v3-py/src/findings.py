@@ -7,7 +7,6 @@ class MaliciousTokenContractFindings:
         from_address: str,
         contract_address: str,
         contained_addresses: set,
-        function_sighashes: set,
         model_score: float,
         model_threshold: float,
         anomaly_score: float,
@@ -16,7 +15,6 @@ class MaliciousTokenContractFindings:
             "address_contained_in_created_contract_" + str(i): address
             for i, address in enumerate(contained_addresses, 1)
         }
-        metadata["function_sighashes"] = list(function_sighashes)
         # This contract explorer only works for Ethereum
         metadata[
             "oko_contract_explorer"

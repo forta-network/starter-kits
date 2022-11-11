@@ -128,7 +128,6 @@ def detect_malicious_contract(w3, from_, created_contract_address, code) -> list
                         from_,
                         created_contract_address,
                         set.union(storage_addresses, opcode_addresses),
-                        function_sighashes,
                         model_score,
                         MODEL_THRESHOLD,
                         anomaly_score,
