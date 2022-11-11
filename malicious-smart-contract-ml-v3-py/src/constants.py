@@ -26,3 +26,19 @@ ERC777_SIGHASHES = {"0x959b8c3f", "0xfad8b32a"}
 # 0x4f1ef286 - upgradeToAndCall(address,bytes)
 # 0x8f283970 - changeAdmin(address)
 PROXY_SIGHASHES = {"0x5c60da1b", "0x3659cfe6", "0x4f1ef286", "0x8f283970"}
+
+CHAIN_ID_METADATA_MAPPING = {
+    1: (
+        "ethereum",
+        147.5,
+        32_713,
+    ),  # 147.5 avg of last week of Oct, 2022, 32_713 count of new contracts in 24-hr time frame.
+    137: ("polygon", 50, 6_681),  # TODO: Update alert_count
+    56: ("binance", 600, 128_000),  # TODO: Update alert_count, contract_deployment
+    43114: ("avalanche", 10, 432),  # TODO: Update alert_count
+    42161: ("arbitrum", 62, 14_000),  # TODO: Update alert_count, contract_deployment
+    10: ("optimism", 44, 9_800),  # TODO: Update alert_count, contract_deployment
+    250: ("fantom", 1000, 345_486),  # TODO: Update alert_count
+}
+
+LUABASE_SUPPORTED_CHAINS = {1, 137, 43114, 250}
