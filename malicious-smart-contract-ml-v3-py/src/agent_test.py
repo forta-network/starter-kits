@@ -1,6 +1,7 @@
 from forta_agent import FindingSeverity, create_transaction_event
 
 import agent
+import utils
 from evmdasm import EvmBytecode
 from web3_mock import (
     BENIGN_CONTRACT,
@@ -19,12 +20,12 @@ w3 = Web3Mock()
 
 class TestMaliciousSmartContractML:
     def test_is_contract_eoa(self):
-        assert not agent.is_contract(
+        assert not utils.is_contract(
             w3, EOA_ADDRESS
         ), "EOA shouldn't be identified as a contract"
 
     def test_is_contract_contract(self):
-        assert agent.is_contract(
+        assert utils.is_contract(
             w3, CONTRACT_NO_ADDRESS
         ), "Contract should be identified as a contract"
 
