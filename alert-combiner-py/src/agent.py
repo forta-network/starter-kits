@@ -191,6 +191,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
         start_date = end_date - timedelta(days=ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS)
         df_address_clusters_exploded = get_clusters_exploded(start_date=start_date, end_date=end_date, forta_explorer=forta_explorer, chain_id=w3.eth.chain_id)
+        logging.info(f"Fetched clusters {len(df_address_clusters_exploded)}")
 
         end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
         start_date = end_date - timedelta(days=DATE_LOOKBACK_WINDOW_IN_DAYS)
@@ -325,11 +326,16 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         # alert combiner 3 alert - ice phishing
         if SCAM_DETECTOR:
             logging.info("Scam detector - ice phishing")
-            ice_phishing = df_forta_alerts[(df_forta_alerts["alertId"] == "ICE-PHISHING-PREV-APPROVED-TRANSFERED") | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-APPROVAL-FOR-ALL")]
+
+            ice_phishing = df_forta_alerts[(df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-PERMITTED-ERC20-TRANSFER") | (df_forta_alerts["alertId"] == "ICE-PHISHING-SUSPICIOUS-TRANSFER")
+                | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-ERC721-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL") 
+                | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC721-APPROVAL-FOR-ALL") | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC1155-APPROVAL-FOR-ALL")]
             addresses = set()
             ice_phishing["description"].apply(lambda x: addresses.add(get_ice_phishing_attacker_address(x)))
+            logging.info(f"Got {len(addresses)} ice phishing addresses")
 
             clusters = swap_addresses_with_clusters(list(addresses), df_address_clusters_exploded)
+            logging.info(f"Mapped ice phishing addresses to {len(clusters)} clusters.")
 
             for potential_attacker_cluster_lower in clusters:
                 try:
