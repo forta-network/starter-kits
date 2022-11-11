@@ -180,15 +180,13 @@ def detect_malicious_contract_tx(
             created_contract_address = calc_contract_address(
                 w3, transaction_event.from_, nonce
             )
-            runtime_bytecode = w3.eth.get_code(
-                Web3.toChecksumAddress(created_contract_address)
-            ).hex()
+            creation_bytecode = transaction_event.transaction.data
             all_findings.extend(
                 detect_malicious_contract(
                     w3,
                     transaction_event.from_,
                     created_contract_address,
-                    runtime_bytecode,
+                    creation_bytecode,
                 )
             )
 
