@@ -5,3 +5,4 @@ __pycache__
 .pytest_cache
 malicious_non_token_model_11_05_22.joblib
 src/luabase_constants.py
+publish.log
