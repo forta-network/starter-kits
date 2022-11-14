@@ -80,6 +80,7 @@ def detect_malicious_contract_tx(
                         trace.action.from_,
                         created_contract_address,
                         creation_bytecode,
+                        error=error,
                     )
                 )
     else:  # Trace isn't supported, To improve coverage, process contract creations from EOAs.
@@ -101,7 +102,9 @@ def detect_malicious_contract_tx(
     return all_findings
 
 
-def detect_malicious_contract(w3, from_, created_contract_address, code) -> list:
+def detect_malicious_contract(
+    w3, from_, created_contract_address, code, error=None
+) -> list:
     findings = []
 
     if created_contract_address is not None:
@@ -131,6 +134,7 @@ def detect_malicious_contract(w3, from_, created_contract_address, code) -> list
                         model_score,
                         MODEL_THRESHOLD,
                         anomaly_score,
+                        error=error,
                     )
                 )
 
