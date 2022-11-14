@@ -10,6 +10,7 @@ class MaliciousTokenContractFindings:
         model_score: float,
         model_threshold: float,
         anomaly_score: float,
+        error: str = None,
     ) -> Finding:
         metadata = {
             "address_contained_in_created_contract_" + str(i): address
@@ -22,11 +23,16 @@ class MaliciousTokenContractFindings:
         metadata["model_score"] = str(model_score)
         metadata["model_threshold"] = str(model_threshold)
         metadata["anomaly_score"] = anomaly_score
+        description = (
+            f"{from_address} created contract {contract_address}"
+            if error is None
+            else f"{from_address} failed to create contract {contract_address} with err: {error}"
+        )
 
         return Finding(
             {
                 "name": "Suspicious Contract Creation",
-                "description": f"{from_address} created contract {contract_address}",
+                "description": description,
                 "alert_id": "SUSPICIOUS-CONTRACT-CREATION",
                 "type": FindingType.Suspicious,
                 "severity": FindingSeverity.High,
