@@ -20,6 +20,10 @@ Describe each of the type of alerts fired by this agent
   - Fired when small amounts of funds are withdrawn from tornado cash into a new account.
   - Findings severity will be Low
 
+- FUNDING-TORNADO-CASH-HIGH
+  - Fired when high amounts of funds are withdrawn from tornado cash into a new account.
+  - Findings severity will be info
+
 ## Test Data
 
 The agent behaviour can be verified with the following transactions:
