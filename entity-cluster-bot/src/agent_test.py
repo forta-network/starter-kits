@@ -5,8 +5,9 @@ import os
 import networkx as nx
 
 from web3 import Web3
-from web3_mock import CONTRACT, EOA_ADDRESS_LARGE_TX, EOA_ADDRESS_NEW, EOA_ADDRESS_OLD, EOA_ADDRESS_SMALL_TX, Web3Mock
+from web3_mock import CONTRACT, EOA_ADDRESS_LARGE_TX, EOA_ADDRESS_NEW, EOA_ADDRESS_OLD, EOA_ADDRESS_SMALL_TX, EOA_ADDRESS_FUNDED_NEW, EOA_ADDRESS_FUNDED_OLD, EOA_ADDRESS_FUNDER_NEW, EOA_ADDRESS_FUNDER_OLD, Web3Mock
 from constants import ALERTED_ADDRESSES_KEY, FINDINGS_CACHE_KEY, GRAPH_KEY
+from forta_agent import get_alerts
 w3 = Web3Mock()
 
 class TestEntityClusterBot:
@@ -194,4 +195,77 @@ class TestEntityClusterBot:
 
         findings = agent.cluster_entities(w3, native_transfer1)
         assert len(findings) == 1, "Findings should be returned as it is above eth threshold even though its onedirectional"
+
+    def test_finding_onedirectional_initial_funds_new_account(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent.initialize()
+
+        native_transfer1 = create_transaction_event({
+
+                'transaction': {
+                    'hash': "0",
+                    'from': EOA_ADDRESS_FUNDER_NEW,
+                    'to': EOA_ADDRESS_FUNDED_NEW,
+                    'value': 10000000
+
+                },
+                'block': {
+                    'number': 0,
+                    'timestamp': datetime.now().timestamp(),
+                },
+                'receipt': {
+                    'logs': []}
+            })
+
+        findings = agent.cluster_entities(w3, native_transfer1)
+        assert len(findings) == 1, "Findings should be returned as it is new account transfer"
+
+    def test_finding_onedirectional_initial_funds_new_account_above_threshold(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent.initialize()
+
+        native_transfer1 = create_transaction_event({
+
+                'transaction': {
+                    'hash': "0",
+                    'from': EOA_ADDRESS_FUNDER_NEW,
+                    'to': EOA_ADDRESS_FUNDED_NEW,
+                    'value': 1000000000000000000
+
+                },
+                'block': {
+                    'number': 0,
+                    'timestamp': datetime.now().timestamp(),
+                },
+                'receipt': {
+                    'logs': []}
+            })
+
+        findings = agent.cluster_entities(w3, native_transfer1)
+        assert len(findings) == 0, "Findings should not be returned as it is new account transfer, but too much value"
+
+    def test_finding_onedirectional_initial_funds_old_account(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent.initialize()
+
+        native_transfer1 = create_transaction_event({
+
+                'transaction': {
+                    'hash': "0",
+                    'from': EOA_ADDRESS_FUNDER_NEW,
+                    'to': EOA_ADDRESS_FUNDED_OLD,
+                    'value': 100000000
+
+                },
+                'block': {
+                    'number': 0,
+                    'timestamp': datetime.now().timestamp(),
+                },
+                'receipt': {
+                    'logs': []}
+            })
+
+        findings = agent.cluster_entities(w3, native_transfer1)
+        assert len(findings) == 0, "No findings should be returned as it old account transfer"
+
 
