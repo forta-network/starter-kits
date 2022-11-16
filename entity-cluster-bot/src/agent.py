@@ -15,13 +15,15 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, ALERTED_ADDRESSES_KEY, FINDINGS_CACHE_KEY, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD
+from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, ALERTED_ADDRESSES_KEY, FINDINGS_CACHE_KEY, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
+TC_FUNDING_ADDRESSES = []
 FINDINGS_CACHE = []
 ALERTED_ADDRESSES = []
 GRAPH = nx.DiGraph()
+MUTEX = False
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -195,6 +197,18 @@ def cluster_entities(w3, transaction_event) -> list:
             if finding is not None:
                 findings.append(finding)
 
+    #  add edges for small native transfers, new accounts
+    if w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.from_), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE and w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE:
+        if transaction_event.transaction.value < NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD:
+            logging.info(f"Observing small native transfer of value {transaction_event.transaction.value} from new EOA {transaction_event.transaction.from_} to new EOA {transaction_event.transaction.to}")
+            if not is_contract(w3, transaction_event.transaction.to) and not is_contract(w3, transaction_event.transaction.from_):
+                add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
+                add_directed_edge(w3, transaction_event.transaction.to, transaction_event.transaction.from_)
+
+                finding = create_finding(transaction_event.transaction.from_)
+                if finding is not None:
+                    findings.append(finding)
+
     #  add edges for ERC20 transfers
     transfer_events = transaction_event.filter_log(ERC20_TRANSFER_EVENT)
     for transfer_event in transfer_events:
@@ -255,7 +269,20 @@ def create_finding(from_) -> Finding:
                         }
                     }
                 )
-            
+
+
+def query_alerts(w3, aq):
+    while(True):
+        global TC_FUNDING_ADDRESSES
+        logging.info("Querying tc funding alerts...")
+        TC_FUNDING_ADDRESSES = aq.get_tc_funding_addresses(w3.eth.chain_id)
+        logging.info(f"Got {len(TC_FUNDING_ADDRESSES)} tc funding addresses")
+
+
+def query_alerts_background(w3, aq):
+    while(True):
+        query_alerts_background(w3, aq)
+
 
 def provide_handle_transaction(w3):
     def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
