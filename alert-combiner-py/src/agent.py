@@ -52,6 +52,10 @@ def initialize():
     ICE_PHISHING_MAPPINGS_DF = pd.read_csv('ice_phishing_mappings.csv')
 
 
+def handle_alert(alert_event):
+    print("handle_alert")
+    print(alert_event)
+
 def is_contract(w3, addresses) -> bool:
     """
     this function determines whether address/ addresses is a contract; if all are contracts, returns true; otherwise false
