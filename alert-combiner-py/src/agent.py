@@ -11,10 +11,11 @@ from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 
-from constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, ALERT_MAX_QUEUE_SIZE, FP_ALERTS_QUEUE_MAX_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID,
-                       ALERTED_CLUSTERS_MAX_QUEUE_SIZE, FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT,
-                       FP_MITIGATION_BOTS_DATE_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_HOURS,
-                       ALERTS_KEY, ALERTED_CLUSTERS_KEY, ENTITY_CLUSTER_ALERTS_KEY, FP_MITIGATION_ALERTS_KEY)
+from findings import AlertCombinerFinding
+from constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_ALERTS_QUEUE_MAX_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID,
+                           ALERTED_CLUSTERS_MAX_QUEUE_SIZE, FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD,
+                           FP_MITIGATION_BOTS_DATE_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_HOURS, MIN_ALERTS_COUNT,
+                           ALERTS_DATA_KEY, ALERTED_CLUSTERS_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_ALERTS_KEY, AD_SCORE_ANOMALY_SCORE)
 from luabase import Luabase
 
 
@@ -24,10 +25,13 @@ luabase = Luabase()
 DATABASE = "https://research.forta.network/database/bot/"
 
 FINDINGS_CACHE = []
-ENTITY_CLUSTER_ALERTS = []
+CONTRACT_CACHE = {}
+ENTITY_CLUSTERS = {}  # address -> cluster
 ALERTS = []
 ALERTED_CLUSTERS = []
 FP_MITIGATION_ALERTS = []
+ALERT_ID_AD_SCORER_MAPPING = dict()
+ALERT_ID_STAGE_MAPPING = dict()
 MUTEX = False
 ICE_PHISHING_MAPPINGS_DF = pd.DataFrame()
 
@@ -46,18 +50,24 @@ def initialize():
     this function initializes the state variables that are tracked across tx and blocks
     it is called from test to reset state between tests
     """
-    print('initializing')
+    logging.debug('initializing')
+    global ALERT_ID_AD_SCORER_MAPPING
+    ALERT_ID_AD_SCORER_MAPPING = dict([((bot_id, alert_id), ad_scorer) for bot_id, alert_id, stage, ad_scorer in BASE_BOTS])
+
+    global ALERT_ID_STAGE_MAPPING
+    ALERT_ID_STAGE_MAPPING = dict([((bot_id, alert_id), stage) for bot_id, alert_id, stage, ad_scorer in BASE_BOTS])
+
     global ALERTED_CLUSTERS
     alerted_clusters = load(ALERTED_CLUSTERS_KEY)
     ALERTED_CLUSTERS = [] if alerted_clusters is None else list(alerted_clusters)
 
-    global ALERTS
-    alerts = load(ALERTS_KEY)
-    ALERTS = [] if alerts is None else list(alerts)
+    global ALERT_DATA
+    alerts = load(ALERTS_DATA_KEY)
+    ALERT_DATA = {} if alerts is None else dict(alerts)
 
-    global ENTITY_CLUSTER_ALERTS
-    entity_cluster_alerts = load(ENTITY_CLUSTER_ALERTS_KEY)
-    ENTITY_CLUSTER_ALERTS = [] if entity_cluster_alerts is None else list(entity_cluster_alerts)
+    global ENTITY_CLUSTERS
+    entity_cluster_alerts = load(ENTITY_CLUSTERS_KEY)
+    ENTITY_CLUSTERS = {} if entity_cluster_alerts is None else dict(entity_cluster_alerts)
 
     global FP_MITIGATION_ALERTS
     fp_mitigation_alerts = load(FP_MITIGATION_ALERTS_KEY)
@@ -65,6 +75,9 @@ def initialize():
 
     global FINDINGS_CACHE
     FINDINGS_CACHE = []
+
+    global CONTRACT_CACHE
+    CONTRACT_CACHE = {}
 
     global MUTEX
     MUTEX = False
@@ -78,7 +91,7 @@ def initialize():
 
     subscription_json.append({"botId": ENTITY_CLUSTER_BOT, "alertId": ENTITY_CLUSTER_BOT_ALERT_ID})
 
-    return {"alertConfig": {"subscriptions": [subscription_json]}}
+    return {"alertConfig": {"subscriptions": subscription_json}}
 
 
 def is_contract(w3, addresses) -> bool:
@@ -86,19 +99,24 @@ def is_contract(w3, addresses) -> bool:
     this function determines whether address/ addresses is a contract; if all are contracts, returns true; otherwise false
     :return: is_contract: bool
     """
+    global CONTRACT_CACHE
+
     if addresses is None:
         return True
 
-    is_contract = True
-    for address in addresses.split(','):
-        try:
-            code = w3.eth.get_code(Web3.toChecksumAddress(address))
-        except Exception as e:
-            logging.error(f"Exception in is_contract {e}")
+    if CONTRACT_CACHE.get(addresses) is not None:
+        return CONTRACT_CACHE[addresses]
+    else:
+        is_contract = True
+        for address in addresses.split(','):
+            try:
+                code = w3.eth.get_code(Web3.toChecksumAddress(address))
+            except Exception as e:
+                logging.error(f"Exception in is_contract {e}")
 
-        is_contract = is_contract & (code != HexBytes('0x'))
-
-    return is_contract
+            is_contract = is_contract & (code != HexBytes('0x'))
+        CONTRACT_CACHE[addresses] = is_contract
+        return is_contract
 
 
 def is_address(w3, addresses: str) -> bool:
@@ -158,23 +176,63 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
     :return: findings: list
     """
     logging.debug(f"detect attack called for alert_hash {alert_event.alert_hash}")
+    global ALERT_ID_STAGE_MAPPING
+    global ALERT_ID_AD_SCORER_MAPPING
+
     global ALERTED_CLUSTERS
-    global ALERTS
+    global ALERT_DATA
     global FP_MITIGATION_ALERTS
-    global ENTITY_CLUSTER_ALERTS
+    global ENTITY_CLUSTERS
     global MUTEX
 
     # categorize incoming alert and put into appropriate list based on lookback window and queue size
-    update_list(alert_event, ALERT_MAX_QUEUE_SIZE, BASE_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ALERTS)
+    # update_list(alert_event, ALERT_MAX_QUEUE_SIZE, BASE_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ALERTS)
     update_list(alert_event, FP_ALERTS_QUEUE_MAX_SIZE, FP_MITIGATION_BOTS, FP_MITIGATION_BOTS_DATE_LOOKBACK_WINDOW_IN_HOURS, FP_MITIGATION_ALERTS)
-    update_list(alert_event, ENTITY_CLUSTERS_MAX_QUEUE_SIZE, [(ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_ALERT_ID)], ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_ALERTS)
+    # update_list(alert_event, ENTITY_CLUSTERS_MAX_QUEUE_SIZE, [(ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_ALERT_ID)], ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTERS)
 
     #  assess whether we generate a finding
     #  note, only one instance will be running at a time to keep up with alert volume
     if not MUTEX:
         MUTEX = True
 
-        #  update alert counts for 48 hour period using luabase
+        if in_list(alert_event, BASE_BOTS):
+            # add anomaly score and metadata to ALERT_DATA
+            for address in alert_event.alert.address:
+
+                if(is_contract(w3, address) or not is_address(w3, address)):  # ignore contracts and invalid addresses like 0x0000000000000blabla
+                    continue
+
+                logging.debug(f"processing alert {alert_event.alert_hash}, bot_id {alert_event.bot_id}, alert_id {alert_event.alert_id}")
+                end_date = datetime.now()
+                start_date = end_date - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS)
+
+                alert_count = luabase.get_alert_count(alert_event.chain_id, alert_event.bot_id, alert_event.alert.alert_id, start_date, end_date)
+                ad_scorer = ALERT_ID_AD_SCORER_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
+                anomaly_score = AD_SCORE_ANOMALY_SCORE
+                if ad_scorer != 'ad-score':
+                    denominator = luabase.get_denominator(alert_event.chain_id, ALERT_ID_AD_SCORER_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)], start_date, end_date)
+                    anomaly_score = alert_count * 1.0 / denominator
+                logging.info(f"Anomaly score for alert_hash {alert_event.alert_hash} is {anomaly_score}")
+
+                if ALERT_DATA.get(address) is None:
+                    ALERT_DATA[address] = pd.DataFrame(columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses'])
+
+                alert_data = ALERT_DATA[address]
+                stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
+                alert_data = pd.concat([alert_data, pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.address]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses'])], ignore_index=True, axis=0)
+
+                # purge old alerts
+                ALERT_DATA[address] = alert_data[alert_data['created_at'] > start_date]
+                alert_data = ALERT_DATA[address]
+
+                # analyze ALERT_DATA to see whether conditions are met to generate a finding
+                # 1. Have to have at least MIN_ALERTS_COUNT bots reporting alerts
+                if len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT:
+                    # 2. Have to have overall anomaly score of less than ANOMALY_SCORE_THRESHOLD
+                    anomaly_scores = alert_data[['stage', 'anomaly_score']].drop_duplicates(inplace=False)
+                    anomaly_score = anomaly_scores['anomaly_score'].prod()
+                    if anomaly_score <= ANOMALY_SCORE_THRESHOLD:
+                        FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(address, anomaly_score, alert_event, alert_data))
 
         MUTEX = False
 
@@ -197,7 +255,7 @@ def in_list(alert_event: forta_agent.alert_event.AlertEvent, bots: tuple) -> boo
     :return: bool
     """
     for tup in bots:
-        if alert_event.alert.source.bot['id'] == tup[0] and alert_event.alert.alert_id == tup[1]:
+        if alert_event.alert.source.bot.id == tup[0] and alert_event.alert.alert_id == tup[1]:
             return True
 
     return False
@@ -214,7 +272,7 @@ def update_list(new_alert_event: forta_agent.alert_event.AlertEvent, max_queue_s
     cutoff_date = datetime.now() - timedelta(hours=lookback_window_in_hours)
     for alert in alert_list:
         # 2022-11-19T16:20:25232199Z
-        if datetime.strptime(alert.created_at, "%Y-%m-%dT%H:%M:%S%fZ") < cutoff_date:
+        if datetime.strptime(alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ") < cutoff_date:
             alert_list.remove(alert)
 
     if len(alert_list) > max_queue_size:
@@ -313,3 +371,8 @@ real_handle_alert = provide_handle_alert(web3, luabase)
 def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     logging.debug("handle_alert called")
     return real_handle_alert(alert_event)
+
+
+def handle_block(block_event: forta_agent.BlockEvent):
+    logging.debug("handle_block called")
+    return []

@@ -1,26 +1,31 @@
 from forta_agent import Finding, FindingType, FindingSeverity
-from datetime import datetime
+import pandas as pd
+import forta_agent
 
 
 class AlertCombinerFinding:
 
     @staticmethod
-    def alert_combiner(attacker_address: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set, alert_id: str, hashes: set) -> Finding:
-        involved_addresses = list(involved_addresses)[0:500]
-        hashes = list(hashes)[0:10]
+    def create_finding(address: str, anomaly_score: float, alert_event: forta_agent.alert_event.AlertEvent, alert_data: pd.DataFrame) -> Finding:
+        # alert_data -> 'stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses'
 
-        attacker_address = {"attacker_address": attacker_address}
-        start_date = {"start_date": start_date.strftime("%Y-%m-%d")}
-        end_date = {"end_date": end_date.strftime("%Y-%m-%d")}
+        attacker_address = {"attacker_address": address}
+        anomaly_score = {"anomaly_score": anomaly_score}
+        involved_addresses = set()
+        alert_data["addresses"].apply(lambda x: [involved_addresses.add(item) for item in x])
+        involved_addresses = list(involved_addresses)[0:500]
         involved_addresses = {"involved_addresses_" + str(i): address for i, address in enumerate(involved_addresses, 1)}
-        involved_alert_ids = {"involved_alert_id_" + str(i): alert_id for i, alert_id in enumerate(involved_alerts, 1)}
-        involved_alert_hashes = {"involved_alert_hashes_" + str(i): alert_id for i, alert_id in enumerate(hashes, 1)}
-        meta_data = {**attacker_address, **start_date, **end_date, **involved_addresses, **involved_alert_ids, **involved_alert_hashes}
+
+        alerts = alert_data[['bot_id', 'alert_id', 'alert_hash']].drop_duplicates(inplace=False)
+        alerts = alerts.head(100)
+        involved_alerts = {"involved_alerts_" + str(index): ','.join([row['bot_id'], row['alert_id'], row['alert_hash']]) for index, row in alerts.iterrows()}
+
+        meta_data = {**attacker_address, **anomaly_score, **involved_addresses, **involved_alerts}
 
         return Finding({
-            'name': 'Attack detector identified an EOA with past alerts mapping to attack behavior',
-            'description': f'{attacker_address} likely involved in an attack ({alert_id})',
-            'alert_id': alert_id,
+            'name': 'Attack detector identified an EOA with behavior consistent with an attack',
+            'description': f'{address} likely involved in an attack ({alert_event.alert_hash}). Anomaly score: {anomaly_score}',
+            'alert_id': alert_event.alert_hash,
             'type': FindingType.Exploit,
             'severity': FindingSeverity.Critical,
             'metadata': meta_data
