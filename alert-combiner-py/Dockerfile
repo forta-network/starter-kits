@@ -20,6 +20,7 @@ ENV NODE_ENV=production
 LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
 COPY ./ice_phishing_mappings.csv ./
+COPY ./.env ./
 COPY ./src ./src
 COPY package*.json ./
 RUN npm ci --production

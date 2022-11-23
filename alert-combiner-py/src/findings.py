@@ -1,5 +1,3 @@
-from operator import inv
-from time import strftime
 from forta_agent import Finding, FindingType, FindingSeverity
 from datetime import datetime
 
@@ -10,7 +8,7 @@ class AlertCombinerFinding:
     def alert_combiner(attacker_address: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set, alert_id: str, hashes: set) -> Finding:
         involved_addresses = list(involved_addresses)[0:500]
         hashes = list(hashes)[0:10]
-        
+
         attacker_address = {"attacker_address": attacker_address}
         start_date = {"start_date": start_date.strftime("%Y-%m-%d")}
         end_date = {"end_date": end_date.strftime("%Y-%m-%d")}
