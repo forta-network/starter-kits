@@ -12,6 +12,7 @@ load_dotenv()
 
 LUABASE_CACHE = {}
 MAX_LUA_CACHE_SIZE = 1000
+MUTEX_LUABASE = False
 
 
 class Luabase:
@@ -68,14 +69,14 @@ class Luabase:
         raise ValueError(f"Alert count not found for {chain_id} {bot_id} {alert_id} {start_date} {end_date} in cache")
 
     def populate_denominator_cache(self, chain_id: int, ad_scorer: str, start_date: datetime, end_date: datetime):
-        logging.info(f"Populating denominator cache for {chain_id} {ad_scorer} {start_date} {end_date}")
-
         chain_name = Luabase.get_chain_name(chain_id)
 
         sql = ""
         cache_key = f"{chain_id}-{ad_scorer}-{start_date.strftime('%Y-%m-%dT%H')}"
         if cache_key in LUABASE_CACHE.keys():
             return
+
+        logging.info(f"Populating denominator cache for {chain_id} {ad_scorer} {start_date} {end_date}")
 
         if ad_scorer == 'contract-creation':
             sql = f"SELECT COUNT(DISTINCT hash) FROM {chain_name}.transactions WHERE CAST(block_timestamp as datetime)  >= '{start_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND CAST(block_timestamp as datetime)  <='{end_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND to_address is null"
@@ -107,7 +108,6 @@ class Luabase:
 
     def populate_alert_count_cache(self, chain_id: int, bot_id: str, alert_id: str, start_date: datetime, end_date: datetime):
         global LUABASE_CACHE
-        logging.info(f"Populating alert count cache for {chain_id} {bot_id} {alert_id} {start_date} {end_date}")
         chain_name = Luabase.get_chain_name(chain_id)
 
         sql = f"select COUNT() from forta.{chain_name}_alerts WHERE CAST(substring(block_timestamp,1,19) as datetime)  >= '{start_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND CAST(substring(block_timestamp,1,19)  as datetime)  <= '{end_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND bot_id = '{bot_id}' AND alert_id = '{alert_id}'"
@@ -115,6 +115,7 @@ class Luabase:
         if cache_key in LUABASE_CACHE.keys():
             return
 
+        logging.info(f"Populating alert count cache for {chain_id} {bot_id} {alert_id} {start_date} {end_date}")
         try:
             value = Luabase().execute_query(sql)
             LUABASE_CACHE[cache_key] = value.iloc[0]['count()']
@@ -125,19 +126,23 @@ class Luabase:
     def populate_cache(self, chain_id: int, start_date: datetime, end_date: datetime):
         global MUTEX_LUABASE
 
-        MUTEX_LUABASE = True
-        logging.info(f"Populating luabase cache {start_date}")
+        if not MUTEX_LUABASE:
+            MUTEX_LUABASE = True
 
-        ad_scorers = ['contract-creation', 'contract-interactions', 'tx-count', 'transfer-in', 'transfer-out-large-amount', 'data-eoa-to', 'erc-approvalAll', 'erc-approvals', 'erc-transfers']
-        for ad_scorer in ad_scorers:
-            self.populate_denominator_cache(chain_id, ad_scorer, start_date, end_date)
+            logging.info(f"Populating luabase cache {start_date}")
 
-        for bot_id, alert_id, stage, ad_scorer in BASE_BOTS:
-            self.populate_alert_count_cache(chain_id, bot_id, alert_id, start_date, end_date)
+            ad_scorers = ['contract-creation', 'contract-interactions', 'tx-count', 'transfer-in', 'transfer-out-large-amount', 'data-eoa-to', 'erc-approvalAll', 'erc-approvals', 'erc-transfers']
+            for ad_scorer in ad_scorers:
+                self.populate_denominator_cache(chain_id, ad_scorer, start_date, end_date)
 
-        while len(LUABASE_CACHE) > MAX_LUA_CACHE_SIZE:
-            logging.info(f"Removing item from luabase cache. Size: {len(LUABASE_CACHE)}")
-            LUABASE_CACHE.pop(next(iter(LUABASE_CACHE)))
+            for bot_id, alert_id, stage, ad_scorer in BASE_BOTS:
+                self.populate_alert_count_cache(chain_id, bot_id, alert_id, start_date, end_date)
 
-        logging.info(f"Populated luabase cache {start_date}")
-        MUTEX_LUABASE = False
+            while len(LUABASE_CACHE) > MAX_LUA_CACHE_SIZE:
+                logging.info(f"Removing item from luabase cache. Size: {len(LUABASE_CACHE)}")
+                LUABASE_CACHE.pop(next(iter(LUABASE_CACHE)))
+
+            logging.info(f"Populated luabase cache {start_date}")
+            MUTEX_LUABASE = False
+        else:
+            logging.info("Populating luabase cache called, but mutex set. Exiting.")

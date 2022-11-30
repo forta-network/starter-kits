@@ -4,7 +4,7 @@ import agent
 import json
 import os
 from datetime import datetime, timedelta
-from constants import (ALERTS_DATA_MAX_QUEUE_SIZE, ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS,
+from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
                        ALERTS_DATA_KEY, ALERTED_CLUSTERS_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY)
 from web3_mock import CONTRACT, EOA_ADDRESS, EOA_ADDRESS_2, Web3Mock
 from luabase_mock import LuabaseMock
@@ -103,7 +103,7 @@ class TestAlertCombiner:
 
     def test_update_list(self):
         items = []
-        agent.update_list(items, ALERTS_DATA_MAX_QUEUE_SIZE, '0xabc')
+        agent.update_list(items, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, '0xabc')
 
         assert len(items) == 1, "should be in list"
 
@@ -121,7 +121,7 @@ class TestAlertCombiner:
         chain_id = 1
 
         items = []
-        agent.update_list(items, ALERTS_DATA_MAX_QUEUE_SIZE, '0xabc')
+        agent.update_list(items, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, '0xabc')
 
         assert len(items) == 1, "should be in list"
 
@@ -134,7 +134,7 @@ class TestAlertCombiner:
         TestAlertCombiner.remove_persistent_state()
         chain_id = 1
         items = []
-        agent.update_list(items, ALERTS_DATA_MAX_QUEUE_SIZE, '0xabc')
+        agent.update_list(items, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, '0xabc')
 
         assert len(items) == 1, "should be in list"
 
