@@ -13,10 +13,10 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from src.findings import AlertCombinerFinding
-from src.constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, LOCAL_NODE,
-                           ALERTED_CLUSTERS_MAX_QUEUE_SIZE, FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD,
+from src.constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, LOCAL_NODE, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
+                           FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD,
                            MIN_ALERTS_COUNT, ALERTS_DATA_KEY, ALERTED_CLUSTERS_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, AD_SCORE_ANOMALY_SCORE)
-from src.luabase import Luabase
+from src.luabase import Luabase, MUTEX_LUABASE
 
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -35,7 +35,6 @@ FP_MITIGATION_CLUSTERS = []  # cluster
 ALERT_ID_AD_SCORER_MAPPING = dict()  # (bot_id, alert_id) -> ad_scorer
 ALERT_ID_STAGE_MAPPING = dict()  # (bot_id, alert_id) -> stage
 MUTEX = False
-MUTEX_LUABASE = False
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -346,12 +345,17 @@ def provide_handle_alert(w3, luabase):
         if not MUTEX:
             thread = threading.Thread(target=detect_attack, args=(w3, luabase, alert_event))
             thread.start()
+        else:
+            logging.debug("Detect_attack not called. Mutex is locked")
 
         end_date = datetime.now()
         start_date = end_date - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS)
         if not MUTEX_LUABASE:
             thread = threading.Thread(target=luabase.populate_cache, args=(CHAIN_ID, start_date, end_date))
-            thread.start()
+            thread.debug()
+        else:
+            logging.info("Populate_cache not called. Mutex is locked")
+
 
         # uncomment for local testing of tx/block ranges (ok for npm run start); otherwise the process will exit
         # while (thread.is_alive()):

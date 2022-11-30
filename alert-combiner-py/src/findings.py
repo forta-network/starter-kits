@@ -23,10 +23,10 @@ class AlertCombinerFinding:
         meta_data = {**attacker_address, **anomaly_score, **involved_addresses, **involved_alerts}
 
         return Finding({
-            'name': 'Attack detector identified an EOA with behavior consistent with an attack',
-            'description': f'{address} likely involved in an attack ({alert_event.alert_hash}). Anomaly score: {anomaly_score}',
-            'alert_id': alert_event.alert_hash,
-            'type': FindingType.Exploit,
-            'severity': FindingSeverity.Critical,
-            'metadata': meta_data
-        })
+                       'name': 'Attack detector identified an EOA with behavior consistent with an attack',
+                       'description': f'{address} likely involved in an attack ({alert_event.alert_hash}). Anomaly score: {anomaly_score}',
+                       'alert_id': alert_event.alert_hash,
+                       'type': FindingType.Exploit,
+                       'severity': FindingSeverity.Critical,
+                       'metadata': meta_data
+                       })
