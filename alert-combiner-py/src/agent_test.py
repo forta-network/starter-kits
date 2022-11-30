@@ -127,6 +127,9 @@ class TestAlertCombiner:
         agent.detect_attack(w3, forta_explorer, block_event)
 
         assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
+        finding = agent.FINDINGS_CACHE[0]
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
 
 
     def test_detect_alert_pos_finding_combiner_3_metadata(self):
