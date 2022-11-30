@@ -5,8 +5,8 @@ import json
 import os
 from datetime import datetime, timedelta
 from constants import (ALERTS_DATA_MAX_QUEUE_SIZE, ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS,
-                       ALERTS_DATA_KEY, ALERTED_CLUSTERS_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_ALERTS_KEY)
-from web3_mock import CONTRACT, EOA_ADDRESS, Web3Mock
+                       ALERTS_DATA_KEY, ALERTED_CLUSTERS_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY)
+from web3_mock import CONTRACT, EOA_ADDRESS, EOA_ADDRESS_2, Web3Mock
 from luabase_mock import LuabaseMock
 
 w3 = Web3Mock()
@@ -22,8 +22,8 @@ class TestAlertCombiner:
             os.remove(ALERTED_CLUSTERS_KEY)
         if os.path.isfile(ENTITY_CLUSTERS_KEY):
             os.remove(ENTITY_CLUSTERS_KEY)
-        if os.path.isfile(FP_MITIGATION_ALERTS_KEY):
-            os.remove(FP_MITIGATION_ALERTS_KEY)
+        if os.path.isfile(FP_MITIGATION_CLUSTERS_KEY):
+            os.remove(FP_MITIGATION_CLUSTERS_KEY)
 
     def test_is_contract_eoa(self):
         assert not agent.is_contract(w3, EOA_ADDRESS), "EOA shouldn't be identified as a contract"
@@ -102,108 +102,49 @@ class TestAlertCombiner:
         assert True, "Bot should initialize successfully"
 
     def test_update_list(self):
-        TestAlertCombiner.remove_persistent_state()
-        alert = create_alert_event(
-            {"alert":
-                {"name": "x",
-                 "hash": "0xabc",
-                 "description": "description",
-                 "alertId": "IMPOSSIBLE-2",
-                 "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
-                 "source":
-                    {"bot": {'id': "0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b514c7"}}
-                 }
-             })
-        alert_list = []
-        agent.update_list(alert, ALERTS_DATA_MAX_QUEUE_SIZE, BASE_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, alert_list)
+        items = []
+        agent.update_list(items, ALERTS_DATA_MAX_QUEUE_SIZE, '0xabc')
 
-        assert len(alert_list) == 1, "should be in list"
-
-    def test_update_list_old_alert(self):
-        TestAlertCombiner.remove_persistent_state()
-        alert = create_alert_event(
-            {"alert":
-                {"name": "x",
-                 "hash": "0xabc",
-                 "description": "description",
-                 "alertId": "IMPOSSIBLE-2",
-                 "createdAt": (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
-                 "source":
-                    {"bot": {'id': "0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b514c7"}}
-                 }
-             })
-        alert_list = []
-        agent.update_list(alert, ALERTS_DATA_MAX_QUEUE_SIZE, BASE_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, alert_list)
-
-        assert len(alert_list) == 0, "should not be in list as the alert is too old"
+        assert len(items) == 1, "should be in list"
 
     def test_update_list_queue_limit(self):
         TestAlertCombiner.remove_persistent_state()
-        alert_list = []
+        items = []
         for i in range(0, 11):
-            alert = create_alert_event(
-                {"alert":
-                    {"name": "x",
-                     "hash": "0xabc",
-                     "description": "description",
-                     "alertId": "IMPOSSIBLE-2",
-                     "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
-                     "source":
-                        {"bot": {'id': "0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b514c7"}}
-                     }
-                 })
+            agent.update_list(items, 10, str(i))
 
-            agent.update_list(alert, 10, BASE_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, alert_list)
-
-        assert len(alert_list) == 10, "should not be in list as the alert is too old"
+        assert len(items) == 10, "there should be 10 items in list"
+        assert '0' not in items, "first item should have been removed"
 
     def test_persist_and_load(self):
         TestAlertCombiner.remove_persistent_state()
-        alert = create_alert_event(
-            {"alert":
-                {"name": "x",
-                 "hash": "0xabc",
-                 "description": "description",
-                 "alertId": "IMPOSSIBLE-2",
-                 "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
-                 "source":
-                    {"bot": {'id': "0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b514c7"}}
-                 }
-             })
-        alert_list = []
-        agent.update_list(alert, ALERTS_DATA_MAX_QUEUE_SIZE, BASE_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, alert_list)
+        chain_id = 1
 
-        assert len(alert_list) == 1, "should be in list"
+        items = []
+        agent.update_list(items, ALERTS_DATA_MAX_QUEUE_SIZE, '0xabc')
 
-        agent.persist(alert_list, ALERTS_DATA_KEY)
-        alert_list_loaded = agent.load(ALERTS_DATA_KEY)
+        assert len(items) == 1, "should be in list"
 
-        assert len(alert_list_loaded) == 1, "should be in loaded list"
+        agent.persist(items, chain_id, ALERTS_DATA_KEY)
+        items_loaded = agent.load(chain_id, ALERTS_DATA_KEY)
+
+        assert len(items_loaded) == 1, "should be in loaded list"
 
     def test_persist_and_initialize(self):
         TestAlertCombiner.remove_persistent_state()
-        alert = create_alert_event(
-            {"alert":
-                {"name": "x",
-                 "hash": "0xabc",
-                 "description": "description",
-                 "alertId": "IMPOSSIBLE-2",
-                 "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
-                 "source":
-                    {"bot": {'id': "0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b514c7"}}
-                 }
-             })
-        alert_list = []
-        agent.update_list(alert, ALERTS_DATA_MAX_QUEUE_SIZE, BASE_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, alert_list)
+        chain_id = 1
+        items = []
+        agent.update_list(items, ALERTS_DATA_MAX_QUEUE_SIZE, '0xabc')
 
-        assert len(alert_list) == 1, "should be in list"
+        assert len(items) == 1, "should be in list"
 
-        agent.persist(alert_list, ALERTS_DATA_KEY)
+        agent.persist(items, chain_id, ALERTS_DATA_KEY)
         agent.initialize()
+        items_loaded = agent.load(chain_id, ALERTS_DATA_KEY)
 
-        assert len(alert_list_loaded) == 1, "should be in loaded list"
+        assert len(items_loaded) == 1, "should be in loaded list"
 
-    def generate_alert(address: str, bot_id: str, alert_id: str):
+    def generate_alert(address: str, bot_id: str, alert_id: str, metadata={}):
         return create_alert_event(
             {"alert":
                 {"name": "x",
@@ -213,7 +154,8 @@ class TestAlertCombiner:
                  "alertId": alert_id,
                  "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
                  "source":
-                    {"bot": {'id': bot_id}, "block": {"chainId": 1}}
+                    {"bot": {'id': bot_id}, "block": {"chainId": 1}},
+                 "metadata": metadata
                  }
              })
 
@@ -232,13 +174,49 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 5000; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
 
-        # 100/100000 * 200/10000 * 5000/10000000 -> 10E-8
+        # 100/100000 * 200/10000 * 50/10000000 -> 10E-9
 
         assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
+        assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 1e-9) < 1e-20, 'incorrect anomaly score'
 
+    def test_alert_repeat_alerts(self):
+        # three alerts in diff stages for a given EOA
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH")  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION")  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        agent.detect_attack(w3, luabase, alert_event)
+
+        # 100/100000 * 200/10000 * 50/10000000 -> 10E-9
+
+        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
+        agent.FINDINGS_CACHE = []
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH")  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION")  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        agent.detect_attack(w3, luabase, alert_event)
+
+        assert len(agent.FINDINGS_CACHE) == 0, "alert should not have been raised again"
 
     def test_alert_simple_case_contract(self):
         # three alerts in diff stages for a given contract
@@ -255,13 +233,10 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 5000; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
 
-        #100/100000 * 200/10000 * 5000/10000000 -> 10E-8
-
         assert len(agent.FINDINGS_CACHE) == 0, "alert should have been raised as this is a contract"
-
 
     def test_alert_simple_case_older_alerts(self):
         # three alerts in diff stages for a given older alerts
@@ -279,48 +254,132 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 5000; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
 
-        # 100/100000 * 200/10000 * 5000/10000000 -> 10E-8
         assert len(agent.FINDINGS_CACHE) == 0, "alert should have been raised funding alert is too old"
 
+    def test_alert_proper_handling_of_min(self):
+        # three alerts in diff stages for a given older alerts
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
 
-    # def test_alert_proper_handling_of_min(self):
-    #     # three alerts in diff stages for a given EOA
-    #     # within one stage two different alerts that generate a diff anomaly score
-    #     # no FP
-    #     # anomaly score < 10 E-8
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH")  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-    #     alert = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH") # funding, TC
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xaedda4252616d971d570464a3ae4a9f0a9d72a57d8581945fff648d03cd30a7d", "FORTA-BLOCKLIST-ADDR-TX")  # preparation -> alert count = 1000, blocklist account tx; ad-scorer contract-creation -> denominator 10000000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-    #     # asset alert raised
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION")  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-    # def test_alert_too_few_alerts(self):
-    #     # two alerts in diff stages for a given EOA
-    #     # no FP
-    #     # anomaly score < 10 E-8
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        agent.detect_attack(w3, luabase, alert_event)
 
-    #     # asset alert raised
+        # 100/100000 * 1000/10000000 * 50/10000000 -> 10E-8
+        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
+        assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 5e-13) < 1e-20, 'incorrect anomaly score'
 
-    # def test_alert_FP_mitigation(self):
-    #     # three alerts in diff stages for a given EOA
-    #     # FP mitigation
-    #     # anomaly score < 10 E-8
+    def test_alert_too_few_alerts(self):
+        # two alerts in diff stages for a given EOA
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
 
-    #     # asset no alert raised
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH")  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-    # def test_alert_cluster_alert(self):
-    #     # three alerts in diff stages across two EOAs that are clustered
-    #     # no FP
-    #     # anomaly score < 10 E-8
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        agent.detect_attack(w3, luabase, alert_event)
 
-    #     # asset alert raised
+        # 100/100000 * 50/10000000 -> 5E-9
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-    # def test_alert_cluster_fp_mitigation(self):
-    #     # three alerts in diff stages across two EOAs that are clustered
-    #     # FP mitigation
-    #     # anomaly score < 10 E-8
+    def test_alert_FP_mitigation(self):
+        # FP mitigation
+        # three alerts in diff stages for a given EOA
+        # anomaly score < 10 E-8
 
-    #     # asset no alert raised
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
 
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f", "POSITIVE-REPUTATION-1")  # positive reputation alert
+        agent.detect_attack(w3, luabase, alert_event)
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH")  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION")  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        agent.detect_attack(w3, luabase, alert_event)
+
+        # 100/100000 * 200/10000 * 50/10000000 -> 1E-9
+
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised as this is FP mitigated"
+
+    def test_alert_cluster_alert(self):
+        # three alerts in diff stages across two EOAs that are clustered
+        # no FP
+        # anomaly score < 10 E-8
+
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entity_addresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH")  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION")  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS_2, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        agent.detect_attack(w3, luabase, alert_event)
+
+        # 100/100000 * 200/10000 * 50/10000000 -> 10E-9
+
+        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
+        assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 1e-9) < 1e-20, 'incorrect anomaly score'
+
+    def test_alert_cluster_alert_after(self):
+        # three alerts in diff stages across two EOAs that are clustered, but the cluster comes in after some key alerts are raised
+        # no FP
+        # anomaly score < 10 E-8
+
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS_2, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH")  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION")  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entity_addresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
+        agent.detect_attack(w3, luabase, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        agent.detect_attack(w3, luabase, alert_event)
+
+        # 100/100000 * 200/10000 * 50/10000000 -> 10E-9
+
+        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
+        assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 1e-9) < 1e-20, 'incorrect anomaly score'

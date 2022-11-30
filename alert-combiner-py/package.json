@@ -1,12 +1,12 @@
 {
-  "name": "attack-detector-feed-V2",
-  "version": "0.0.41",
+  "name": "attack-detector-feed-v2",
+  "version": "0.2.2",
   "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
   "chainIds": [
     1, 137
   ],
   "scripts": {
-    "postinstall": "python3 -m pip install -r requirements_dev.txt && python3 -m pip install forta_agent-0.1.6.dev2.tar.gz",
+    "postinstall": "python3 -m pip install -r requirements_dev.txt",
     "start": "npm run start:dev",
     "start:dev": "nodemon --watch src --watch forta.config.json -e py --exec \"forta-agent run\"",
     "start:prod": "forta-agent run --prod",
@@ -24,7 +24,7 @@
     "sequence": "forta-agent run --sequence"
   },
   "dependencies": {
-    "forta-agent": "file:./forta-agent-0.1.14-dev2.tgz"
+    "forta-agent": "^0.1.15"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

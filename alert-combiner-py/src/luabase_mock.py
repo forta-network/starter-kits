@@ -30,6 +30,8 @@ class LuabaseMock:
         elif bot_id == '0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91' and alert_id == 'SUSPICIOUS-CONTRACT-CREATION':
             return 200
         elif bot_id == '0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5' and alert_id == 'FLASHBOT-TRANSACTION':
-            return 500
+            return 50
+        elif bot_id == '0xaedda4252616d971d570464a3ae4a9f0a9d72a57d8581945fff648d03cd30a7d' and alert_id == 'FORTA-BLOCKLIST-ADDR-TX':
+            return 1000
         else:
             raise ValueError(f"Invalid bot_id and alert_id : {bot_id}, {alert_id}")

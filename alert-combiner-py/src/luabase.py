@@ -2,10 +2,16 @@ import datetime
 import requests
 import pandas as pd
 import os
+import logging
+
+from src.constants import BASE_BOTS
+
 from dotenv import load_dotenv
 load_dotenv()
 
+
 LUABASE_CACHE = {}
+MAX_LUA_CACHE_SIZE = 1000
 
 
 class Luabase:
@@ -20,9 +26,10 @@ class Luabase:
                    }
 
         headers = {"content-type": "application/json"}
-        response = requests.request("POST", url, json=payload, headers=headers)
+        logging.debug(f"Executing query: {sql}")
+        response = requests.request("POST", url, json=payload, headers=headers, timeout=600)  # 10min timeout
+        logging.debug(f"Executed query: {sql}. Response code: {response.status_code}")
         data = response.json()
-        print(data)
         return pd.DataFrame(data["data"])
 
     def get_chain_name(chain_id: int) -> str:
@@ -35,14 +42,41 @@ class Luabase:
             raise ValueError(f"Invalid chain_id: {chain_id}")
         return chain_name
 
-    def get_denominator(self, chain_id: int, ad_scorer: str, start_date: datetime, end_date: datetime):
-        #  TODO - age out cache
+    def get_denominator(self, chain_id: int, ad_scorer: str, start_date: datetime, end_date: datetime) -> int:
+        logging.info(f"Getting denominator for {chain_id} {ad_scorer} {start_date} {end_date}")
+
         global LUABASE_CACHE
+
+        for i in range(0, 48):  # 48 hours; looking back if there are any values populated and return the most recent one
+            cache_key = f"{chain_id}-{ad_scorer}-{(start_date-datetime.timedelta(hours=i)).strftime('%Y-%m-%dT%H')}"
+            if cache_key in LUABASE_CACHE.keys():
+                logging.info(f"Got denominator for {chain_id} {ad_scorer} {(start_date-datetime.timedelta(hours=i))} {end_date}: {LUABASE_CACHE[cache_key]}")
+                return LUABASE_CACHE[cache_key]
+
+        raise ValueError(f"Denominator not found for {chain_id} {ad_scorer} {start_date} {end_date} in cache")
+
+    def get_alert_count(self, chain_id: int, bot_id: str, alert_id: str, start_date: datetime, end_date: datetime) -> int:
+        global LUABASE_CACHE
+        logging.info(f"Getting alert count for {chain_id} {bot_id} {alert_id} {start_date} {end_date}")
+
+        for i in range(0, 48):  # 48 hours; looking back if there are any values populated and return the most recent one
+            cache_key = f"{chain_id}-{bot_id}-{alert_id}-{(start_date-datetime.timedelta(hours=i)).strftime('%Y-%m-%dT%H')}"
+            if cache_key in LUABASE_CACHE.keys():
+                logging.info(f"Got alert count for {chain_id} {bot_id} {alert_id} {(start_date-datetime.timedelta(hours=i))} {end_date}: {LUABASE_CACHE[cache_key]}")
+                return LUABASE_CACHE[cache_key]
+
+        raise ValueError(f"Alert count not found for {chain_id} {bot_id} {alert_id} {start_date} {end_date} in cache")
+
+    def populate_denominator_cache(self, chain_id: int, ad_scorer: str, start_date: datetime, end_date: datetime):
+        logging.info(f"Populating denominator cache for {chain_id} {ad_scorer} {start_date} {end_date}")
 
         chain_name = Luabase.get_chain_name(chain_id)
 
         sql = ""
-        cache_key = f"{chain_name}-{ad_scorer}-{start_date.strftime('%Y-%m-%dT%H')}"
+        cache_key = f"{chain_id}-{ad_scorer}-{start_date.strftime('%Y-%m-%dT%H')}"
+        if cache_key in LUABASE_CACHE.keys():
+            return
+
         if ad_scorer == 'contract-creation':
             sql = f"SELECT COUNT(DISTINCT hash) FROM {chain_name}.transactions WHERE CAST(block_timestamp as datetime)  >= '{start_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND CAST(block_timestamp as datetime)  <='{end_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND to_address is null"
         elif ad_scorer == 'contract-interactions':
@@ -64,23 +98,46 @@ class Luabase:
         else:
             raise ValueError(f"Invalid ad scorer: {ad_scorer}")
 
-        if cache_key in LUABASE_CACHE:
-            return LUABASE_CACHE[cache_key]
-        else:
+        try:
             value = Luabase().execute_query(sql)
             LUABASE_CACHE[cache_key] = value.iloc[0]['uniqExact(hash)']
-            return value.iloc[0]['uniqExact(hash)']
+            logging.info(f"Populated denominator cache for {chain_id} {ad_scorer} {start_date} {end_date}: {value.iloc[0]['uniqExact(hash)']}")
+        except Exception as e:
+            logging.error(f"Failed to populate denominator cache for {chain_id} {ad_scorer} {start_date} {end_date}: {e}")
 
-    def get_alert_count(self, chain_id: int, bot_id: str, alert_id: str, start_date: datetime, end_date: datetime) -> int:
+    def populate_alert_count_cache(self, chain_id: int, bot_id: str, alert_id: str, start_date: datetime, end_date: datetime):
+        global LUABASE_CACHE
+        logging.info(f"Populating alert count cache for {chain_id} {bot_id} {alert_id} {start_date} {end_date}")
         chain_name = Luabase.get_chain_name(chain_id)
 
         sql = f"select COUNT() from forta.{chain_name}_alerts WHERE CAST(substring(block_timestamp,1,19) as datetime)  >= '{start_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND CAST(substring(block_timestamp,1,19)  as datetime)  <= '{end_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND bot_id = '{bot_id}' AND alert_id = '{alert_id}'"
-        cache_key = f"{chain_name}-{bot_id}-{alert_id}-{start_date.strftime('%Y-%m-%dT%H')}"
+        cache_key = f"{chain_id}-{bot_id}-{alert_id}-{start_date.strftime('%Y-%m-%dT%H')}"
+        if cache_key in LUABASE_CACHE.keys():
+            return
 
-        if cache_key in LUABASE_CACHE:
-            return LUABASE_CACHE[cache_key]
-        else:
+        try:
             value = Luabase().execute_query(sql)
             LUABASE_CACHE[cache_key] = value.iloc[0]['count()']
-            return value.iloc[0]['count()']
+            logging.info(f"Populating alert count cache for {chain_id} {bot_id} {alert_id} {start_date} {end_date}")
+        except Exception as e:
+            logging.error(f"Failed to populate alert count cache for {chain_id} {bot_id} {alert_id} {start_date} {end_date}: {e}")
 
+    def populate_cache(self, chain_id: int, start_date: datetime, end_date: datetime):
+        global MUTEX_LUABASE
+
+        MUTEX_LUABASE = True
+        logging.info(f"Populating luabase cache {start_date}")
+
+        ad_scorers = ['contract-creation', 'contract-interactions', 'tx-count', 'transfer-in', 'transfer-out-large-amount', 'data-eoa-to', 'erc-approvalAll', 'erc-approvals', 'erc-transfers']
+        for ad_scorer in ad_scorers:
+            self.populate_denominator_cache(chain_id, ad_scorer, start_date, end_date)
+
+        for bot_id, alert_id, stage, ad_scorer in BASE_BOTS:
+            self.populate_alert_count_cache(chain_id, bot_id, alert_id, start_date, end_date)
+
+        while len(LUABASE_CACHE) > MAX_LUA_CACHE_SIZE:
+            logging.info(f"Removing item from luabase cache. Size: {len(LUABASE_CACHE)}")
+            LUABASE_CACHE.pop(next(iter(LUABASE_CACHE)))
+
+        logging.info(f"Populated luabase cache {start_date}")
+        MUTEX_LUABASE = False
