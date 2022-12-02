@@ -1,6 +1,6 @@
 {
   "name": "scam-detector-feed",
-  "version": "0.0.44",
+  "version": "0.0.45",
   "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
@@ -22,7 +22,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.14"
+    "forta-agent": "^0.1.15"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"
