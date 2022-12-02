@@ -8,6 +8,7 @@ from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS, ALERTED_CLUST
                        ALERTS_DATA_KEY, ALERTED_CLUSTERS_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY)
 from web3_mock import CONTRACT, EOA_ADDRESS, EOA_ADDRESS_2, Web3Mock
 from luabase_mock import LuabaseMock
+from L2Cache import VERSION
 
 w3 = Web3Mock()
 luabase = LuabaseMock()
@@ -16,14 +17,14 @@ luabase = LuabaseMock()
 class TestAlertCombiner:
 
     def remove_persistent_state():
-        if os.path.isfile(ALERTS_DATA_KEY):
-            os.remove(ALERTS_DATA_KEY)
-        if os.path.isfile(ALERTED_CLUSTERS_KEY):
-            os.remove(ALERTED_CLUSTERS_KEY)
-        if os.path.isfile(ENTITY_CLUSTERS_KEY):
-            os.remove(ENTITY_CLUSTERS_KEY)
-        if os.path.isfile(FP_MITIGATION_CLUSTERS_KEY):
-            os.remove(FP_MITIGATION_CLUSTERS_KEY)
+        if os.path.isfile(f"{VERSION}-{ALERTS_DATA_KEY}"):
+            os.remove(f"{VERSION}-{ALERTS_DATA_KEY}")
+        if os.path.isfile(f"{VERSION}-{ALERTED_CLUSTERS_KEY}"):
+            os.remove(f"{VERSION}-{ALERTED_CLUSTERS_KEY}")
+        if os.path.isfile(f"{VERSION}-{ENTITY_CLUSTERS_KEY}"):
+            os.remove(f"{VERSION}-{ENTITY_CLUSTERS_KEY}")
+        if os.path.isfile(f"{VERSION}-{FP_MITIGATION_CLUSTERS_KEY}"):
+            os.remove(f"{VERSION}-{FP_MITIGATION_CLUSTERS_KEY}")
 
     def test_is_contract_eoa(self):
         assert not agent.is_contract(w3, EOA_ADDRESS), "EOA shouldn't be identified as a contract"
@@ -134,13 +135,13 @@ class TestAlertCombiner:
         TestAlertCombiner.remove_persistent_state()
         chain_id = 1
         items = []
-        agent.update_list(items, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, '0xabc')
+        agent.update_list(items, 10, '0xabc')
 
         assert len(items) == 1, "should be in list"
 
-        agent.persist(items, chain_id, ALERTS_DATA_KEY)
+        agent.persist(items, chain_id, FP_MITIGATION_CLUSTERS_KEY)
         agent.initialize()
-        items_loaded = agent.load(chain_id, ALERTS_DATA_KEY)
+        items_loaded = agent.load(chain_id, FP_MITIGATION_CLUSTERS_KEY)
 
         assert len(items_loaded) == 1, "should be in loaded list"
 
@@ -336,7 +337,7 @@ class TestAlertCombiner:
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entity_addresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entityAddresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
@@ -372,7 +373,7 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entity_addresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entityAddresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
