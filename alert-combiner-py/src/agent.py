@@ -156,7 +156,7 @@ def get_forta_alerts(start_date: datetime, end_date: datetime, df_address_cluste
     df_forta_alerts_clusters_joined["cluster_identifiers"] = df_forta_alerts_clusters_joined.apply(lambda x: x["addresses"] if pd.isnull(x["entity_addresses"]) else x["entity_addresses"], axis=1)
     df_forta_alerts_clusters_joined.drop(columns=["entity_addresses_arr", "entity_addresses"], inplace=True)
 
-    df_forta_alerts = df_forta_alerts_clusters_joined.groupby(['hash']).agg({"cluster_identifiers": lambda x: x.tolist(), "severity": "first", "alertId": "first", "bot_id": "first", "description": "first", "metadata": "first"})
+    df_forta_alerts = df_forta_alerts_clusters_joined.groupby(['hash']).agg({"cluster_identifiers": lambda x: x.tolist(), "severity": "first", "alertId": "first", "bot_id": "first", "description": "first", "metadata": "first", "transactionHash": "first"})
     df_forta_alerts.reset_index(inplace=True)
     logging.info("Added cluster identifiers to alerts")
 
@@ -212,10 +212,10 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
             addresses = set()
             for index, row in txt_msg_high.iterrows():
                 addresses = addresses.union(set(row['cluster_identifiers']))
-                
+
             for index, row in money_laundering_tc.iterrows():
                 addresses.add(row["description"][0:42].lower())  # the money laundering TC bot transaction may not be the transaction that contains the TC transfer and therefore a set of addresses unrelated, so we parse the address from the description
-                
+
             # replace with cluster identifiers if they exist
             clusters = swap_addresses_with_clusters(list(addresses), df_address_clusters_exploded)
 
@@ -331,9 +331,9 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         if SCAM_DETECTOR:
             logging.info("Scam detector - ice phishing")
 
-            ice_phishing = df_forta_alerts[(df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-PERMITTED-ERC20-TRANSFER") | (df_forta_alerts["alertId"] == "ICE-PHISHING-SUSPICIOUS-TRANSFER")
-                | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-ERC721-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL") 
-                | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC721-APPROVAL-FOR-ALL") | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC1155-APPROVAL-FOR-ALL")]
+            ice_phishing = df_forta_alerts[(df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-PERMITTED-ERC20-TRANSFER")
+                                           | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-ERC721-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL")
+                                           | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC721-APPROVAL-FOR-ALL") | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC1155-APPROVAL-FOR-ALL")]
             addresses = set()
             ice_phishing["description"].apply(lambda x: addresses.add(get_ice_phishing_attacker_address(x)))
             logging.info(f"Got {len(addresses)} ice phishing addresses")
@@ -352,7 +352,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                     hashes = set()
                     if(len(df_forta_alerts) > 0):
                         cluster_alerts = df_forta_alerts[df_forta_alerts["cluster_identifiers"].apply(lambda x: potential_attacker_cluster_lower in x if x is not None else False)]
-                        cluster_alerts = cluster_alerts[cluster_alerts.apply(lambda x: contains_attacker_addresses_ice_phishing(x, potential_attacker_cluster_lower), axis=1)]
+                        cluster_alerts = cluster_alerts[cluster_alerts.apply(lambda x: contains_attacker_addresses_ice_phishing(w3, x, potential_attacker_cluster_lower), axis=1)]
                         involved_alert_ids = cluster_alerts["alertId"].unique()
                         for alert_id in involved_alert_ids:
                             if alert_id in ALERT_ID_STAGE_MAPPING.keys():
@@ -399,7 +399,7 @@ def get_ice_phishing_attacker_address(description: str) -> str:
     return description[:42].lower()
 
 
-def contains_attacker_addresses_ice_phishing(alert: pd.Series, potential_attacker_address: str) -> bool:
+def contains_attacker_addresses_ice_phishing(w3, alert: pd.Series, potential_attacker_address: str) -> bool:
     global ICE_PHISHING_MAPPINGS_DF
     # iterate over ice phishing mappings and assess whether the potential attacker address is involved according to the mapping
     if "ICE-PHISHING" in alert["alertId"]:
@@ -419,6 +419,9 @@ def contains_attacker_addresses_ice_phishing(alert: pd.Series, potential_attacke
                             return True
             elif row['location'] == 'cluster_identifiers':
                 if potential_attacker_address in alert['cluster_identifiers']:  # lower not required as it comes from the network as opposed to user field
+                    return True
+            elif row['location'] == 'tx_to':
+                if potential_attacker_address == w3.eth.get_transaction(alert['transactionHash'])['to'].lower():
                     return True
 
     return False
@@ -444,6 +447,7 @@ def provide_handle_block(w3, forta_explorer):
         global FINDINGS_CACHE
         global MUTEX
 
+        #detect_attack(w3, forta_explorer, block_event)
         if not MUTEX:
             thread = threading.Thread(target=detect_attack, args=(w3, forta_explorer, block_event))
             thread.start()
