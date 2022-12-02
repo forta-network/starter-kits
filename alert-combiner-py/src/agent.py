@@ -45,6 +45,7 @@ root.addHandler(handler)
 # TODO - reduce cache granularity to 4 hours
 # TODO - emit an FP alert if FP mitigation came in after the alert
 # TODO - add FP mitigation alert to look at internal tx count for a given address
+# TODO - expand to new blockchains supported by Luabase (avalanche and fantom)
 
 def initialize():
     """
