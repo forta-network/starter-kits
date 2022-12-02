@@ -158,7 +158,7 @@ class TestAlertCombiner:
 
         assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
 
-    def test_detect_alert_pos_finding_combiner_3_addresses(self):
+    def test_detect_alert_pos_finding_combiner_3_tx_to(self):
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()

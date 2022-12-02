@@ -26,6 +26,9 @@ class EthMock:
     def chain_id(self):
         return 1
 
+    def get_transaction(self, hash):
+        return {'to': '0x21e13f16838e2fe78056f5fd50251ffd6e7098b4'}
+
     def get_code(self, address):
         if address == EOA_ADDRESS:
             return HexBytes('0x')
