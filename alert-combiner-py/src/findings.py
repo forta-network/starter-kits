@@ -25,7 +25,7 @@ class AlertCombinerFinding:
         return Finding({
                        'name': 'Attack detector identified an EOA with behavior consistent with an attack',
                        'description': f'{address} likely involved in an attack ({alert_event.alert_hash}). Anomaly score: {anomaly_score}',
-                       'alert_id': alert_event.alert_hash,
+                       'alert_id': "ATTACK-DETECTOR-1",
                        'type': FindingType.Exploit,
                        'severity': FindingSeverity.Critical,
                        'metadata': meta_data

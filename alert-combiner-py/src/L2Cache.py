@@ -1,12 +1,10 @@
-
-
 import logging
 import os
 import pickle
 import requests
 import forta_agent
 
-from src.constants import LOCAL_NODE
+from constants import LOCAL_NODE
 
 DATABASE = "https://research.forta.network/database/bot/"
 VERSION = "V1"

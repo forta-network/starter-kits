@@ -10,14 +10,12 @@ It does so with the realization that an attack usually consists of 4 distinct ph
 - exploitation (e.g. draining funds from a contract)
 - money laundering (e.g. sending funds to tornado cash)
 
-As such, this feed combines previously raised alerts under the initiating address (i.e. the attacker address) for a given time window (2 calendar days, so between 24-48h) and emits a cricial alert when 
-- alerts from all four phases have been observed 
-- a certain combination of the first two stages (i.e. funding with tornado cash and attack simulation fired)
-- a certain combination associated with ice phishing fired:
-  - ice phishing & sleep minting 
-  - ice phishing & TC interaction
-  - ice phishing & (unverified contract & flashbot)
-  - ice phishing & malicious address
+As such, this feed combines previously raised alerts under the initiating address (i.e. the attacker address) and emits a cricial alert when 
+- each alert is converted into an anomaly score
+- anomaly scores are combined (multiplied) across all stages for a common cluster (a set of addresses clustered by the cluster entity bot)
+- thresholds on the number of total alerts (3) and anomaly score
+- is not part of FP mitigation alert
+
 
 The following bots are considered by the Attack Detector Feed and mapped to the stages in the following way:
 | BotID | Name | AlertId | Stage |
@@ -107,42 +105,30 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0x9fbf4db19f23627633d86bb1936dabad0b27ebe09b7a38028a126392156f7f32 | Aztec Funding bot | AK-AZTEC-PROTOCOL-FUNDING | Funding |
 | 0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46 | Malicious Account Funding Bot | MALICIOUS-ACCOUNT-FUNDING | Funding |
 
+The following bots are used to mitigate FPs:
+| BotID | Name | AlertId |
+|-------|------|---------|
+| 0xabdeff7672e59d53c7702777652e318ada644698a9faf2e7f608ec846b07325b | MEV account bot | MEV-ACCOUNT |
+| 0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400 | High funding activity through TC | FUNDING-TORNADO-CASH-HIGH |
+| 0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f | Positive reputation bot | POSITIVE-REPUTATION-1 |
+
 As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
 
 ## Supported Chains
 
-- All Forta supported chains (note, it will appear that the bot only executes on one chain, but as it queries past Forta alerts, it essentially covers all chains)
+- Fantom, Avalanche, Polygon and Mainnet (stipulated by luabase support)
 
 ## Alerts
 
 Describe each of the type of alerts fired by this bot
 
 - ATTACK-DETECTOR-1
-  - Fired when alerts mapping to all 4 stages under one common EOA (the attacker address) have been observed
+  - Fired when 3 alerts are fired and anomaly score across the stages (per cluster) exceed a threshold
   - Severity is always set to "critical" 
   - Type is always set to "exploit" 
   - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
-  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
-  - Note: the detection bot will only alert once per EOA observed
-
-- ATTACK-DETECTOR-2
-  - Fired when alerts mapping to funding and preparation stages (attack simulation bot or smart contract ML v2 bot needs to fire) under one common EOA (the attacker address) have been observed
-  - Severity is always set to "critical" 
-  - Type is always set to "exploit" 
-  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
-  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
-  - Note: the detection bot will only alert once per EOA observed
-
-- ATTACK-DETECTOR-ICE-PHISHING
-  - Fired when alert combination is observed that points to an ice phishing attack
-  - Severity is always set to "critical" 
-  - Type is always set to "exploit" 
-  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
-  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
-  - Note: the detection bot will only alert once per EOA observed
+  - Note: the detection bot will only alert once per cluster observed
 
 ## Test Data
 
-The bot behaviour can be verified with the following blocks (assuming a default time window):
-
-- Fei Rari - block number 14685062 (date range: April 29-30 2022) (only works on version 0.6 and prior)
+TODO
