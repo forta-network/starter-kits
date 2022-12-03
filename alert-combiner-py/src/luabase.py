@@ -4,8 +4,8 @@ import pandas as pd
 import os
 import logging
 
-from src.constants import BASE_BOTS
-from src.L2Cache import L2Cache
+from constants import BASE_BOTS, LUABASE_QUERY_FREQUENCY_IN_HOURS
+from L2Cache import L2Cache
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -72,6 +72,9 @@ class Luabase:
     def populate_denominator_cache(self, chain_id: int, ad_scorer: str, start_date: datetime, end_date: datetime):
         chain_name = Luabase.get_chain_name(chain_id)
 
+        if start_date.hour % LUABASE_QUERY_FREQUENCY_IN_HOURS != 0:
+            return
+
         sql = ""
         cache_key = f"{chain_id}-{ad_scorer}-{start_date.strftime('%Y-%m-%dT%H')}"
         if cache_key in LUABASE_CACHE_L1.keys():
@@ -116,6 +119,9 @@ class Luabase:
     def populate_alert_count_cache(self, chain_id: int, bot_id: str, alert_id: str, start_date: datetime, end_date: datetime):
         global LUABASE_CACHE_L1
         chain_name = Luabase.get_chain_name(chain_id)
+
+        if start_date.hour % LUABASE_QUERY_FREQUENCY_IN_HOURS != 0:
+            return
 
         sql = f"select COUNT() from forta.{chain_name}_alerts WHERE CAST(substring(block_timestamp,1,19) as datetime)  >= '{start_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND CAST(substring(block_timestamp,1,19)  as datetime)  <= '{end_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND bot_id = '{bot_id}' AND alert_id = '{alert_id}'"
         cache_key = f"{chain_id}-{bot_id}-{alert_id}-{start_date.strftime('%Y-%m-%dT%H')}"

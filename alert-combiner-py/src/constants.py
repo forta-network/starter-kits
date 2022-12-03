@@ -1,4 +1,4 @@
-LOCAL_NODE = 1
+LOCAL_NODE = 0
 
 ALERTS_LOOKBACK_WINDOW_IN_HOURS = 48
 MIN_ALERTS_COUNT = 3
@@ -25,6 +25,8 @@ FP_MITIGATION_CLUSTERS_KEY = "fp_mitigation_clusters_key"
 ENTITY_CLUSTERS_KEY = "entity_clusters"
 ALERTED_CLUSTERS_KEY = "alerted_clusters_key"
 ALERTS_DATA_KEY = "alerts_key"
+
+LUABASE_QUERY_FREQUENCY_IN_HOURS = 4
 
 BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PREV-APPROVED-TRANSFERED", "Exploitation", "erc-transfers"),  # ice phishing
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-HIGH-NUM-APPROVALS", "Preparation", "erc-approvals"),  # ice phishing
