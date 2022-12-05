@@ -9,12 +9,12 @@ from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 
-from findings import AlertCombinerFinding
-from constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
+from src.findings import AlertCombinerFinding
+from src.constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
                            FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD, 
                            MIN_ALERTS_COUNT, ALERTS_DATA_KEY, ALERTED_CLUSTERS_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, AD_SCORE_ANOMALY_SCORE)
-from luabase import Luabase, MUTEX_LUABASE
-from L2Cache import L2Cache
+from src.luabase import Luabase, MUTEX_LUABASE
+from src.L2Cache import L2Cache
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 luabase = Luabase()
