@@ -37,7 +37,7 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", "Funding", "transfer-in"),  # tornado cash withdrawl
              ("0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9", "NETHFORTA-25", "Exploitation", "contract-interactions"),  # reentrancy
              ("0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2", "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", "MoneyLaundering", "transfer-out-large-amount"),  # money laundering
-             ("0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b514c7", "IMPOSSIBLE-2", "Exploitation", "tx-count"),  # high gas usage
+             ("0x7e1a8db7fec345b3e735b97b2ba61e74e1cc308c5effda9bd646debffbed2d14", "NETHFORTA-1", "Exploitation", "tx-count"),  # high gas usage
              ("0xe27867c40008e0e3533d6dba7d3c1f26a61a3923bc016747d131f868f8f34555", "FORTA-2", "Exploitation", "tx-count"),  # high gas price
              ("0xbf953b115fd214e1eb5c4d6f556ea30f0df47bd86bf35ce1fdaeff03dc7df5b7", "NETHFORTA-2", "Exploitation", "tx-count"),  # high value transaction
              ("0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4", "forta-text-messages-possible-hack", "MoneyLaundering", "data-eoa-to"),  # forta-text-messages-agent

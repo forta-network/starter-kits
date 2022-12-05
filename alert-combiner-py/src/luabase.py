@@ -4,8 +4,8 @@ import pandas as pd
 import os
 import logging
 
-from constants import BASE_BOTS, LUABASE_QUERY_FREQUENCY_IN_HOURS
-from L2Cache import L2Cache
+from src.constants import BASE_BOTS, LUABASE_QUERY_FREQUENCY_IN_HOURS
+from src.L2Cache import L2Cache
 
 from dotenv import load_dotenv
 load_dotenv()
