@@ -1,3 +1,5 @@
+# Copyright 2022 The Forta Foundation
+
 from datetime import datetime, timedelta
 from luabase import Luabase
 
