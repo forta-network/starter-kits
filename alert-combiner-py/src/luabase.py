@@ -1,3 +1,5 @@
+# Copyright 2022 The Forta Foundation
+
 import datetime
 import requests
 import pandas as pd

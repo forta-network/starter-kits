@@ -1,3 +1,5 @@
+# Copyright 2022 The Forta Foundation
+
 from hexbytes import HexBytes
 
 EOA_ADDRESS = '0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4'  # small tx count

@@ -1,3 +1,5 @@
+# Copyright 2022 The Forta Foundation
+
 from forta_agent import create_alert_event
 
 import agent

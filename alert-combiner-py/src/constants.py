@@ -1,3 +1,5 @@
+# Copyright 2022 The Forta Foundation
+
 LOCAL_NODE = 0
 
 ALERTS_LOOKBACK_WINDOW_IN_HOURS = 48
