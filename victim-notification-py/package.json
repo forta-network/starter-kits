@@ -1,9 +1,9 @@
 {
   "name": "victim-notification",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Alerts when victim is notified about being hacked on-chain",
   "chainIds": [
-    1
+    1, 56, 137, 43114, 42161, 10, 250
   ],
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
