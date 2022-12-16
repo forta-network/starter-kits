@@ -13,11 +13,6 @@ It does so with the realization that an attack usually consists of 4 distinct ph
 As such, this feed combines previously raised alerts under the initiating address (i.e. the attacker address) for a given time window (2 calendar days, so between 24-48h) and emits a cricial alert when 
 - alerts from all four phases have been observed 
 - a certain combination of the first two stages (i.e. funding with tornado cash and attack simulation fired)
-- a certain combination associated with ice phishing fired:
-  - ice phishing & sleep minting 
-  - ice phishing & TC interaction
-  - ice phishing & (unverified contract & flashbot)
-  - ice phishing & malicious address
 
 The following bots are considered by the Attack Detector Feed and mapped to the stages in the following way:
 | BotID | Name | AlertId | Stage |
@@ -129,14 +124,6 @@ Describe each of the type of alerts fired by this bot
 
 - ATTACK-DETECTOR-2
   - Fired when alerts mapping to funding and preparation stages (attack simulation bot or smart contract ML v2 bot needs to fire) under one common EOA (the attacker address) have been observed
-  - Severity is always set to "critical" 
-  - Type is always set to "exploit" 
-  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
-  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
-  - Note: the detection bot will only alert once per EOA observed
-
-- ATTACK-DETECTOR-ICE-PHISHING
-  - Fired when alert combination is observed that points to an ice phishing attack
   - Severity is always set to "critical" 
   - Type is always set to "exploit" 
   - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
