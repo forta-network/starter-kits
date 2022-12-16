@@ -239,9 +239,9 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                     if potential_attacker_cluster_lower not in ALERTED_CLUSTERS:
                         if (('SLEEPMINT-1' in alert_ids or 'SLEEPMINT-2' in alert_ids)
                             or ('MALICIOUS-ACCOUNT-FUNDING' in alert_ids or 'UMBRA-RECEIVE' in alert_ids or 'CEX-FUNDING-1' in alert_ids or 'AK-AZTEC-PROTOCOL-FUNDING' in alert_ids or 'FUNDING-TORNADO-CASH' in alert_ids or 'TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION' in alert_ids or 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH' in alert_ids or 'MALICIOUS-ACCOUNT-FUNDING' in alert_ids)
-                            or ('UNVERIFIED-CODE-CONTRACT-CREATION' in alert_ids and 'FLASHBOT-TRANSACTION' in alert_ids)
-                            or ('AE-MALICIOUS-ADDR' in alert_ids or 'forta-text-messages-possible-hack' in alert_ids)):
-
+                            or ('UNVERIFIED-CODE-CONTRACT-CREATION' in alert_ids or 'FLASHBOT-TRANSACTION' in alert_ids)
+                            or ('AE-MALICIOUS-ADDR' in alert_ids or 'forta-text-messages-possible-hack' in alert_ids)
+                            or ('ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS' in alert_ids)):
                             tx_count = 0
                             try:
                                 tx_count = get_max_transaction_count(w3, potential_attacker_cluster_lower)
