@@ -206,18 +206,36 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         # to optimize, we only check money laundering addresses as this is required to fullfill all 4 stage requirements
         if ATTACK_DETECTOR:
             logging.info("Attack detector - 4 stages")
-            money_laundering_tc = df_forta_alerts[df_forta_alerts["alertId"] == "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH"]
-            txt_msg_high = df_forta_alerts[(df_forta_alerts["alertId"] == "forta-text-messages-possible-hack") & (df_forta_alerts["severity"] == "HIGH")]
 
             addresses = set()
-            for index, row in txt_msg_high.iterrows():
-                addresses = addresses.union(set(row['cluster_identifiers']))
-
+            money_laundering_tc = df_forta_alerts[df_forta_alerts["alertId"] == "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH"]
             for index, row in money_laundering_tc.iterrows():
                 addresses.add(row["description"][0:42].lower())  # the money laundering TC bot transaction may not be the transaction that contains the TC transfer and therefore a set of addresses unrelated, so we parse the address from the description
 
+            money_laundering_azn = df_forta_alerts[df_forta_alerts["alertId"] == "AK-AZTEC-PROTOCOL-POSSIBLE-MONEY-LAUNDERING-NATIVE"]
+            for index, row in money_laundering_azn.iterrows():
+                addresses.add(row["description"][8:50].lower())  # the money laundering TC bot transaction may not be the transaction that contains the TC transfer and therefore a set of addresses unrelated, so we parse the address from the description
+
+            money_laundering_az = df_forta_alerts[df_forta_alerts["alertId"] == "AK-AZTEC-PROTOCOL-DEPOSIT-EVENT"]
+            for index, row in money_laundering_az.iterrows():
+                addresses.add(row["description"][8:50].lower())  # the money laundering TC bot transaction may not be the transaction that contains the TC transfer and therefore a set of addresses unrelated, so we parse the address from the description
+
+            money_laundering_umbra = df_forta_alerts[df_forta_alerts["alertId"] == "UMBRA-SEND"]
+            for index, row in money_laundering_umbra.iterrows():
+                addresses.add(row['metadata']['fromAddress'].lower())
+
+            money_laundering_lto = df_forta_alerts[df_forta_alerts["alertId"] == "LARGE-TRANSFER-OUT"]
+            for index, row in money_laundering_lto.iterrows():
+                addresses.add(row['metadata']['from'].lower())
+
+            txt_msg_high = df_forta_alerts[(df_forta_alerts["alertId"] == "forta-text-messages-possible-hack") & (df_forta_alerts["severity"] == "HIGH")]
+            for index, row in txt_msg_high.iterrows():
+                addresses = addresses.union(set(row['cluster_identifiers']))
+
             # replace with cluster identifiers if they exist
             clusters = swap_addresses_with_clusters(list(addresses), df_address_clusters_exploded)
+
+            logging.info(f"Found {len(clusters)} clusters to analyze")
 
             # analyze each address' alerts
             for potential_attacker_cluster_lower in clusters:
