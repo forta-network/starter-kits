@@ -1,5 +1,5 @@
   {
-  "name": "attack-detector",
+  "name": "attack-detector-beta",
   "version": "0.0.49",
   "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
   "chainIds": [
