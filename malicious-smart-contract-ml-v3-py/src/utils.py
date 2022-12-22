@@ -20,6 +20,7 @@ from src.luabase_constants import (
     LUABASE_URL,
     ANOMALY_SCORE_QUERY_ID,
     ALERT_COUNT_QUERY_ID,
+    BOT_ID,
 )
 from src.logger import logger
 
@@ -124,14 +125,17 @@ def get_features(w3, opcodes) -> list:
     return features, opcode_addresses, contract_type, function_sighashes
 
 
-def luabase_request(chain_name, query_uuid):
+def luabase_request(chain_name, bot_id, query_uuid):
     headers = {"content-type": "application/json"}
     payload = {
         "api_key": LUABASE_API_KEY,
         "block": {
             "data_uuid": query_uuid,
             "details": {
-                "parameters": {"chain": {"type": "value", "value": chain_name}}
+                "parameters": {
+                    "chain": {"type": "value", "value": chain_name},
+                    "bot_id": {"type": "value", "value": bot_id},
+                }
             },
         },
     }
@@ -156,12 +160,12 @@ def get_anomaly_score(chain_id):
         default_contract_deployment,
     ) = CHAIN_ID_METADATA_MAPPING[chain_id]
     if chain_id in LUABASE_SUPPORTED_CHAINS:
-        result = luabase_request(chain_name, ANOMALY_SCORE_QUERY_ID)
+        result = luabase_request(chain_name, BOT_ID, ANOMALY_SCORE_QUERY_ID)
         if result is not None:
             anomaly_score = round(result["anomaly_score"], 3)
 
     if anomaly_score == 0:
-        result = luabase_request(chain_name, ALERT_COUNT_QUERY_ID)
+        result = luabase_request(chain_name, BOT_ID, ALERT_COUNT_QUERY_ID)
         if result is not None:
             alert_count = round(result["alert_count"], 3)
         alert_count = alert_count if alert_count > 0 else default_alert_count
