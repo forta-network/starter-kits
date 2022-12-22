@@ -9,7 +9,7 @@ class TokenTransfersTxFinding:
 
     def emit_finding(self):
         self.metadata['model_version'] = self.model_version
-        self.metadata['anomaly_threshold'] = self.anomaly_threshold
+        self.metadata['model_threshold'] = self.anomaly_threshold
 
         return Finding({
             'name': self.name,

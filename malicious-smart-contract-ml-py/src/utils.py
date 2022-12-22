@@ -1,17 +1,11 @@
 from cachetools import cached, TTLCache
 from hexbytes import HexBytes
-import rlp
 import requests
 from web3 import Web3
 
 
 from src.constants import (
     CONTRACT_SLOT_ANALYSIS_DEPTH,
-    ERC721_SIGHASHES,
-    ERC20_SIGHASHES,
-    ERC1155_SIGHASHES,
-    ERC777_SIGHASHES,
-    PROXY_SIGHASHES,
     CHAIN_ID_METADATA_MAPPING,
     LUABASE_SUPPORTED_CHAINS,
 )
@@ -23,16 +17,6 @@ from src.luabase_constants import (
     BOT_ID,
 )
 from src.logger import logger
-
-
-def calc_contract_address(w3, address, nonce) -> str:
-    """
-    this function calculates the contract address from sender/nonce
-    :return: contract address: str
-    """
-
-    address_bytes = bytes.fromhex(address[2:].lower())
-    return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
 def is_contract(w3, address) -> bool:
@@ -71,58 +55,36 @@ def get_storage_addresses(w3, address) -> set:
     return address_set
 
 
-def get_contract_type(opcodes: str, function_sighashes: set) -> str:
+def get_opcode_addresses(w3, opcodes) -> set:
     """
-    this function determines contract type based on available sighashes.
-    :return: contract_type: str
+    this function returns the addresses that are references in the opcodes of a contract
+    :return: address_list: list (only returning contract addresses)
     """
-    if function_sighashes.intersection(ERC777_SIGHASHES):
-        return "erc777"
-    elif function_sighashes.intersection(ERC1155_SIGHASHES):
-        return "erc1155"
-    elif function_sighashes.intersection(ERC721_SIGHASHES):
-        return "erc721"
-    elif function_sighashes.intersection(ERC20_SIGHASHES):
-        return "erc20"
-    elif (
-        function_sighashes.intersection(PROXY_SIGHASHES) or len(function_sighashes) == 0
-    ):  # minimal proxy contract
-        return "proxy"
-    else:
-        return "non-token-or-proxy"
+    address_set = set()
+    for op in opcodes.splitlines():
+        for param in op.split(" "):
+            if param.startswith("0x") and len(param) == 42:
+                if is_contract(w3, param):
+                    address_set.add(Web3.toChecksumAddress(param))
+
+    return address_set
 
 
-def get_features(w3, opcodes) -> list:
+def get_features(opcodes) -> list:
     """
-    this function returns the opcodes + function hashes contained in the contract
+    this function returns the opcodes contained in the contract
     :return: features: list
     """
     features = []
-    function_sighashes = set()
-    opcode_addresses = set()
+    for op in opcodes.splitlines():
+        opcode = op.split(" ")[0].strip() if op else ""
+        if opcode:
+            # treat unique unknown and invalid opcodes as UNKNOWN OR INVALID
+            if opcode.startswith("UNKNOWN") or opcode.startswith("INVALID"):
+                opcode = opcode.split("_")[0]
+            features.append(opcode)
 
-    for i, opcode in enumerate(opcodes):
-        opcode_name = opcode.name
-        # treat unique unknown and invalid opcodes as UNKNOWN OR INVALID
-        if opcode_name.startswith("UNKNOWN") or opcode_name.startswith("INVALID"):
-            opcode_name = opcode.name.split("_")[0]
-        features.append(opcode_name)
-        if len(opcode.operand) == 40 and is_contract(w3, opcode.operand):
-            opcode_addresses.add(Web3.toChecksumAddress(f"0x{opcode.operand}"))
-
-        if i < (len(opcodes) - 3):
-            if (
-                opcodes[i].name == "PUSH4"
-                and opcodes[i + 1].name == "EQ"
-                and opcodes[i + 2].name == "PUSH2"
-                and opcodes[i + 3].name == "JUMPI"
-            ):  # add function sighashes
-                features.append(opcode.operand)
-                function_sighashes.add(f"0x{opcode.operand}")
-    features = " ".join(features)
-    contract_type = get_contract_type(features, function_sighashes)
-
-    return features, opcode_addresses, contract_type, function_sighashes
+    return " ".join(features)
 
 
 def luabase_request(chain_name, bot_id, query_uuid):
