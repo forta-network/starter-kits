@@ -1,6 +1,5 @@
 from cachetools import cached, TTLCache
 from hexbytes import HexBytes
-import rlp
 import requests
 from web3 import Web3
 
@@ -11,7 +10,6 @@ from src.constants import (
     ERC20_SIGHASHES,
     ERC1155_SIGHASHES,
     ERC777_SIGHASHES,
-    PROXY_SIGHASHES,
     CHAIN_ID_METADATA_MAPPING,
     LUABASE_SUPPORTED_CHAINS,
 )
@@ -23,16 +21,6 @@ from src.luabase_constants import (
     BOT_ID,
 )
 from src.logger import logger
-
-
-def calc_contract_address(w3, address, nonce) -> str:
-    """
-    this function calculates the contract address from sender/nonce
-    :return: contract address: str
-    """
-
-    address_bytes = bytes.fromhex(address[2:].lower())
-    return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
 def is_contract(w3, address) -> bool:
@@ -84,9 +72,7 @@ def get_contract_type(opcodes: str, function_sighashes: set) -> str:
         return "erc721"
     elif function_sighashes.intersection(ERC20_SIGHASHES):
         return "erc20"
-    elif (
-        function_sighashes.intersection(PROXY_SIGHASHES) or len(function_sighashes) == 0
-    ):  # minimal proxy contract
+    elif "DELEGATECALL" in opcodes:
         return "proxy"
     else:
         return "non-token-or-proxy"
@@ -118,11 +104,11 @@ def get_features(w3, opcodes) -> list:
                 and opcodes[i + 3].name == "JUMPI"
             ):  # add function sighashes
                 features.append(opcode.operand)
-                function_sighashes.add(f"0x{opcode.operand}")
+                function_sighashes.add(opcode.operand)
     features = " ".join(features)
     contract_type = get_contract_type(features, function_sighashes)
 
-    return features, opcode_addresses, contract_type, function_sighashes
+    return features, opcode_addresses, contract_type
 
 
 def luabase_request(chain_name, bot_id, query_uuid):
@@ -169,6 +155,6 @@ def get_anomaly_score(chain_id):
         if result is not None:
             alert_count = round(result["alert_count"], 3)
         alert_count = alert_count if alert_count > 0 else default_alert_count
-        anomaly_score = round(alert_count / default_contract_deployment, 3)
+        anomaly_score = round(alert_count / default_contract_deployment, 5)
 
     return anomaly_score

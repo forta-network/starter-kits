@@ -13,3 +13,19 @@ ERC1155_SIGHASHES = {
     "4e1273f4",
 }  # safeBatchTransferFrom and balanceOfBatch sighashes
 ERC777_SIGHASHES = {"959b8c3f"}  # authorizeOperator sighashes
+
+CHAIN_ID_METADATA_MAPPING = {
+    1: (
+        "ethereum",
+        172,  # alert_count
+        32_713,  # contract deployment
+    ),  # alert_count = avg of last 24 hrs of Nov 14, 2022.
+    137: ("polygon", 194, 6_681),
+    56: ("binance", 182, 299_458),
+    43114: ("avalanche", 23, 432),
+    42161: ("arbitrum", 302, 9_800),
+    10: ("optimism", 15, 1_651),
+    250: ("fantom", 7, 345_486),
+}
+
+LUABASE_SUPPORTED_CHAINS = {1, 137, 43114, 250}

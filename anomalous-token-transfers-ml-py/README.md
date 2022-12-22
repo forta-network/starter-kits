@@ -10,9 +10,9 @@ This bot utilizes the [Isolation Forest](https://scikit-learn.org/stable/modules
 IsolationForest(random_state=42, n_estimators=100)
 ```
 
-An [Isolation Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html#sklearn.ensemble.IsolationForest) model was trained to detect anomalous tx with erc20 token transfers. The model outputs an anomaly score that then gets normalized returning a score between 0 and 1 (inclusive). Scores closer to 1 are considered anomalies. A threshold variable called `ANOMALY_THRESHOLD` is set to only consider alerting anomalies if the score exceeds the specified threshold. If the threshold is exceeded, the tx is considered anomalous. If not, the tx is considered normal. The metadata will output model predictions as string labels `ANOMALY` and `NORMAL` for human readability.
+An [Isolation Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html#sklearn.ensemble.IsolationForest) model was trained to detect anomalous tx with erc20 token transfers. The model outputs an anomaly score that then gets normalized returning a score between 0 and 1 (inclusive). Scores closer to 1 are considered anomalies. A threshold variable called `MODEL_THRESHOLD` is set to only consider alerting anomalies if the score exceeds the specified threshold. If the threshold is exceeded, the tx is considered anomalous. If not, the tx is considered normal. The metadata will output model predictions as string labels `ANOMALY` and `NORMAL` for human readability.
 
-The model considered 0.387% of the training dataset to be anomalous for `ANOMALY_THRESHOLD=0.5`, including 4 of the following known exploit transactions:
+The model considered 0.387% of the training dataset to be anomalous for `MODEL_THRESHOLD=0.5`, including 4 of the following known exploit transactions:
 
 * (DETECTED) '0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56', # SaddleFinance Exploit
 * (DETECTED) '0xcd314668aaa9bbfebaf1a0bd2b6553d01dd58899c508d4729fa7311dc5d33ad7', # Beanstalk Flashloan Exploit
@@ -150,7 +150,7 @@ $ npm run tx 0x404666af36d5f2e11f763391be0a5b40ae78dfd4304b4f22e3a53c369e779bf1
     "max_single_token_transfers_value": 1700,
     "feature_generation_response_time_sec": 0.871986666,
     "prediction": "NORMAL",
-    "anomaly_score": 0.312,
+    "model_score": 0.312,
     "model_pred_response_time_sec": 6.372663291,
     "model_explanations": [
       "('HEX_value <= 0.60', -0.061278045359871774)",
@@ -165,7 +165,7 @@ $ npm run tx 0x404666af36d5f2e11f763391be0a5b40ae78dfd4304b4f22e3a53c369e779bf1
       "('STRONG_value <= 0.07', -0.04450359118074049)"
     ],
     "model_version": "1657669403",
-    "anomaly_threshold": 0.5
+    "model_threshold": 0.5
   },
   "addresses": []
 }
@@ -217,7 +217,7 @@ $ npm run tx 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56
     "max_single_token_transfers_value": 149377797.167,
     "feature_generation_response_time_sec": 5.533689084,
     "prediction": "ANOMALY",
-    "anomaly_score": 0.665,
+    "model_score": 0.665,
     "model_pred_response_time_sec": 6.2372900829999995,
     "model_explanations": [
       "('USDC_value > 62509772.00', 0.12213264393414446)",
@@ -232,7 +232,7 @@ $ npm run tx 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56
       "('WBTC_value <= 0.00', -0.04366651743234217)"
     ],
     "model_version": "1657669403",
-    "anomaly_threshold": 0.5
+    "model_threshold": 0.5
   },
   "addresses": []
 }

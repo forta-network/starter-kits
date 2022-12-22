@@ -10,6 +10,7 @@ class MaliciousTokenContractFindings:
         contained_addresses: set,
         model_score: float,
         model_threshold: float,
+        anomaly_score: float,
     ) -> Finding:
         metadata = {
             "address_contained_in_created_contract_" + str(i): address
@@ -17,6 +18,7 @@ class MaliciousTokenContractFindings:
         }
         metadata["model_score"] = str(model_score)
         metadata["model_threshold"] = str(model_threshold)
+        metadata["anomaly_score"] = anomaly_score
 
         return Finding(
             {
