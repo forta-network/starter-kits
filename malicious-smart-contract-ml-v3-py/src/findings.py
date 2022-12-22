@@ -10,6 +10,7 @@ class MaliciousTokenContractFindings:
         model_score: float,
         model_threshold: float,
         anomaly_score: float,
+        labels: list,
         error: str = None,
     ) -> Finding:
         metadata = {
@@ -37,5 +38,6 @@ class MaliciousTokenContractFindings:
                 "type": FindingType.Suspicious,
                 "severity": FindingSeverity.High,
                 "metadata": metadata,
+                "labels": labels,
             }
         )

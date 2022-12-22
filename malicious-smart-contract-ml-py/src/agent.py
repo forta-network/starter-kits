@@ -2,7 +2,7 @@ import forta_agent
 import numpy as np
 import pandas as pd
 import rlp
-from forta_agent import get_json_rpc_url
+from forta_agent import get_json_rpc_url, EntityType, LabelType
 from joblib import load
 from pyevmasm import disassemble_hex
 from web3 import Web3
@@ -18,6 +18,7 @@ from src.utils import (
     get_storage_addresses,
     get_opcode_addresses,
     get_anomaly_score,
+    is_contract,
 )
 
 
@@ -108,7 +109,37 @@ def detect_malicious_contract(w3, from_, created_contract_address) -> list:
             anomaly_score = get_anomaly_score(w3.eth.chain_id)
 
             model_score = exec_model(opcodes)
+            from_label_type = (
+                LabelType.Contract if is_contract(w3, from_) else LabelType.Eoa
+            )
             if model_score >= MODEL_THRESHOLD:
+                labels = [
+                    {
+                        "entity": created_contract_address,
+                        "entity_type": EntityType.Address,
+                        "label_type": LabelType.Attacker,
+                        "confidence": model_score,
+                    },
+                    {
+                        "entity": created_contract_address,
+                        "entity_type": EntityType.Address,
+                        "label_type": LabelType.Contract,
+                        "confidence": 1.0,
+                    },
+                    {
+                        "entity": from_,
+                        "entity_type": EntityType.Address,
+                        "label_type": LabelType.Attacker,
+                        "confidence": model_score,
+                    },
+                    {
+                        "entity": from_,
+                        "entity_type": EntityType.Address,
+                        "label_type": from_label_type,
+                        "confidence": 1.0,
+                    },
+                ]
+
                 findings.append(
                     MaliciousContractFindings.malicious_contract_creation(
                         from_,
@@ -117,6 +148,7 @@ def detect_malicious_contract(w3, from_, created_contract_address) -> list:
                         model_score,
                         MODEL_THRESHOLD,
                         anomaly_score,
+                        labels,
                     )
                 )
 
