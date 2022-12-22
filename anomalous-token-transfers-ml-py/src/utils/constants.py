@@ -3,53 +3,73 @@ ANOMALY_THRESHOLD = 0.5
 ERC20_TRANSFER_EVENT = '{"name":"Transfer","type":"event","anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}]}'
 
 ETHPLORER_ENDPOINT = "https://api.ethplorer.io"
-ETHERSCAN_ENDPOINT = "https://api.etherscan.io/api?module=account&action=txlist&page=1&offset=1&sort=asc"
+ETHERSCAN_ENDPOINT = (
+    "https://api.etherscan.io/api?module=account&action=txlist&page=1&offset=1&sort=asc"
+)
 
-MODEL_CREATED_TIMESTAMP = "1657669403" # Tuesday, July 12, 2022 11:43:23 PM
+MODEL_CREATED_TIMESTAMP = "1657669403"  # Tuesday, July 12, 2022 11:43:23 PM
 MODEL_FEATURES = [
-    'APE_transfers',
-    'APE_value',
-    'CRV_transfers',
-    'CRV_value',
-    'DAI_transfers',
-    'DAI_value',
-    'GALA_transfers',
-    'GALA_value',
-    'HEX_transfers',
-    'HEX_value',
-    'KOK_transfers',
-    'KOK_value',
-    'LINK_transfers',
-    'LINK_value',
-    'LOOKS_transfers',
-    'LOOKS_value',
-    'MANA_transfers',
-    'MANA_value',
-    'MATIC_transfers',
-    'MATIC_value',
-    'SAITAMA_transfers',
-    'SAITAMA_value',
-    'SAND_transfers',
-    'SAND_value',
-    'SHIB_transfers',
-    'SHIB_value',
-    'SOS_transfers',
-    'SOS_value',
-    'STRNGR_transfers',
-    'STRNGR_value',
-    'STRONG_transfers',
-    'STRONG_value',
-    'USDC_transfers',
-    'USDC_value',
-    'USDT_transfers',
-    'USDT_value',
-    'WBTC_transfers',
-    'WBTC_value',
-    'WETH_transfers',
-    'WETH_value',
-    'account_active_period_in_minutes',
-    'max_single_token_transfers_count',
-    'max_single_token_transfers_value',
-    'tokens_type_counts',
-    'transfer_counts']
+    "APE_transfers",
+    "APE_value",
+    "CRV_transfers",
+    "CRV_value",
+    "DAI_transfers",
+    "DAI_value",
+    "GALA_transfers",
+    "GALA_value",
+    "HEX_transfers",
+    "HEX_value",
+    "KOK_transfers",
+    "KOK_value",
+    "LINK_transfers",
+    "LINK_value",
+    "LOOKS_transfers",
+    "LOOKS_value",
+    "MANA_transfers",
+    "MANA_value",
+    "MATIC_transfers",
+    "MATIC_value",
+    "SAITAMA_transfers",
+    "SAITAMA_value",
+    "SAND_transfers",
+    "SAND_value",
+    "SHIB_transfers",
+    "SHIB_value",
+    "SOS_transfers",
+    "SOS_value",
+    "STRNGR_transfers",
+    "STRNGR_value",
+    "STRONG_transfers",
+    "STRONG_value",
+    "USDC_transfers",
+    "USDC_value",
+    "USDT_transfers",
+    "USDT_value",
+    "WBTC_transfers",
+    "WBTC_value",
+    "WETH_transfers",
+    "WETH_value",
+    "account_active_period_in_minutes",
+    "max_single_token_transfers_count",
+    "max_single_token_transfers_value",
+    "tokens_type_counts",
+    "transfer_counts",
+]
 
+CHAIN_ID_METADATA_MAPPING = {
+    1: (
+        "ethereum",
+        445,  # alert_count
+        500_000,  # token transfer count
+    ),
+    # TODO: update if we decide to deploy this model to other networks
+    # Currently all counts set to ethereum count
+    137: ("polygon", 445, 500_000),
+    56: ("binance", 445, 500_000),
+    43114: ("avalanche", 445, 500_000),
+    42161: ("arbitrum", 445, 500_000),
+    10: ("optimism", 445, 500_000),
+    250: ("fantom", 445, 500_000),
+}
+
+LUABASE_SUPPORTED_CHAINS = {1, 137, 43114, 250}
