@@ -19,6 +19,7 @@ class Web3Mock:
 class EthMock:
     def __init__(self):
         self.contract = ContractMock()
+        self.chain_id = 1
 
     def get_transaction_count(self, address):
         if address == EOA_ADDRESS:
