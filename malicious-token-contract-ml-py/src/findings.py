@@ -11,6 +11,7 @@ class MaliciousTokenContractFindings:
         model_score: float,
         model_threshold: float,
         anomaly_score: float,
+        labels: list
     ) -> Finding:
         metadata = {
             "address_contained_in_created_contract_" + str(i): address
@@ -28,5 +29,6 @@ class MaliciousTokenContractFindings:
                 "type": FindingType.Suspicious,
                 "severity": FindingSeverity.High,
                 "metadata": metadata,
+                "labels": labels
             }
         )
