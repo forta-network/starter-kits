@@ -3,18 +3,22 @@ import numpy as np
 import pandas as pd
 import rlp
 from forta_agent import get_json_rpc_url
-from hexbytes import HexBytes
 from joblib import load
 from pyevmasm import disassemble_hex
 from web3 import Web3
 
 from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
-    CONTRACT_SLOT_ANALYSIS_DEPTH,
     MODEL_THRESHOLD,
 )
 from src.findings import MaliciousContractFindings
 from src.logger import logger
+from src.utils import (
+    get_features,
+    get_storage_addresses,
+    get_opcode_addresses,
+    get_anomaly_score,
+)
 
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -29,74 +33,6 @@ def initialize():
     logger.info("Start loading model")
     ML_MODEL = load("model.joblib")
     logger.info("Complete loading model")
-
-
-def is_contract(w3, address) -> bool:
-    """
-    this function determines whether address is a contract
-    :return: is_contract: bool
-    """
-    if address is None:
-        return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
-    return code != HexBytes("0x")
-
-
-def get_storage_addresses(w3, address) -> set:
-    """
-    this function returns the addresses that are references in the storage of a contract (first CONTRACT_SLOT_ANALYSIS_DEPTH slots)
-    :return: address_list: list (only returning contract addresses)
-    """
-    if address is None:
-        return set()
-
-    address_set = set()
-    for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH):
-        mem = w3.eth.get_storage_at(Web3.toChecksumAddress(address), i)
-        if mem != HexBytes(
-            "0x0000000000000000000000000000000000000000000000000000000000000000"
-        ):
-            # looking at both areas of the storage slot as - depending on packing - the address could be at the beginning or the end.
-            addr_on_left = mem[0:20].hex()
-            addr_on_right = mem[12:].hex()
-            if is_contract(w3, addr_on_left):
-                address_set.add(Web3.toChecksumAddress(addr_on_left))
-            if is_contract(w3, addr_on_right):
-                address_set.add(Web3.toChecksumAddress(addr_on_right))
-
-    return address_set
-
-
-def get_opcode_addresses(w3, opcodes) -> set:
-    """
-    this function returns the addresses that are references in the opcodes of a contract
-    :return: address_list: list (only returning contract addresses)
-    """
-    address_set = set()
-    for op in opcodes.splitlines():
-        for param in op.split(" "):
-            if param.startswith("0x") and len(param) == 42:
-                if is_contract(w3, param):
-                    address_set.add(Web3.toChecksumAddress(param))
-
-    return address_set
-
-
-def get_features(opcodes) -> list:
-    """
-    this function returns the opcodes contained in the contract
-    :return: features: list
-    """
-    features = []
-    for op in opcodes.splitlines():
-        opcode = op.split(" ")[0].strip() if op else ""
-        if opcode:
-            # treat unique unknown and invalid opcodes as UNKNOWN OR INVALID
-            if opcode.startswith("UNKNOWN") or opcode.startswith("INVALID"):
-                opcode = opcode.split("_")[0]
-            features.append(opcode)
-
-    return " ".join(features)
 
 
 def exec_model(opcodes: str) -> float:
@@ -169,6 +105,7 @@ def detect_malicious_contract(w3, from_, created_contract_address) -> list:
             # obtain all the addresses contained in the created contract and propagate to the findings
             storage_addresses = get_storage_addresses(w3, created_contract_address)
             opcode_addresses = get_opcode_addresses(w3, opcodes)
+            anomaly_score = get_anomaly_score(w3.eth.chain_id)
 
             model_score = exec_model(opcodes)
             if model_score >= MODEL_THRESHOLD:
@@ -179,6 +116,7 @@ def detect_malicious_contract(w3, from_, created_contract_address) -> list:
                         set.union(storage_addresses, opcode_addresses),
                         model_score,
                         MODEL_THRESHOLD,
+                        anomaly_score,
                     )
                 )
 
