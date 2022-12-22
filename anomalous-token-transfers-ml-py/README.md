@@ -167,7 +167,8 @@ $ npm run tx 0x404666af36d5f2e11f763391be0a5b40ae78dfd4304b4f22e3a53c369e779bf1
     "model_version": "1657669403",
     "model_threshold": 0.5
   },
-  "addresses": []
+  "addresses": [],
+  "labels": []
 }
 ```
 
@@ -234,6 +235,15 @@ $ npm run tx 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56
     "model_version": "1657669403",
     "model_threshold": 0.5
   },
-  "addresses": []
+  "addresses": [],
+  "labels": [
+    {
+      "entity": "0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56",
+      "entity_type": 2,
+      "label_type": 9,
+      "confidence": 0.665,
+      "custom_value": "anomalous"
+    }
+  ]
 }
 ```

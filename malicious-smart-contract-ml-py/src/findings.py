@@ -10,6 +10,7 @@ class MaliciousContractFindings:
         model_score: float,
         model_threshold: float,
         anomaly_score: float,
+        labels: list(dict),
     ) -> Finding:
         metadata = {
             "address_contained_in_created_contract_" + str(i): address
@@ -27,5 +28,6 @@ class MaliciousContractFindings:
                 "type": FindingType.Suspicious,
                 "severity": FindingSeverity.High,
                 "metadata": metadata,
+                "labels": labels,
             }
         )
