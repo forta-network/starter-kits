@@ -109,13 +109,16 @@ def detect_malicious_contract(w3, from_, created_contract_address) -> list:
             anomaly_score = get_anomaly_score(w3.eth.chain_id)
 
             model_score = exec_model(opcodes)
+            from_label_type = (
+                LabelType.Contract if is_contract(w3, from_) else LabelType.Eoa
+            )
             if model_score >= MODEL_THRESHOLD:
                 labels = [
                     {
                         "entity": created_contract_address,
                         "entity_type": EntityType.Address,
                         "label_type": LabelType.Attacker,
-                        "confidence": round(model_score, 3),
+                        "confidence": model_score,
                     },
                     {
                         "entity": created_contract_address,
@@ -125,16 +128,14 @@ def detect_malicious_contract(w3, from_, created_contract_address) -> list:
                     },
                     {
                         "entity": from_,
-                        "entity_type": EntityType.Contract
-                        if is_contract(w3, from_)
-                        else EntityType.Address,
+                        "entity_type": EntityType.Address,
                         "label_type": LabelType.Attacker,
-                        "confidence": round(model_score, 3),
+                        "confidence": model_score,
                     },
                     {
-                        "entity": created_contract_address,
+                        "entity": from_,
                         "entity_type": EntityType.Address,
-                        "label_type": LabelType.Eoa,
+                        "label_type": from_label_type,
                         "confidence": 1.0,
                     },
                 ]

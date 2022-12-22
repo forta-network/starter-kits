@@ -1,6 +1,6 @@
 import forta_agent
 import rlp
-from forta_agent import get_json_rpc_url
+from forta_agent import get_json_rpc_url, EntityType, LabelType
 from joblib import load
 from evmdasm import EvmBytecode
 from web3 import Web3
@@ -16,6 +16,7 @@ from src.utils import (
     get_anomaly_score,
     get_features,
     get_storage_addresses,
+    is_contract,
 )
 
 
@@ -115,7 +116,37 @@ def detect_malicious_token_contract(w3, from_, created_contract_address, code) -
             anomaly_score = get_anomaly_score(w3.eth.chain_id)
             storage_addresses = get_storage_addresses(w3, created_contract_address)
             model_score, opcode_addresses, contract_type = exec_model(w3, opcodes)
+            from_label_type = (
+                LabelType.Contract if is_contract(w3, from_) else LabelType.Eoa
+            )
             if model_score is not None and model_score >= MODEL_THRESHOLD:
+                labels = [
+                    {
+                        "entity": created_contract_address,
+                        "entity_type": EntityType.Address,
+                        "label_type": LabelType.Attacker,
+                        "confidence": model_score,
+                    },
+                    {
+                        "entity": created_contract_address,
+                        "entity_type": EntityType.Address,
+                        "label_type": LabelType.Contract,
+                        "confidence": 1.0,
+                    },
+                    {
+                        "entity": from_,
+                        "entity_type": EntityType.Address,
+                        "label_type": LabelType.Attacker,
+                        "confidence": model_score,
+                    },
+                    {
+                        "entity": from_,
+                        "entity_type": EntityType.Address,
+                        "label_type": from_label_type,
+                        "confidence": 1.0,
+                    },
+                ]
+
                 findings.append(
                     MaliciousTokenContractFindings.malicious_contract_creation(
                         from_,
@@ -125,6 +156,7 @@ def detect_malicious_token_contract(w3, from_, created_contract_address, code) -
                         model_score,
                         MODEL_THRESHOLD,
                         anomaly_score,
+                        labels,
                     )
                 )
 
