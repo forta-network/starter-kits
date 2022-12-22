@@ -1,7 +1,7 @@
 from timeit import default_timer as timer
 
 import forta_agent
-from forta_agent import get_json_rpc_url
+from forta_agent import get_json_rpc_url, LabelType, EntityType
 from web3 import Web3
 import dill
 import lime.lime_tabular
@@ -96,8 +96,17 @@ def detect_anomalous_transfer(w3, transaction_event):
             metadata["model_explanations"] = explanations
 
             if prediction_label == "ANOMALY":
+                labels = [
+                    {
+                        "entity": transaction_event.hash,
+                        "entity_type": EntityType.Transaction,
+                        "label_type": LabelType.Attacker,
+                        "confidence": round(model_score, 3),
+                        "custom_value": "anomalous",
+                    }
+                ]
                 findings.append(
-                    AnomalousTransaction(metadata, from_address).emit_finding()
+                    AnomalousTransaction(metadata, from_address, labels).emit_finding()
                 )
             else:
                 findings.append(
