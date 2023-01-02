@@ -9,7 +9,7 @@ import forta_agent
 from src.constants import LOCAL_NODE
 
 DATABASE = "https://research.forta.network/database/bot/"
-VERSION = "V1"
+VERSION = "V2"
 
 
 class L2Cache:

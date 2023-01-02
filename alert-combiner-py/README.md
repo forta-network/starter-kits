@@ -123,8 +123,16 @@ As a result, the precision of this alert is quite high, but also some attacks ma
 Describe each of the type of alerts fired by this bot
 
 - ATTACK-DETECTOR-1
-  - Fired when 3 alerts are fired and anomaly score across the stages (per cluster) exceed a threshold
+  - Fired when 3 alerts are fired and anomaly score across the stages (per cluster) exceed the strict threshold
   - Severity is always set to "critical" 
+  - Type is always set to "exploit" 
+  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
+  - Note: the detection bot will only alert once per cluster observed
+
+
+- ATTACK-DETECTOR-2
+  - Fired when 3 alerts are fired and anomaly score across the stages (per cluster) exceed the loose threshold
+  - Severity is always set to "low" 
   - Type is always set to "exploit" 
   - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
   - Note: the detection bot will only alert once per cluster observed

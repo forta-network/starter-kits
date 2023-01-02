@@ -6,7 +6,7 @@ import pandas as pd
 import os
 import logging
 
-from src.constants import BASE_BOTS, LUABASE_QUERY_FREQUENCY_IN_HOURS
+from src.constants import BASE_BOTS, LUABASE_QUERY_FREQUENCY_IN_HOURS, LOCAL_NODE
 from src.L2Cache import L2Cache
 
 from dotenv import load_dotenv
@@ -74,7 +74,7 @@ class Luabase:
     def populate_denominator_cache(self, chain_id: int, ad_scorer: str, start_date: datetime, end_date: datetime):
         chain_name = Luabase.get_chain_name(chain_id)
 
-        if start_date.hour % LUABASE_QUERY_FREQUENCY_IN_HOURS != 0:
+        if start_date.hour % LUABASE_QUERY_FREQUENCY_IN_HOURS != 0 and LOCAL_NODE == 0:
             return
 
         sql = ""
@@ -112,9 +112,9 @@ class Luabase:
 
         try:
             value = Luabase().execute_query(sql)
-            LUABASE_CACHE_L1[cache_key] = value.iloc[0]['uniqExact(hash)']
-            L2Cache.write(value.iloc[0]['uniqExact(hash)'], chain_id, cache_key)
-            logging.info(f"Populated denominator cache for {chain_id} {ad_scorer} {start_date} {end_date}: {value.iloc[0]['uniqExact(hash)']}")
+            LUABASE_CACHE_L1[cache_key] = 1 if value.iloc[0]['uniqExact(hash)'] == 0 else value.iloc[0]['uniqExact(hash)']
+            L2Cache.write(LUABASE_CACHE_L1[cache_key], chain_id, cache_key)
+            logging.info(f"Populated denominator cache for {chain_id} {ad_scorer} {start_date} {end_date}: {LUABASE_CACHE_L1[cache_key]}")
         except Exception as e:
             logging.error(f"Failed to populate denominator cache for {chain_id} {ad_scorer} {start_date} {end_date}: {e}")
 
@@ -122,10 +122,10 @@ class Luabase:
         global LUABASE_CACHE_L1
         chain_name = Luabase.get_chain_name(chain_id)
 
-        if start_date.hour % LUABASE_QUERY_FREQUENCY_IN_HOURS != 0:
+        if start_date.hour % LUABASE_QUERY_FREQUENCY_IN_HOURS != 0 and LOCAL_NODE == 0:
             return
 
-        sql = f"select COUNT() from forta.{chain_name}_alerts WHERE CAST(substring(block_timestamp,1,19) as datetime)  >= '{start_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND CAST(substring(block_timestamp,1,19)  as datetime)  <= '{end_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND bot_id = '{bot_id}' AND alert_id = '{alert_id}'"
+        sql = f"select COUNT(DISTINCT alert_hash) from forta.{chain_name}_alerts WHERE CAST(substring(block_timestamp,1,19) as datetime)  >= '{start_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND CAST(substring(block_timestamp,1,19)  as datetime)  <= '{end_date.strftime('%Y-%m-%dT%H:%M:%S')}' AND bot_id = '{bot_id}' AND alert_id = '{alert_id}'"
         cache_key = f"{chain_id}-{bot_id}-{alert_id}-{start_date.strftime('%Y-%m-%dT%H')}"
         if cache_key in LUABASE_CACHE_L1.keys():
             return
@@ -138,9 +138,10 @@ class Luabase:
         logging.info(f"Populating alert count cache for {chain_id} {bot_id} {alert_id} {start_date} {end_date}")
         try:
             value = Luabase().execute_query(sql)
-            LUABASE_CACHE_L1[cache_key] = value.iloc[0]['count()']
-            L2Cache.write(value.iloc[0]['count()'], chain_id, cache_key)
-            logging.info(f"Populating alert count cache for {chain_id} {bot_id} {alert_id} {start_date} {end_date}")
+            logging.info(value)            
+            LUABASE_CACHE_L1[cache_key] = 1 if value.iloc[0]['uniqExact(alert_hash)'] == 0 else value.iloc[0]['uniqExact(alert_hash)']
+            L2Cache.write(LUABASE_CACHE_L1[cache_key], chain_id, cache_key)
+            logging.info(f"Populated alert count cache for {chain_id} {bot_id} {alert_id} {start_date} {end_date}: {LUABASE_CACHE_L1[cache_key]}")
         except Exception as e:
             logging.error(f"Failed to populate alert count cache for {chain_id} {bot_id} {alert_id} {start_date} {end_date}: {e}")
 

@@ -1,6 +1,6 @@
 {
   "name": "attack-detector-feed-v2",
-  "version": "0.2.15",
+  "version": "0.2.17",
   "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
   "chainIds": [
     1, 137, 43114, 250
