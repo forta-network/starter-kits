@@ -157,7 +157,15 @@ def get_forta_alerts(start_date: datetime, end_date: datetime, df_address_cluste
     df_forta_alerts_clusters_joined.drop(columns=["entity_addresses_arr", "entity_addresses"], inplace=True)
 
     df_forta_alerts = df_forta_alerts_clusters_joined.groupby(['hash']).agg({"cluster_identifiers": lambda x: x.tolist(), "severity": "first", "alertId": "first", "bot_id": "first", "description": "first", "metadata": "first", "transactionHash": "first"})
+
+    # severity filter hack; dont want high funding alerts or medium-info laundering alerts
+    df_forta_alerts = df_forta_alerts[~((df_forta_alerts["bot_id"] == "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058") & (df_forta_alerts["alertId"] == "FLD_NEW_FUNDING") & (df_forta_alerts["severity"] == "HIGH"))]
+    df_forta_alerts = df_forta_alerts[~((df_forta_alerts["bot_id"] == "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058") & (df_forta_alerts["alertId"] == "FLD_Laundering") & (df_forta_alerts["severity"] == "MEDIUM"))]
+    df_forta_alerts = df_forta_alerts[~((df_forta_alerts["bot_id"] == "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058") & (df_forta_alerts["alertId"] == "FLD_Laundering") & (df_forta_alerts["severity"] == "LOW"))]
+    df_forta_alerts = df_forta_alerts[~((df_forta_alerts["bot_id"] == "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058") & (df_forta_alerts["alertId"] == "FLD_Laundering") & (df_forta_alerts["severity"] == "INFO"))]
+
     df_forta_alerts.reset_index(inplace=True)
+
     logging.info("Added cluster identifiers to alerts")
 
     return df_forta_alerts
@@ -223,6 +231,10 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
             money_laundering_umbra = df_forta_alerts[df_forta_alerts["alertId"] == "UMBRA-SEND"]
             for index, row in money_laundering_umbra.iterrows():
                 addresses.add(row['metadata']['fromAddress'].lower())
+
+            money_laundering_generic = df_forta_alerts[df_forta_alerts["alertId"] == "FLD_Laundering"]
+            for index, row in money_laundering_generic.iterrows():
+                addresses.add(row["description"][0:42].lower())
 
             money_laundering_lto = df_forta_alerts[df_forta_alerts["alertId"] == "LARGE-TRANSFER-OUT"]
             for index, row in money_laundering_lto.iterrows():
