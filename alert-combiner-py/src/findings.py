@@ -8,7 +8,7 @@ import forta_agent
 class AlertCombinerFinding:
 
     @staticmethod
-    def create_finding(address: str, anomaly_score: float, alert_event: forta_agent.alert_event.AlertEvent, alert_data: pd.DataFrame) -> Finding:
+    def create_finding(address: str, anomaly_score: float, severity: FindingSeverity, alert_id: str, alert_event: forta_agent.alert_event.AlertEvent, alert_data: pd.DataFrame) -> Finding:
         # alert_data -> 'stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses'
 
         attacker_address = {"attacker_address": address}
@@ -27,8 +27,8 @@ class AlertCombinerFinding:
         return Finding({
                        'name': 'Attack detector identified an EOA with behavior consistent with an attack',
                        'description': f'{address} likely involved in an attack ({alert_event.alert_hash}). Anomaly score: {anomaly_score}',
-                       'alert_id': "ATTACK-DETECTOR-1",
+                       'alert_id': alert_id,
                        'type': FindingType.Exploit,
-                       'severity': FindingSeverity.Critical,
+                       'severity': severity,
                        'metadata': meta_data
                        })

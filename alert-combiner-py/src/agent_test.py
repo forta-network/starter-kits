@@ -1,13 +1,13 @@
 # Copyright 2022 The Forta Foundation
 
-from forta_agent import create_alert_event
+from forta_agent import create_alert_event,FindingSeverity
 
 import agent
 import json
 import os
 from datetime import datetime, timedelta
 from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
-                       ALERTS_DATA_KEY, ALERTED_CLUSTERS_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY)
+                       ALERTS_DATA_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY)
 from web3_mock import CONTRACT, EOA_ADDRESS, EOA_ADDRESS_2, Web3Mock
 from luabase_mock import LuabaseMock
 from L2Cache import VERSION
@@ -21,8 +21,10 @@ class TestAlertCombiner:
     def remove_persistent_state():
         if os.path.isfile(f"{VERSION}-{ALERTS_DATA_KEY}"):
             os.remove(f"{VERSION}-{ALERTS_DATA_KEY}")
-        if os.path.isfile(f"{VERSION}-{ALERTED_CLUSTERS_KEY}"):
-            os.remove(f"{VERSION}-{ALERTED_CLUSTERS_KEY}")
+        if os.path.isfile(f"{VERSION}-{ALERTED_CLUSTERS_STRICT_KEY}"):
+            os.remove(f"{VERSION}-{ALERTED_CLUSTERS_STRICT_KEY}")
+        if os.path.isfile(f"{VERSION}-{ALERTED_CLUSTERS_LOOSE_KEY}"):
+            os.remove(f"{VERSION}-{ALERTED_CLUSTERS_LOOSE_KEY}")
         if os.path.isfile(f"{VERSION}-{ENTITY_CLUSTERS_KEY}"):
             os.remove(f"{VERSION}-{ENTITY_CLUSTERS_KEY}")
         if os.path.isfile(f"{VERSION}-{FP_MITIGATION_CLUSTERS_KEY}"):
@@ -61,9 +63,9 @@ class TestAlertCombiner:
                 {"name": "x",
                  "hash": "0xabc",
                  "description": "description",
-                 "alertId": "IMPOSSIBLE-2",
+                 "alertId": "AK-ATTACK-SIMULATION-0",
                  "source":
-                    {"bot": {'id': "0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b514c7"}}
+                    {"bot": {'id': "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6"}}
                  }
              })
 
@@ -75,9 +77,9 @@ class TestAlertCombiner:
                 {"name": "x",
                  "hash": "0xabc",
                  "description": "description",
-                 "alertId": "IMPOSSIBLE-1",
+                 "alertId": "AK-ATTACK-SIMULATION-1",
                  "source":
-                    {"bot": {'id': "0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b514c7"}}
+                    {"bot": {'id': "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6"}}
                  }
              })
 
@@ -89,9 +91,9 @@ class TestAlertCombiner:
                 {"name": "x",
                  "hash": "0xabc",
                  "description": "description",
-                 "alertId": "IMPOSSIBLE-2",
+                 "alertId": "AK-ATTACK-SIMULATION-1",
                  "source":
-                    {"bot": {'id': "0x0ffe038c802784f739bb27fcd4274f71c384fea78de87c9ef8d5b3fb72b51xxx"}}
+                    {"bot": {'id': "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6"}}
                  }
              })
 
@@ -177,7 +179,7 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 10E-9
@@ -200,7 +202,7 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 10E-9
@@ -216,7 +218,7 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
 
         assert len(agent.FINDINGS_CACHE) == 0, "alert should not have been raised again"
@@ -236,7 +238,7 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
 
         assert len(agent.FINDINGS_CACHE) == 0, "alert should have been raised as this is a contract"
@@ -257,10 +259,10 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
 
-        assert len(agent.FINDINGS_CACHE) == 0, "alert should have been raised funding alert is too old"
+        assert len(agent.FINDINGS_CACHE) == 0, "alert should not have been raised funding alert is too old"
 
     def test_alert_proper_handling_of_min(self):
         # three alerts in diff stages for a given older alerts
@@ -279,14 +281,18 @@ class TestAlertCombiner:
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION")  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
         agent.detect_attack(w3, luabase, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        assert len(agent.FINDINGS_CACHE) == 1, "only 1 alert should have been raised"
+        assert agent.FINDINGS_CACHE[0].severity == FindingSeverity.Low, "low severity alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
+        
 
         # 100/100000 * 1000/10000000 * 50/10000000 -> 10E-8
-        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
-        assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 5e-13) < 1e-20, 'incorrect anomaly score'
+        assert len(agent.FINDINGS_CACHE) == 2, "alert should have been raised"
+        assert agent.FINDINGS_CACHE[1].severity == FindingSeverity.Critical, "critical severity alert should have been raised"
+        assert abs(agent.FINDINGS_CACHE[1].metadata["anomaly_score"] - 5e-13) < 1e-20, 'incorrect anomaly score'
 
     def test_alert_too_few_alerts(self):
         # two alerts in diff stages for a given EOA
@@ -299,7 +305,7 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
 
         # 100/100000 * 50/10000000 -> 5E-9
@@ -324,7 +330,7 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-9
@@ -351,7 +357,7 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS_2, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS_2, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 10E-9
@@ -379,7 +385,7 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS")  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 10E-9

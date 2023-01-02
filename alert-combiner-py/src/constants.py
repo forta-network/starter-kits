@@ -2,9 +2,11 @@
 
 LOCAL_NODE = 0
 
-ALERTS_LOOKBACK_WINDOW_IN_HOURS = 48
+ALERTS_LOOKBACK_WINDOW_IN_HOURS = 24
 MIN_ALERTS_COUNT = 3
-ANOMALY_SCORE_THRESHOLD = 0.00000001
+ANOMALY_SCORE_THRESHOLD_STRICT = 0.0000001
+ANOMALY_SCORE_THRESHOLD_LOOSE = 0.00001
+
 
 CONTRACT_CACHE_MAX_QUEUE_SIZE = 10000
 
@@ -26,7 +28,8 @@ FP_MITIGATION_BOTS = [("0xabdeff7672e59d53c7702777652e318ada644698a9faf2e7f608ec
 
 FP_MITIGATION_CLUSTERS_KEY = "fp_mitigation_clusters_key"
 ENTITY_CLUSTERS_KEY = "entity_clusters"
-ALERTED_CLUSTERS_KEY = "alerted_clusters_key"
+ALERTED_CLUSTERS_STRICT_KEY = "alerted_clusters_strict_key"
+ALERTED_CLUSTERS_LOOSE_KEY = "alerted_clusters_loose_key"
 ALERTS_DATA_KEY = "alerts_key"
 
 LUABASE_QUERY_FREQUENCY_IN_HOURS = 4
@@ -40,7 +43,6 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", "Funding", "transfer-in"),  # tornado cash withdrawl
              ("0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9", "NETHFORTA-25", "Exploitation", "contract-interactions"),  # reentrancy
              ("0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2", "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", "MoneyLaundering", "transfer-out-large-amount"),  # money laundering
-             ("0x7e1a8db7fec345b3e735b97b2ba61e74e1cc308c5effda9bd646debffbed2d14", "NETHFORTA-1", "Exploitation", "tx-count"),  # high gas usage
              ("0xe27867c40008e0e3533d6dba7d3c1f26a61a3923bc016747d131f868f8f34555", "FORTA-2", "Exploitation", "tx-count"),  # high gas price
              ("0xbf953b115fd214e1eb5c4d6f556ea30f0df47bd86bf35ce1fdaeff03dc7df5b7", "NETHFORTA-2", "Exploitation", "tx-count"),  # high value transaction
              ("0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4", "forta-text-messages-possible-hack", "MoneyLaundering", "data-eoa-to"),  # forta-text-messages-agent
@@ -54,7 +56,7 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x2c8452ff81b4fa918a8df4441ead5fedd1d4302d7e43226f79cb812ea4962ece", "HIGH-BORROW-VALUE", "Exploitation", "ad-score"),  # Large Mint Borrow Volume Anomaly Detection
              ("0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127", "IMPERSONATED-TOKEN-DEPLOYMENT", "Preparation", "contract-creation"),  # Token Impersonation
              ("0x0f21668ebd017888e7ee7dd46e9119bdd2bc7f48dbabc375d96c9b415267534c", "SMART-PRICE-CHANGES", "Exploitation", "ad-score"),  # Smart Price Change Bot
-             ("0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION", "Exploitation", "tx-count"),  # Flashbot
+             ("0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", "Exploitation", "tx-count"),  # Flashbot
              ("0xfcf3ee41d04eee52f7944387010bc8aa6f22d54c36576c9a05db7e6cafda41f9", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation", "contract-interactions"),  # balance decrease for bridge: polygon (ether) - Ethereum Mainnet
              ("0xca504ee43501fe7c20084aa3112f8f57dd8c1e0e8a85d3884b66c252d6fc4f5b", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation", "contract-interactions"),  # balance decrease for bridge: polygon (ERC20) - Ethereum Mainnet
              ("0xa4b00d881c92526ef9a1db39cd3da2b7f32958eab2d7bb807546b7fd1a520748", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation", "contract-interactions"),  # balance decrease for bridge: Avalanche - Ethereum Mainnet
@@ -114,5 +116,9 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x47b86137077e18a093653990e80cb887be98e7445291d8cf811d3b2932a3c4d2", "AK-AZTEC-PROTOCOL-DEPOSIT-EVENT", "Funding", "transfer-in"),  # Aztec funding
              ("0x9fbf4db19f23627633d86bb1936dabad0b27ebe09b7a38028a126392156f7f32", "AK-AZTEC-PROTOCOL-FUNDING", "Funding", "transfer-in"),  # Aztec funding
              ("0xaf9ac4c204eabdd39e9b00f91c8383dc01ef1783e010763cad05cc39e82643bb", "LARGE-TRANSFER-OUT", "MoneyLaundering", "transfer-out-large-amount"),  # large native transfer out
-             ("0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46", "MALICIOUS-ACCOUNT-FUNDING", "Funding", "transfer-in")  # Malicious Account Funding
+             ("0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46", "MALICIOUS-ACCOUNT-FUNDING", "Funding", "transfer-in"),  # Malicious Account Funding
+             ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_NEW_FUNDING", "Funding", "transfer-in"),  # New Account Funding
+             ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_FUNDING", "Funding", "transfer-in"),  # New Account Funding
+             ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_Laundering", "MoneyLaundering", "transfer-out-large-amount"),  # Laundering
+             ("0x5398a61f6b12965982fac1edceb472c761d45323d72647d15dad0a077f24adcc", "NETHFORTA-1", "Exploitation", "tx-count")  # high gas
              ]

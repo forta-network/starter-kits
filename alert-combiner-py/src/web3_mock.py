@@ -1,6 +1,7 @@
 # Copyright 2022 The Forta Foundation
 
 from hexbytes import HexBytes
+from datetime import datetime
 
 EOA_ADDRESS = '0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4'  # small tx count
 EOA_ADDRESS_2 = '0x1c5dCdd006EA78a7E4783f9e6021C32935bbbbbb'  # small tx count
@@ -19,6 +20,9 @@ class EthMock:
     def chain_id(self):
         return 1
 
+    def get_block(self, block_number):
+        return BlockMock()
+
     def get_code(self, address):
         if address == EOA_ADDRESS or address == EOA_ADDRESS_2:
             return HexBytes('0x')
@@ -26,6 +30,10 @@ class EthMock:
             return HexBytes('0x0000000000000000000000000000000000000000000000000000000000000005')
         else:
             return HexBytes('0x')
+
+
+class BlockMock:
+    timestamp = datetime.now().timestamp()
 
 
 class ContractMock:
