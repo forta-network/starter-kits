@@ -39,7 +39,7 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0x2c8452ff81b4fa918a8df4441ead5fedd1d4302d7e43226f79cb812ea4962ece | Large Mint Borrow Volume Anomaly Detection | HIGH-MINT-VALUE | Exploitation |
 | 0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3 | unverified contract creation | UNVERIFIED-CODE-CONTRACT-CREATION | Preparation |
 | 0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127 | token impersonation | IMPERSONATED-TOKEN-DEPLOYMENT | Preparation |
-| 0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5 | flashbot attack bot | FLASHBOT-TRANSACTION | Exploitation |
+| 0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5 | flashbot attack bot | FLASHBOTS-TRANSACTIONS | Exploitation |
 | 0x0f21668ebd017888e7ee7dd46e9119bdd2bc7f48dbabc375d96c9b415267534c | smart price change bot | SMART-PRICE-CHANGES | Preparation |
 | 0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4 | text messages agent | forta-text-messages-possible-hack (high severity only) | MoneyLaundering |
 | 0xfcf3ee41d04eee52f7944387010bc8aa6f22d54c36576c9a05db7e6cafda41f9 | balance decrease for bridge: polygon (ether) - Ethereum Mainnet | BALANCE-DECREASE-ASSETS-ALL-REMOVED | Exploitation |
@@ -103,6 +103,10 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46 | Malicious Account Funding Bot | MALICIOUS-ACCOUNT-FUNDING | Funding |
 | 0xdba64bc69511d102162914ef52441275e651f817e297276966be16aeffe013b0 | Umbra bot | UMBRA-RECEIVE | Funding |
 | 0xdba64bc69511d102162914ef52441275e651f817e297276966be16aeffe013b0 | Umbra bot | UMBRA-SEND | MoneyLaundering |
+| 0xaf9ac4c204eabdd39e9b00f91c8383dc01ef1783e010763cad05cc39e82643bb | large native transfer out  | LARGE-TRANSFER-OUT | MoneyLaundering |           
+| 0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46 | Malicious Account Funding | MALICIOUS-ACCOUNT-FUNDING | Funding |
+| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | Funding Laundering Detector | FLD_NEW_FUNDING | Funding |
+| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | Funding Laundering Detector | FLD_Laundering | MoneyLaundering |
 
 As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
 
