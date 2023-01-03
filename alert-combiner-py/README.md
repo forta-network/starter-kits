@@ -107,6 +107,9 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46 | Malicious Account Funding | MALICIOUS-ACCOUNT-FUNDING | Funding |
 | 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | Funding Laundering Detector | FLD_NEW_FUNDING | Funding |
 | 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | Funding Laundering Detector | FLD_Laundering | MoneyLaundering |
+| 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Txt Msg Sentiment Bot | NEGATIVE-ANGER-TEXT-MESSAGE | MoneyLaundering |
+| 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Txt Msg Sentiment Bot | NEGATIVE-DISGUST-TEXT-MESSAGE | MoneyLaundering |
+| 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Txt Msg Sentiment Bot | NEGATIVE-SADNESS-TEXT-MESSAGE | MoneyLaundering |
 
 As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
 
