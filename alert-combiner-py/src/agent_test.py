@@ -275,7 +275,7 @@ class TestAlertCombiner:
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xaedda4252616d971d570464a3ae4a9f0a9d72a57d8581945fff648d03cd30a7d", "FORTA-BLOCKLIST-ADDR-TX")  # preparation -> alert count = 1000, blocklist account tx; ad-scorer contract-creation -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbf26258d381c4151c904c6d357c024688866fa3197c14d55852b8b76335967b4", "EXPLOITER-ADDR-TX")  # preparation -> alert count = 1000, blocklist account tx; ad-scorer contract-creation -> denominator 10000000
         agent.detect_attack(w3, luabase, alert_event)
         assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
 
