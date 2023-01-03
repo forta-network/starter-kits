@@ -104,6 +104,12 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad | Token Impersonation ML Bot | SUSPICIOUS-TOKEN-CONTRACT-CREATION | Funding |
 | 0x9fbf4db19f23627633d86bb1936dabad0b27ebe09b7a38028a126392156f7f32 | Aztec Funding bot | AK-AZTEC-PROTOCOL-FUNDING | Funding |
 | 0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46 | Malicious Account Funding Bot | MALICIOUS-ACCOUNT-FUNDING | Funding |
+| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | New Account Funding | FLD_NEW_FUNDING | Funding |
+| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | Account Funding | FLD_FUNDING | Funding |
+| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | Money Laundering | FLD_Laundering | Money Laundering |
+| 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-ANGER-TEXT-MESSAGE | Money Laundering |
+| 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-DISGUST-TEXT-MESSAGE | Money Laundering |
+| 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-SADNESS-TEXT-MESSAGE | Money Laundering |
 
 The following bots are used to mitigate FPs:
 | BotID | Name | AlertId |
