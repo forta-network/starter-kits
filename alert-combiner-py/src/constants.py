@@ -120,5 +120,8 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_NEW_FUNDING", "Funding", "transfer-in"),  # New Account Funding
              ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_FUNDING", "Funding", "transfer-in"),  # New Account Funding
              ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_Laundering", "MoneyLaundering", "transfer-out-large-amount"),  # Laundering
-             ("0x5398a61f6b12965982fac1edceb472c761d45323d72647d15dad0a077f24adcc", "NETHFORTA-1", "Exploitation", "tx-count")  # high gas
+             ("0x5398a61f6b12965982fac1edceb472c761d45323d72647d15dad0a077f24adcc", "NETHFORTA-1", "Exploitation", "tx-count"),  # high gas
+             ("0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d", "NEGATIVE-ANGER-TEXT-MESSAGE", "MoneyLaundering", "data-eoa-to"),  # txt msg sentiment analysis
+             ("0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d", "NEGATIVE-DISGUST-TEXT-MESSAGE", "MoneyLaundering", "data-eoa-to"),  # txt msg sentiment analysis
+             ("0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d", "NEGATIVE-SADNESS-TEXT-MESSAGE", "MoneyLaundering", "data-eoa-to")  # txt msg sentiment analysis
              ]
