@@ -12,7 +12,8 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, SCAM_DETECTOR, ATTACK_DETECTOR, ENTITY_CLUSTER_BOT_ALERT_ID,
-                           DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD, ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS)
+                           DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD, ENTITY_CLUSTER_BOT, 
+                           ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS)
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
 
@@ -134,6 +135,16 @@ def get_clusters_exploded(start_date: datetime, end_date: datetime, forta_explor
     return df_address_clusters
 
 
+def get_victim_alerts(start_date: datetime, end_date: datetime, forta_explorer: FortaExplorer, chain_id: int) -> pd.DataFrame:
+    df_victim_alerts1 = forta_explorer.alerts_by_bot(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0], chain_id, start_date, end_date)  
+    df_victim_alerts2 = forta_explorer.alerts_by_bot(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0], chain_id, start_date, end_date)  
+    df_victim_alerts = pd.concat([df_victim_alerts1, df_victim_alerts2])
+    logging.info(f"Fetched {len(df_victim_alerts)} victim alerts")
+
+    return df_victim_alerts
+
+
+
 def get_forta_alerts(start_date: datetime, end_date: datetime, df_address_clusters: pd.DataFrame, forta_explorer: FortaExplorer, chain_id: int) -> pd.DataFrame:
     logging.info(f"Analyzing alerts from {start_date} to {end_date}, chain_id: {chain_id}")
 
@@ -186,6 +197,26 @@ def swap_addresses_with_clusters(addresses: list, df_address_clusters_exploded: 
         return []
 
 
+def get_victim_info(df_victim_alerts):
+    victim_address = ""
+    victim_name = ""
+    victim_metadata = {}
+
+    # preference on preparation
+    df_prep_victim_alerts = df_victim_alerts[df_victim_alerts["alertId_y"] == VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0]]
+    if(len(df_prep_victim_alerts) > 0):
+        victim_metadata = df_prep_victim_alerts.iloc[0]["metadata_y"]
+
+    df_exploitation_victim_alerts = df_victim_alerts[df_victim_alerts["alertId_y"] == VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1]]
+    if(len(df_exploitation_victim_alerts) > 0):
+        victim_metadata = df_exploitation_victim_alerts.iloc[0]["metadata_y"]
+
+    victim_metadata.pop("holders1", "")
+    victim_address = victim_metadata["address1"] if "address1" in victim_metadata.keys() else ""
+    victim_name = victim_metadata["tag1"] if "tag1" in victim_metadata.keys() else ""
+
+    return victim_address, victim_name, victim_metadata
+
 def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.block_event.BlockEvent):
     """
     this function returns finding for any address for which alerts in 4 stages were observed in a given time window
@@ -204,6 +235,12 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         start_date = end_date - timedelta(days=ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS)
         df_address_clusters_exploded = get_clusters_exploded(start_date=start_date, end_date=end_date, forta_explorer=forta_explorer, chain_id=w3.eth.chain_id)
         logging.info(f"Fetched clusters {len(df_address_clusters_exploded)}")
+
+        end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
+        start_date = end_date - timedelta(days=DATE_LOOKBACK_WINDOW_IN_DAYS)
+        df_victim_alerts = get_victim_alerts(start_date=start_date, end_date=end_date, forta_explorer=forta_explorer, chain_id=w3.eth.chain_id)
+        logging.info(f"Fetched victim alerts {len(df_victim_alerts)}")
+
 
         end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
         start_date = end_date - timedelta(days=DATE_LOOKBACK_WINDOW_IN_DAYS)
@@ -263,6 +300,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                     involved_clusters = set()
                     if(len(df_forta_alerts) > 0):
                         cluster_alerts = df_forta_alerts[df_forta_alerts["cluster_identifiers"].apply(lambda x: potential_attacker_cluster_lower in x if x is not None else False)]
+                        cluster_victim_alerts = pd.merge(cluster_alerts, df_victim_alerts, how ='inner', on =['transactionHash', 'transactionHash'])
                         involved_alert_ids = cluster_alerts["alertId"].unique()
                         for alert_id in involved_alert_ids:
                             if alert_id in ALERT_ID_STAGE_MAPPING.keys():
@@ -288,7 +326,8 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                                 logging.info(f"Cluster {potential_attacker_cluster_lower} transacton count: {tx_count}")
                                 continue
                             update_alerted_clusters(w3, potential_attacker_cluster_lower)
-                            FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-1', hashes))
+                            victim_address, victim_name, victim_metadata = get_victim_info(cluster_victim_alerts)
+                            FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, victim_address.lower(), victim_name.lower(), start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-1', hashes, victim_metadata))
                             logging.info(f"Findings count {len(FINDINGS_CACHE)}")
                 except: # Exception as e:
                     #logging.warn(f"Error processing address combiner alert 1 {potential_attacker_address}: {e}")
@@ -325,6 +364,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                     hashes = set()
                     if(len(df_forta_alerts) > 0):
                         cluster_alerts = df_forta_alerts[df_forta_alerts["cluster_identifiers"].apply(lambda x: potential_attacker_cluster_lower in x if x is not None else False)]
+                        cluster_victim_alerts = pd.merge(cluster_alerts, df_victim_alerts, how ='inner', on =['transactionHash', 'transactionHash'])
                         involved_alert_ids = cluster_alerts["alertId"].unique()
                         for alert_id in involved_alert_ids:
                             if alert_id in ALERT_ID_STAGE_MAPPING.keys():
@@ -350,7 +390,8 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                                 logging.info(f"Cluster {potential_attacker_cluster_lower} transacton count: {tx_count}")
                                 continue
                             update_alerted_clusters(w3, potential_attacker_cluster_lower)
-                            FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-2', hashes))
+                            victim_address, victim_name, victim_metadata = get_victim_info(cluster_victim_alerts)
+                            FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, victim_address, victim_name, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-2', hashes, victim_metadata))
                             logging.info(f"Findings count {len(FINDINGS_CACHE)}")
                 except: # Exception as e:
                     #logging.warn(f"Error processing address combiner alert 1 {potential_attacker_address}: {e}")
@@ -383,6 +424,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                     if(len(df_forta_alerts) > 0):
                         cluster_alerts = df_forta_alerts[df_forta_alerts["cluster_identifiers"].apply(lambda x: potential_attacker_cluster_lower in x if x is not None else False)]
                         cluster_alerts = cluster_alerts[cluster_alerts.apply(lambda x: contains_attacker_addresses_ice_phishing(w3, x, potential_attacker_cluster_lower), axis=1)]
+                        cluster_victim_alerts = pd.merge(cluster_alerts, df_victim_alerts, how ='inner', on =['transactionHash', 'transactionHash'])
                         involved_alert_ids = cluster_alerts["alertId"].unique()
                         for alert_id in involved_alert_ids:
                             if alert_id in ALERT_ID_STAGE_MAPPING.keys():
@@ -412,7 +454,8 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                                     logging.info(f"Cluster {potential_attacker_cluster_lower} transacton count: {tx_count}")
                                     continue
                                 update_alerted_clusters(w3, potential_attacker_cluster_lower)
-                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-ICE-PHISHING', hashes))
+                                victim_address, victim_name, victim_metadata = get_victim_info(cluster_victim_alerts)
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, victim_address, victim_name, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-ICE-PHISHING', hashes, victim_metadata))
                                 logging.info(f"Findings count {len(FINDINGS_CACHE)}")
                 except Exception as e:
                     logging.warn(f"Error processing address combiner alert 1 {potential_attacker_cluster_lower}: {e}")
