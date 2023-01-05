@@ -247,3 +247,44 @@ class TestAlertCombiner:
         agent.detect_attack(w3, forta_explorer, block_event)
 
         assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
+
+
+    def test_detect_alert_pos_finding_combiner_1_with_victim(self):
+        agent.initialize()
+
+        forta_explorer = FortaExplorerMock()
+
+        df_forta = pd.DataFrame([
+            ["2022-04-30T23:55:17.284158264Z", "Suspicious Contract Creation by Tornado Cash funded account", "ethereum",
+             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02615", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99"}},
+             "HIGH", {}, "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x12abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+
+            ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
+             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02616", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
+             "HIGH", {}, "FUNDING-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+
+            ["2022-04-30T23:55:17.284158264Z", "Reentrancy", "ethereum",
+             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9"}},
+             "HIGH", {}, "NETHFORTA-25", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e12"],
+
+            ["2022-04-30T23:55:17.284158264Z", "Victim Identification", "ethereum",
+             "INFO", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02615", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250"}},
+             "INFO", {"address1": "0xAD7b4C162707E0B2b5f6fdDbD3f8538A5fbA0d60", "holders1": "", "protocolTwitter1": "VaultyFi", "protocolUrl1": "https://vaulty.fi", "tag1": "Vault"}, "VICTIM-IDENTIFIER-PREPARATION-STAGE", "Victim Identified - Exploitation Stage", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+
+            ["2022-04-30T23:55:17.284158264Z", "Money Laundering", "ethereum",
+             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02619", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2"}},
+             "HIGH", {}, "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4 potentially engaged in money laundering", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x42abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e13"]
+        ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+
+        forta_explorer.set_df(df_forta)
+        block_event = create_block_event({
+            'block': {
+                'timestamp': 1651314415,
+            }
+        })
+
+        agent.detect_attack(w3, forta_explorer, block_event)
+
+        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
+        assert "0xAD7b4C162707E0B2b5f6fdDbD3f8538A5fbA0d60".lower() in agent.FINDINGS_CACHE[0].description.lower(), "this should have contained the victim information"
+        assert "vault".lower() in agent.FINDINGS_CACHE[0].description.lower(), "this should have contained the victim information"

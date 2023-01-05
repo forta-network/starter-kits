@@ -1,6 +1,6 @@
 from operator import inv
 from time import strftime
-from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType, LabelType
+from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
 from datetime import datetime
 
 
@@ -20,14 +20,13 @@ class AlertCombinerFinding:
         meta_data = {**attacker_address_md, **start_date, **end_date, **involved_addresses, **involved_alert_ids, **involved_alert_hashes}
 
         labels = []
-        # if alert_id == "ATTACK-DETECTOR-ICE-PHISHING":
-        #     labels = [Label({
-    	# 	    'entity_type': EntityType.Address,
-    	# 	    'label_type': LabelType.Scam,
-    	# 	    'entity': attacker_address,
-        #         'confidence': 0.99,
-        #         'custom_value': ""
-    	#     })]
+        if alert_id == "ATTACK-DETECTOR-ICE-PHISHING":
+            labels = [Label({
+                'entity_type': EntityType.Address,
+                'label': "scam",
+                'entity': attacker_address,
+                'confidence': 0.99
+    	    })]
 
         return Finding({
             'name': 'Attack detector identified an EOA with past alerts mapping to attack behavior',
