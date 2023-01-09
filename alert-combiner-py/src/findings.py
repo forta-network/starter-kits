@@ -8,7 +8,8 @@ import forta_agent
 class AlertCombinerFinding:
 
     @staticmethod
-    def create_finding(address: str, anomaly_score: float, severity: FindingSeverity, alert_id: str, alert_event: forta_agent.alert_event.AlertEvent, alert_data: pd.DataFrame) -> Finding:
+    def create_finding(address: str, victim_address: str, victim_name, anomaly_score: float, severity: FindingSeverity, alert_id: str, 
+        alert_event: forta_agent.alert_event.AlertEvent, alert_data: pd.DataFrame, victim_metadata: dict) -> Finding:
         # alert_data -> 'stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses'
 
         attacker_address = {"attacker_address": address}
@@ -22,11 +23,13 @@ class AlertCombinerFinding:
         alerts = alerts.head(100)
         involved_alerts = {"involved_alerts_" + str(index): ','.join([row['bot_id'], row['alert_id'], row['alert_hash']]) for index, row in alerts.iterrows()}
 
-        meta_data = {**attacker_address, **anomaly_score, **involved_addresses, **involved_alerts}
+        meta_data = {**attacker_address, **victim_metadata, **anomaly_score, **involved_addresses, **involved_alerts}
+
+        victim_clause = f" on {victim_name} ({victim_address.lower()})" if victim_address else ""
 
         return Finding({
                        'name': 'Attack detector identified an EOA with behavior consistent with an attack',
-                       'description': f'{address} likely involved in an attack ({alert_event.alert_hash}). Anomaly score: {anomaly_score}',
+                       'description': f'{address} likely involved in an attack ({alert_event.alert_hash}){victim_clause}. Anomaly score: {anomaly_score}',
                        'alert_id': alert_id,
                        'type': FindingType.Exploit,
                        'severity': severity,
