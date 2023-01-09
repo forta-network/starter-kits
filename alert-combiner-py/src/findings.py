@@ -19,22 +19,15 @@ class AlertCombinerFinding:
         involved_alert_hashes = {"involved_alert_hashes_" + str(i): alert_id for i, alert_id in enumerate(hashes, 1)}
         meta_data = {**attacker_address_md, **start_date, **end_date, **victim_metadata, **involved_addresses, **involved_alert_ids, **involved_alert_hashes}
 
-        labels = []
-        if alert_id == "ATTACK-DETECTOR-ICE-PHISHING":
-            labels = [Label({
-    		    'entity_type': EntityType.Address,
-    		    'label_type': LabelType.Scam,
-    		    'entity': attacker_address,
-                'confidence': 0.99,
-                'custom_value': ""
-    	    })]
+        description = f'{attacker_address} likely involved in an attack ({alert_id}).'
+        if victim_address and victim_address != '':
+            description = f'{attacker_address} likely involved in an attack ({alert_id} on {victim_address} ({victim_name}))'
 
         return Finding({
             'name': 'Attack detector identified an EOA with past alerts mapping to attack behavior',
-            'description': f'{attacker_address} likely involved in an attack ({alert_id} on {victim_address} ({victim_name}))',
+            'description': description,
             'alert_id': alert_id,
             'type': FindingType.Exploit,
             'severity': FindingSeverity.Critical,
-            'metadata': meta_data,
-            'labels': labels
+            'metadata': meta_data
         })
