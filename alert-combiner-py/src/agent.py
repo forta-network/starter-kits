@@ -15,7 +15,8 @@ from forta_agent import FindingSeverity
 from src.findings import AlertCombinerFinding
 from src.constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
                            FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE, LOCAL_NODE,
-                           MIN_ALERTS_COUNT, ALERTS_DATA_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, AD_SCORE_ANOMALY_SCORE)
+                           MIN_ALERTS_COUNT, ALERTS_DATA_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, 
+                           VICTIMS_KEY, VICTIM_QUEUE_MAX_SIZE, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS, AD_SCORE_ANOMALY_SCORE)
 from src.luabase import Luabase, MUTEX_LUABASE
 from src.L2Cache import L2Cache
 
@@ -32,6 +33,7 @@ ALERT_DATA = dict()  # cluster -> pd.DataFrame
 ALERTED_CLUSTERS_STRICT = []  # cluster
 ALERTED_CLUSTERS_LOOSE = []  # cluster
 FP_MITIGATION_CLUSTERS = []  # cluster
+VICTIMS = dict()  # transaction_hash, metadata
 ALERT_ID_AD_SCORER_MAPPING = dict()  # (bot_id, alert_id) -> ad_scorer
 ALERT_ID_STAGE_MAPPING = dict()  # (bot_id, alert_id) -> stage
 MUTEX = False
@@ -86,6 +88,10 @@ def initialize():
     entity_cluster_alerts = load(CHAIN_ID, ENTITY_CLUSTERS_KEY)
     ENTITY_CLUSTERS = {} if entity_cluster_alerts is None else dict(entity_cluster_alerts)
 
+    global VICTIMS
+    victims = load(CHAIN_ID, VICTIMS_KEY)
+    VICTIMS = {} if victims is None else dict(victims)
+
     global FP_MITIGATION_CLUSTERS
     fp_mitigation_alerts = load(CHAIN_ID, FP_MITIGATION_CLUSTERS_KEY)
     FP_MITIGATION_CLUSTERS = [] if fp_mitigation_alerts is None else list(fp_mitigation_alerts)
@@ -107,6 +113,10 @@ def initialize():
         subscription_json.append({"botId": bot, "alertId": alertId})
 
     subscription_json.append({"botId": ENTITY_CLUSTER_BOT, "alertId": ENTITY_CLUSTER_BOT_ALERT_ID})
+
+    subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0]})
+
+    subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1]})
 
     return {"alertConfig": {"subscriptions": subscription_json}}
 
@@ -154,6 +164,23 @@ def is_address(w3, addresses: str) -> bool:
     return is_address
 
 
+def get_victim_info(alert_data: pd.DataFrame, victims: dict):
+    victim_address, victim_name = "", ""
+    victim_metadata = dict()
+
+    df_intersection = alert_data[alert_data["transaction_hash"].isin(victims.keys())]
+
+    if(len(df_intersection) > 0):
+        tx_hash_with_victim_info = df_intersection.iloc[0]["transaction_hash"]
+        victim_metadata = victims[tx_hash_with_victim_info]
+        victim_address = victim_metadata["address1"] if "address1" in victim_metadata.keys() else ""
+        victim_name = victim_metadata["tag1"] if "tag1" in victim_metadata.keys() else ""
+
+    return victim_address, victim_name, victim_metadata
+
+
+
+
 def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.AlertEvent):
     """
     this function returns finding for any address with at least 3 alerts observed on that address; it will generate an anomaly score
@@ -166,11 +193,12 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
     global ALERTED_CLUSTERS_STRICT
     global ALERT_DATA
     global FP_MITIGATION_CLUSTERS
+    global VICTIMS
     global ENTITY_CLUSTERS
     global MUTEX
     global CHAIN_ID
 
-    if int(alert_event.chain_id) == CHAIN_ID:
+    if int(alert_event.alert.source.block.chain_id) == CHAIN_ID:
         logging.info(f"alert {alert_event.alert_hash} received for propery chain {alert_event.chain_id}")
 
         #  assess whether we generate a finding
@@ -201,6 +229,16 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
                         if address in FP_MITIGATION_CLUSTERS:
                             FP_MITIGATION_CLUSTERS.append(cluster)
                             logging.info(f"alert {alert_event.alert_hash} FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
+
+                # update victim alerts
+                if (in_list(alert_event, [(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0]),(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1])])):
+                    logging.info(f"alert {alert_event.alert_hash} is a victim identification alert")
+                    logging.info(f"alert {alert_event.alert_hash} adding victim identification list: Victim Identification list size now: {len(VICTIMS)}")
+                    VICTIMS[alert_event.alert.source.transaction_hash] = alert_event.alert.metadata
+
+                    while len(VICTIMS) > VICTIM_QUEUE_MAX_SIZE:
+                        VICTIMS.pop(next(iter(VICTIMS)))
+
 
                 # update FP mitigation clusters
                 if in_list(alert_event, FP_MITIGATION_BOTS):
@@ -261,14 +299,14 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
                         logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} {stage}: {cluster} anomaly score of {anomaly_score}")
 
                         if ALERT_DATA.get(cluster) is None:
-                            ALERT_DATA[cluster] = pd.DataFrame(columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses'])
+                            ALERT_DATA[cluster] = pd.DataFrame(columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])
 
                         alert_data = ALERT_DATA[cluster]
                         stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
-                        alert_data = pd.concat([alert_data, pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses'])], ignore_index=True, axis=0)
+                        alert_data = pd.concat([alert_data, pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])], ignore_index=True, axis=0)
                         logging.info(f"alert data size now: {len(alert_data)}")
 
-                        # purge old alerts
+                        # add new alert and purge old alerts
                         ALERT_DATA[cluster] = alert_data[alert_data['created_at'] > start_date]
                         alert_data = ALERT_DATA[cluster]
                         logging.info(f"alert data size now: {len(ALERT_DATA)}")
@@ -289,11 +327,13 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
                                 logging.info(f"Overall anomaly score for {cluster} is above threshold and not 4 stages have been observed. Wont raise finding")
 
                             if (anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT or len(anomaly_scores) == 4) and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_STRICT:
+                                victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                                 update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
-                                FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data))
+                                FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata))
                             elif anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT:
+                                victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                                 update_list(ALERTED_CLUSTERS_LOOSE, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
-                                FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-2", alert_event, alert_data))
+                                FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster,  victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata))
 
                 MUTEX = False
                 logging.info("Set MUTEX to False")
