@@ -137,7 +137,7 @@ def get_clusters_exploded(start_date: datetime, end_date: datetime, forta_explor
 
 def get_victim_alerts(start_date: datetime, end_date: datetime, forta_explorer: FortaExplorer, chain_id: int) -> pd.DataFrame:
     df_victim_alerts1 = forta_explorer.alerts_by_bot(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0], chain_id, start_date, end_date)  
-    df_victim_alerts2 = forta_explorer.alerts_by_bot(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0], chain_id, start_date, end_date)  
+    df_victim_alerts2 = forta_explorer.alerts_by_bot(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1], chain_id, start_date, end_date)  
     df_victim_alerts = pd.concat([df_victim_alerts1, df_victim_alerts2])
     logging.info(f"Fetched {len(df_victim_alerts)} victim alerts")
 
