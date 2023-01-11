@@ -118,14 +118,14 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef", "AK-AZTEC-PROTOCOL-FUNDED-ACCOUNT-INTERACTION-0", "Exploitation", "contract-interactions"),  # Aztec Protocol funded account interacted with contract
              ("0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f", "AK-AZTEC-PROTOCOL-POSSIBLE-MONEY-LAUNDERING-NATIVE", "MoneyLaundering", "transfer-out-large-amount"),  # Aztec ML bot
              ("0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb", "CEX-FUNDING-1", "Funding", "transfer-in"),  # CEX Funding
-             ("0x47b86137077e18a093653990e80cb887be98e7445291d8cf811d3b2932a3c4d2", "AK-AZTEC-PROTOCOL-DEPOSIT-EVENT", "Funding", "transfer-in"),  # Aztec funding
-             ("0x9fbf4db19f23627633d86bb1936dabad0b27ebe09b7a38028a126392156f7f32", "AK-AZTEC-PROTOCOL-FUNDING", "Funding", "transfer-in"),  # Aztec funding
+             ("0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f", "AK-AZTEC-PROTOCOL-DEPOSIT-EVENT", "Funding", "transfer-in"),  # Aztec funding
+             ("0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef", "AK-AZTEC-PROTOCOL-FUNDING", "Funding", "transfer-in"),  # Aztec funding
              ("0xaf9ac4c204eabdd39e9b00f91c8383dc01ef1783e010763cad05cc39e82643bb", "LARGE-TRANSFER-OUT", "MoneyLaundering", "transfer-out-large-amount"),  # large native transfer out
              ("0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46", "MALICIOUS-ACCOUNT-FUNDING", "Funding", "transfer-in"),  # Malicious Account Funding
              ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_NEW_FUNDING", "Funding", "transfer-in"),  # New Account Funding
              ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_FUNDING", "Funding", "transfer-in"),  # New Account Funding
              ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_Laundering", "MoneyLaundering", "transfer-out-large-amount"),  # Laundering
-             ("0x5398a61f6b12965982fac1edceb472c761d45323d72647d15dad0a077f24adcc", "NETHFORTA-1", "Exploitation", "tx-count"),  # high gas
+             ("0x3858be37e155f84e8e0d6212db1b47d4e83b1d41e8a2bebecb902651ed1125d6", "NETHFORTA-1", "Exploitation", "tx-count"),  # high gas
              ("0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d", "NEGATIVE-ANGER-TEXT-MESSAGE", "MoneyLaundering", "data-eoa-to"),  # txt msg sentiment analysis
              ("0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d", "NEGATIVE-DISGUST-TEXT-MESSAGE", "MoneyLaundering", "data-eoa-to"),  # txt msg sentiment analysis
              ("0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d", "NEGATIVE-SADNESS-TEXT-MESSAGE", "MoneyLaundering", "data-eoa-to")  # txt msg sentiment analysis

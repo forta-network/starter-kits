@@ -24,7 +24,7 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PREV-APPROVED-TRANSFERED | Exploitation |
 | 0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99 | suspicious contract creation | SUSPICIOUS-CONTRACT-CREATION | Preparation |
 | 0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99 | suspicious contract creation | SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH | Preparation |
-| 0xbf26258d381c4151c904c6d357c024688866fa3197c14d55852b8b76335967b4 | blocklisted account tx | EXPLOITER-ADDR-TX | Preparation |
+| 0x0e82982faa7878af3fad8ddf5042762a3b78d8949da2e301f1adfedc973f25ea | blocklisted account tx | EXPLOITER-ADDR-TX | Preparation |
 | 0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400 | tornado cash withdrawl | FUNDING-TORNADO-CASH | Funding |
 | 0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a | tornado cash funding | TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION | Funding |
 | 0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9 | reentrancy | NETHFORTA-25 | Exploitation |
@@ -100,13 +100,14 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef | Aztec funded contract interaction | AK-AZTEC-PROTOCOL-FUNDED-ACCOUNT-INTERACTION-0 | Exploitation |
 | 0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f | Aztec money laundering | AK-AZTEC-PROTOCOL-POSSIBLE-MONEY-LAUNDERING-NATIVE | Money Laundering |
 | 0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb | CEX Funding bot | CEX-FUNDING-1 | Funding |
-| 0x47b86137077e18a093653990e80cb887be98e7445291d8cf811d3b2932a3c4d2 | Aztec bot | AK-AZTEC-PROTOCOL-DEPOSIT-EVENT | Money Laundering |
+| 0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f | Aztec bot | AK-AZTEC-PROTOCOL-DEPOSIT-EVENT | Money Laundering |
 | 0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad | Token Impersonation ML Bot | SUSPICIOUS-TOKEN-CONTRACT-CREATION | Funding |
-| 0x9fbf4db19f23627633d86bb1936dabad0b27ebe09b7a38028a126392156f7f32 | Aztec Funding bot | AK-AZTEC-PROTOCOL-FUNDING | Funding |
+| 0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef | Aztec Funding bot | AK-AZTEC-PROTOCOL-FUNDING | Funding |
 | 0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46 | Malicious Account Funding Bot | MALICIOUS-ACCOUNT-FUNDING | Funding |
 | 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | New Account Funding | FLD_NEW_FUNDING | Funding |
 | 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | Account Funding | FLD_FUNDING | Funding |
 | 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | Money Laundering | FLD_Laundering | Money Laundering |
+| 0x3858be37e155f84e8e0d6212db1b47d4e83b1d41e8a2bebecb902651ed1125d6 | high gas usage | NETHFORTA-1 | Exploitation |
 | 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-ANGER-TEXT-MESSAGE | Money Laundering |
 | 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-DISGUST-TEXT-MESSAGE | Money Laundering |
 | 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-SADNESS-TEXT-MESSAGE | Money Laundering |
