@@ -198,8 +198,9 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
     global MUTEX
     global CHAIN_ID
 
-    if int(alert_event.alert.source.block.chain_id) == CHAIN_ID:
-        logging.info(f"alert {alert_event.alert_hash} received for propery chain {alert_event.chain_id}")
+    chain_id = int(alert_event.alert.source.block.chain_id) if alert_event.alert.source.block.chain_id is not None else int(alert_event.chain_id)
+    if chain_id == CHAIN_ID:
+        logging.info(f"alert {alert_event.alert_hash} received for proper chain {chain_id}")
 
         #  assess whether we generate a finding
         #  note, only one instance will be running at a time to keep up with alert volume
@@ -323,14 +324,23 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
 
                             if cluster in FP_MITIGATION_CLUSTERS:
                                 logging.info(f"Mitigating FP for {cluster}. Wont raise finding")
+
                             if anomaly_score >= ANOMALY_SCORE_THRESHOLD_LOOSE and len(anomaly_scores) < 4:
                                 logging.info(f"Overall anomaly score for {cluster} is above threshold and not 4 stages have been observed. Wont raise finding")
 
+                            if cluster in ALERTED_CLUSTERS_STRICT:
+                                logging.info(f"{cluster} in alerted clusters strict. Wont raise critical finding")
+
+                            if cluster in ALERTED_CLUSTERS_STRICT or cluster in ALERTED_CLUSTERS_LOOSE:
+                                logging.info(f"{cluster} in alerted clusters. Wont raise low finding")
+
                             if (anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT or len(anomaly_scores) == 4) and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_STRICT:
+                                logging.info(f"1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
                                 victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                                 update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
                                 FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata))
                             elif anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT:
+                                logging.info(f"1 low severity finding for {cluster}. Anomaly score is {anomaly_score}.")
                                 victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                                 update_list(ALERTED_CLUSTERS_LOOSE, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
                                 FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster,  victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata))
@@ -338,7 +348,7 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
                 MUTEX = False
                 logging.info("Set MUTEX to False")
             except Exception as e:
-                logging.warn(f"Exception in process_alert {e}")
+                logging.warn(f"Exception in process_alert {alert_event.alert_hash}: {e}")
                 MUTEX = False
                 logging.info("Set MUTEX to False")
 
