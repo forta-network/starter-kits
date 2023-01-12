@@ -131,7 +131,7 @@ class TestSuspiciousContractAgent:
                 'to': TORNADO_CASH_ADDRESSES,
             },
             'block': {
-                'number': 101
+                'number': 241
             },
             'logs': [
                 {'address': TORNADO_CASH_ADDRESSES[1],
@@ -142,7 +142,7 @@ class TestSuspiciousContractAgent:
                 'logs': []}
         })
         findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(findings) == 0, "this should have triggered a finding as third transaction happened outside block range"
+        assert len(findings) == 0, "this should not have triggered a finding as third transaction happened outside block range"
 
     def test_detect_money_laundering_below_threshold(self):
         agent.initialize()
