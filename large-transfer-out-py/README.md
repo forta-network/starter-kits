@@ -6,7 +6,7 @@ This agent detects transactions with large native transfers that the account did
 
 ## Supported Chains
 
-- Ethereum
+- all EVM supported chains
 
 ## Alerts
 
