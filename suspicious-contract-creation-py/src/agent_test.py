@@ -95,7 +95,7 @@ class TestSuspiciousContractAgent:
                 'logs': []}
         })
         findings = agent.detect_suspicious_contract_creations(w3, tx_event)
-        assert len(findings) == 1, "this should have triggered a finding"
+        assert len(findings) > 0, "this should have triggered a finding"
         finding = next((x for x in findings if x.alert_id == 'SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH'), None)
         assert finding.severity == FindingSeverity.High
 
@@ -108,6 +108,7 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'nonce': 10,
+                'to': EOA_ADDRESS,
             },
             'block': {
                 'number': 0
@@ -127,13 +128,36 @@ class TestSuspiciousContractAgent:
         findings = agent.detect_suspicious_contract_creations(w3, tx_event)
         assert len(findings) == 0, "this should not have triggered a finding"
 
-    def test_finding_not_tornado_cash_and_contract_creation(self):
+
+    def test_finding_not_tornado_cash_and_contract_creation_eoa_creation(self):
         agent.initialize()
         
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
                 'from': EOA_ADDRESS,
+                'nonce': 10,
+            },
+            'block': {
+                'number': 0
+            },
+            'receipt': {
+                'logs': []}
+        })
+        findings = agent.detect_suspicious_contract_creations(w3, tx_event)
+        assert len(findings) > 0, "this should have triggered a finding"
+        finding = next((x for x in findings if x.alert_id == 'SUSPICIOUS-CONTRACT-CREATION'), None)
+        assert finding.severity == FindingSeverity.Low
+
+
+    def test_finding_not_tornado_cash_and_contract_creation_trace(self):
+        agent.initialize()
+        
+        tx_event = create_transaction_event({
+            'transaction': {
+                'hash': "0",
+                'from': EOA_ADDRESS,
+                'to': '0x0000000000000000000000000000000000000000',
                 'nonce': 10,
             },
             'block': {
@@ -151,7 +175,7 @@ class TestSuspiciousContractAgent:
                 'logs': []}
         })
         findings = agent.detect_suspicious_contract_creations(w3, tx_event)
-        assert len(findings) == 1, "this should not have triggered a finding"
+        assert len(findings) == 1, "this should have triggered a finding"
         finding = next((x for x in findings if x.alert_id == 'SUSPICIOUS-CONTRACT-CREATION'), None)
         assert finding.severity == FindingSeverity.Low
 
