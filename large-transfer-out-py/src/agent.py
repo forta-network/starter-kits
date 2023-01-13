@@ -1,6 +1,6 @@
 import forta_agent
 from forta_agent import Finding, FindingType, FindingSeverity, get_json_rpc_url
-from src.constants import THRESHOLDS, DAY_LOOKBACK_WINDOW
+from constants import THRESHOLDS, DAY_LOOKBACK_WINDOW
 from web3 import Web3
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
