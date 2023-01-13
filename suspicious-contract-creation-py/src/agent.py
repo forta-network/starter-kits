@@ -84,6 +84,24 @@ def detect_suspicious_contract_creations(w3, transaction_event: forta_agent.tran
     update_tornado_cash_funded_accounts(w3, transaction_event)
 
     created_contract_addresses = []
+    if transaction_event.to is None:
+        nonce = transaction_event.transaction.nonce
+        created_contract_address = calc_contract_address(
+            w3, transaction_event.from_, nonce
+        )
+        storage_addresses = get_storage_addresses(w3, created_contract_address)
+        opcode_addresses = get_opcode_addresses(w3, created_contract_address)
+
+        created_contract_addresses.append(created_contract_address.lower())
+
+        if Web3.toChecksumAddress(transaction_event.from_) in TORNADO_CASH_FUNDED_ACCOUNTS:
+            TORNADO_CASH_FUNDED_ACCOUNTS.append(Web3.toChecksumAddress(created_contract_address))  # needed in case the contract creates another contract
+
+            findings.append(SuspiciousContractFindings.suspicious_contract_creation_tornado_cash(transaction_event.from_, created_contract_address, set.union(storage_addresses, opcode_addresses)))
+        else:
+            findings.append(SuspiciousContractFindings.suspicious_contract_creation(transaction_event.from_, created_contract_address, set.union(storage_addresses, opcode_addresses)))
+
+
     for trace in transaction_event.traces:
         if trace.type == 'create':
             if (transaction_event.from_ == trace.action.from_ or trace.action.from_ in created_contract_addresses):
