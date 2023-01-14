@@ -1,6 +1,7 @@
 {
   "name": "positive-reputation-bot",
-  "version": "0.0.3",
+  "version": "0.0.4",
+  "repository": "https://github.com/forta-network/starter-kits/tree/main/positive-reputation-py",
   "description": "Positive Reputation Bot",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
@@ -24,7 +25,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.13"
+    "forta-agent": "^0.1.16"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

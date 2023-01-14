@@ -9,10 +9,10 @@ from datetime import datetime, timedelta
 
 from src.constants import MIN_NONCE, MIN_AGE_IN_DAYS, ADDRESS_CACHE_SIZE, FIRST_TXS_CACHE_SIZE
 from src.findings import PositiveReputationFindings
-from src.luabase import Luabase
+from src.blockexplorer import BlockExplorer
 
-luabase = Luabase()
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
+blockexplorer = BlockExplorer(web3.eth.chain_id)
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -39,7 +39,7 @@ def initialize():
     FIRST_TXS = {}
 
 
-def detect_positive_reputation(w3, luabase, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
+def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     logging.info(f"Analyzing transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
 
     findings = []
@@ -52,8 +52,8 @@ def detect_positive_reputation(w3, luabase, transaction_event: forta_agent.trans
                 logging.info(f"Checking first tx of address from cache {transaction_event.transaction.from_}")
                 first_tx = FIRST_TXS[transaction_event.transaction.from_.lower()]
             else:
-                logging.info(f"Checking first tx of address with luabase {transaction_event.transaction.from_}")
-                first_tx = luabase.get_first_tx(transaction_event.transaction.from_)
+                logging.info(f"Checking first tx of address with blockexplorer {transaction_event.transaction.from_}")
+                first_tx = blockexplorer.get_first_tx(transaction_event.transaction.from_)
                 update_first_tx_cache(transaction_event.transaction.from_, first_tx)
 
             if first_tx < datetime.now() - timedelta(days=MIN_AGE_IN_DAYS):
@@ -79,7 +79,7 @@ def update_address_cache(address: str):
 
 def provide_handle_transaction(w3):
     def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
-        return detect_positive_reputation(w3, luabase, transaction_event)
+        return detect_positive_reputation(w3, blockexplorer, transaction_event)
 
     return handle_transaction
 
