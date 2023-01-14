@@ -2,10 +2,10 @@ from forta_agent import create_transaction_event
 
 import agent
 from web3_mock import Web3Mock, EOA_ADDRESS_NEW, EOA_ADDRESS_OLD
-from luabase_mock import LuabaseMock
+from blockexplorer_mock import BlockExplorerMock
 
 w3 = Web3Mock()
-luabase = LuabaseMock()
+blockexplorer = BlockExplorerMock(1)
 
 
 class TestPositiveReputation:
@@ -31,7 +31,7 @@ class TestPositiveReputation:
                 'logs': []}
         })
 
-        findings = agent.detect_positive_reputation(w3, luabase, tx_event)
+        findings = agent.detect_positive_reputation(w3, blockexplorer, tx_event)
         assert len(findings) == 1, "Bot didnt successfully detect positive reputation"
 
     def test_detect_positive_reputation_cache(self):
@@ -52,10 +52,10 @@ class TestPositiveReputation:
                 'logs': []}
         })
 
-        findings = agent.detect_positive_reputation(w3, luabase, tx_event)
+        findings = agent.detect_positive_reputation(w3, blockexplorer, tx_event)
         assert len(findings) == 1, "Bot didnt successfully detect positive reputation"
 
-        findings = agent.detect_positive_reputation(w3, luabase, tx_event)
+        findings = agent.detect_positive_reputation(w3, blockexplorer, tx_event)
         assert len(findings) == 0, "Bot should not have emitted an alert again"
 
     def test_detect_positive_reputation_too_new(self):
@@ -76,5 +76,5 @@ class TestPositiveReputation:
                 'logs': []}
         })
 
-        findings = agent.detect_positive_reputation(w3, luabase, tx_event)
+        findings = agent.detect_positive_reputation(w3, blockexplorer, tx_event)
         assert len(findings) == 0, "Bot incorrectly detected positive reputation"
