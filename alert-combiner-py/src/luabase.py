@@ -42,6 +42,10 @@ class Luabase:
             chain_name = "ethereum"
         elif chain_id == 137:
             chain_name = "polygon"
+        elif chain_id == 43114:
+            chain_name = "avalanche"
+        elif chain_id == 250:
+            chain_name = "fantom"
         else:
             raise ValueError(f"Invalid chain_id: {chain_id}")
         return chain_name
