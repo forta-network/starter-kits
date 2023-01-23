@@ -1,5 +1,4 @@
-forta_agent>=0.1.5
+forta_agent>=0.1.9
 setuptools>=61.3.1
-pandas>=1.4.2
 requests>=2.27.1
-python-dotenv>=0.16.0
+expiring-dict>=1.1.0
