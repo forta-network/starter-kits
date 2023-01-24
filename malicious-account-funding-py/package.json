@@ -1,9 +1,9 @@
 {
   "name": "malicious-account-funding",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Bot that identifies funding from known malicious accounts.",
   "chainIds": [
-    1, 137
+    1, 137, 250
   ],
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
