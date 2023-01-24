@@ -2,11 +2,11 @@
 
 ## Description
 
-This agent reports when an account is funded by a known malicious account (sourced from luabase tags)
+This agent reports when an account is funded by a known malicious account (sourced from label API)
 
 ## Supported Chains
 
-- Ethereum, Polygon (limited to the tags available on luabase)
+- Ethereum, Polygon, Fantom (limited to the tags availability)
 
 ## Alerts
 
