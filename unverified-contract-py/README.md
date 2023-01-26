@@ -16,6 +16,8 @@ Describe each of the type of alerts fired by this agent
   - Fires when a contract is created but blockchain explorer has no verified code for the contract
   - Severity is always set to "medium" 
   - Type is always set to "suspicious"
+  - Low confidence labels (0.3) for attacker address and attacker_contract address are emitted
+  - Metadata exposes the anomaly_score for the alert (calculated by dividing unverified contract creations by all contract creations)
 
 ## Test Data
 

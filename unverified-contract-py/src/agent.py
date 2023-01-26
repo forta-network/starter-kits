@@ -22,6 +22,8 @@ FINDINGS_CACHE = []
 MUTEX = False
 THREAD_STARTED = False
 CREATED_CONTRACTS = {}  # contract and creation timestamp
+ALERT_COUNT = 0  # stats to emit anomaly score
+DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -31,6 +33,8 @@ handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 root.addHandler(handler)
+
+
 
 
 def initialize():
@@ -116,10 +120,11 @@ def get_opcode_addresses(w3, address) -> set:
 def cache_contract_creation(w3, blockexplorer, transaction_event: forta_agent.transaction_event.TransactionEvent):
     global CREATED_CONTRACTS
     global MUTEX
+    global DENOMINATOR_COUNT
 
     logging.info(f"Scanning transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
     while MUTEX:
-        time.sleep(1) #1 sec
+        time.sleep(1)  # 1 sec
 
     MUTEX = True
     created_contract_addresses = []
@@ -128,6 +133,7 @@ def cache_contract_creation(w3, blockexplorer, transaction_event: forta_agent.tr
         created_contract_address = calc_contract_address(
             w3, transaction_event.from_, nonce
         )
+        DENOMINATOR_COUNT += 1
         logging.info(f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}")
         CREATED_CONTRACTS[created_contract_address] = transaction_event
 
@@ -138,6 +144,7 @@ def cache_contract_creation(w3, blockexplorer, transaction_event: forta_agent.tr
                 nonce = transaction_event.transaction.nonce if transaction_event.from_ == trace.action.from_ else 1  # for contracts creating other contracts, the nonce would be 1
                 created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
                 logging.info(f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}")
+                DENOMINATOR_COUNT += 1
                 CREATED_CONTRACTS[created_contract_address] = transaction_event
     MUTEX = False
 
@@ -146,6 +153,8 @@ def detect_unverified_contract_creation(w3, blockexplorer, wait_time=WAIT_TIME, 
     global CREATED_CONTRACTS
     global FINDINGS_CACHE
     global MUTEX
+    global ALERT_COUNT
+    global DENOMINATOR_COUNT
 
     try:
         while(True):
@@ -168,8 +177,11 @@ def detect_unverified_contract_creation(w3, blockexplorer, wait_time=WAIT_TIME, 
                                 opcode_addresses = get_opcode_addresses(w3, created_contract_address)
 
                                 created_contract_addresses.append(created_contract_address.lower())
+                                ALERT_COUNT += 1
 
-                                FINDINGS_CACHE.append(UnverifiedCodeContractFindings.unverified_code(transaction_event.from_, created_contract_address, set.union(storage_addresses, opcode_addresses)))
+                                anomaly_score = (ALERT_COUNT * 1.0) / DENOMINATOR_COUNT
+
+                                FINDINGS_CACHE.append(UnverifiedCodeContractFindings.unverified_code(transaction_event.from_, created_contract_address, anomaly_score, set.union(storage_addresses, opcode_addresses)))
                                 CREATED_CONTRACTS.pop(created_contract_address)
                             else:
                                 logging.info(f"Identified verified contract: {created_contract_address}")
@@ -190,8 +202,11 @@ def detect_unverified_contract_creation(w3, blockexplorer, wait_time=WAIT_TIME, 
                                             opcode_addresses = get_opcode_addresses(w3, created_contract_address)
 
                                             created_contract_addresses.append(created_contract_address.lower())
+                                            ALERT_COUNT += 1
 
-                                            FINDINGS_CACHE.append(UnverifiedCodeContractFindings.unverified_code(trace.action.from_, created_contract_address, set.union(storage_addresses, opcode_addresses)))
+                                            anomaly_score = (ALERT_COUNT * 1.0) / DENOMINATOR_COUNT
+
+                                            FINDINGS_CACHE.append(UnverifiedCodeContractFindings.unverified_code(trace.action.from_, created_contract_address, anomaly_score, set.union(storage_addresses, opcode_addresses)))
                                             CREATED_CONTRACTS.pop(created_contract_address)
                                         else:
                                             logging.info(f"Identified verified contract: {created_contract_address}")
@@ -208,7 +223,6 @@ def provide_handle_transaction(w3, blockexplorer):
     def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
         global FINDINGS_CACHE
         global THREAD_STARTED
-
 
         if not THREAD_STARTED:
             THREAD_STARTED = True

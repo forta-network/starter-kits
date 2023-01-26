@@ -1,7 +1,7 @@
 import time
 from datetime import datetime
 
-from forta_agent import FindingSeverity, FindingType, create_transaction_event
+from forta_agent import FindingSeverity, FindingType, create_transaction_event, EntityType
 import agent
 from blockexplorer_mock import BlockExplorerMock
 from web3_mock import (CONTRACT_NO_ADDRESS, CONTRACT_WITH_ADDRESS, EOA_ADDRESS,
@@ -57,6 +57,16 @@ class TestUnverifiedContractAgent:
         time.sleep(1 * 60 + 10)
         agent.detect_unverified_contract_creation(w3, blockexplorer, wait_time=1, infinite=False)
         assert len(agent.FINDINGS_CACHE) == 1, "should have 1 finding"
+        assert agent.FINDINGS_CACHE[0].metadata["anomaly_score"] == 1.0, "should have anomaly score of 1.0"
+        assert agent.FINDINGS_CACHE[0].labels[0].toDict()["entity"] == EOA_ADDRESS, "should have EOA address as label"
+        assert agent.FINDINGS_CACHE[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+        assert agent.FINDINGS_CACHE[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
+        assert agent.FINDINGS_CACHE[0].labels[0].toDict()["confidence"] == 0.3, "should have 0.3 as label confidence"
+        assert agent.FINDINGS_CACHE[0].labels[1].toDict()["entity"] == '0x728ad672409DA288cA5B9AA85D1A55b803bA97D7', "should have contract address as label"
+        assert agent.FINDINGS_CACHE[0].labels[1].toDict()["label"] == 'attacker_contract', "should have attacker as label"
+        assert agent.FINDINGS_CACHE[0].labels[1].toDict()["confidence"] == 0.3, "should have 0.3 as label confidence"
+        assert agent.FINDINGS_CACHE[0].labels[1].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+        
         
     def test_detect_unverified_contract_with_unverified_contract_trace(self):
         agent.initialize()
