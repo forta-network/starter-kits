@@ -32,7 +32,6 @@ class BlockExplorer:
         elif chain_id == 43114:
             self.host = "https://api.snowtrace.io"
             self.api_key = AVALANCHE_API_KEY
-    
 
     def is_verified(self, address):
         url = self.host + "/api?module=contract&action=getabi&address=" + address + "&apikey=" + self.api_key
