@@ -1,4 +1,4 @@
-from forta_agent import create_transaction_event, FindingSeverity, get_json_rpc_url
+from forta_agent import create_transaction_event, FindingSeverity, get_json_rpc_url, EntityType
 import timeit
 import agent
 from web3 import Web3
@@ -127,4 +127,8 @@ class TestLargeTransferOut:
         findings = agent.detect_suspicious_native_transfers(w3, tx_event)
         assert len(findings) == 1, "this should have triggered a finding as account obtained assets within the last day"
 
-    
+        assert findings[0].metadata["anomaly_score"] == 1.0, "should have anomaly score of 1.0"
+        assert findings[0].labels[0].toDict()["entity"] == ADDRESS_WITHOUT_LARGE_BALANCE, "should have EOA address as label"
+        assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
+        assert findings[0].labels[0].toDict()["confidence"] == 0.3, "should have 0.3 as label confidence"

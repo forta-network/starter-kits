@@ -22,6 +22,8 @@ Fires an alert when a contract creation is detected which the first three and th
   - Fires when similar contract is created
   - Severity is always set to "high" (mention any conditions where it could be something else)
   - Type is always set to "exploit" (mention any conditions where it could be something else)
+  - Low confidence labels (0.6) for attacker address and attacker_contract address are emitted
+  - Metadata exposes the anomaly_score for the alert (calculated by dividing unverified contract creations by all contract creations)
 
 ## Test Data
 

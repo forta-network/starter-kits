@@ -20,6 +20,8 @@ Describe each of the type of alerts fired by this agent
   - Fired when possible money laundering is identified
   - Metadata will contain amount if funds transferred in the block range specifified in the configuration
   - Findings severity will be High
+  - Low confidence labels (0.5) for attacker address 
+  - Metadata exposes the anomaly_score for the alert (calculated by dividing TC laundering tx by all transfer out tx)
 
 ## Test Data
 

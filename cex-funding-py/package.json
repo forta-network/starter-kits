@@ -1,6 +1,6 @@
 {
   "name": "dex-funding",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "DEX Funding Bot",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
@@ -24,7 +24,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.13"
+    "forta-agent": "^0.1.17"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"
