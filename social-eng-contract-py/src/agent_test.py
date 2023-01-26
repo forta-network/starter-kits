@@ -1,7 +1,6 @@
-import time
 from datetime import datetime
 
-from forta_agent import create_transaction_event
+from forta_agent import create_transaction_event, EntityType
 
 import agent
 from web3 import Web3
@@ -16,7 +15,8 @@ class TestSocialEngContractAgent:
 
     def test_contract_queue_limit(self):
         agent.initialize()
-        for i in range(CONTRACT_QUEUE_SIZE+1):
+        
+        for i in range(CONTRACT_QUEUE_SIZE + 1):
 
             random_contract_address = TestSocialEngContractAgent.calc_contract_address(w3, EOA_ADDRESS, i)
 
@@ -140,6 +140,22 @@ class TestSocialEngContractAgent:
 
         findings = agent.detect_social_eng_contract_creations(w3, contract_creation_tx_event)
         assert len(findings) == 1, "should have 1 finding"
+        assert findings[0].metadata["anomaly_score"] == 1.0, "should have anomaly score of 1.0"
+        assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
+        assert findings[0].labels[0].toDict()["entity"] == EOA_ADDRESS, "should have EOA address as label"
+        assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[0].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+
+        assert findings[0].labels[1].toDict()["label"] == 'attacker_contract', "should have attacker as label"
+        assert findings[0].labels[1].toDict()["entity"] == '0x728ad672409da288ca5b9aa85d1a55b803ba97d7', "should have contract address as label"
+        assert findings[0].labels[1].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[1].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+
+        assert findings[0].labels[2].toDict()["label"] == 'victim', "should have attacker as label"
+        assert findings[0].labels[2].toDict()["entity"] == '0x728aeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee97d7', "should have contract address as label"
+        assert findings[0].labels[2].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[2].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+
 
 
     def test_soc_eng_creation_no_finding_identical_contract(self):
