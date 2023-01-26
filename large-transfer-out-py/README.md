@@ -17,6 +17,8 @@ Describe each of the type of alerts fired by this agent
   - Severity is always set to "low" (mention any conditions where it could be something else)
   - Type is always set to "suspicious" (mention any conditions where it could be something else)
   - Mention any other type of metadata fields included with this alert
+  - Low confidence labels (0.3) for attacker address are emitted
+  - Metadata exposes the anomaly_score for the alert (calculated by dividing large transfer outs by all transfer outs)
 
 ## Test Data
 

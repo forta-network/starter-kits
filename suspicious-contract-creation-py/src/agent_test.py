@@ -1,4 +1,4 @@
-from forta_agent import create_transaction_event, FindingSeverity
+from forta_agent import create_transaction_event, FindingSeverity, EntityType
 import agent
 from findings import SuspiciousContractFindings
 from constants import TORNADO_CASH_ADDRESSES
@@ -99,6 +99,15 @@ class TestSuspiciousContractAgent:
         finding = next((x for x in findings if x.alert_id == 'SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH'), None)
         assert finding.severity == FindingSeverity.High
 
+        assert findings[0].labels[0].toDict()["entity"] == EOA_ADDRESS, "should have EOA address as label"
+        assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
+        assert findings[0].labels[0].toDict()["confidence"] == 0.3, "should have 0.3 as label confidence"
+        assert findings[0].labels[1].toDict()["entity"] == '0xD56A0d6fe38cD6153C7B26ECE11b405BCADfF253', "should have contract address as label"
+        assert findings[0].labels[1].toDict()["label"] == 'attacker_contract', "should have attacker as label"
+        assert findings[0].labels[1].toDict()["confidence"] == 0.3, "should have 0.3 as label confidence"
+        assert findings[0].labels[1].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+
 
     def test_finding_tornado_cash_and_no_contract_creation(self):
         agent.initialize()
@@ -183,14 +192,14 @@ class TestSuspiciousContractAgent:
         agent.initialize()
 
         contained_addresses = set()
-        finding = SuspiciousContractFindings.suspicious_contract_creation_tornado_cash("from_address", "contract_address", contained_addresses)
+        finding = SuspiciousContractFindings.suspicious_contract_creation_tornado_cash("from_address", "contract_address", contained_addresses, "1.0")
         assert finding.severity == FindingSeverity.High
-        assert finding.metadata == {}
+        assert finding.metadata == {"anomaly_score": "1.0"}
 
     def test_finding_not_tornado_cash_and_no_contract_creation(self):
         agent.initialize()
 
         contained_addresses = {"address2", "address1"}
-        finding = SuspiciousContractFindings.suspicious_contract_creation_tornado_cash("from_address", "contract_address", contained_addresses)
+        finding = SuspiciousContractFindings.suspicious_contract_creation_tornado_cash("from_address", "contract_address", contained_addresses, "1.0")
         assert finding.severity == FindingSeverity.High
-        assert finding.metadata == {"address_contained_in_created_contract_1": "address1", "address_contained_in_created_contract_2": "address2"}
+        assert finding.metadata == {"anomaly_score": "1.0", "address_contained_in_created_contract_1": "address1", "address_contained_in_created_contract_2": "address2"}

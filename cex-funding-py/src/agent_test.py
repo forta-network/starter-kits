@@ -1,4 +1,4 @@
-from forta_agent import create_transaction_event, FindingSeverity
+from forta_agent import create_transaction_event, FindingSeverity, EntityType
 import agent
 from web3_mock import Web3Mock, NEW_EOA, OLD_EOA, NEW_CONTRACT
 
@@ -112,3 +112,8 @@ class TestDEXFunding:
 
         findings = agent.detect_dex_funding(w3, tx_event)
         assert len(findings) == 1, "this should have triggered a finding"
+
+        assert findings[0].metadata["anomaly_score"] == 1.0, "should have anomaly score of 1.0"
+        assert findings[0].labels[0].toDict()["entity"] == NEW_EOA, "should have EOA address as label"
+        assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"

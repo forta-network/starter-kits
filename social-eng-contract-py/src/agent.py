@@ -13,6 +13,8 @@ from src.findings import SocialEngContractFindings
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 CONTRACTS_QUEUE = pd.DataFrame(columns={'contract_address', 'first_four_char', 'last_four_char'})
+ALERT_COUNT = 0  # stats to emit anomaly score
+DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -29,6 +31,12 @@ def initialize():
     """
     global CONTRACTS_QUEUE
     CONTRACTS_QUEUE = pd.DataFrame(columns={'contract_address', 'first_four_char', 'last_four_char'})
+
+    global ALERT_COUNT
+    ALERT_COUNT = 0
+
+    global DENOMINATOR_COUNT
+    DENOMINATOR_COUNT = 0
 
 def is_contract(w3, address) -> bool:
     """
@@ -56,6 +64,8 @@ def append_finding(findings: list, from_: str, created_contract_address: str) ->
         function assesses whether created contract address impersonates an existing contract
     """
     global CONTRACTS_QUEUE
+    global ALERT_COUNT
+    global DENOMINATOR_COUNT
 
     logging.info("Contract created: " + created_contract_address)
 
@@ -64,12 +74,17 @@ def append_finding(findings: list, from_: str, created_contract_address: str) ->
 
     impersonated_contract_address = CONTRACTS_QUEUE[criteria1 & criteria2]["contract_address"]
     if len(impersonated_contract_address) > 0 and impersonated_contract_address[0] is not None and impersonated_contract_address[0] != created_contract_address:
-        findings.append(SocialEngContractFindings.social_eng_contract_creation(from_, created_contract_address, impersonated_contract_address[0] ))
+        ALERT_COUNT+=1
+
+        anomaly_score = (ALERT_COUNT * 1.0) / DENOMINATOR_COUNT
+        findings.append(SocialEngContractFindings.social_eng_contract_creation(from_, created_contract_address, impersonated_contract_address[0], anomaly_score))
                 
 
 def detect_social_eng_contract_creations(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     global CONTRACTS_QUEUE
-
+    global ALERT_COUNT
+    global DENOMINATOR_COUNT
+    
     if transaction_event.to is not None:
         to = transaction_event.to.lower()
         if is_contract(w3, to):
@@ -86,12 +101,13 @@ def detect_social_eng_contract_creations(w3, transaction_event: forta_agent.tran
 
     if transaction_event.to is None:
         created_contract_address = calc_contract_address(w3, transaction_event.from_, transaction_event.transaction.nonce)
+        DENOMINATOR_COUNT+=1
         append_finding(findings, transaction_event.from_, created_contract_address)
 
     for trace in transaction_event.traces:
         if trace.type == 'create':
             if (transaction_event.from_ == trace.action.from_ or trace.action.from_ in created_contract_addresses):
-
+                DENOMINATOR_COUNT+=1
                 nonce = transaction_event.transaction.nonce if transaction_event.from_ == trace.action.from_ else 1  # for contracts creating other contracts, the nonce would be 1
                 created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
 
