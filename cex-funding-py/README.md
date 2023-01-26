@@ -16,6 +16,8 @@ Describe each of the type of alerts fired by this agent
   - Fired when a funding transaction is made to a new EOA using native asset in small amounts
   - Severity is always set to "low" 
   - Type is always set to "suspicious" 
+  - Low confidence labels (0.3) for attacker address and attacker_contract address are emitted
+  - Metadata exposes the anomaly_score for the alert (calculated by dividing unverified contract creations by all contract creations)
   - Metadata will contain amount funded, the funded address, as well as the name of the CEX
 
 ## Test Data

@@ -4,14 +4,23 @@ from forta_agent import Finding, FindingType, FindingSeverity, get_json_rpc_url
 from src.constants import CEXES
 from web3 import Web3
 
+from src.findings import CEXFundingFinding
+
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
+ALERT_COUNT = 0  # stats to emit anomaly score
+DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
 def initialize():
     """
     this function initializes the state variables that are tracked across tx and blocks
     it is called from test to reset state between tests
     """
+    global DENOMINATOR_COUNT
+    DENOMINATOR_COUNT = 0
+
+    global ALERT_COUNT
+    ALERT_COUNT = 0
 
 def is_contract(w3, address) -> bool:
     """
@@ -26,23 +35,21 @@ def is_contract(w3, address) -> bool:
 def detect_dex_funding(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     findings = []
 
+    global ALERT_COUNT
+    global DENOMINATOR_COUNT
+
     # alert on funding tx from CEXes
     value = transaction_event.transaction.value
     for chainId, address, name, threshold in CEXES:
-        if (not is_contract(w3, transaction_event.transaction.to) and chainId == w3.eth.chainId and 
-            address == transaction_event.transaction.from_ and value < threshold and 
-            w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number) == 0):
-            findings.append(Finding(
-                {
-                    "name": "CEX Funding",
-                    "description": f"CEX Funding from {name} of {value} wei to {transaction_event.transaction.to}",
-                    "alert_id": "CEX-FUNDING-1",
-                    "type": FindingType.Suspicious,
-                    "severity": FindingSeverity.Low,
-                    "metadata": {"CEX_name": name, "to": transaction_event.transaction.to, "value": value}
-                }
-            ))
-
+        if chainId == w3.eth.chainId:
+            if (w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number) == 0
+                and not is_contract(w3, transaction_event.transaction.to)):
+                DENOMINATOR_COUNT += 1
+                if (address == transaction_event.transaction.from_ and value < threshold):
+                    ALERT_COUNT += 1
+                    anomaly_score = (ALERT_COUNT * 1.0) / DENOMINATOR_COUNT
+                    findings.append(CEXFundingFinding.cex_funding(name, transaction_event.transaction.to, value, anomaly_score))
+                
     return findings
 
 
