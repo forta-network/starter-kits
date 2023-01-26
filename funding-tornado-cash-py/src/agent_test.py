@@ -1,4 +1,4 @@
-from forta_agent import FindingSeverity, create_transaction_event
+from forta_agent import FindingSeverity, create_transaction_event, EntityType
 
 import agent
 from constants import TORNADO_CASH_ADDRESSES, TORNADO_CASH_WITHDRAW_TOPIC, TORNADO_CASH_ADDRESSES_HIGH
@@ -16,8 +16,8 @@ class TestTornadoCashFunding:
             'transaction': {
                 'hash': "0",
                 'from': EOA_ADDRESS_TC,
-                'value': 0,
-                'to': "0xd90e2f925da726b50c4ed8d0fb90ad053324f31b",
+                'value': 100,
+                'to': EOA_ADDRESS_NEW,
             },
             'block': {
                 'number': 0
@@ -44,8 +44,8 @@ class TestTornadoCashFunding:
             'transaction': {
                 'hash': "0",
                 'from': EOA_ADDRESS_TC,
-                'value': 0,
-                'to': "0xd90e2f925da726b50c4ed8d0fb90ad053324f31b",
+                'value': 1000,
+                'to': EOA_ADDRESS_NEW,
             },
             'block': {
                 'number': 0
@@ -70,8 +70,8 @@ class TestTornadoCashFunding:
             'transaction': {
                 'hash': "0",
                 'from': EOA_ADDRESS_TC,
-                'value': 0,
-                'to': "0xd90e2f925da726b50c4ed8d0fb90ad053324f31b",
+                'value': 10000,
+                'to': EOA_ADDRESS_NEW,
             },
             'block': {
                 'number': 0
@@ -90,3 +90,10 @@ class TestTornadoCashFunding:
         assert len(findings) == 1, "this should have triggered a finding"
         assert findings[0].alert_id == "FUNDING-TORNADO-CASH-HIGH"
         assert findings[0].severity == FindingSeverity.Info
+
+        assert findings[0].metadata["anomaly_score"] == 1.0, "should have anomaly score of 1.0"
+        assert findings[0].labels[0].toDict()["entity"] == "0xA1B4355Ae6b39bb403Be1003b7D0330C811747DB", "should have EOA address as label"
+        assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
+        assert findings[0].labels[0].toDict()["confidence"] == 0.1, "should have 0.1 as label confidence"
+
