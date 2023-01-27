@@ -1,8 +1,9 @@
+from datetime import datetime
 import forta_agent
 import numpy as np
 import pandas as pd
 import rlp
-from forta_agent import get_json_rpc_url, EntityType, LabelType
+from forta_agent import get_json_rpc_url, EntityType
 from joblib import load
 from pyevmasm import disassemble_hex
 from web3 import Web3
@@ -19,6 +20,7 @@ from src.utils import (
     get_opcode_addresses,
     get_anomaly_score,
     is_contract,
+    update_contract_deployment_counter,
 )
 
 
@@ -72,6 +74,9 @@ def detect_malicious_contract_tx(
                     logger.warn(
                         f"Contract {contract_address} creation failed with tx {trace.transactionHash}: {error}"
                     )
+                date_time = datetime.now()
+                date_hour = date_time.strftime("%d/%m/%Y %H:00:00")
+                update_contract_deployment_counter(date_hour)
                 all_findings.extend(
                     detect_malicious_contract(
                         w3,
@@ -81,6 +86,9 @@ def detect_malicious_contract_tx(
                 )
     else:  # Trace isn't supported, To improve coverage, process contract creations from EOAs.
         if transaction_event.to is None:
+            date_time = datetime.now()
+            date_hour = date_time.strftime("%d/%m/%Y %H:00:00")
+            update_contract_deployment_counter(date_hour)
             nonce = transaction_event.transaction.nonce
             created_contract_address = calc_contract_address(
                 w3, transaction_event.from_, nonce
@@ -109,33 +117,31 @@ def detect_malicious_contract(w3, from_, created_contract_address) -> list:
             anomaly_score = get_anomaly_score(w3.eth.chain_id)
 
             model_score = exec_model(opcodes)
-            from_label_type = (
-                LabelType.Contract if is_contract(w3, from_) else LabelType.Eoa
-            )
+            from_label_type = "contract" if is_contract(w3, from_) else "eoa"
             if model_score >= MODEL_THRESHOLD:
                 labels = [
                     {
                         "entity": created_contract_address,
                         "entity_type": EntityType.Address,
-                        "label_type": LabelType.Attacker,
+                        "label": "malicious",
                         "confidence": model_score,
                     },
                     {
                         "entity": created_contract_address,
                         "entity_type": EntityType.Address,
-                        "label_type": LabelType.Contract,
+                        "label": "contract",
                         "confidence": 1.0,
                     },
                     {
                         "entity": from_,
                         "entity_type": EntityType.Address,
-                        "label_type": LabelType.Attacker,
+                        "label": "malicious",
                         "confidence": model_score,
                     },
                     {
                         "entity": from_,
                         "entity_type": EntityType.Address,
-                        "label_type": from_label_type,
+                        "label": from_label_type,
                         "confidence": 1.0,
                     },
                 ]
