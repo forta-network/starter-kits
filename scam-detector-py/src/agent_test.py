@@ -38,6 +38,10 @@ class TestAlertCombiner:
     def test_is_address_aAa(self):
         assert not agent.is_address(w3, '0x7328BBaaaaAaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
 
+    def test_etherscan_label(self):
+        label = agent.get_etherscan_label("0xffc0022959f58aa166ce58e6a38f711c95062b99")
+        assert label == 'uniswap', "this should be a uniswap address"
+
     def test_detect_alert_pos_finding_combiner_3_description(self):
         agent.initialize()
 
