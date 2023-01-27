@@ -55,21 +55,3 @@ MODEL_FEATURES = [
     "tokens_type_counts",
     "transfer_counts",
 ]
-
-CHAIN_ID_METADATA_MAPPING = {
-    1: (
-        "ethereum",
-        445,  # alert_count
-        500_000,  # token transfer count
-    ),
-    # TODO: update if we decide to deploy this model to other networks
-    # Currently all counts set to ethereum count
-    137: ("polygon", 445, 500_000),
-    56: ("binance", 445, 500_000),
-    43114: ("avalanche", 445, 500_000),
-    42161: ("arbitrum", 445, 500_000),
-    10: ("optimism", 445, 500_000),
-    250: ("fantom", 445, 500_000),
-}
-
-LUABASE_SUPPORTED_CHAINS = {1, 137, 43114, 250}
