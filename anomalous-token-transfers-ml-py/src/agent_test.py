@@ -4,7 +4,10 @@ import agent
 from src.utils import data_processing
 
 mock_tx_event = create_transaction_event(
-    {"transaction": {"from": "0xbeef"}, "block": {"timestamp": 1655403557}}
+    {
+        "transaction": {"hash": "0x123", "from": "0xbeef"},
+        "block": {"timestamp": 1655403557},
+    }
 )
 mock_tx_event.filter_log = Mock()
 

@@ -4,4 +4,4 @@ forta.config.json
 __pycache__
 .pytest_cache
 malicious_token_model_sighashes_10_29_22.joblib
-src/luabase_constants.py
+

@@ -1,5 +1,6 @@
+from datetime import datetime
 import forta_agent
-from forta_agent import get_json_rpc_url, LabelType, EntityType
+from forta_agent import get_json_rpc_url, EntityType
 from joblib import load
 from evmdasm import EvmBytecode
 from web3 import Web3
@@ -16,6 +17,7 @@ from src.utils import (
     get_features,
     get_storage_addresses,
     is_contract,
+    update_contract_deployment_counter,
 )
 
 
@@ -73,6 +75,9 @@ def detect_malicious_contract_tx(
                     logger.warn(
                         f"Contract {contract_address} creation failed with tx {trace.transactionHash}: {error}"
                     )
+                date_time = datetime.now()
+                date_hour = date_time.strftime("%d/%m/%Y %H:00:00")
+                update_contract_deployment_counter(date_hour)
                 # creation bytecode contains both initialization and run-time bytecode.
                 creation_bytecode = trace.action.init
                 all_findings.extend(
@@ -86,6 +91,10 @@ def detect_malicious_contract_tx(
                 )
     else:  # Trace isn't supported, To improve coverage, process contract creations from EOAs.
         if transaction_event.to is None:
+            date_time = datetime.now()
+            date_hour = date_time.strftime("%d/%m/%Y %H:00:00")
+            update_contract_deployment_counter(date_hour)
+
             nonce = transaction_event.transaction.nonce
             created_contract_address = calc_contract_address(
                 w3, transaction_event.from_, nonce
@@ -126,33 +135,31 @@ def detect_malicious_contract(
                 f"{created_contract_address}: type={contract_type}, score={model_score}, func_hashes={function_sighashes}"
             )
             if model_score is not None and model_score >= MODEL_THRESHOLD:
-                from_label_type = (
-                    LabelType.Contract if is_contract(w3, from_) else LabelType.Eoa
-                )
+                from_label_type = "contract" if is_contract(w3, from_) else "eoa"
                 anomaly_score = get_anomaly_score(w3.eth.chain_id)
                 labels = [
                     {
                         "entity": created_contract_address,
                         "entity_type": EntityType.Address,
-                        "label_type": LabelType.Attacker,
+                        "label": "malicious",
                         "confidence": model_score,
                     },
                     {
                         "entity": created_contract_address,
                         "entity_type": EntityType.Address,
-                        "label_type": LabelType.Contract,
+                        "label": "contract",
                         "confidence": 1.0,
                     },
                     {
                         "entity": from_,
                         "entity_type": EntityType.Address,
-                        "label_type": LabelType.Attacker,
+                        "label": "malicious",
                         "confidence": model_score,
                     },
                     {
                         "entity": from_,
                         "entity_type": EntityType.Address,
-                        "label_type": from_label_type,
+                        "label": from_label_type,
                         "confidence": 1.0,
                     },
                 ]

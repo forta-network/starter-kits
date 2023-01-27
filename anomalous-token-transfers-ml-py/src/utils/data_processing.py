@@ -4,24 +4,18 @@ from random import randint
 
 import backoff
 import requests
-from cachetools import cached, TTLCache
+from expiring_dict import ExpiringDict
 
 from src.utils.constants import (
     ETHPLORER_ENDPOINT,
     ETHERSCAN_ENDPOINT,
-    CHAIN_ID_METADATA_MAPPING,
-    LUABASE_SUPPORTED_CHAINS,
 )
-from src.utils.luabase_constants import (
-    LUABASE_API_KEY,
-    LUABASE_URL,
-    ANOMALY_SCORE_QUERY_ID,
-    ALERT_COUNT_QUERY_ID,
-    BOT_ID,
-)
+
 from src.utils.keys import ETHPLORER_KEY, ETHERSCAN_KEYS
 from src.utils.logger import logger
 
+GLOBAL_TOTAL_TX_COUNTER = ExpiringDict(ttl=86_400)
+BOT_ID = "0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8"
 
 # Retry if etherscan api response status is not ok = 0.
 @backoff.on_predicate(
@@ -174,26 +168,27 @@ def luabase_request(chain_name, bot_id, query_uuid):
     return data
 
 
-# cache anomaly scores for no longer than 30 minutes
-@cached(cache=TTLCache(maxsize=10, ttl=1800))
-def get_anomaly_score(chain_id):
-    anomaly_score = 0
+def update_tx_counter(date_hour: str):
+    # Total number of transactions in the last 24 hrs
+    global GLOBAL_TOTAL_TX_COUNTER
+    GLOBAL_TOTAL_TX_COUNTER[date_hour] = GLOBAL_TOTAL_TX_COUNTER.get(date_hour, 0) + 1
+
+
+def alert_count(chain_id) -> int:
+    alert_stats_url = (
+        f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
+    )
     alert_count = 0
-    (
-        chain_name,
-        default_alert_count,
-        default_token_transfer_count,
-    ) = CHAIN_ID_METADATA_MAPPING[chain_id]
-    if chain_id in LUABASE_SUPPORTED_CHAINS:
-        result = luabase_request(chain_name, BOT_ID, ANOMALY_SCORE_QUERY_ID)
-        if result is not None:
-            anomaly_score = round(result["anomaly_score"], 6)
+    try:
+        result = requests.get(alert_stats_url).json()
+        alert_count = result["alertIds"]["ANOMALOUS-TOKEN-TRANSFERS-TX"]["count"]
+    except Exception as err:
+        logger.error(f"Error obtaining alert counts: {err}")
 
-    if anomaly_score == 0:
-        result = luabase_request(chain_name, BOT_ID, ALERT_COUNT_QUERY_ID)
-        if result is not None:
-            alert_count = round(result["alert_count"], 3)
-        alert_count = alert_count if alert_count > 0 else default_alert_count
-        anomaly_score = round(alert_count / default_token_transfer_count, 6)
+    return alert_count
 
-    return anomaly_score
+
+def get_anomaly_score(chain_id: int) -> float:
+    total_alerts = alert_count(chain_id)
+    total_tx_count = sum(GLOBAL_TOTAL_TX_COUNTER.values())
+    return total_alerts / total_tx_count

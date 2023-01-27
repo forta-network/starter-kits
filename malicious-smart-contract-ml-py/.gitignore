@@ -3,4 +3,3 @@ dist
 forta.config.json
 __pycache__
 .pytest_cache
-src/luabase_constants.py

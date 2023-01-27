@@ -1,14 +1,15 @@
+from datetime import datetime
 from timeit import default_timer as timer
 
 import forta_agent
-from forta_agent import get_json_rpc_url, LabelType, EntityType
+from forta_agent import get_json_rpc_url, EntityType
 from web3 import Web3
 import dill
 import lime.lime_tabular
 import numpy as np
 
 from src.utils.constants import ANOMALY_THRESHOLD, ERC20_TRANSFER_EVENT, MODEL_FEATURES
-from src.utils.data_processing import get_features, get_anomaly_score
+from src.utils.data_processing import get_features, get_anomaly_score, update_tx_counter
 from src.utils.findings import (
     AnomalousTransaction,
     NormalTransaction,
@@ -75,6 +76,10 @@ def detect_anomalous_transfer(w3, transaction_event):
     from_address = transaction_event.from_
 
     if len(transfer_events) > 0:
+        date_time = datetime.now()
+        date_hour = date_time.strftime("%d/%m/%Y %H:00:00")
+        update_tx_counter(date_hour)
+
         valid_features, features = get_features(
             from_address, transaction_event.timestamp, transfer_events
         )
@@ -100,9 +105,8 @@ def detect_anomalous_transfer(w3, transaction_event):
                     {
                         "entity": transaction_event.hash,
                         "entity_type": EntityType.Transaction,
-                        "label_type": LabelType.Attacker,
+                        "label": "anomalous",
                         "confidence": round(model_score, 3),
-                        "custom_value": "anomalous",
                     }
                 ]
                 findings.append(

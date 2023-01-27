@@ -233,16 +233,16 @@ $ npm run tx 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56
       "('WBTC_value <= 0.00', -0.04366651743234217)"
     ],
     "model_version": "1657669403",
-    "model_threshold": 0.5
+    "model_threshold": 0.5,
+    "anomaly_score": 0.0001,
   },
   "addresses": [],
   "labels": [
     {
       "entity": "0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56",
       "entity_type": 2,
-      "label_type": 9,
       "confidence": 0.665,
-      "custom_value": "anomalous"
+      "label": "anomalous"
     }
   ]
 }
