@@ -7,17 +7,26 @@ from xmlrpc.client import _datetime
 import forta_agent
 import pandas as pd
 import re
+import os
+import pickle
+import requests
 from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 
 from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID,
-                           DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD, ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS)
+                           DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD,
+                           ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS,
+                           FP_MITIGATION_ADDRESSES, FINDINGS_CACHE_KEY, ALERTED_CLUSTERS_KEY)
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
 
+label_api = "https://api.forta.network/labels/state?sourceIds=etherscan&entities="
+
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 forta_explorer = FortaExplorer()
+
+DATABASE = "https://research.forta.network/database/bot/"
 
 FINDINGS_CACHE = []
 ALERTED_CLUSTERS = []
@@ -40,10 +49,12 @@ def initialize():
     it is called from test to reset state between tests
     """
     global ALERTED_CLUSTERS
-    ALERTED_CLUSTERS = []
+    alerted_clusters = load(ALERTED_CLUSTERS_KEY)
+    ALERTED_CLUSTERS = [] if alerted_clusters is None else alerted_clusters
 
     global FINDINGS_CACHE
-    FINDINGS_CACHE = []
+    findings_cache = load(FINDINGS_CACHE_KEY)
+    FINDINGS_CACHE = [] if findings_cache is None else findings_cache
 
     global MUTEX
     MUTEX = False
@@ -51,6 +62,18 @@ def initialize():
     global ICE_PHISHING_MAPPINGS_DF
     ICE_PHISHING_MAPPINGS_DF = pd.read_csv('ice_phishing_mappings.csv')
 
+
+def get_etherscan_label(address: str):
+    try:
+        res = requests.get(label_api + address.lower())
+        if res.status_code == 200:
+            labels = res.json()
+            if len(labels) > 0:
+                return labels['events'][0]['label']['label']
+    except Exception as e:
+        logging.error(f"Exception in get_etherscan_label {e}")
+        return ""
+        
 
 def handle_alert(alert_event):
     print("handle_alert")
@@ -252,6 +275,22 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             if tx_count > TX_COUNT_FILTER_THRESHOLD:
                                 logging.info(f"Cluster {potential_attacker_cluster_lower} transacton count: {tx_count}")
                                 continue
+
+                            if potential_attacker_cluster_lower in FP_MITIGATION_ADDRESSES:
+                                logging.info(f"Cluster {potential_attacker_cluster_lower} in FP mitigation list")
+                                continue
+
+                            etherscan_label = get_etherscan_label(potential_attacker_cluster_lower).lower()
+                            if not ('attack' in etherscan_label
+                                    or 'phish' in etherscan_label
+                                    or 'hack' in etherscan_label
+                                    or 'heist' in etherscan_label
+                                    or 'scam' in etherscan_label
+                                    or 'fraud' in etherscan_label
+                                    or etherscan_label == ''):
+                                logging.info(f"Cluster {potential_attacker_cluster_lower} has etherscan label {etherscan_label}")
+                                continue
+
                             update_alerted_clusters(w3, potential_attacker_cluster_lower)
                             FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-ICE-PHISHING', hashes))
                             logging.info(f"Findings count {len(FINDINGS_CACHE)}")
@@ -310,6 +349,53 @@ def update_alerted_clusters(w3, cluster: str):
         ALERTED_CLUSTERS.pop(0)
 
 
+def persist(obj: object, key: str):
+    if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+        logging.info(f"Persisting {key} using API")
+        bytes = pickle.dumps(obj)
+        token = forta_agent.fetch_jwt({})
+
+        headers = {"Authorization": f"Bearer {token}"}
+        res = requests.post(f"{DATABASE}{key}", data=bytes, headers=headers)
+        logging.info(f"Persisting {key} to database. Response: {res}")
+        return
+    else:
+        logging.info(f"Persisting {key} locally")
+        pickle.dump(obj, open(key, "wb"))
+
+
+def load(key: str) -> object:
+    if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+        logging.info(f"Loading {key} using API")
+        token = forta_agent.fetch_jwt({})
+        logging.info("Fetched token")
+        logging.info(token)
+        headers = {"Authorization": f"Bearer {token}"}
+        res = requests.get(f"{DATABASE}{key}", headers=headers)
+        logging.info(f"Loaded {key}. Response: {res}")
+        if res.status_code==200 and len(res.content) > 0:
+            return pickle.loads(res.content)
+        else:
+            logging.info(f"{key} does not exist")
+    else:
+        # load locally
+        logging.info(f"Loading {key} locally")
+        if os.path.exists(key):
+            return pickle.load(open(key, "rb"))
+        else:
+            logging.info(f"File {key} does not exist")
+    return None
+
+
+def persist_state():
+    global ALERTED_CLUSTERS
+    global FINDINGS_CACHE
+
+    persist(FINDINGS_CACHE, FINDINGS_CACHE_KEY)
+    persist(ALERTED_CLUSTERS, ALERTED_CLUSTERS_KEY)
+    logging.info("Persisted bot state.")
+
+
 def provide_handle_block(w3, forta_explorer):
     logging.debug("provide_handle_block called")
 
@@ -317,6 +403,10 @@ def provide_handle_block(w3, forta_explorer):
         logging.debug("handle_block with w3 called")
         global FINDINGS_CACHE
         global MUTEX
+
+        if block_event.block_number % 240 == 0:
+            logging.info(f"Persisting block {block_event.block_number}.")
+            persist_state()
 
         #detect_attack(w3, forta_explorer, block_event)
         if not MUTEX:
