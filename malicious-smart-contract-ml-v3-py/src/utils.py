@@ -1,4 +1,4 @@
-from cachetools import cached, TTLCache
+from expiring_dict import ExpiringDict
 from hexbytes import HexBytes
 import rlp
 import requests
@@ -12,17 +12,11 @@ from src.constants import (
     ERC1155_SIGHASHES,
     ERC777_SIGHASHES,
     PROXY_SIGHASHES,
-    CHAIN_ID_METADATA_MAPPING,
-    LUABASE_SUPPORTED_CHAINS,
-)
-from src.luabase_constants import (
-    LUABASE_API_KEY,
-    LUABASE_URL,
-    ANOMALY_SCORE_QUERY_ID,
-    ALERT_COUNT_QUERY_ID,
-    BOT_ID,
 )
 from src.logger import logger
+
+GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER = ExpiringDict(ttl=86_400)
+BOT_ID = "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c"
 
 
 def calc_contract_address(w3, address, nonce) -> str:
@@ -125,50 +119,29 @@ def get_features(w3, opcodes) -> list:
     return features, opcode_addresses, contract_type, function_sighashes
 
 
-def luabase_request(chain_name, bot_id, query_uuid):
-    headers = {"content-type": "application/json"}
-    payload = {
-        "api_key": LUABASE_API_KEY,
-        "block": {
-            "data_uuid": query_uuid,
-            "details": {
-                "parameters": {
-                    "chain": {"type": "value", "value": chain_name},
-                    "bot_id": {"type": "value", "value": bot_id},
-                }
-            },
-        },
-    }
-    data = None
-    try:
-        response = requests.request("POST", LUABASE_URL, json=payload, headers=headers)
-        response.raise_for_status()
-        data = response.json()["data"][0]
-    except requests.exceptions.HTTPError as err:
-        logger.info(f"Luabase error: {err}")
-    return data
+def update_contract_deployment_counter(date_hour: str):
+    # Total number of contract deployments in the last 24 hrs
+    global GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER
+    GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER[date_hour] = (
+        GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER.get(date_hour, 0) + 1
+    )
 
 
-# cache anomaly scores for no longer than 30 minutes
-@cached(cache=TTLCache(maxsize=10, ttl=1800))
-def get_anomaly_score(chain_id):
-    anomaly_score = 0
+def alert_count(chain_id) -> int:
+    alert_stats_url = (
+        f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
+    )
     alert_count = 0
-    (
-        chain_name,
-        default_alert_count,
-        default_contract_deployment,
-    ) = CHAIN_ID_METADATA_MAPPING[chain_id]
-    if chain_id in LUABASE_SUPPORTED_CHAINS:
-        result = luabase_request(chain_name, BOT_ID, ANOMALY_SCORE_QUERY_ID)
-        if result is not None:
-            anomaly_score = round(result["anomaly_score"], 3)
+    try:
+        result = requests.get(alert_stats_url).json()
+        alert_count = result["total"]["count"]
+    except Exception as err:
+        logger.error(f"Error obtaining alert counts: {err}")
 
-    if anomaly_score == 0:
-        result = luabase_request(chain_name, BOT_ID, ALERT_COUNT_QUERY_ID)
-        if result is not None:
-            alert_count = round(result["alert_count"], 3)
-        alert_count = alert_count if alert_count > 0 else default_alert_count
-        anomaly_score = round(alert_count / default_contract_deployment, 3)
+    return alert_count
 
-    return anomaly_score
+
+def get_anomaly_score(chain_id: int) -> float:
+    total_alerts = alert_count(chain_id)
+    total_tx_count = sum(GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER.values())
+    return total_alerts / total_tx_count
