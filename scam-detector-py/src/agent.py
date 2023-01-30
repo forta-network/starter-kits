@@ -401,7 +401,7 @@ def persist_state():
     global ALERTED_CLUSTERS
     logging.info(f"Persisting alert clusters of length {len(ALERTED_CLUSTERS)}.")
     if len(ALERTED_CLUSTERS) < 100:
-        logging.info(f"Loaded {ALERTED_CLUSTERS} alerted clusters from cache")
+        logging.info(f"Persist {ALERTED_CLUSTERS} alerted clusters from cache")
     persist(ALERTED_CLUSTERS, ALERTED_CLUSTERS_KEY)
     logging.info("Persisted bot state.")
 
