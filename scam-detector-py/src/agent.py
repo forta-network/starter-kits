@@ -51,10 +51,13 @@ def initialize():
     global ALERTED_CLUSTERS
     alerted_clusters = load(ALERTED_CLUSTERS_KEY)
     ALERTED_CLUSTERS = [] if alerted_clusters is None else alerted_clusters
+    logging.info(f"Loaded {len(ALERTED_CLUSTERS)} alerted clusters from cache")
+    if len(ALERTED_CLUSTERS) < 100:
+        logging.info(f"Loaded {ALERTED_CLUSTERS} alerted clusters from cache")
 
+    
     global FINDINGS_CACHE
-    findings_cache = load(FINDINGS_CACHE_KEY)
-    FINDINGS_CACHE = [] if findings_cache is None else findings_cache
+    FINDINGS_CACHE = [] 
 
     global MUTEX
     MUTEX = False
@@ -268,9 +271,9 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             tx_count = 0
                             try:
                                 tx_count = get_max_transaction_count(w3, potential_attacker_cluster_lower)
-                            except: # Exception as e:
-                                #logging.error("Exception in assessing get_transaction_count: {}".format(e))
-                                logging.error("Exception in assessing get_transaction_count")
+                            except  Exception as e:
+                                logging.error(f"Exception in assessing get_transaction_count for cluster {potential_attacker_cluster_lower}: {e}")
+                                continue
                         
                             if tx_count > TX_COUNT_FILTER_THRESHOLD:
                                 logging.info(f"Cluster {potential_attacker_cluster_lower} transacton count: {tx_count}")
@@ -294,6 +297,8 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             update_alerted_clusters(w3, potential_attacker_cluster_lower)
                             FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-ICE-PHISHING', hashes))
                             logging.info(f"Findings count {len(FINDINGS_CACHE)}")
+                    else: 
+                        logging.info(f"Cluster {potential_attacker_cluster_lower} already alerted on.")
             except Exception as e:
                 logging.warn(f"Error processing address combiner alert 1 {potential_attacker_cluster_lower}: {e}")
                 #logging.warn(f"Error processing address combiner alert 3 {potential_attacker_cluster_lower}")
@@ -345,53 +350,58 @@ def update_alerted_clusters(w3, cluster: str):
     global ALERTED_CLUSTERS
 
     ALERTED_CLUSTERS.append(cluster.lower())
+    logging.info(f"Added {cluster.lower()} to alerted clusters.")
+    logging.info(f"ALERTED_CLUSTERS size {len(ALERTED_CLUSTERS)}.")
     if len(ALERTED_CLUSTERS) > ADDRESS_QUEUE_SIZE:
         ALERTED_CLUSTERS.pop(0)
 
 
 def persist(obj: object, key: str):
-    if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
-        logging.info(f"Persisting {key} using API")
-        bytes = pickle.dumps(obj)
-        token = forta_agent.fetch_jwt({})
+    try:
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+            logging.info(f"Persisting {key} using API")
+            bytes = pickle.dumps(obj)
+            token = forta_agent.fetch_jwt({})
 
-        headers = {"Authorization": f"Bearer {token}"}
-        res = requests.post(f"{DATABASE}{key}", data=bytes, headers=headers)
-        logging.info(f"Persisting {key} to database. Response: {res}")
-        return
-    else:
-        logging.info(f"Persisting {key} locally")
-        pickle.dump(obj, open(key, "wb"))
-
+            headers = {"Authorization": f"Bearer {token}"}
+            res = requests.post(f"{DATABASE}{key}", data=bytes, headers=headers)
+            logging.info(f"Persisting {key} to database. Response: {res}")
+            return
+        else:
+            logging.info(f"Persisting {key} locally")
+            pickle.dump(obj, open(key, "wb"))
+    except Exception as e:
+        logging.warn(f"Error persisting {key}: {e}")
 
 def load(key: str) -> object:
-    if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
-        logging.info(f"Loading {key} using API")
-        token = forta_agent.fetch_jwt({})
-        logging.info("Fetched token")
-        logging.info(token)
-        headers = {"Authorization": f"Bearer {token}"}
-        res = requests.get(f"{DATABASE}{key}", headers=headers)
-        logging.info(f"Loaded {key}. Response: {res}")
-        if res.status_code==200 and len(res.content) > 0:
-            return pickle.loads(res.content)
+    try:
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+            logging.info(f"Loading {key} using API")
+            token = forta_agent.fetch_jwt({})
+            headers = {"Authorization": f"Bearer {token}"}
+            res = requests.get(f"{DATABASE}{key}", headers=headers)
+            logging.info(f"Loaded {key}. Response: {res}")
+            if res.status_code==200 and len(res.content) > 0:
+                return pickle.loads(res.content)
+            else:
+                logging.info(f"{key} does not exist")
         else:
-            logging.info(f"{key} does not exist")
-    else:
-        # load locally
-        logging.info(f"Loading {key} locally")
-        if os.path.exists(key):
-            return pickle.load(open(key, "rb"))
-        else:
-            logging.info(f"File {key} does not exist")
-    return None
-
+            # load locally
+            logging.info(f"Loading {key} locally")
+            if os.path.exists(key):
+                return pickle.load(open(key, "rb"))
+            else:
+                logging.info(f"File {key} does not exist")
+        return None
+    except Exception as e:
+        logging.warn(f"Error loading {key}: {e}")
+        return None
 
 def persist_state():
     global ALERTED_CLUSTERS
-    global FINDINGS_CACHE
-
-    persist(FINDINGS_CACHE, FINDINGS_CACHE_KEY)
+    logging.info(f"Persisting alert clusters of length {len(ALERTED_CLUSTERS)}.")
+    if len(ALERTED_CLUSTERS) < 100:
+        logging.info(f"Loaded {ALERTED_CLUSTERS} alerted clusters from cache")
     persist(ALERTED_CLUSTERS, ALERTED_CLUSTERS_KEY)
     logging.info("Persisted bot state.")
 
@@ -403,6 +413,9 @@ def provide_handle_block(w3, forta_explorer):
         logging.debug("handle_block with w3 called")
         global FINDINGS_CACHE
         global MUTEX
+
+        findings = FINDINGS_CACHE
+        FINDINGS_CACHE = []
 
         if block_event.block_number % 240 == 0:
             logging.info(f"Persisting block {block_event.block_number}.")
@@ -416,8 +429,7 @@ def provide_handle_block(w3, forta_explorer):
         # uncomment for local testing of tx/block ranges (ok for npm run start); otherwise the process will exit
         #while (thread.is_alive()):
         #    pass
-        findings = FINDINGS_CACHE
-        FINDINGS_CACHE = []
+        
         return findings
 
     return handle_block
