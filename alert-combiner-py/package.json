@@ -25,7 +25,7 @@
     "sequence": "forta-agent run --sequence"
   },
   "dependencies": {
-    "forta-agent": "^0.1.15"
+    "forta-agent": "^0.1.18"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"
