@@ -9,9 +9,12 @@ class AlertCombinerFinding:
 
     @staticmethod
     def create_finding(address: str, victim_address: str, victim_name, anomaly_score: float, severity: FindingSeverity, alert_id: str, 
-        alert_event: forta_agent.alert_event.AlertEvent, alert_data: pd.DataFrame, victim_metadata: dict) -> Finding:
+        alert_event: forta_agent.alert_event.AlertEvent, alert_data: pd.DataFrame, victim_metadata: dict, anomaly_scores_by_stage: pd.DataFrame) -> Finding:
         # alert_data -> 'stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses'
 
+        anomaly_scores = {}
+        for index, row in anomaly_scores_by_stage.iterrows():
+            anomaly_scores[f'anomaly_score_stage_{row["stage"]}'] = row["anomaly_score"]
         attacker_address = {"attacker_address": address}
         anomaly_score = {"anomaly_score": anomaly_score}
         involved_addresses = set()
@@ -23,7 +26,7 @@ class AlertCombinerFinding:
         alerts = alerts.head(100)
         involved_alerts = {"involved_alerts_" + str(index): ','.join([row['bot_id'], row['alert_id'], row['alert_hash']]) for index, row in alerts.iterrows()}
 
-        meta_data = {**attacker_address, **victim_metadata, **anomaly_score, **involved_addresses, **involved_alerts}
+        meta_data = {**attacker_address, **victim_metadata, **anomaly_scores, **anomaly_score, **involved_addresses, **involved_alerts}
 
         victim_clause = f" on {victim_name} ({victim_address.lower()})" if victim_address else ""
 
