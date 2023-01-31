@@ -6,8 +6,6 @@ import pickle
 import requests
 import forta_agent
 
-from src.constants import LOCAL_NODE
-
 DATABASE = "https://research.forta.network/database/bot/"
 VERSION = "V2"
 
@@ -17,7 +15,7 @@ class L2Cache:
     @staticmethod
     def write(obj: object, chain_id: int, key: str):
         key = f"{VERSION}-{key}"
-        if LOCAL_NODE == 0:
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
             try:
                 logging.info(f"Persisting {key} using API")
                 bytes = pickle.dumps(obj)
@@ -35,7 +33,7 @@ class L2Cache:
     @staticmethod
     def load(chain_id: int, key: str) -> object:
         key = f"{VERSION}-{key}"
-        if LOCAL_NODE == 0:
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
             try:
                 logging.info(f"Loading {key}_{chain_id}  using API")
                 token = forta_agent.fetch_jwt({})

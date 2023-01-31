@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 import forta_agent
 import pandas as pd
 import time
+import os
+import requests
 from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
@@ -15,14 +17,13 @@ from forta_agent import FindingSeverity
 
 from src.findings import AlertCombinerFinding
 from src.constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
-                           FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE, LOCAL_NODE,
+                           FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE,
                            MIN_ALERTS_COUNT, ALERTS_DATA_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, 
-                           VICTIMS_KEY, VICTIM_QUEUE_MAX_SIZE, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS, AD_SCORE_ANOMALY_SCORE)
-from src.luabase import Luabase, MUTEX_LUABASE
+                           VICTIMS_KEY, VICTIM_QUEUE_MAX_SIZE, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS, DEFAULT_ANOMALY_SCORE)
 from src.L2Cache import L2Cache
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
-luabase = Luabase()
+
 
 CHAIN_ID = 1
 
@@ -35,7 +36,6 @@ ALERTED_CLUSTERS_STRICT = []  # cluster
 ALERTED_CLUSTERS_LOOSE = []  # cluster
 FP_MITIGATION_CLUSTERS = []  # cluster
 VICTIMS = dict()  # transaction_hash, metadata
-ALERT_ID_AD_SCORER_MAPPING = dict()  # (bot_id, alert_id) -> ad_scorer
 ALERT_ID_STAGE_MAPPING = dict()  # (bot_id, alert_id) -> stage
 
 root = logging.getLogger()
@@ -46,6 +46,8 @@ handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 root.addHandler(handler)
+
+label_api = "https://api.forta.network/labels/state?sourceIds=etherscan&entities="
 
 # TODO - extract label from bot for better aggregation
 # TODO - emit an FP alert if FP mitigation came in after the alert
@@ -66,11 +68,8 @@ def initialize():
         logging.error(f"Error getting chain id: {e}")
         raise e
 
-    global ALERT_ID_AD_SCORER_MAPPING
-    ALERT_ID_AD_SCORER_MAPPING = dict([((bot_id, alert_id), ad_scorer) for bot_id, alert_id, stage, ad_scorer in BASE_BOTS])
-
     global ALERT_ID_STAGE_MAPPING
-    ALERT_ID_STAGE_MAPPING = dict([((bot_id, alert_id), stage) for bot_id, alert_id, stage, ad_scorer in BASE_BOTS])
+    ALERT_ID_STAGE_MAPPING = dict([((bot_id, alert_id), stage) for bot_id, alert_id, stage in BASE_BOTS])
 
     global ALERTED_CLUSTERS_STRICT
     alerted_clusters = load(CHAIN_ID, ALERTED_CLUSTERS_STRICT_KEY)
@@ -103,7 +102,7 @@ def initialize():
     CONTRACT_CACHE = {}
 
     subscription_json = []
-    for bot, alertId, stage, ad_scorer in BASE_BOTS:
+    for bot, alertId, stage in BASE_BOTS:
         subscription_json.append({"botId": bot, "alertId": alertId})
 
     for bot, alertId in FP_MITIGATION_BOTS:
@@ -116,6 +115,18 @@ def initialize():
     subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1]})
 
     return {"alertConfig": {"subscriptions": subscription_json}}
+
+
+def get_etherscan_label(address: str):
+    try:
+        res = requests.get(label_api + address.lower())
+        if res.status_code == 200:
+            labels = res.json()
+            if len(labels) > 0:
+                return labels['events'][0]['label']['label']
+    except Exception as e:
+        logging.error(f"Exception in get_etherscan_label {e}")
+        return ""
 
 
 def is_contract(w3, addresses) -> bool:
@@ -176,15 +187,35 @@ def get_victim_info(alert_data: pd.DataFrame, victims: dict):
     return victim_address, victim_name, victim_metadata
 
 
+def get_anomaly_score(alert_event: forta_agent.alert_event.AlertEvent, start_date: datetime, end_date: datetime) -> float:
+    global DEFAULT_ANOMALY_SCORE
+
+    anomaly_score = 1.0
+    if alert_event.alert.metadata is not None and "anomaly_score" in alert_event.alert.metadata.keys():
+        anomaly_score_str = alert_event.alert.metadata["anomaly_score"]
+    elif alert_event.alert.metadata is not None and "anomalyScore" in alert_event.alert.metadata.keys():
+        anomaly_score_str = alert_event.alert.metadata["anomalyScore"]
+    else:
+        logging.warning(f"alert {alert_event.alert_hash} - no anomaly_score in metadata found: {alert_event.alert.metadata}. Treating as anomaly_score of 1.0.")
+        anomaly_score_str = "1.0"
+
+    anomaly_score = float(anomaly_score_str)
+    if anomaly_score < 0.0:
+        anomaly_score = DEFAULT_ANOMALY_SCORE
+        logging.warning(f"alert {alert_event.alert_hash} - anomaly_score is less than 0.0. Treating as anomaly_score of {DEFAULT_ANOMALY_SCORE}.")
+    elif anomaly_score > 1.0:
+        anomaly_score = 1.0
+        logging.warning(f"alert {alert_event.alert_hash} - anomaly_score is greater than 1.0. Treating as anomaly_score of 1.0.")
+
+    return anomaly_score
 
 
-def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.AlertEvent):
+def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent):
     """
     this function returns finding for any address with at least 3 alerts observed on that address; it will generate an anomaly score
     :return: findings: list
     """
     global ALERT_ID_STAGE_MAPPING
-    global ALERT_ID_AD_SCORER_MAPPING
 
     global ALERTED_CLUSTERS_LOOSE
     global ALERTED_CLUSTERS_STRICT
@@ -236,7 +267,6 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
                 while len(VICTIMS) > VICTIM_QUEUE_MAX_SIZE:
                     VICTIMS.pop(next(iter(VICTIMS)))
 
-
             # update FP mitigation clusters
             if in_list(alert_event, FP_MITIGATION_BOTS):
                 logging.info(f"alert {alert_event.alert_hash} is a FP mitigation alert")
@@ -257,14 +287,6 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
                     end_date = datetime.now()
                 start_date = end_date - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS)
 
-                if LOCAL_NODE == 1:  # for local testing
-                    logging.info(f"alert {alert_event.alert_hash} - Populating denominator cache for {alert_event.chain_id} {ALERT_ID_AD_SCORER_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]} {start_date} {end_date}")
-                    luabase.populate_denominator_cache(chain_id=alert_event.chain_id, ad_scorer=ALERT_ID_AD_SCORER_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)], start_date=start_date, end_date=end_date)
-                    logging.info(f"alert {alert_event.alert_hash} - Populated denominator cache for {alert_event.chain_id} {ALERT_ID_AD_SCORER_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]} {start_date} {end_date}")
-                    logging.info(f"alert {alert_event.alert_hash} - Populating alert count cache for {alert_event.chain_id} {alert_event.bot_id}, {alert_event.alert.alert_id}  {start_date} {end_date}")
-                    luabase.populate_alert_count_cache(chain_id=alert_event.chain_id, bot_id=alert_event.alert.source.bot.id, alert_id=alert_event.alert_id, start_date=start_date, end_date=end_date)
-                    logging.info(f"alert {alert_event.alert_hash} - Populated alert count cache for {alert_event.chain_id} {alert_event.bot_id}, {alert_event.alert.alert_id}  {start_date} {end_date}")
-                    
                 # add anomaly score and metadata to ALERT_DATA
                 logging.info(f"alert {alert_event.alert_hash} - Analysing {len(alert_event.alert.addresses)} addresses")
                 for address in alert_event.alert.addresses:
@@ -279,29 +301,17 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
 
                     logging.info(f"alert {alert_event.alert_hash}: {cluster} is valid EOA.")
 
-                    try:
-                        alert_count = luabase.get_alert_count(alert_event.chain_id, alert_event.bot_id, alert_event.alert.alert_id, start_date, end_date)
-                    except Exception as e:
-                        logging.warn(f"alert {alert_event.alert_hash} - Exception in get_alert_count {e}")
-                        continue
-                    ad_scorer = ALERT_ID_AD_SCORER_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
-                    anomaly_score = AD_SCORE_ANOMALY_SCORE
-                    if ad_scorer != 'ad-score':
-                        try:
-                            denominator = luabase.get_denominator(alert_event.chain_id, ALERT_ID_AD_SCORER_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)], start_date, end_date)
-                        except Exception as e:
-                            logging.warn(f"alert {alert_event.alert_hash} - Exception in get_denominator {e}")
-                            continue
-                        anomaly_score = alert_count * 1.0 / denominator
+                    alert_anomaly_score = get_anomaly_score(alert_event, start_date, end_date)
+                   
                     stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
-                    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} {stage}: {cluster} anomaly score of {anomaly_score}")
+                    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} {stage}: {cluster} anomaly score of {alert_anomaly_score}")
 
                     if ALERT_DATA.get(cluster) is None:
                         ALERT_DATA[cluster] = pd.DataFrame(columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])
 
                     alert_data = ALERT_DATA[cluster]
                     stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
-                    alert_data = pd.concat([alert_data, pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])], ignore_index=True, axis=0)
+                    alert_data = pd.concat([alert_data, pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])], ignore_index=True, axis=0)
                     logging.info(f"alert {alert_event.alert_hash} - alert data size now: {len(alert_data)}")
 
                     # add new alert and purge old alerts
@@ -319,6 +329,19 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
                         logging.info(f"alert {alert_event.alert_hash} - Have sufficient number of alerts for {cluster}. Overall anomaly score is {anomaly_score}, {len(anomaly_scores)} stages.")
                         logging.info(f"alert {alert_event.alert_hash} - {cluster} anomaly scores {anomaly_scores}.")
 
+                        etherscan_label = get_etherscan_label(cluster).lower()
+                        etherscan_fp_mitigated = False
+                        if not ('attack' in etherscan_label
+                                or 'phish' in etherscan_label
+                                or 'hack' in etherscan_label
+                                or 'heist' in etherscan_label
+                                or 'exploit' in etherscan_label
+                                or 'scam' in etherscan_label
+                                or 'fraud' in etherscan_label
+                                or etherscan_label == ''):
+                            logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
+                            etherscan_fp_mitigated = True
+
                         if cluster in FP_MITIGATION_CLUSTERS:
                             logging.info(f"alert {alert_event.alert_hash} - Mitigating FP for {cluster}. Wont raise finding")
 
@@ -331,12 +354,12 @@ def detect_attack(w3, luabase: Luabase, alert_event: forta_agent.alert_event.Ale
                         if cluster in ALERTED_CLUSTERS_STRICT or cluster in ALERTED_CLUSTERS_LOOSE:
                             logging.info(f"alert {alert_event.alert_hash} -{cluster} in alerted clusters. Wont raise low finding")
 
-                        if (anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT or len(anomaly_scores) == 4) and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_STRICT:
+                        if not etherscan_fp_mitigated and (anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT or len(anomaly_scores) == 4) and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_STRICT:
                             logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
                             victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                             update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
                             FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata))
-                        elif anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT:
+                        elif not etherscan_fp_mitigated and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT:
                             logging.info(f"alert {alert_event.alert_hash} -1 low severity finding for {cluster}. Anomaly score is {anomaly_score}.")
                             victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                             update_list(ALERTED_CLUSTERS_LOOSE, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
@@ -395,33 +418,20 @@ def load(chain_id: int, key: str) -> object:
     return L2Cache.load(chain_id, key)
 
 
-def provide_handle_alert(w3, luabase):
+def provide_handle_alert(w3):
     logging.debug("provide_handle_alert called")
 
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logging.debug("handle_alert inner called")
 
         global FINDINGS_CACHE
-        global MUTEX_LUABASE
 
-        #  detect_attack(w3, luabase, alert_event)
-
-        if LOCAL_NODE == 1:
-            detect_attack(w3, luabase, alert_event)
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+            detect_attack(w3, alert_event)
             persist_state()
         else:
-            thread = threading.Thread(target=detect_attack, args=(w3, luabase, alert_event))
+            thread = threading.Thread(target=detect_attack, args=(w3, alert_event))
             thread.start()
-
-        end_date = datetime.now()
-        start_date = end_date - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS)
-        #  luabase.populate_cache(CHAIN_ID, start_date, end_date)
-        if not MUTEX_LUABASE:
-            if LOCAL_NODE == 0:
-                thread = threading.Thread(target=luabase.populate_cache, args=(CHAIN_ID, start_date, end_date))
-                thread.start()
-        else:
-            logging.debug("Populate_cache not called. Mutex is locked")
 
         #  uncomment for local testing of tx/block ranges (ok for npm run start); otherwise the process will exit
         #  while (thread.is_alive()):
@@ -433,7 +443,7 @@ def provide_handle_alert(w3, luabase):
     return handle_alert
 
 
-real_handle_alert = provide_handle_alert(web3, luabase)
+real_handle_alert = provide_handle_alert(web3)
 
 
 def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
