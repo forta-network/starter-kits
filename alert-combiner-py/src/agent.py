@@ -200,9 +200,9 @@ def get_anomaly_score(alert_event: forta_agent.alert_event.AlertEvent, start_dat
         anomaly_score_str = "1.0"
 
     anomaly_score = float(anomaly_score_str)
-    if anomaly_score < 0.0:
+    if anomaly_score <= 0.0:
         anomaly_score = DEFAULT_ANOMALY_SCORE
-        logging.warning(f"alert {alert_event.alert_hash} - anomaly_score is less than 0.0. Treating as anomaly_score of {DEFAULT_ANOMALY_SCORE}.")
+        logging.warning(f"alert {alert_event.alert_hash} - anomaly_score is less or equal than 0.0. Treating as anomaly_score of {DEFAULT_ANOMALY_SCORE}.")
     elif anomaly_score > 1.0:
         anomaly_score = 1.0
         logging.warning(f"alert {alert_event.alert_hash} - anomaly_score is greater than 1.0. Treating as anomaly_score of 1.0.")
@@ -289,6 +289,8 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent):
 
                 # add anomaly score and metadata to ALERT_DATA
                 logging.info(f"alert {alert_event.alert_hash} - Analysing {len(alert_event.alert.addresses)} addresses")
+
+
                 for address in alert_event.alert.addresses:
                     logging.info(f"alert {alert_event.alert_hash} - Analysing address {address}")
                     address_lower = address.lower()
@@ -323,8 +325,8 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent):
                     # 1. Have to have at least MIN_ALERTS_COUNT bots reporting alerts
                     if len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT:
                         # 2. Have to have overall anomaly score of less than ANOMALY_SCORE_THRESHOLD
-                        anomaly_scores = alert_data[['stage', 'anomaly_score']].drop_duplicates(inplace=False)
-                        anomaly_scores = anomaly_scores.groupby('stage').min()
+                        anomaly_scores_by_stages = alert_data[['stage', 'anomaly_score']].drop_duplicates(inplace=False)
+                        anomaly_scores = anomaly_scores_by_stages.groupby('stage').min()
                         anomaly_score = anomaly_scores['anomaly_score'].prod()
                         logging.info(f"alert {alert_event.alert_hash} - Have sufficient number of alerts for {cluster}. Overall anomaly score is {anomaly_score}, {len(anomaly_scores)} stages.")
                         logging.info(f"alert {alert_event.alert_hash} - {cluster} anomaly scores {anomaly_scores}.")
@@ -358,15 +360,15 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent):
                             logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
                             victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                             update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
-                            FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata))
+                            FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
                         elif not etherscan_fp_mitigated and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT:
                             logging.info(f"alert {alert_event.alert_hash} -1 low severity finding for {cluster}. Anomaly score is {anomaly_score}.")
                             victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                             update_list(ALERTED_CLUSTERS_LOOSE, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
-                            FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster,  victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata))
+                            FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
 
         except Exception as e:
-            logging.warn(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
+            logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
     else:
         logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
 
