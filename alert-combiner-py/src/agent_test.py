@@ -148,6 +148,7 @@ class TestAlertCombiner:
         assert len(items_loaded) == 1, "should be in loaded list"
 
     def generate_alert(address: str, bot_id: str, alert_id: str, metadata={}):
+        
         alert = {"alert":
                 {"name": "x",
                  "hash": "0xabc",
@@ -185,7 +186,32 @@ class TestAlertCombiner:
         assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
         assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
 
-    def test_alert_simple_case_missing_ad_score(self):
+    
+    def test_alert_simple_case_labels(self):
+        # three alerts in diff stages for a given EOA
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        agent.detect_attack(w3, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        agent.detect_attack(w3, alert_event)
+        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        agent.detect_attack(w3, alert_event)
+
+        # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
+
+        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
+        assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
+
+
+    def test_alert_simple_case_missing_anomaly_score(self):
         # three alerts in diff stages for a given EOA
         # no FP
         # anomaly score < 10 E-8
@@ -205,7 +231,7 @@ class TestAlertCombiner:
 
         # 100/100000 * 1.0 * 50/10000000 -> 5E-9
 
-        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
+        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised given three alerts and score exceeds threshold"
         assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 5e-9) < 1e-20, 'incorrect anomaly score'
 
     def test_alert_simple_case_with_victim(self):
