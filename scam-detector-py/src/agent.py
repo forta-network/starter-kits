@@ -17,7 +17,7 @@ from web3 import Web3
 from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID,
                            DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD,
                            ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS,
-                           FP_MITIGATION_ADDRESSES, FINDINGS_CACHE_KEY, ALERTED_CLUSTERS_KEY)
+                           FP_MITIGATION_ADDRESSES, ALERTED_CLUSTERS_KEY)
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
 
@@ -26,7 +26,7 @@ label_api = "https://api.forta.network/labels/state?sourceIds=etherscan&entities
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 forta_explorer = FortaExplorer()
 
-DATABASE = "https://research.forta.network/database/bot/"
+DATABASE = f"https://research.forta.network/database/bot/{web3.eth.chain_id}"
 
 FINDINGS_CACHE = []
 ALERTED_CLUSTERS = []
@@ -57,7 +57,7 @@ def initialize():
 
     
     global FINDINGS_CACHE
-    FINDINGS_CACHE = [] 
+    FINDINGS_CACHE = []
 
     global MUTEX
     MUTEX = False
@@ -209,6 +209,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
     """
     global ALERTED_CLUSTERS
     global MUTEX
+    global FINDINGS_CACHE
 
     if not MUTEX:
         MUTEX = True
@@ -271,7 +272,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             tx_count = 0
                             try:
                                 tx_count = get_max_transaction_count(w3, potential_attacker_cluster_lower)
-                            except  Exception as e:
+                            except Exception as e:
                                 logging.error(f"Exception in assessing get_transaction_count for cluster {potential_attacker_cluster_lower}: {e}")
                                 continue
                         
@@ -294,9 +295,11 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                                 logging.info(f"Cluster {potential_attacker_cluster_lower} has etherscan label {etherscan_label}")
                                 continue
 
+                            logging.info(f"Cluster {potential_attacker_cluster_lower} is scammer. Raising alert.")
                             update_alerted_clusters(w3, potential_attacker_cluster_lower)
                             FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-ICE-PHISHING', hashes))
                             logging.info(f"Findings count {len(FINDINGS_CACHE)}")
+                            persist_state()
                     else: 
                         logging.info(f"Cluster {potential_attacker_cluster_lower} already alerted on.")
             except Exception as e:

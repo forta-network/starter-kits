@@ -1,5 +1,5 @@
 import time
-
+import os
 import pandas as pd
 from forta_agent import create_block_event
 
@@ -43,6 +43,9 @@ class TestAlertCombiner:
         assert label == 'uniswap', "this should be a uniswap address"
 
     def test_detect_alert_pos_finding_combiner_3_description(self):
+        # delete cache file
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()
@@ -73,6 +76,8 @@ class TestAlertCombiner:
 
 
     def test_detect_alert_pos_finding_combiner_3_metadata(self):
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()
@@ -99,6 +104,8 @@ class TestAlertCombiner:
         assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
 
     def test_detect_alert_pos_finding_combiner_3_tx_to(self):
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()
@@ -125,6 +132,8 @@ class TestAlertCombiner:
         assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
 
     def test_detect_alert_no_finding_large_tx_count(self):
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()
@@ -153,6 +162,9 @@ class TestAlertCombiner:
         assert len(agent.FINDINGS_CACHE) == 0, "this should have not triggered a finding as the EOA has too many txs"
 
     def test_detect_alert_pos_no_repeat_finding(self):
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
+        
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()
@@ -184,6 +196,8 @@ class TestAlertCombiner:
         assert len(agent.FINDINGS_CACHE) == 0, "this should have have triggered another finding"
 
     def test_detect_alert_pos_nofinding(self):
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()
@@ -217,6 +231,8 @@ class TestAlertCombiner:
 
 
     def test_detect_alert_pos_finding_combiner_with_cluster(self):
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()
