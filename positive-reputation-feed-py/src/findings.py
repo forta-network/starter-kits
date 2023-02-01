@@ -17,7 +17,7 @@ class PositiveReputationFinding:
                    "confidence": confidence}]  # very low
 
         return Finding({
-                       'name': 'Attack detector identified an EOA with behavior consistent with an attack',
+                       'name': 'Positive Reputation Assigned',
                        'description': f'EOA {address} was assigned positive reputation.',
                        'alert_id': 'POSITIVE-REPUTATION-1',
                        'type': FindingType.Info,
