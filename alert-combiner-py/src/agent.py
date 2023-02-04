@@ -118,6 +118,9 @@ def initialize():
 
 
 def get_etherscan_label(address: str):
+    if address is None:
+        return ""
+        
     try:
         res = requests.get(label_api + address.lower())
         if res.status_code == 200:

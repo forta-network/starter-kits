@@ -11,7 +11,7 @@ It does so with the realization that an attack usually consists of 4 distinct ph
 - money laundering (e.g. sending funds to tornado cash)
 
 As such, this feed combines previously raised alerts under the initiating address (i.e. the attacker address) and emits a cricial alert when 
-- each alert is converted into an anomaly score
+- each alert emits an anomaly score
 - anomaly scores are combined (multiplied) across all stages for a common cluster (a set of addresses clustered by the cluster entity bot)
 - thresholds on the number of total alerts (3) and anomaly score
 - is not part of FP mitigation alert
@@ -123,7 +123,7 @@ As a result, the precision of this alert is quite high, but also some attacks ma
 
 ## Supported Chains
 
-- Fantom, Avalanche, Polygon and Mainnet (stipulated by luabase support)
+- All EVM compatible chains
 
 ## Alerts
 
