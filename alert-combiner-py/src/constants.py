@@ -110,7 +110,7 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0xd935a697faab13282b3778b2cb8dd0aa4a0dde07877f9425f3bf25ac7b90b895", "AE-MALICIOUS-ADDR", "Exploitation"),  # malicious address bot
              ("0x46ce98e921e2766a922840a56e89f24409001052c284e0bd6cbaa4fecd95e9b6", "SLEEPMINT-1", "Preparation"),  # sleep minting
              ("0x46ce98e921e2766a922840a56e89f24409001052c284e0bd6cbaa4fecd95e9b6", "SLEEPMINT-2", "Preparation"),  # sleep minting
-             ("0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", "Preparation"),  # suspicious contract creation ML
+             ("0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", "Preparation"),  # suspicious contract creation ML
              ("0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8", "SOCIAL-ENG-CONTRACT-CREATION", "Preparation"),  # social eng contract creation
              ("0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f", "ASSET-DRAINED", "Exploitation"),  # assets drained
              ("0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef", "AK-AZTEC-PROTOCOL-FUNDED-ACCOUNT-INTERACTION-0", "Exploitation"),  # Aztec Protocol funded account interacted with contract
