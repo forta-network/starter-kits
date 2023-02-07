@@ -171,20 +171,20 @@ class TestAlertCombiner:
         agent.initialize()
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
-        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
-        assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
+        assert len(findings) == 1, "alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
 
     
     def test_alert_simple_case_labels(self):
@@ -195,20 +195,20 @@ class TestAlertCombiner:
         agent.initialize()
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
-        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
-        assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
+        assert len(findings) == 1, "alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
 
 
     def test_alert_simple_case_missing_anomaly_score(self):
@@ -219,20 +219,20 @@ class TestAlertCombiner:
         agent.initialize()
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION")  
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION")  
         agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
         # 100/100000 * 1.0 * 50/10000000 -> 5E-9
 
-        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised given three alerts and score exceeds threshold"
-        assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 5e-9) < 1e-20, 'incorrect anomaly score'
+        assert len(findings) == 1, "alert should have been raised given three alerts and score exceeds threshold"
+        assert abs(findings[0].metadata["anomaly_score"] - 5e-9) < 1e-20, 'incorrect anomaly score'
 
     def test_alert_simple_case_with_victim(self):
         # three alerts in diff stages for a given EOA
@@ -242,26 +242,26 @@ class TestAlertCombiner:
         agent.initialize()
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         metadata = {"address1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "holders1": "", "protocolTwitter1": "wrappedEth", "protocolUrl1": "", "tag1": "Wrapped Ether"}
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250", "VICTIM-IDENTIFIER-PREPARATION-STAGE", metadata)  # contains victim info
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
         # 100.0/100000 * 200.0/10000 * 50.0/10000000 -> 1E-10
 
-        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
-        assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
-        assert "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2".lower() in agent.FINDINGS_CACHE[0].description, "victim not included in description"
-        assert "Wrapped Ether" in agent.FINDINGS_CACHE[0].description, "victim name not included in description"
+        assert len(findings) == 1, "alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
+        assert "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2".lower() in findings[0].description, "victim not included in description"
+        assert "Wrapped Ether" in findings[0].description, "victim name not included in description"
 
     def test_alert_repeat_alerts(self):
         # three alerts in diff stages for a given EOA
@@ -271,33 +271,33 @@ class TestAlertCombiner:
         agent.initialize()
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
-        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
-        agent.FINDINGS_CACHE = []
+        assert len(findings) == 1, "alert should have been raised"
+        findings = []
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
-        assert len(agent.FINDINGS_CACHE) == 0, "alert should not have been raised again"
+        assert len(findings) == 0, "alert should not have been raised again"
 
     def test_alert_simple_case_contract(self):
         # three alerts in diff stages for a given contract
@@ -307,17 +307,17 @@ class TestAlertCombiner:
         agent.initialize()
 
         alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
-        assert len(agent.FINDINGS_CACHE) == 0, "alert should have been raised as this is a contract"
+        assert len(findings) == 0, "alert should have been raised as this is a contract"
 
     def test_alert_simple_case_older_alerts(self):
         # three alerts in diff stages for a given older alerts
@@ -328,17 +328,17 @@ class TestAlertCombiner:
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         alert_event.alert.created_at = (datetime.now() - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS + 1)).strftime("%Y-%m-%dT%H:%M:%S.%f123Z")
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
-        assert len(agent.FINDINGS_CACHE) == 0, "alert should not have been raised funding alert is too old"
+        assert len(findings) == 0, "alert should not have been raised funding alert is too old"
 
     def test_alert_proper_handling_of_min(self):
         # three alerts in diff stages for a given older alerts
@@ -348,26 +348,26 @@ class TestAlertCombiner:
         agent.initialize()
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbf26258d381c4151c904c6d357c024688866fa3197c14d55852b8b76335967b4", "EXPLOITER-ADDR-TX", {"anomaly_score": (1000.0 / 10000000)})  # preparation -> alert count = 1000, blocklist account tx; ad-scorer contract-creation -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 1, "only 1 alert should have been raised"
-        assert agent.FINDINGS_CACHE[0].severity == FindingSeverity.Low, "low severity alert should have been raised"
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 1, "only 1 alert should have been raised"
+        assert findings[0].severity == FindingSeverity.Low, "low severity alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
         
 
         # 100/100000 * 1000/10000000 * 50/10000000 -> 5E-13
-        assert len(agent.FINDINGS_CACHE) == 2, "alert should have been raised"
-        assert agent.FINDINGS_CACHE[1].severity == FindingSeverity.Critical, "critical severity alert should have been raised"
-        assert abs(agent.FINDINGS_CACHE[1].metadata["anomaly_score"] - 5e-13) < 1e-20, 'incorrect anomaly score'
+        assert len(findings) == 1, "alert should have been raised"
+        assert findings[0].severity == FindingSeverity.Critical, "critical severity alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 5e-13) < 1e-20, 'incorrect anomaly score'
 
     def test_alert_too_few_alerts(self):
         # two alerts in diff stages for a given EOA
@@ -377,14 +377,14 @@ class TestAlertCombiner:
         agent.initialize()
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
         # 100/100000 * 50/10000000 -> 5E-9
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        assert len(findings) == 0, "no alert should have been raised"
 
     def test_alert_FP_mitigation(self):
         # FP mitigation
@@ -395,22 +395,22 @@ class TestAlertCombiner:
         agent.initialize()
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f", "POSITIVE-REPUTATION-1")  # positive reputation alert
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised as this is FP mitigated"
+        assert len(findings) == 0, "no alert should have been raised as this is FP mitigated"
 
     def test_alert_cluster_alert(self):
         # three alerts in diff stages across two EOAs that are clustered
@@ -421,24 +421,24 @@ class TestAlertCombiner:
         agent.initialize()
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entityAddresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})   # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings =  agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})   # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})   # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS_2, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})   # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
-        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
-        assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
+        assert len(findings) == 1, "alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
 
     def test_alert_cluster_alert_after(self):
         # three alerts in diff stages across two EOAs that are clustered, but the cluster comes in after some key alerts are raised
@@ -449,21 +449,21 @@ class TestAlertCombiner:
         agent.initialize()
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS_2, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})   # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})   # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entityAddresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
-        agent.detect_attack(w3, alert_event)
-        assert len(agent.FINDINGS_CACHE) == 0, "no alert should have been raised"
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})   # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
-        assert len(agent.FINDINGS_CACHE) == 1, "alert should have been raised"
-        assert abs(agent.FINDINGS_CACHE[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
+        assert len(findings) == 1, "alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
