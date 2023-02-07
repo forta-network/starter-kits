@@ -55,7 +55,6 @@ def initialize():
     if len(ALERTED_CLUSTERS) < 100:
         logging.info(f"Loaded {ALERTED_CLUSTERS} alerted clusters from cache")
 
-    
     global FINDINGS_CACHE
     FINDINGS_CACHE = []
 
@@ -76,11 +75,12 @@ def get_etherscan_label(address: str):
     except Exception as e:
         logging.error(f"Exception in get_etherscan_label {e}")
         return ""
-        
+
 
 def handle_alert(alert_event):
     print("handle_alert")
     print(alert_event)
+
 
 def is_contract(w3, addresses) -> bool:
     """
@@ -101,6 +101,7 @@ def is_contract(w3, addresses) -> bool:
 
     return is_contract
 
+
 def is_address(w3, addresses: str) -> bool:
     """
     this function determines whether address is a valid address
@@ -118,6 +119,7 @@ def is_address(w3, addresses: str) -> bool:
 
     return is_address
 
+
 def replace_with_cluster_identifiers(addresses: list, clusters: list) -> list:
     cluster_identifiers = []
 
@@ -134,6 +136,7 @@ def replace_with_cluster_identifiers(addresses: list, clusters: list) -> list:
             cluster_identifiers.append(address_lower)
 
     return cluster_identifiers
+
 
 def get_max_transaction_count(w3, cluster: str) -> int:
     max_transaction_count = 0
@@ -268,6 +271,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             or ('MALICIOUS-ACCOUNT-FUNDING' in alert_ids or 'UMBRA-RECEIVE' in alert_ids or 'CEX-FUNDING-1' in alert_ids or 'AK-AZTEC-PROTOCOL-FUNDING' in alert_ids or 'FUNDING-TORNADO-CASH' in alert_ids or 'TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION' in alert_ids or 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH' in alert_ids or 'MALICIOUS-ACCOUNT-FUNDING' in alert_ids)
                             or ('UNVERIFIED-CODE-CONTRACT-CREATION' in alert_ids or 'FLASHBOT-TRANSACTION' in alert_ids)
                             or ('AE-MALICIOUS-ADDR' in alert_ids or 'forta-text-messages-possible-hack' in alert_ids)
+                            or ('SCAM' in alert_ids)
                             or ('ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS' in alert_ids)):
                             tx_count = 0
                             try:
