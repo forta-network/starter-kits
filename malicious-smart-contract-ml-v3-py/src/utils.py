@@ -7,11 +7,6 @@ from web3 import Web3
 
 from src.constants import (
     CONTRACT_SLOT_ANALYSIS_DEPTH,
-    ERC721_SIGHASHES,
-    ERC20_SIGHASHES,
-    ERC1155_SIGHASHES,
-    ERC777_SIGHASHES,
-    PROXY_SIGHASHES,
 )
 from src.logger import logger
 
@@ -65,27 +60,6 @@ def get_storage_addresses(w3, address) -> set:
     return address_set
 
 
-def get_contract_type(opcodes: str, function_sighashes: set) -> str:
-    """
-    this function determines contract type based on available sighashes.
-    :return: contract_type: str
-    """
-    if function_sighashes.intersection(ERC777_SIGHASHES):
-        return "erc777"
-    elif function_sighashes.intersection(ERC1155_SIGHASHES):
-        return "erc1155"
-    elif function_sighashes.intersection(ERC721_SIGHASHES):
-        return "erc721"
-    elif function_sighashes.intersection(ERC20_SIGHASHES):
-        return "erc20"
-    elif (
-        function_sighashes.intersection(PROXY_SIGHASHES) or len(function_sighashes) == 0
-    ):  # minimal proxy contract
-        return "proxy"
-    else:
-        return "non-token-or-proxy"
-
-
 def get_features(w3, opcodes) -> list:
     """
     this function returns the opcodes + function hashes contained in the contract
@@ -114,9 +88,8 @@ def get_features(w3, opcodes) -> list:
                 features.append(opcode.operand)
                 function_sighashes.add(f"0x{opcode.operand}")
     features = " ".join(features)
-    contract_type = get_contract_type(features, function_sighashes)
 
-    return features, opcode_addresses, contract_type, function_sighashes
+    return features, opcode_addresses, function_sighashes
 
 
 def update_contract_deployment_counter(date_hour: str):
@@ -127,21 +100,25 @@ def update_contract_deployment_counter(date_hour: str):
     )
 
 
-def alert_count(chain_id) -> int:
+def alert_count(chain_id: int, alert_id: str) -> int:
     alert_stats_url = (
         f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
     )
     alert_count = 0
     try:
         result = requests.get(alert_stats_url).json()
-        alert_count = result["total"]["count"]
+        alert_count = (
+            result["alertIds"][alert_id]["count"]
+            if alert_id
+            else result["total"]["count"]
+        )
     except Exception as err:
         logger.error(f"Error obtaining alert counts: {err}")
 
     return alert_count
 
 
-def get_anomaly_score(chain_id: int) -> float:
-    total_alerts = alert_count(chain_id)
+def get_anomaly_score(chain_id: int, alert_id: str) -> float:
+    total_alerts = alert_count(chain_id, alert_id)
     total_tx_count = sum(GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER.values())
-    return total_alerts / total_tx_count
+    return min(total_alerts / total_tx_count, 1.0)

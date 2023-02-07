@@ -32,17 +32,15 @@ class TestMaliciousSmartContractML:
     def test_opcode_addresses_no_addr(self):
         bytecode = w3.eth.get_code(CONTRACT_NO_ADDRESS)
         opcodes = EvmBytecode(bytecode.hex()).disassemble()
-        _, addresses, contract_type, _ = agent.get_features(w3, opcodes)
+        _, addresses, _ = agent.get_features(w3, opcodes)
         assert len(addresses) == 0, "should be empty"
-        assert contract_type == "non-token-or-proxy", "incorrect contract type"
 
     def test_opcode_addresses_with_addr(self):
         bytecode = w3.eth.get_code(CONTRACT_WITH_ADDRESS)
         opcodes = EvmBytecode(bytecode.hex()).disassemble()
-        _, addresses, contract_type, _ = agent.get_features(w3, opcodes)
+        _, addresses, _ = agent.get_features(w3, opcodes)
 
         assert len(addresses) == 1, "should not be empty"
-        assert contract_type == "non-token-or-proxy", "incorrect contract type"
 
     def test_storage_addresses_with_addr(self):
         addresses = agent.get_storage_addresses(w3, CONTRACT_WITH_ADDRESS)
@@ -61,9 +59,8 @@ class TestMaliciousSmartContractML:
     def test_get_features(self):
         bytecode = w3.eth.get_code(MALICIOUS_CONTRACT)
         opcodes = EvmBytecode(bytecode.hex()).disassemble()
-        features, _, contract_type, function_sighashes = agent.get_features(w3, opcodes)
+        features, _, function_sighashes = agent.get_features(w3, opcodes)
         assert len(features) == 4420, "incorrect features length obtained"
-        assert contract_type == "non-token-or-proxy", "incorrect contract type"
         assert (
             len(function_sighashes.intersection({})) == 0
         ), "incorrect function sighashes"
@@ -107,7 +104,8 @@ class TestMaliciousSmartContractML:
         findings = agent.detect_malicious_contract(
             w3, EOA_ADDRESS, BENIGN_CONTRACT, bytecode
         )
-        assert len(findings) == 0, "this should not have triggered a finding"
+        assert len(findings) == 1
+        assert findings[0].alert_id == "SAFE-CONTRACT-CREATION"
 
     def test_detect_malicious_contract_short(self):
         agent.initialize()

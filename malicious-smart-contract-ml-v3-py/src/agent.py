@@ -9,7 +9,7 @@ from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
     MODEL_THRESHOLD,
 )
-from src.findings import MaliciousTokenContractFindings
+from src.findings import ContractFindings
 from src.logger import logger
 from src.utils import (
     calc_contract_address,
@@ -31,7 +31,7 @@ def initialize():
     """
     global ML_MODEL
     logger.info("Start loading model")
-    ML_MODEL = load("malicious_non_token_model_11_05_22.joblib")
+    ML_MODEL = load("malicious_non_token_model_02_07_23_exp2.joblib")
     logger.info("Complete loading model")
 
 
@@ -41,14 +41,11 @@ def exec_model(w3, opcodes: str) -> tuple:
     :return: score: float
     """
     score = None
-    features, opcode_addresses, contract_type, function_sighashes = get_features(
-        w3, opcodes
-    )
-    if contract_type == "non-token-or-proxy":
-        score = ML_MODEL.predict_proba([features])[0][1]
-        score = round(score, 4)
+    features, opcode_addresses, function_sighashes = get_features(w3, opcodes)
+    score = ML_MODEL.predict_proba([features])[0][1]
+    score = round(score, 4)
 
-    return score, opcode_addresses, contract_type, function_sighashes
+    return score, opcode_addresses, function_sighashes
 
 
 def detect_malicious_contract_tx(
@@ -128,22 +125,23 @@ def detect_malicious_contract(
             (
                 model_score,
                 opcode_addresses,
-                contract_type,
                 function_sighashes,
             ) = exec_model(w3, opcodes)
             logger.info(
-                f"{created_contract_address}: type={contract_type}, score={model_score}, func_hashes={function_sighashes}"
+                f"{created_contract_address}: score={model_score}, func_hashes={function_sighashes}"
             )
-            if model_score is not None and model_score >= MODEL_THRESHOLD:
+
+            finding = ContractFindings(
+                from_,
+                created_contract_address,
+                set.union(storage_addresses, opcode_addresses),
+                model_score,
+                MODEL_THRESHOLD,
+                error=error,
+            )
+            if model_score is not None:
                 from_label_type = "contract" if is_contract(w3, from_) else "eoa"
-                anomaly_score = get_anomaly_score(w3.eth.chain_id)
                 labels = [
-                    {
-                        "entity": created_contract_address,
-                        "entity_type": EntityType.Address,
-                        "label": "malicious",
-                        "confidence": model_score,
-                    },
                     {
                         "entity": created_contract_address,
                         "entity_type": EntityType.Address,
@@ -153,29 +151,63 @@ def detect_malicious_contract(
                     {
                         "entity": from_,
                         "entity_type": EntityType.Address,
-                        "label": "malicious",
-                        "confidence": model_score,
-                    },
-                    {
-                        "entity": from_,
-                        "entity_type": EntityType.Address,
                         "label": from_label_type,
                         "confidence": 1.0,
                     },
                 ]
 
-                findings.append(
-                    MaliciousTokenContractFindings.malicious_contract_creation(
-                        from_,
-                        created_contract_address,
-                        set.union(storage_addresses, opcode_addresses),
-                        model_score,
-                        MODEL_THRESHOLD,
-                        anomaly_score,
-                        labels,
-                        error=error,
+                if model_score >= MODEL_THRESHOLD:
+                    labels.extend(
+                        [
+                            {
+                                "entity": created_contract_address,
+                                "entity_type": EntityType.Address,
+                                "label": "malicious",
+                                "confidence": model_score,
+                            },
+                            {
+                                "entity": from_,
+                                "entity_type": EntityType.Address,
+                                "label": "malicious",
+                                "confidence": model_score,
+                            },
+                        ]
                     )
-                )
+                    anomaly_score = get_anomaly_score(
+                        w3.eth.chain_id, "SUSPICIOUS-CONTRACT-CREATION"
+                    )
+                    findings.append(
+                        finding.malicious_contract_creation(
+                            anomaly_score,
+                            labels,
+                        )
+                    )
+                else:
+                    anomaly_score = get_anomaly_score(
+                        w3.eth.chain_id, "SAFE-CONTRACT-CREATION"
+                    )
+                    labels.extend(
+                        [
+                            {
+                                "entity": created_contract_address,
+                                "entity_type": EntityType.Address,
+                                "label": "safe",
+                                "confidence": model_score,
+                            },
+                            {
+                                "entity": from_,
+                                "entity_type": EntityType.Address,
+                                "label": "safe",
+                                "confidence": model_score,
+                            },
+                        ]
+                    )
+                    findings.append(
+                        finding.safe_contract_creation(
+                            anomaly_score,
+                            labels,
+                        )
+                    )
 
     return findings
 
