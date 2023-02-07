@@ -199,7 +199,7 @@ def get_anomaly_score(alert_event: forta_agent.alert_event.AlertEvent, start_dat
     elif alert_event.alert.metadata is not None and "anomalyScore" in alert_event.alert.metadata.keys():
         anomaly_score_str = alert_event.alert.metadata["anomalyScore"]
     else:
-        logging.warning(f"alert {alert_event.alert_hash} - no anomaly_score in metadata found: {alert_event.alert.metadata}. Treating as anomaly_score of 1.0.")
+        logging.warning(f"alert {alert_event.alert_hash} {alert_event.alert_id} - no anomaly_score in metadata found: {alert_event.alert.metadata}. Treating as anomaly_score of 1.0.")
         anomaly_score_str = "1.0"
 
     anomaly_score = float(anomaly_score_str)
@@ -213,7 +213,7 @@ def get_anomaly_score(alert_event: forta_agent.alert_event.AlertEvent, start_dat
     return anomaly_score
 
 
-def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent):
+def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
     """
     this function returns finding for any address with at least 3 alerts observed on that address; it will generate an anomaly score
     :return: findings: list
@@ -227,6 +227,8 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent):
     global VICTIMS
     global ENTITY_CLUSTERS
     global CHAIN_ID
+
+    findings = []
 
     start = time.time()
 
@@ -277,14 +279,15 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent):
                 cluster = address
                 if address in ENTITY_CLUSTERS.keys():
                     cluster = ENTITY_CLUSTERS[address]
-                logging.info(f"alert {alert_event.alert_hash} adding FP mitigation cluster: {cluster}. FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
                 update_list(FP_MITIGATION_CLUSTERS, FP_CLUSTERS_QUEUE_MAX_SIZE, cluster)
-
+                logging.info(f"alert {alert_event.alert_hash} adding FP mitigation cluster: {cluster}. FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
+                
             # update alerts and process them for a given cluster
             if in_list(alert_event, BASE_BOTS):
                 logging.info(f"alert {alert_event.alert_hash}: is a base bot {alert_event.alert.source.bot.id}, {alert_event.alert_id} alert for addresses {alert_event.alert.addresses}")
                 try:
                     end_date = datetime.fromtimestamp(w3.eth.get_block(alert_event.block_number).timestamp)
+                    logging.debug(f"alert {alert_event.alert_hash} - Got block for block number {alert_event.block_number}.")
                 except Exception as e:
                     logging.warn(f"alert {alert_event.alert_hash} - Unable to get block for block number {alert_event.block_number} .{e}")
                     end_date = datetime.now()
@@ -363,12 +366,12 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent):
                             logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
                             victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                             update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
-                            FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
+                            findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
                         elif not etherscan_fp_mitigated and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT:
                             logging.info(f"alert {alert_event.alert_hash} -1 low severity finding for {cluster}. Anomaly score is {anomaly_score}.")
                             victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                             update_list(ALERTED_CLUSTERS_LOOSE, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
-                            FINDINGS_CACHE.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
+                            findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
 
         except Exception as e:
             logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
@@ -377,6 +380,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent):
 
     end = time.time()
     logging.info(f"alert {alert_event.alert_hash} processing took {end - start} seconds")
+    return findings
 
 
 def update_list(items: list, max_size: int, item: str):
@@ -429,20 +433,9 @@ def provide_handle_alert(w3):
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logging.debug("handle_alert inner called")
 
-        global FINDINGS_CACHE
-
-        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
-            detect_attack(w3, alert_event)
-            persist_state()
-        else:
-            thread = threading.Thread(target=detect_attack, args=(w3, alert_event))
-            thread.start()
-
-        #  uncomment for local testing of tx/block ranges (ok for npm run start); otherwise the process will exit
-        #  while (thread.is_alive()):
-        #    pass
-        findings = FINDINGS_CACHE
-        FINDINGS_CACHE = []
+        findings = detect_attack(w3, alert_event)
+        persist_state()
+    
         return findings
 
     return handle_alert
