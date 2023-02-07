@@ -6,11 +6,10 @@ This detection bot detects when a suspicious non-token or non-proxy contract is 
 
 ### Model Configuration
 
-*Data Used For Training*
-- Created date: 11/05/2022
+**Data Used For Training**
 - Trained on 15,443 benign and 174 malicious non-token and non-proxy Ethereum contracts. Datasets can be found at [forta-network/labelled-datasets](https://github.com/forta-network/labelled-datasets)
 
-*Algorithm*
+**Algorithm**
 
 I borrowed a technique from natural language processing that analyzes smart contracts’ opcodes and extracts common and important opcodes found in malicious and benign contracts.
 
@@ -22,13 +21,22 @@ This technique is called TF-IDF (term frequency–inverse document frequency), a
   * Analyzing in chunks helps retain the relative position information of the smart contract opcodes.
 * ML Model: SGD Classifier with loss set to “log_loss”
 
-*Performance*
+**Model Versions**
 
-Using stratified 5-fold cross validation and decision threshold=0.5, the model predicted malicious contracts with average precision=73.36% and recall=48.37%.
+| **Model Version** | V1         | V2                        | V3                   |   |   |
+|-------------------|------------|---------------------------|----------------------|---|---|
+|  **Created Date** | 09/30/2022 |      11/05/2022           | 02/06/2023           |   |   |
+| **Avg Precision** | 88.6%      | 73.36%                    | 87.78%               |   |   |
+| **Avg Recall**    | 59.4%      | 48.37%                    | 55.195%              |   |   |
+| **Avg F1-Score**  | 69.6%      | 53.97%                    | 62.077%              |   |   |
+| **Alert Rate**    | 222.125    | 112.75 (9.5% less than V1)| TODO                 |   |   |
+| **Notes**         |            | FP Mitigation for V1      | FP Mitigation for V2 |   |   |
 
-This bot alerts 9.5% less than the [Malicious Smart Contract ML V2 Bot](https://github.com/forta-network/starter-kits/tree/main/malicious-smart-contract-ml-py).
 
-*Improvements*
+* Average precision and recall were calculated via stratified 5-fold cross validation with decision threshold set to `0.5`
+* Alert-rate = number of ethereum alerts daily (avg of 7 days)
+
+**Improvements**
 
 This model was trained only on Ethereum smart contracts, so it may make sense to create ML models for each chain trained on chain-specific smart contracts. For example, a model trained on BSC contracts.
 
@@ -45,7 +53,7 @@ This model was trained only on Ethereum smart contracts, so it may make sense to
 ## Alerts
 
 - SUSPICIOUS-CONTRACT-CREATION
-  - Fired when a new non-token and non-proxy contract is created and predicted as malicious.
+  - Fired when a new non-token and non-proxy contract is predicted as malicious.
   - Metadata will include the following:
     - Link to OKO Contract Explorer to review decompiled contract code and ABI. This only works for Ethereum.
     - Function sighashes
@@ -58,7 +66,7 @@ This model was trained only on Ethereum smart contracts, so it may make sense to
 
 ## Test Data
 
-The agent behaviour can be verified with the following transactions:
+The bot behaviour can be verified with the following transactions:
 
 Ethereum Mainnet Transactions
 
