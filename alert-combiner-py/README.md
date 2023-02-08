@@ -111,6 +111,7 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-ANGER-TEXT-MESSAGE | Money Laundering |
 | 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-DISGUST-TEXT-MESSAGE | Money Laundering |
 | 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-SADNESS-TEXT-MESSAGE | Money Laundering |
+| 0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e | ChangeNow Bot | FUNDING-CHANGENOW-NEW-ACCOUNT | Funding |
 
 The following bots are used to mitigate FPs:
 | BotID | Name | AlertId |
@@ -118,6 +119,7 @@ The following bots are used to mitigate FPs:
 | 0xabdeff7672e59d53c7702777652e318ada644698a9faf2e7f608ec846b07325b | MEV account bot | MEV-ACCOUNT |
 | 0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400 | High funding activity through TC | FUNDING-TORNADO-CASH-HIGH |
 | 0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f | Positive reputation bot | POSITIVE-REPUTATION-1 |
+In addtion, Etherscan tags are used for FP mitigation.
 
 As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
 
