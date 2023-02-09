@@ -4,6 +4,13 @@
 
 This detection bot detects when a suspicious non-token or non-proxy contract is deployed. It uses an offline trained machine learning model that was built based on contract creation code contained in malicious and benign smart contracts.
 
+This ML bot detected 2+ hacks before they happened:
+
+- [$16M Team Finance Hack](https://twitter.com/FortaNetwork/status/1586044760476696577?s=20&t=x3ctj_DtFGWRQQCV9Jcujw)
+- [$300K Olympus DAO Hack](https://twitter.com/FortaNetwork/status/1583559233852739584?s=20&t=x3ctj_DtFGWRQQCV9Jcujw)
+
+For more technical details, please check out this blog post [How Forta’s Predictive ML Models Detect Attacks Before Exploitation](https://forta.org/blog/how-fortas-predictive-ml-models-detect-attacks-before-exploitation/)
+
 ### Model Configuration
 
 **Data Used For Training**
