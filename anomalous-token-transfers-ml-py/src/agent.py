@@ -105,7 +105,7 @@ def detect_anomalous_transfer(w3, transaction_event):
                     {
                         "entity": transaction_event.hash,
                         "entity_type": EntityType.Transaction,
-                        "label": "anomalous",
+                        "label": "attacker",
                         "confidence": round(model_score, 3),
                     }
                 ]

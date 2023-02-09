@@ -130,7 +130,7 @@ def detect_malicious_token_contract(w3, from_, created_contract_address, code) -
                     {
                         "entity": created_contract_address,
                         "entity_type": EntityType.Address,
-                        "label": "malicious",
+                        "label": "attacker",
                         "confidence": model_score,
                     },
                     {
@@ -142,7 +142,7 @@ def detect_malicious_token_contract(w3, from_, created_contract_address, code) -
                     {
                         "entity": from_,
                         "entity_type": EntityType.Address,
-                        "label": "malicious",
+                        "label": "attacker",
                         "confidence": model_score,
                     },
                     {

@@ -162,13 +162,13 @@ def detect_malicious_contract(
                             {
                                 "entity": created_contract_address,
                                 "entity_type": EntityType.Address,
-                                "label": "malicious",
+                                "label": "attacker",
                                 "confidence": model_score,
                             },
                             {
                                 "entity": from_,
                                 "entity_type": EntityType.Address,
-                                "label": "malicious",
+                                "label": "attacker",
                                 "confidence": model_score,
                             },
                         ]
@@ -191,13 +191,13 @@ def detect_malicious_contract(
                             {
                                 "entity": created_contract_address,
                                 "entity_type": EntityType.Address,
-                                "label": "safe",
+                                "label": "positive_reputation",
                                 "confidence": model_score,
                             },
                             {
                                 "entity": from_,
                                 "entity_type": EntityType.Address,
-                                "label": "safe",
+                                "label": "positive_reputation",
                                 "confidence": model_score,
                             },
                         ]
