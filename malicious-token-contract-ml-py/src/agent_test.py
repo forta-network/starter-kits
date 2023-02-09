@@ -32,24 +32,21 @@ class TestMaliciousSmartContractML:
         # EOAs don't have bytecode or opcodes
         bytecode = w3.eth.get_code(EOA_ADDRESS)
         opcodes = EvmBytecode(bytecode.hex()).disassemble()
-        _, addresses, contract_type = agent.get_features(w3, opcodes)
+        _, addresses = agent.get_features(w3, opcodes, EOA_ADDRESS)
         assert len(addresses) == 0, "should be empty"
-        assert contract_type == "non-token-or-proxy", "incorrect contract type"
 
     def test_opcode_addresses_no_addr(self):
         bytecode = w3.eth.get_code(CONTRACT_NO_ADDRESS)
         opcodes = EvmBytecode(bytecode.hex()).disassemble()
-        _, addresses, contract_type = agent.get_features(w3, opcodes)
+        _, addresses = agent.get_features(w3, opcodes, EOA_ADDRESS)
         assert len(addresses) == 0, "should be empty"
-        assert contract_type == "non-token-or-proxy", "incorrect contract type"
 
     def test_opcode_addresses_with_addr(self):
         bytecode = w3.eth.get_code(CONTRACT_WITH_ADDRESS)
         opcodes = EvmBytecode(bytecode.hex()).disassemble()
-        _, addresses, contract_type = agent.get_features(w3, opcodes)
+        _, addresses = agent.get_features(w3, opcodes, EOA_ADDRESS)
 
         assert len(addresses) == 1, "should not be empty"
-        assert contract_type == "non-token-or-proxy", "incorrect contract type"
 
     def test_storage_addresses_with_addr(self):
         addresses = agent.get_storage_addresses(w3, CONTRACT_WITH_ADDRESS)
@@ -68,9 +65,8 @@ class TestMaliciousSmartContractML:
     def test_get_features(self):
         bytecode = w3.eth.get_code(MALICIOUS_TOKEN_CONTRACT)
         opcodes = EvmBytecode(bytecode.hex()).disassemble()
-        features, _, contract_type = agent.get_features(w3, opcodes)
-        assert len(features) == 7850, "incorrect features length obtained"
-        assert contract_type == "erc20", "incorrect contract type"
+        features, _ = agent.get_features(w3, opcodes, EOA_ADDRESS)
+        assert len(features) == 24312, "incorrect features length obtained"
 
     def test_finding_MALICIOUS_TOKEN_CONTRACT_creation(self):
         agent.initialize()
@@ -111,7 +107,9 @@ class TestMaliciousSmartContractML:
         findings = agent.detect_malicious_token_contract(
             w3, EOA_ADDRESS, BENIGN_CONTRACT, bytecode
         )
-        assert len(findings) == 0, "this should not have triggered a finding"
+        assert len(findings) == 1
+        finding = findings[0]
+        assert finding.alert_id == "SAFE-TOKEN-CONTRACT-CREATION"
 
     def test_detect_malicious_token_contract_short(self):
         agent.initialize()

@@ -1,8 +1,0 @@
-node_modules
-dist
-forta.config.json
-__pycache__
-.pytest_cache
-malicious_non_token_model_11_05_22.joblib
-malicious_non_token_model_02_07_23_exp2.joblib
-publish.log

@@ -1,10 +1,8 @@
 forta_agent>=0.1.9
 setuptools>=61.3.1
-pandas>=1.4.2
-numpy>=1.22.3
-requests>=2.27.1
 hexbytes>=0.2.2
-pyevmasm>=0.2.3
+evmdasm>=0.1.10
 rlp>=2.0.1
-scikit-learn==1.1.1 # Fixed to avoid bot and model version mismatch.
-expiring_dict>=1.1.0
+scikit-learn==1.2.1 # Fixed to avoid bot and model version mismatch.
+
+

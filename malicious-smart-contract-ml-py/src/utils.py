@@ -1,15 +1,21 @@
-from expiring_dict import ExpiringDict
 from hexbytes import HexBytes
+import rlp
 import requests
 from web3 import Web3
 
 
-from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH
-
+from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID
 from src.logger import logger
 
-GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER = ExpiringDict(ttl=86_400)
-BOT_ID = "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91"
+
+def calc_contract_address(w3, address, nonce) -> str:
+    """
+    this function calculates the contract address from sender/nonce
+    :return: contract address: str
+    """
+
+    address_bytes = bytes.fromhex(address[2:].lower())
+    return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
 def is_contract(w3, address) -> bool:
@@ -48,61 +54,55 @@ def get_storage_addresses(w3, address) -> set:
     return address_set
 
 
-def get_opcode_addresses(w3, opcodes) -> set:
+def get_features(w3, opcodes, contract_creator) -> list:
     """
-    this function returns the addresses that are references in the opcodes of a contract
-    :return: address_list: list (only returning contract addresses)
-    """
-    address_set = set()
-    for op in opcodes.splitlines():
-        for param in op.split(" "):
-            if param.startswith("0x") and len(param) == 42:
-                if is_contract(w3, param):
-                    address_set.add(Web3.toChecksumAddress(param))
-
-    return address_set
-
-
-def get_features(opcodes) -> list:
-    """
-    this function returns the opcodes contained in the contract
+    this function returns the contract opcodes
     :return: features: list
     """
     features = []
-    for op in opcodes.splitlines():
-        opcode = op.split(" ")[0].strip() if op else ""
-        if opcode:
-            # treat unique unknown and invalid opcodes as UNKNOWN OR INVALID
-            if opcode.startswith("UNKNOWN") or opcode.startswith("INVALID"):
-                opcode = opcode.split("_")[0]
-            features.append(opcode)
+    opcode_addresses = set()
 
-    return " ".join(features)
+    for i, opcode in enumerate(opcodes):
+        opcode_name = opcode.name
+        # treat unique unknown and invalid opcodes as UNKNOWN OR INVALID
+        if opcode_name.startswith("UNKNOWN") or opcode_name.startswith("INVALID"):
+            opcode_name = opcode.name.split("_")[0]
+        features.append(opcode_name)
+        if len(opcode.operand) == 40 and is_contract(w3, opcode.operand):
+            opcode_addresses.add(Web3.toChecksumAddress(f"0x{opcode.operand}"))
+
+        if opcode_name in {"PUSH4", "PUSH32"}:
+            features.append(opcode.operand)
+        elif opcode_name == "PUSH20":
+            if opcode.operand == contract_creator:
+                features.append("creator")
+            elif opcode.operand == MASK:
+                features.append(MASK)
+            else:
+                features.append("addr")
+
+    features = " ".join(features)
+
+    return features, opcode_addresses
 
 
-def update_contract_deployment_counter(date_hour: str):
-    # Total number of contract deployments in the last 24 hrs
-    global GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER
-    GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER[date_hour] = (
-        GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER.get(date_hour, 0) + 1
-    )
-
-
-def alert_count(chain_id) -> int:
+def alert_count(chain_id: int, alert_id: str) -> int:
     alert_stats_url = (
         f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
     )
-    alert_count = 0
+    alert_id_counts = 1
+    alert_counts = 1
     try:
         result = requests.get(alert_stats_url).json()
-        alert_count = result["total"]["count"]
+        alert_id_counts = result["alertIds"][alert_id]["count"]
+        alert_counts = result["total"]["count"]
     except Exception as err:
         logger.error(f"Error obtaining alert counts: {err}")
 
-    return alert_count
+    return alert_id_counts, alert_counts
 
 
-def get_anomaly_score(chain_id: int) -> float:
-    total_alerts = alert_count(chain_id)
-    total_tx_count = sum(GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER.values())
-    return total_alerts / total_tx_count
+def get_anomaly_score(chain_id: int, alert_id: str) -> float:
+    total_alert_ids, total_alerts = alert_count(chain_id, alert_id)
+
+    return min(total_alert_ids / total_alerts, 1.0)
