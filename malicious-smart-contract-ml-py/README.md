@@ -1,4 +1,4 @@
-# Malicious Smart Contract ML V3
+# Malicious Smart Contract ML
 
 ## Description
 
