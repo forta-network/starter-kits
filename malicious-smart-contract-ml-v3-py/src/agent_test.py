@@ -32,13 +32,13 @@ class TestMaliciousSmartContractML:
     def test_opcode_addresses_no_addr(self):
         bytecode = w3.eth.get_code(CONTRACT_NO_ADDRESS)
         opcodes = EvmBytecode(bytecode.hex()).disassemble()
-        _, addresses, _ = agent.get_features(w3, opcodes)
+        _, addresses = agent.get_features(w3, opcodes, EOA_ADDRESS)
         assert len(addresses) == 0, "should be empty"
 
     def test_opcode_addresses_with_addr(self):
         bytecode = w3.eth.get_code(CONTRACT_WITH_ADDRESS)
         opcodes = EvmBytecode(bytecode.hex()).disassemble()
-        _, addresses, _ = agent.get_features(w3, opcodes)
+        _, addresses = agent.get_features(w3, opcodes, EOA_ADDRESS)
 
         assert len(addresses) == 1, "should not be empty"
 
@@ -59,11 +59,8 @@ class TestMaliciousSmartContractML:
     def test_get_features(self):
         bytecode = w3.eth.get_code(MALICIOUS_CONTRACT)
         opcodes = EvmBytecode(bytecode.hex()).disassemble()
-        features, _, function_sighashes = agent.get_features(w3, opcodes)
-        assert len(features) == 4420, "incorrect features length obtained"
-        assert (
-            len(function_sighashes.intersection({})) == 0
-        ), "incorrect function sighashes"
+        features, _ = agent.get_features(w3, opcodes, EOA_ADDRESS)
+        assert len(features) == 4572, "incorrect features length obtained"
 
     def test_finding_MALICIOUS_CONTRACT_creation(self):
         agent.initialize()

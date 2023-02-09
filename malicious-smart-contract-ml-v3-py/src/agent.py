@@ -1,4 +1,3 @@
-from datetime import datetime
 import forta_agent
 from forta_agent import get_json_rpc_url, EntityType
 from joblib import load
@@ -17,7 +16,6 @@ from src.utils import (
     get_features,
     get_storage_addresses,
     is_contract,
-    update_contract_deployment_counter,
 )
 
 
@@ -35,17 +33,17 @@ def initialize():
     logger.info("Complete loading model")
 
 
-def exec_model(w3, opcodes: str) -> tuple:
+def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     """
     this function executes the model to obtain the score for the contract
     :return: score: float
     """
     score = None
-    features, opcode_addresses, function_sighashes = get_features(w3, opcodes)
+    features, opcode_addresses = get_features(w3, opcodes, contract_creator)
     score = ML_MODEL.predict_proba([features])[0][1]
     score = round(score, 4)
 
-    return score, opcode_addresses, function_sighashes
+    return score, opcode_addresses
 
 
 def detect_malicious_contract_tx(
@@ -72,9 +70,7 @@ def detect_malicious_contract_tx(
                     logger.warn(
                         f"Contract {contract_address} creation failed with tx {trace.transactionHash}: {error}"
                     )
-                date_time = datetime.now()
-                date_hour = date_time.strftime("%d/%m/%Y %H:00:00")
-                update_contract_deployment_counter(date_hour)
+
                 # creation bytecode contains both initialization and run-time bytecode.
                 creation_bytecode = trace.action.init
                 all_findings.extend(
@@ -88,10 +84,6 @@ def detect_malicious_contract_tx(
                 )
     else:  # Trace isn't supported, To improve coverage, process contract creations from EOAs.
         if transaction_event.to is None:
-            date_time = datetime.now()
-            date_hour = date_time.strftime("%d/%m/%Y %H:00:00")
-            update_contract_deployment_counter(date_hour)
-
             nonce = transaction_event.transaction.nonce
             created_contract_address = calc_contract_address(
                 w3, transaction_event.from_, nonce
@@ -125,11 +117,8 @@ def detect_malicious_contract(
             (
                 model_score,
                 opcode_addresses,
-                function_sighashes,
-            ) = exec_model(w3, opcodes)
-            logger.info(
-                f"{created_contract_address}: score={model_score}, func_hashes={function_sighashes}"
-            )
+            ) = exec_model(w3, opcodes, from_)
+            logger.info(f"{created_contract_address}: score={model_score}")
 
             finding = ContractFindings(
                 from_,
@@ -191,13 +180,13 @@ def detect_malicious_contract(
                             {
                                 "entity": created_contract_address,
                                 "entity_type": EntityType.Address,
-                                "label": "positive_reputation",
+                                "label": "safe",
                                 "confidence": model_score,
                             },
                             {
                                 "entity": from_,
                                 "entity_type": EntityType.Address,
-                                "label": "positive_reputation",
+                                "label": "safe",
                                 "confidence": model_score,
                             },
                         ]
