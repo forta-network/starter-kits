@@ -6,3 +6,5 @@ __pycache__
 .pytest_cache
 .DS_Store
 positive-reputation-py/src/api_keys.py
+*.tar.gz
+*.tgz
