@@ -156,21 +156,35 @@ class TestAlertCombiner:
         #       "remove": false
         # },
 
-        labels = [label]
-        addresses = [address] if "label" in label.keys() else []
-        alert = {"alert":
-                  {"name": "x",
-                   "hash": "0xabc",
-                   "addresses": addresses,
-                   "description": f"{address} description",
-                   "alertId": alert_id,
-                   "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
-                   "source":
-                     {"bot": {'id': bot_id}, "block": {"chainId": 1}, 'transactionHash': '0x123'},
-                   "metadata": metadata,
-                   "labels": labels
-                   }
-                 }
+        if "label" in label.keys(): 
+            alert = {"alert":
+                    {"name": "x",
+                    "hash": "0xabc",
+                    "addresses": [],
+                    "description": f"{address} description",
+                    "alertId": alert_id,
+                    "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
+                    "source":
+                        {"bot": {'id': bot_id}, "block": {"chainId": 1}, 'transactionHash': '0x123'},
+                    "metadata": metadata,
+                    "labels": [label]
+                    }
+                    }
+        else:
+            addresses = [address] 
+            alert = {"alert":
+                    {"name": "x",
+                    "hash": "0xabc",
+                    "addresses": addresses,
+                    "description": f"{address} description",
+                    "alertId": alert_id,
+                    "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
+                    "source":
+                        {"bot": {'id': bot_id}, "block": {"chainId": 1}, 'transactionHash': '0x123'},
+                    "metadata": metadata,
+                   
+                    }
+                    }
         return create_alert_event(alert)
 
     def test_alert_simple_case(self):

@@ -103,16 +103,16 @@ def initialize():
 
     subscription_json = []
     for bot, alertId, stage in BASE_BOTS:
-        subscription_json.append({"botId": bot, "alertId": alertId})
+        subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
 
     for bot, alertId in FP_MITIGATION_BOTS:
-        subscription_json.append({"botId": bot, "alertId": alertId})
+        subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
 
-    subscription_json.append({"botId": ENTITY_CLUSTER_BOT, "alertId": ENTITY_CLUSTER_BOT_ALERT_ID})
+    subscription_json.append({"botId": ENTITY_CLUSTER_BOT, "alertId": ENTITY_CLUSTER_BOT_ALERT_ID, "chainId": CHAIN_ID})
 
-    subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0]})
+    subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0], "chainId": CHAIN_ID})
 
-    subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1]})
+    subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1], "chainId": CHAIN_ID})
 
     return {"alertConfig": {"subscriptions": subscription_json}}
 
@@ -379,6 +379,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                 logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
         else:
             logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
+            raise(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
 
         end = time.time()
         logging.info(f"alert {alert_event.alert_hash} processing took {end - start} seconds")
