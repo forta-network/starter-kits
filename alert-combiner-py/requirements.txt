@@ -1,4 +1,4 @@
-forta_agent>=0.1.9
+forta_agent-0.1.10.dev0.tar.gz
 setuptools>=61.3.1
 pandas>=1.4.2
 requests>=2.27.1
