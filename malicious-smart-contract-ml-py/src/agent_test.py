@@ -1,8 +1,8 @@
 from forta_agent import FindingSeverity, create_transaction_event
-from pyevmasm import disassemble_hex
 
 import agent
 import utils
+from evmdasm import EvmBytecode
 from web3_mock import (
     BENIGN_CONTRACT,
     CONTRACT_NO_ADDRESS,
@@ -29,23 +29,17 @@ class TestMaliciousSmartContractML:
             w3, CONTRACT_NO_ADDRESS
         ), "Contract should be identified as a contract"
 
-    def test_get_opcode_addresses_eoa(self):
-        # EOAs don't have bytecode or opcodes
-        bytecode = w3.eth.get_code(EOA_ADDRESS)
-        opcodes = disassemble_hex(bytecode.hex())
-        addresses = agent.get_opcode_addresses(w3, opcodes)
+    def test_opcode_addresses_no_addr(self):
+        bytecode = w3.eth.get_code(CONTRACT_NO_ADDRESS)
+        opcodes = EvmBytecode(bytecode.hex()).disassemble()
+        _, addresses = agent.get_features(w3, opcodes, EOA_ADDRESS)
         assert len(addresses) == 0, "should be empty"
 
-    def test_get_opcode_addresses_no_addr(self):
-        bytecode = w3.eth.get_code(CONTRACT_NO_ADDRESS)
-        opcodes = disassemble_hex(bytecode.hex())
-        addresses = agent.get_opcode_addresses(w3, opcodes)
-        assert len(addresses) == 0, "should not be empty"
-
-    def test_get_opcode_addresses_with_addr(self):
+    def test_opcode_addresses_with_addr(self):
         bytecode = w3.eth.get_code(CONTRACT_WITH_ADDRESS)
-        opcodes = disassemble_hex(bytecode.hex())
-        addresses = agent.get_opcode_addresses(w3, opcodes)
+        opcodes = EvmBytecode(bytecode.hex()).disassemble()
+        _, addresses = agent.get_features(w3, opcodes, EOA_ADDRESS)
+
         assert len(addresses) == 1, "should not be empty"
 
     def test_storage_addresses_with_addr(self):
@@ -64,11 +58,11 @@ class TestMaliciousSmartContractML:
 
     def test_get_features(self):
         bytecode = w3.eth.get_code(MALICIOUS_CONTRACT)
-        opcodes = disassemble_hex(bytecode.hex())
-        features = agent.get_features(opcodes)
-        assert len(features) == 38_368, "incorrect features length obtained"
+        opcodes = EvmBytecode(bytecode.hex()).disassemble()
+        features, _ = agent.get_features(w3, opcodes, EOA_ADDRESS)
+        assert len(features) == 4572, "incorrect features length obtained"
 
-    def test_finding_malicious_contract_creation(self):
+    def test_finding_MALICIOUS_CONTRACT_creation(self):
         agent.initialize()
 
         tx_event = create_transaction_event(
@@ -84,6 +78,7 @@ class TestMaliciousSmartContractML:
                         "type": "create",
                         "action": {
                             "from": MALICIOUS_CONTRACT_DEPLOYER,
+                            "init": w3.eth.get_code(MALICIOUS_CONTRACT),
                             "value": 1,
                         },
                         "result": {"address": MALICIOUS_CONTRACT},
@@ -95,16 +90,24 @@ class TestMaliciousSmartContractML:
         findings = agent.detect_malicious_contract_tx(w3, tx_event)
         assert len(findings) == 1, "this should have triggered a finding"
         finding = next(
-            (x for x in findings if x.alert_id == "SUSPICIOUS-CONTRACT-CREATION"), None
+            (x for x in findings if x.alert_id == "SUSPICIOUS-CONTRACT-CREATION"),
+            None,
         )
         assert finding.severity == FindingSeverity.High
 
     def test_detect_malicious_contract_benign(self):
         agent.initialize()
-        findings = agent.detect_malicious_contract(w3, EOA_ADDRESS, BENIGN_CONTRACT)
-        assert len(findings) == 0, "this should not have triggered a finding"
+        bytecode = w3.eth.get_code(BENIGN_CONTRACT)
+        findings = agent.detect_malicious_contract(
+            w3, EOA_ADDRESS, BENIGN_CONTRACT, bytecode
+        )
+        assert len(findings) == 1
+        assert findings[0].alert_id == "SAFE-CONTRACT-CREATION"
 
     def test_detect_malicious_contract_short(self):
         agent.initialize()
-        findings = agent.detect_malicious_contract(w3, EOA_ADDRESS, SHORT_CONTRACT)
+        bytecode = w3.eth.get_code(SHORT_CONTRACT)
+        findings = agent.detect_malicious_contract(
+            w3, EOA_ADDRESS, SHORT_CONTRACT, bytecode
+        )
         assert len(findings) == 0, "this should not have triggered a finding"

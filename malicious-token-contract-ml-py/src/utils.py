@@ -1,19 +1,11 @@
-from expiring_dict import ExpiringDict
 from hexbytes import HexBytes
 import requests
 from web3 import Web3
 
 
-from src.constants import (
-    CONTRACT_SLOT_ANALYSIS_DEPTH,
-    ERC721_SIGHASHES,
-    ERC20_SIGHASHES,
-    ERC1155_SIGHASHES,
-    ERC777_SIGHASHES,
-)
+from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK
 from src.logger import logger
 
-GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER = ExpiringDict(ttl=86_400)
 BOT_ID = "0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad"
 
 
@@ -53,32 +45,12 @@ def get_storage_addresses(w3, address) -> set:
     return address_set
 
 
-def get_contract_type(opcodes: str, function_sighashes: set) -> str:
+def get_features(w3, opcodes, contract_creator) -> list:
     """
-    this function determines contract type based on available sighashes.
-    :return: contract_type: str
-    """
-    if function_sighashes.intersection(ERC777_SIGHASHES):
-        return "erc777"
-    elif function_sighashes.intersection(ERC1155_SIGHASHES):
-        return "erc1155"
-    elif function_sighashes.intersection(ERC721_SIGHASHES):
-        return "erc721"
-    elif function_sighashes.intersection(ERC20_SIGHASHES):
-        return "erc20"
-    elif "DELEGATECALL" in opcodes:
-        return "proxy"
-    else:
-        return "non-token-or-proxy"
-
-
-def get_features(w3, opcodes) -> list:
-    """
-    this function returns the opcodes + function hashes contained in the contract
+    this function returns the contract opcodes
     :return: features: list
     """
     features = []
-    function_sighashes = set()
     opcode_addresses = set()
 
     for i, opcode in enumerate(opcodes):
@@ -90,44 +62,35 @@ def get_features(w3, opcodes) -> list:
         if len(opcode.operand) == 40 and is_contract(w3, opcode.operand):
             opcode_addresses.add(Web3.toChecksumAddress(f"0x{opcode.operand}"))
 
-        if i < (len(opcodes) - 3):
-            if (
-                opcodes[i].name == "PUSH4"
-                and opcodes[i + 1].name == "EQ"
-                and opcodes[i + 2].name == "PUSH2"
-                and opcodes[i + 3].name == "JUMPI"
-            ):  # add function sighashes
-                features.append(opcode.operand)
-                function_sighashes.add(opcode.operand)
+        if opcode_name == "PUSH20":
+            if opcode.operand == contract_creator:
+                features.append("creator")
+            elif opcode.operand == MASK:
+                features.append(MASK)
+            else:
+                features.append("addr")
+
     features = " ".join(features)
-    contract_type = get_contract_type(features, function_sighashes)
 
-    return features, opcode_addresses, contract_type
-
-
-def update_contract_deployment_counter(date_hour: str):
-    # Total number of contract deployments in the last 24 hrs
-    global GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER
-    GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER[date_hour] = (
-        GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER.get(date_hour, 0) + 1
-    )
+    return features, opcode_addresses
 
 
-def alert_count(chain_id) -> int:
+def alert_count(chain_id: int, alert_id: str) -> int:
     alert_stats_url = (
         f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
     )
-    alert_count = 0
+    alert_id_counts = 1
+    alert_counts = 1
     try:
         result = requests.get(alert_stats_url).json()
-        alert_count = result["total"]["count"]
+        alert_id_counts = result["alertIds"][alert_id]["count"]
+        alert_counts = result["total"]["count"]
     except Exception as err:
         logger.error(f"Error obtaining alert counts: {err}")
 
-    return alert_count
+    return alert_id_counts, alert_counts
 
 
-def get_anomaly_score(chain_id: int) -> float:
-    total_alerts = alert_count(chain_id)
-    total_tx_count = sum(GLOBAL_TOTAL_CONTRACT_DEPLOYMENT_COUNTER.values())
-    return total_alerts / total_tx_count
+def get_anomaly_score(chain_id: int, alert_id: str) -> float:
+    total_alert_ids, total_alerts = alert_count(chain_id, alert_id)
+    return min(total_alert_ids / total_alerts, 1.0)

@@ -242,7 +242,7 @@ $ npm run tx 0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56
       "entity": "0x2b023d65485c4bb68d781960c2196588d03b871dc9eb1c054f596b7ca6f7da56",
       "entity_type": 2,
       "confidence": 0.665,
-      "label": "anomalous"
+      "label": "attacker"
     }
   ]
 }

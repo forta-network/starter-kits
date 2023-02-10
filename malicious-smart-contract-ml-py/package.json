@@ -1,7 +1,7 @@
 {
-  "name": "malicious-smart-contract-ml",
-  "version": "1.0.0",
-  "description": "Malicious Smart Contract Detection Bot",
+  "name": "malicious-smart-contract-ml-v3",
+  "version": "3.0.0",
+  "description": "Malicious Smart Contract Detection Bot V3",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
   ],
