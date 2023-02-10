@@ -10,7 +10,7 @@ class MaliciousAccountFundingFinding:
             {
                 "entity": tx_hash,
                 "entity_type": EntityType.Transaction,
-                "label": "malicious-funding",
+                "label": "attacker",
                 "confidence": 1,
             }
         ]
