@@ -229,157 +229,165 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
     global CHAIN_ID
 
     findings = []
+    try:
+       
 
-    start = time.time()
+        start = time.time()
 
-    chain_id = int(alert_event.alert.source.block.chain_id) if alert_event.alert.source.block.chain_id is not None else int(alert_event.chain_id)
-    if chain_id == CHAIN_ID:
-        logging.info(f"alert {alert_event.alert_hash} received for proper chain {chain_id}")
+        chain_id = int(alert_event.alert.source.block.chain_id) if alert_event.alert.source.block.chain_id is not None else int(alert_event.chain_id)
+        if chain_id == CHAIN_ID:
+            logging.info(f"alert {alert_event.alert_hash} received for proper chain {chain_id}")
 
-        #  assess whether we generate a finding
-        #  note, only one instance will be running at a time to keep up with alert volume
-        try:
+            #  assess whether we generate a finding
+            #  note, only one instance will be running at a time to keep up with alert volume
+            try:
 
-            # update entity clusters
-            if in_list(alert_event, [(ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_ALERT_ID)]):
-                logging.info(f"alert {alert_event.alert_hash} is entity cluster alert")
-                cluster = alert_event.alert.metadata["entityAddresses"].lower()
+                # update entity clusters
+                if in_list(alert_event, [(ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_ALERT_ID)]):
+                    logging.info(f"alert {alert_event.alert_hash} is entity cluster alert")
+                    cluster = alert_event.alert.metadata["entityAddresses"].lower()
 
-                for address in cluster.split(','):
-                    ENTITY_CLUSTERS[address] = cluster
-                    logging.info(f"alert {alert_event.alert_hash} - adding cluster mapping: {address} -> {cluster}")
-                    while len(ENTITY_CLUSTERS) > ENTITY_CLUSTERS_MAX_QUEUE_SIZE:
-                        ENTITY_CLUSTERS.pop(next(iter(ENTITY_CLUSTERS)))
-                    logging.info(f"alert {alert_event.alert_hash} entity clusters size now: {len(ENTITY_CLUSTERS)}")
+                    for address in cluster.split(','):
+                        ENTITY_CLUSTERS[address] = cluster
+                        logging.info(f"alert {alert_event.alert_hash} - adding cluster mapping: {address} -> {cluster}")
+                        while len(ENTITY_CLUSTERS) > ENTITY_CLUSTERS_MAX_QUEUE_SIZE:
+                            ENTITY_CLUSTERS.pop(next(iter(ENTITY_CLUSTERS)))
+                        logging.info(f"alert {alert_event.alert_hash} entity clusters size now: {len(ENTITY_CLUSTERS)}")
 
-                    if ALERT_DATA.get(address) is not None:
-                        alert_data = ALERT_DATA.pop(address)
-                        if ALERT_DATA.get(cluster) is not None:
-                            alert_data = pd.concat([alert_data, ALERT_DATA[cluster]], ignore_index=True, axis=0)
-                        ALERT_DATA[cluster] = alert_data
-                        logging.info(f"alert {alert_event.alert_hash} alert data size now: {len(ALERT_DATA)}")
+                        if ALERT_DATA.get(address) is not None:
+                            alert_data = ALERT_DATA.pop(address)
+                            if ALERT_DATA.get(cluster) is not None:
+                                alert_data = pd.concat([alert_data, ALERT_DATA[cluster]], ignore_index=True, axis=0)
+                            ALERT_DATA[cluster] = alert_data
+                            logging.info(f"alert {alert_event.alert_hash} alert data size now: {len(ALERT_DATA)}")
 
-                    if address in FP_MITIGATION_CLUSTERS:
-                        FP_MITIGATION_CLUSTERS.append(cluster)
-                        logging.info(f"alert {alert_event.alert_hash} FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
+                        if address in FP_MITIGATION_CLUSTERS:
+                            FP_MITIGATION_CLUSTERS.append(cluster)
+                            logging.info(f"alert {alert_event.alert_hash} FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
 
-            # update victim alerts
-            if (in_list(alert_event, [(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0]),(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1])])):
-                logging.info(f"alert {alert_event.alert_hash} is a victim identification alert")
-                logging.info(f"alert {alert_event.alert_hash} adding victim identification list: Victim Identification list size now: {len(VICTIMS)}")
-                VICTIMS[alert_event.alert.source.transaction_hash] = alert_event.alert.metadata
+                # update victim alerts
+                if (in_list(alert_event, [(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0]),(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1])])):
+                    logging.info(f"alert {alert_event.alert_hash} is a victim identification alert")
+                    logging.info(f"alert {alert_event.alert_hash} adding victim identification list: Victim Identification list size now: {len(VICTIMS)}")
+                    VICTIMS[alert_event.alert.source.transaction_hash] = alert_event.alert.metadata
 
-                while len(VICTIMS) > VICTIM_QUEUE_MAX_SIZE:
-                    VICTIMS.pop(next(iter(VICTIMS)))
+                    while len(VICTIMS) > VICTIM_QUEUE_MAX_SIZE:
+                        VICTIMS.pop(next(iter(VICTIMS)))
 
-            # update FP mitigation clusters
-            if in_list(alert_event, FP_MITIGATION_BOTS):
-                logging.info(f"alert {alert_event.alert_hash} is a FP mitigation alert")
-                address = alert_event.alert.description[0:42]
-                cluster = address
-                if address in ENTITY_CLUSTERS.keys():
-                    cluster = ENTITY_CLUSTERS[address]
-                update_list(FP_MITIGATION_CLUSTERS, FP_CLUSTERS_QUEUE_MAX_SIZE, cluster)
-                logging.info(f"alert {alert_event.alert_hash} adding FP mitigation cluster: {cluster}. FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
-                
-            # update alerts and process them for a given cluster
-            if in_list(alert_event, BASE_BOTS):
-                logging.info(f"alert {alert_event.alert_hash}: is a base bot {alert_event.alert.source.bot.id}, {alert_event.alert_id} alert for addresses {alert_event.alert.addresses}")
-                try:
-                    end_date = datetime.fromtimestamp(w3.eth.get_block(alert_event.block_number).timestamp)
-                    logging.debug(f"alert {alert_event.alert_hash} - Got block for block number {alert_event.block_number}.")
-                except Exception as e:
-                    logging.warn(f"alert {alert_event.alert_hash} - Unable to get block for block number {alert_event.block_number} .{e}")
-                    end_date = datetime.now()
-                start_date = end_date - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS)
+                # update FP mitigation clusters
+                if in_list(alert_event, FP_MITIGATION_BOTS):
+                    logging.info(f"alert {alert_event.alert_hash} is a FP mitigation alert")
+                    address = alert_event.alert.description[0:42]
+                    cluster = address
+                    if address in ENTITY_CLUSTERS.keys():
+                        cluster = ENTITY_CLUSTERS[address]
+                    update_list(FP_MITIGATION_CLUSTERS, FP_CLUSTERS_QUEUE_MAX_SIZE, cluster)
+                    logging.info(f"alert {alert_event.alert_hash} adding FP mitigation cluster: {cluster}. FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
+                    
+                # update alerts and process them for a given cluster
+                if in_list(alert_event, BASE_BOTS):
+                    logging.info(f"alert {alert_event.alert_hash}: is a base bot {alert_event.alert.source.bot.id}, {alert_event.alert_id} alert for addresses {alert_event.alert.addresses}")
+                    try:
+                        end_date = datetime.fromtimestamp(w3.eth.get_block(alert_event.block_number).timestamp)
+                        logging.debug(f"alert {alert_event.alert_hash} - Got block for block number {alert_event.block_number}.")
+                    except Exception as e:
+                        logging.warn(f"alert {alert_event.alert_hash} - Unable to get block for block number {alert_event.block_number} Using current date.{e}")
+                        end_date = datetime.now()
+                    start_date = end_date - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS)
 
-                # add anomaly score and metadata to ALERT_DATA
-                logging.info(f"alert {alert_event.alert_hash} - Analysing {len(alert_event.alert.addresses)} addresses")
+                    # add anomaly score and metadata to ALERT_DATA
+                    logging.info(f"alert {alert_event.alert_hash} - Analysing {len(alert_event.alert.addresses)} addresses")
 
 
-                for address in alert_event.alert.addresses:
-                    logging.info(f"alert {alert_event.alert_hash} - Analysing address {address}")
-                    address_lower = address.lower()
-                    cluster = address_lower
-                    if address_lower in ENTITY_CLUSTERS.keys():
-                        cluster = ENTITY_CLUSTERS[address_lower]
-                    if(is_contract(w3, cluster) or not is_address(w3, cluster)):  # ignore contracts and invalid addresses like 0x0000000000000blabla
-                        logging.info(f"alert {alert_event.alert_hash}: {cluster} is contract or not an address. Continue ... ")
-                        continue
+                    for address in alert_event.alert.addresses:
+                        logging.info(f"alert {alert_event.alert_hash} - Analysing address {address}")
+                        address_lower = address.lower()
+                        cluster = address_lower
+                        if address_lower in ENTITY_CLUSTERS.keys():
+                            cluster = ENTITY_CLUSTERS[address_lower]
+                        if(is_contract(w3, cluster) or not is_address(w3, cluster)):  # ignore contracts and invalid addresses like 0x0000000000000blabla
+                            logging.info(f"alert {alert_event.alert_hash}: {cluster} is contract or not an address. Continue ... ")
+                            continue
 
-                    logging.info(f"alert {alert_event.alert_hash}: {cluster} is valid EOA.")
+                        logging.info(f"alert {alert_event.alert_hash}: {cluster} is valid EOA.")
 
-                    alert_anomaly_score = get_anomaly_score(alert_event, start_date, end_date)
-                   
-                    stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
-                    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} {stage}: {cluster} anomaly score of {alert_anomaly_score}")
+                        alert_anomaly_score = get_anomaly_score(alert_event, start_date, end_date)
+                    
+                        stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
+                        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} {stage}: {cluster} anomaly score of {alert_anomaly_score}")
 
-                    if ALERT_DATA.get(cluster) is None:
-                        ALERT_DATA[cluster] = pd.DataFrame(columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])
+                        if ALERT_DATA.get(cluster) is None:
+                            ALERT_DATA[cluster] = pd.DataFrame(columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])
 
-                    alert_data = ALERT_DATA[cluster]
-                    stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
-                    alert_data = pd.concat([alert_data, pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])], ignore_index=True, axis=0)
-                    logging.info(f"alert {alert_event.alert_hash} - alert data size now: {len(alert_data)}")
+                        alert_data = ALERT_DATA[cluster]
+                        stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
+                        alert_data = pd.concat([alert_data, pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])], ignore_index=True, axis=0)
+                        logging.info(f"alert {alert_event.alert_hash} - alert data size for cluster {cluster} now: {len(alert_data)}")
 
-                    # add new alert and purge old alerts
-                    ALERT_DATA[cluster] = alert_data[alert_data['created_at'] > start_date]
-                    alert_data = ALERT_DATA[cluster]
-                    logging.info(f"alert {alert_event.alert_hash} - alert data size now: {len(ALERT_DATA)}")
+                        # add new alert and purge old alerts
+                        ALERT_DATA[cluster] = alert_data[alert_data['created_at'] > start_date]
+                        alert_data = ALERT_DATA[cluster]
+                        logging.info(f"alert {alert_event.alert_hash} - alert data size for cluster {cluster} now (after date pruning): {len(alert_data)}")
 
-                    # analyze ALERT_DATA to see whether conditions are met to generate a finding
-                    # 1. Have to have at least MIN_ALERTS_COUNT bots reporting alerts
-                    if len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT:
-                        # 2. Have to have overall anomaly score of less than ANOMALY_SCORE_THRESHOLD
-                        anomaly_scores_by_stages = alert_data[['stage', 'anomaly_score']].drop_duplicates(inplace=False)
-                        anomaly_scores = anomaly_scores_by_stages.groupby('stage').min()
-                        anomaly_score = anomaly_scores['anomaly_score'].prod()
-                        logging.info(f"alert {alert_event.alert_hash} - Have sufficient number of alerts for {cluster}. Overall anomaly score is {anomaly_score}, {len(anomaly_scores)} stages.")
-                        logging.info(f"alert {alert_event.alert_hash} - {cluster} anomaly scores {anomaly_scores}.")
+                        # analyze ALERT_DATA to see whether conditions are met to generate a finding
+                        # 1. Have to have at least MIN_ALERTS_COUNT bots reporting alerts
+                        if len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT:
+                            # 2. Have to have overall anomaly score of less than ANOMALY_SCORE_THRESHOLD
+                            anomaly_scores_by_stages = alert_data[['stage', 'anomaly_score']].drop_duplicates(inplace=False)
+                            anomaly_scores = anomaly_scores_by_stages.groupby('stage').min()
+                            anomaly_score = anomaly_scores['anomaly_score'].prod()
+                            logging.info(f"alert {alert_event.alert_hash} - Have sufficient number of alerts for {cluster}. Overall anomaly score is {anomaly_score}, {len(anomaly_scores)} stages.")
+                            logging.info(f"alert {alert_event.alert_hash} - {cluster} anomaly scores {anomaly_scores}.")
 
-                        etherscan_label = get_etherscan_label(cluster).lower()
-                        etherscan_fp_mitigated = False
-                        if not ('attack' in etherscan_label
-                                or 'phish' in etherscan_label
-                                or 'hack' in etherscan_label
-                                or 'heist' in etherscan_label
-                                or 'exploit' in etherscan_label
-                                or 'scam' in etherscan_label
-                                or 'fraud' in etherscan_label
-                                or etherscan_label == ''):
-                            logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
-                            etherscan_fp_mitigated = True
+                            etherscan_label = get_etherscan_label(cluster).lower()
+                            etherscan_fp_mitigated = False
+                            if not ('attack' in etherscan_label
+                                    or 'phish' in etherscan_label
+                                    or 'hack' in etherscan_label
+                                    or 'heist' in etherscan_label
+                                    or 'exploit' in etherscan_label
+                                    or 'scam' in etherscan_label
+                                    or 'fraud' in etherscan_label
+                                    or etherscan_label == ''):
+                                logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
+                                etherscan_fp_mitigated = True
 
-                        if cluster in FP_MITIGATION_CLUSTERS:
-                            logging.info(f"alert {alert_event.alert_hash} - Mitigating FP for {cluster}. Wont raise finding")
+                            if cluster in FP_MITIGATION_CLUSTERS:
+                                logging.info(f"alert {alert_event.alert_hash} - Mitigating FP for {cluster}. Wont raise finding")
 
-                        if anomaly_score >= ANOMALY_SCORE_THRESHOLD_LOOSE and len(anomaly_scores) < 4:
-                            logging.info(f"alert {alert_event.alert_hash} - Overall anomaly score for {cluster} is above threshold and not 4 stages have been observed. Wont raise finding")
+                            if anomaly_score >= ANOMALY_SCORE_THRESHOLD_LOOSE and len(anomaly_scores) < 4:
+                                logging.info(f"alert {alert_event.alert_hash} - Overall anomaly score for {cluster} is above threshold and not 4 stages have been observed. Wont raise finding")
 
-                        if cluster in ALERTED_CLUSTERS_STRICT:
-                            logging.info(f"alert {alert_event.alert_hash} -{cluster} in alerted clusters strict. Wont raise critical finding")
+                            if cluster in ALERTED_CLUSTERS_STRICT:
+                                logging.info(f"alert {alert_event.alert_hash} -{cluster} in alerted clusters strict. Wont raise critical finding")
 
-                        if cluster in ALERTED_CLUSTERS_STRICT or cluster in ALERTED_CLUSTERS_LOOSE:
-                            logging.info(f"alert {alert_event.alert_hash} -{cluster} in alerted clusters. Wont raise low finding")
+                            if cluster in ALERTED_CLUSTERS_STRICT or cluster in ALERTED_CLUSTERS_LOOSE:
+                                logging.info(f"alert {alert_event.alert_hash} -{cluster} in alerted clusters. Wont raise low finding")
 
-                        if not etherscan_fp_mitigated and (anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT or len(anomaly_scores) == 4) and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_STRICT:
-                            logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
-                            victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
-                            update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
-                            findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
-                        elif not etherscan_fp_mitigated and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT:
-                            logging.info(f"alert {alert_event.alert_hash} -1 low severity finding for {cluster}. Anomaly score is {anomaly_score}.")
-                            victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
-                            update_list(ALERTED_CLUSTERS_LOOSE, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
-                            findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
+                            if not etherscan_fp_mitigated and (anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT or len(anomaly_scores) == 4) and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_STRICT:
+                                logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
+                                victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
+                                update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
+                                findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
+                            elif not etherscan_fp_mitigated and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT:
+                                logging.info(f"alert {alert_event.alert_hash} -1 low severity finding for {cluster}. Anomaly score is {anomaly_score}.")
+                                victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
+                                update_list(ALERTED_CLUSTERS_LOOSE, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
+                                findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
 
-        except Exception as e:
-            logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
-    else:
-        logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
+            except Exception as e:
+                logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
+        else:
+            logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
 
-    end = time.time()
-    logging.info(f"alert {alert_event.alert_hash} processing took {end - start} seconds")
+        end = time.time()
+        logging.info(f"alert {alert_event.alert_hash} processing took {end - start} seconds")
+    except Exception as e:
+        logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+            logging.info(f"alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
+            raise e
+
     return findings
 
 
