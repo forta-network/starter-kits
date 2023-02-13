@@ -49,11 +49,6 @@ root.addHandler(handler)
 
 label_api = "https://api.forta.network/labels/state?sourceIds=etherscan&entities="
 
-# TODO - extract label from bot for better aggregation
-# TODO - emit an FP alert if FP mitigation came in after the alert
-# TODO - add FP mitigation alert to pos reputation bot to look at internal tx count for a given address
-
-
 def initialize():
     """
     this function initializes the state variables that are tracked across tx and blocks
@@ -117,6 +112,29 @@ def initialize():
     return {"alertConfig": {"subscriptions": subscription_json}}
 
 
+def get_pot_attacker_addresses(alert_event: forta_agent.alert_event.AlertEvent) -> list:
+    """
+    this function returns the attacker addresses from the labels
+    :param alert_event: alert event with labels and addresses arrray
+    :return: attacker_addresses: list of attacker addresses
+    """
+    pot_attacker_addresses = []
+    try:
+        for label in alert_event.alert.labels:
+            if label.label is not None and ('attack' in label.label.lower()):
+                pot_attacker_addresses.append(label.entity)
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} - Analysing {len(pot_attacker_addresses)} pot attacker addresses obtained from labels")
+    except Exception as e:
+        logging.warning(f"alert {alert_event.alert_hash} {alert_event.alert_id} - Exception in get_pot_attacker_addresses from labels: {e}")
+
+    if len(pot_attacker_addresses) == 0:
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} - No attack labels in alert. Using addresses field.")
+        pot_attacker_addresses = alert_event.alert.addresses
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} - Analysing {len(pot_attacker_addresses)} pot attacker addresses obtained from addresses field")
+
+    return pot_attacker_addresses
+
+
 def get_etherscan_label(address: str):
     if address is None:
         return ""
@@ -128,7 +146,7 @@ def get_etherscan_label(address: str):
             if len(labels) > 0:
                 return labels['events'][0]['label']['label']
     except Exception as e:
-        logging.error(f"Exception in get_etherscan_label {e}")
+        logging.warning(f"Exception in get_etherscan_label {e}")
         return ""
 
 
@@ -190,7 +208,7 @@ def get_victim_info(alert_data: pd.DataFrame, victims: dict):
     return victim_address, victim_name, victim_metadata
 
 
-def get_anomaly_score(alert_event: forta_agent.alert_event.AlertEvent, start_date: datetime, end_date: datetime) -> float:
+def get_anomaly_score(alert_event: forta_agent.alert_event.AlertEvent) -> float:
     global DEFAULT_ANOMALY_SCORE
 
     anomaly_score = 1.0
@@ -287,31 +305,26 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                 # update alerts and process them for a given cluster
                 if in_list(alert_event, BASE_BOTS):
                     logging.info(f"alert {alert_event.alert_hash}: is a base bot {alert_event.alert.source.bot.id}, {alert_event.alert_id} alert for addresses {alert_event.alert.addresses}")
-                    try:
-                        end_date = datetime.fromtimestamp(w3.eth.get_block(alert_event.block_number).timestamp)
-                        logging.debug(f"alert {alert_event.alert_hash} - Got block for block number {alert_event.block_number}.")
-                    except Exception as e:
-                        logging.warn(f"alert {alert_event.alert_hash} - Unable to get block for block number {alert_event.block_number} Using current date.{e}")
-                        end_date = datetime.now()
+                    end_date = datetime.strptime(alert_event.alert.created_at[0:25]+'Z', '%Y-%m-%dT%H:%M:%S.%fZ')  # getting block time stamp would be more accurate, but more expensive as it requires an RPC call
                     start_date = end_date - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS)
 
-                    # add anomaly score and metadata to ALERT_DATA
-                    logging.info(f"alert {alert_event.alert_hash} - Analysing {len(alert_event.alert.addresses)} addresses")
+                    # analyze attacker addresses from labels if there are any; otherwise analyze all addresses
+                    pot_attacker_addresses = get_pot_attacker_addresses(alert_event)
+                    
 
-
-                    for address in alert_event.alert.addresses:
+                    for address in pot_attacker_addresses:
                         logging.info(f"alert {alert_event.alert_hash} - Analysing address {address}")
                         address_lower = address.lower()
                         cluster = address_lower
                         if address_lower in ENTITY_CLUSTERS.keys():
                             cluster = ENTITY_CLUSTERS[address_lower]
-                        if(is_contract(w3, cluster) or not is_address(w3, cluster)):  # ignore contracts and invalid addresses like 0x0000000000000blabla
-                            logging.info(f"alert {alert_event.alert_hash}: {cluster} is contract or not an address. Continue ... ")
+                        if(not is_address(w3, cluster)):  # ignore contracts and invalid addresses like 0x0000000000000blabla
+                            logging.info(f"alert {alert_event.alert_hash}: {cluster} is not an address. Continue ... ")
                             continue
 
                         logging.info(f"alert {alert_event.alert_hash}: {cluster} is valid EOA.")
 
-                        alert_anomaly_score = get_anomaly_score(alert_event, start_date, end_date)
+                        alert_anomaly_score = get_anomaly_score(alert_event)
                     
                         stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
                         logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} {stage}: {cluster} anomaly score of {alert_anomaly_score}")
@@ -339,41 +352,42 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                             logging.info(f"alert {alert_event.alert_hash} - Have sufficient number of alerts for {cluster}. Overall anomaly score is {anomaly_score}, {len(anomaly_scores)} stages.")
                             logging.info(f"alert {alert_event.alert_hash} - {cluster} anomaly scores {anomaly_scores}.")
 
-                            etherscan_label = get_etherscan_label(cluster).lower()
-                            etherscan_fp_mitigated = False
-                            if not ('attack' in etherscan_label
-                                    or 'phish' in etherscan_label
-                                    or 'hack' in etherscan_label
-                                    or 'heist' in etherscan_label
-                                    or 'exploit' in etherscan_label
-                                    or 'scam' in etherscan_label
-                                    or 'fraud' in etherscan_label
-                                    or etherscan_label == ''):
-                                logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
-                                etherscan_fp_mitigated = True
+                            if anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE or len(anomaly_scores) == 4:
+                                logging.info(f"alert {alert_event.alert_hash} - Overall anomaly score for {cluster} is below threshold or 4 stages have been observed. Unless FP mitigation kicks in, will raise finding.")
+                            
+                                fp_mitigated = False
+                                if(is_contract(w3, cluster)):
+                                    logging.info(f"alert {alert_event.alert_hash} - {cluster} is contract. Wont raise finding")
+                                    fp_mitigated = True
 
-                            if cluster in FP_MITIGATION_CLUSTERS:
-                                logging.info(f"alert {alert_event.alert_hash} - Mitigating FP for {cluster}. Wont raise finding")
+                                etherscan_label = get_etherscan_label(cluster).lower()
+                                if not ('attack' in etherscan_label
+                                        or 'phish' in etherscan_label
+                                        or 'hack' in etherscan_label
+                                        or 'heist' in etherscan_label
+                                        or 'exploit' in etherscan_label
+                                        or 'scam' in etherscan_label
+                                        or 'fraud' in etherscan_label
+                                        or etherscan_label == ''):
+                                    logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
+                                    fp_mitigated = True
 
-                            if anomaly_score >= ANOMALY_SCORE_THRESHOLD_LOOSE and len(anomaly_scores) < 4:
-                                logging.info(f"alert {alert_event.alert_hash} - Overall anomaly score for {cluster} is above threshold and not 4 stages have been observed. Wont raise finding")
+                                if cluster in FP_MITIGATION_CLUSTERS:
+                                    logging.info(f"alert {alert_event.alert_hash} - Mitigating FP for {cluster}. Wont raise finding")
+                                    fp_mitigated = True
 
-                            if cluster in ALERTED_CLUSTERS_STRICT:
-                                logging.info(f"alert {alert_event.alert_hash} -{cluster} in alerted clusters strict. Wont raise critical finding")
-
-                            if cluster in ALERTED_CLUSTERS_STRICT or cluster in ALERTED_CLUSTERS_LOOSE:
-                                logging.info(f"alert {alert_event.alert_hash} -{cluster} in alerted clusters. Wont raise low finding")
-
-                            if not etherscan_fp_mitigated and (anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT or len(anomaly_scores) == 4) and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_STRICT:
-                                logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
-                                victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
-                                update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
-                                findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
-                            elif not etherscan_fp_mitigated and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE and cluster not in FP_MITIGATION_CLUSTERS and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT:
-                                logging.info(f"alert {alert_event.alert_hash} -1 low severity finding for {cluster}. Anomaly score is {anomaly_score}.")
-                                victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
-                                update_list(ALERTED_CLUSTERS_LOOSE, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
-                                findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
+                                if not fp_mitigated and (anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT or len(anomaly_scores) == 4) and cluster not in ALERTED_CLUSTERS_STRICT:
+                                    logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
+                                    victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
+                                    update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
+                                    findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
+                                elif not fp_mitigated and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT:
+                                    logging.info(f"alert {alert_event.alert_hash} -1 low severity finding for {cluster}. Anomaly score is {anomaly_score}.")
+                                    victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
+                                    update_list(ALERTED_CLUSTERS_LOOSE, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
+                                    findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages))
+                                else:
+                                    logging.info(f"alert {alert_event.alert_hash} - Not raising finding for {cluster}. Already alerted.")
 
             except Exception as e:
                 logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
@@ -382,7 +396,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
             raise(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
 
         end = time.time()
-        logging.info(f"alert {alert_event.alert_hash} processing took {end - start} seconds")
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} processing took {end - start} seconds")
     except Exception as e:
         logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
