@@ -147,7 +147,7 @@ class TestAlertCombiner:
 
         assert len(items_loaded) == 1, "should be in loaded list"
 
-    def generate_alert(address: str, bot_id: str, alert_id: str, metadata={}, label = {}):
+    def generate_alert(address: str, bot_id: str, alert_id: str, metadata={}, labels=[]):
         # {
         #       "label": "Attacker",
         #       "confidence": 0.25,
@@ -156,7 +156,7 @@ class TestAlertCombiner:
         #       "remove": false
         # },
 
-        if "label" in label.keys(): 
+        if len(labels)>0:
             alert = {"alert":
                     {"name": "x",
                     "hash": "0xabc",
@@ -167,7 +167,7 @@ class TestAlertCombiner:
                     "source":
                         {"bot": {'id': bot_id}, "block": {"chainId": 1}, 'transactionHash': '0x123'},
                     "metadata": metadata,
-                    "labels": [label]
+                    "labels": labels
                     }
                     }
         else:
@@ -211,6 +211,33 @@ class TestAlertCombiner:
         assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
 
 
+    def test_get_attacker_from_labels(self):
+        labels = [
+                    {"label": "Attacker",
+                    "confidence": 0.25,
+                    "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99AAAAA",
+                    "entityType": "ADDRESS"
+                    },
+                    {"label": "attack-contract",
+                    "confidence": 0.25,
+                    "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99BBBBB",
+                    "entityType": "ADDRESS"
+                    },
+                    {"label": "victim",
+                    "confidence": 0.25,
+                    "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99CCCCC",
+                    "entityType": "ADDRESS"
+                    },
+                ]
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)}, labels)  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        
+        attacker_addresses = agent.get_pot_attacker_addresses(alert_event)
+        assert len(attacker_addresses) == 2, "should be two attacker addresses"
+        assert "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99AAAAA" in attacker_addresses, "should be attacker address"
+        assert "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99BBBBB" in attacker_addresses, "should be attacker address"
+        assert "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99CCCCC" not in attacker_addresses, "should not be attacker address"
+        
+
     def test_alert_simple_case_with_labels(self):
         # three alerts in diff stages for a given EOA
         # no FP
@@ -224,15 +251,15 @@ class TestAlertCombiner:
                  "entityType": "ADDRESS"
                  }
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)}, label)  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)}, [label])  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)}, label)  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)}, [label])  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
         findings = agent.detect_attack(w3, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)}, label)  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)}, [label])  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         findings = agent.detect_attack(w3, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
