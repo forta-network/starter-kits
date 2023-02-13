@@ -1,7 +1,7 @@
 {
-  "name": "dex-funding",
+  "name": "cex-funding",
   "version": "0.0.2",
-  "description": "DEX Funding Bot",
+  "description": "CEX Funding Bot",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
   ],
