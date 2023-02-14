@@ -248,8 +248,6 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
 
     findings = []
     try:
-       
-
         start = time.time()
 
         chain_id = int(alert_event.alert.source.block.chain_id) if alert_event.alert.source.block.chain_id is not None else int(alert_event.chain_id)
@@ -393,10 +391,10 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                 logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
         else:
             logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
-            raise(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
+            raise AssertionError(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
 
         end = time.time()
-        logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} processing took {end - start} seconds")
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} {alert_event.chain_id} processing took {end - start} seconds")
     except Exception as e:
         logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
