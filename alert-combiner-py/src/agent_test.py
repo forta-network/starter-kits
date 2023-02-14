@@ -431,7 +431,7 @@ class TestAlertCombiner:
         findings = agent.detect_attack(w3, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbf26258d381c4151c904c6d357c024688866fa3197c14d55852b8b76335967b4", "EXPLOITER-ADDR-TX", {"anomaly_score": (1000.0 / 10000000)})  # preparation -> alert count = 1000, blocklist account tx; ad-scorer contract-creation -> denominator 10000000
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0e82982faa7878af3fad8ddf5042762a3b78d8949da2e301f1adfedc973f25ea", "EXPLOITER-ADDR-TX", {"anomaly_score": (1000.0 / 10000000)})  # preparation -> alert count = 1000, blocklist account tx; ad-scorer contract-creation -> denominator 10000000
         findings = agent.detect_attack(w3, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
