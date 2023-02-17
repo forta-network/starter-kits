@@ -432,12 +432,14 @@ def persist_state():
     global ENTITY_CLUSTERS_KEY
     global CHAIN_ID
 
+    start = time.time()
     persist(ALERT_DATA, CHAIN_ID, ALERTS_DATA_KEY)
     persist(FP_MITIGATION_CLUSTERS, CHAIN_ID, FP_MITIGATION_CLUSTERS_KEY)
     persist(ENTITY_CLUSTERS, CHAIN_ID, ENTITY_CLUSTERS_KEY)
     persist(ALERTED_CLUSTERS_LOOSE, CHAIN_ID, ALERTED_CLUSTERS_LOOSE_KEY)
     persist(ALERTED_CLUSTERS_STRICT, CHAIN_ID, ALERTED_CLUSTERS_STRICT_KEY)
-    logging.info("Persisted bot state.")
+    end = time.time()
+    logging.info(f"Persisted bot state. took {end - start} seconds")
 
 
 def persist(obj: object, chain_id: int, key: str):
@@ -455,8 +457,9 @@ def provide_handle_alert(w3):
         logging.debug("handle_alert inner called")
 
         findings = detect_attack(w3, alert_event)
-        persist_state()
-    
+        if not ('NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV')):
+            persist_state()
+
         return findings
 
     return handle_alert
