@@ -64,6 +64,12 @@ Describe each of the type of alerts fired by this bot
   - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
   - Note: the detection bot will only alert once per EOA observed
 
+- ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE
+  - Fired when an FP has been identified
+  - Severity is always set to "info" 
+  - Type is always set to "info" 
+
+
 ## Test Data
 
 TODO
