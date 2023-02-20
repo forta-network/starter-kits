@@ -21,6 +21,8 @@ CHAIN_ID = 1
 
 DATABASE = f"https://research.forta.network/database/bot/{web3.eth.chain_id}"
 
+BOT_ID_SOURCE_MAPPING = {}
+
 root = logging.getLogger()
 root.setLevel(logging.DEBUG)
 
@@ -46,10 +48,13 @@ def initialize():
         raise e
 
     subscription_json = []
-    for bot, alertId, address_information in BASE_BOTS:
-        subscription_json.append({"botId": bot, "alertId": alertId})
+    for botId, alertId, source in BASE_BOTS:
+        subscription_json.append({"botId": botId, "alertId": alertId, "chainId": CHAIN_ID})
+        BOT_ID_SOURCE_MAPPING[botId] = source
 
-    return {"alertConfig": {"subscriptions": subscription_json}}
+    alert_config = {"alertConfig": {"subscriptions": subscription_json}}
+    print(alert_config)
+    return alert_config
 
 
 def process_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
@@ -61,9 +66,14 @@ def process_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     if chain_id == CHAIN_ID:
         logging.info(f"alert {alert_event.alert_hash} received for proper chain {chain_id}")
 
-        attacker_address_lower, victim_address_lower, victim_name = parse_indictors(alert_event.alert.description)
-
-        findings.append(NegativeReputationFinding.create_finding(attacker_address_lower, victim_address_lower, victim_name, alert_event))
+        source = BOT_ID_SOURCE_MAPPING.get(alert_event.bot_id, "")
+        if source == "blocksec":
+            attacker_address_lower, victim_address_lower, victim_name = parse_indictors_blocksec(alert_event.alert.description)
+            findings.append(NegativeReputationFinding.create_finding(attacker_address_lower, victim_address_lower, victim_name, alert_event, source))
+        else:
+            attacker_address_lower, victim_address_lower, victim_name = parse_indictors_forta_foundation(alert_event.alert.description)
+            findings.append(NegativeReputationFinding.create_finding(attacker_address_lower, victim_address_lower, victim_name, alert_event, source))
+        
     else:
         logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
 
@@ -73,7 +83,17 @@ def process_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     return findings
 
 
-def parse_indictors(description: str) -> tuple:
+def parse_indictors_blocksec(description: str) -> tuple:
+    #  "The suspicious address 0x5cd7df4cd1427407cc8dbd7dd9681b5dc24df4fd made a profit about 9.793598422e+29 BNB. https://phalcon.blocksec.com/tx/bsc/0x3e1508a038bd7d584285eeb1cb5044ca00545718ae6dba4817149c186e949f43"
+    start = len("The suspicious address ")
+    attacker_address_lower = description[start:42+start].lower()
+    victim_address_lower = ""
+    victim_name = ""
+
+    return (attacker_address_lower, victim_address_lower, victim_name)
+
+
+def parse_indictors_forta_foundation(description: str) -> tuple:
     #  either:
     #  {attacker_address} likely involved in an attack ({alert_id}).
     #  {attacker_address} likely involved in an attack ({alert_id} on {victim_address} ({victim_name}))
@@ -145,7 +165,7 @@ def provide_handle_alert(w3):
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logging.debug("handle_alert inner called")
 
-        findings = process_alert(w3, alert_event)
+        findings = process_alert(alert_event)
         return findings
 
     return handle_alert
