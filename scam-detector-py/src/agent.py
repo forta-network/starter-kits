@@ -284,7 +284,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                     logging.info(f"Cluster {potential_attacker_cluster_lower} stages: {alert_ids}")
 
                     if potential_attacker_cluster_lower not in ALERTED_CLUSTERS:
-                        if (('SLEEPMINT-1' in alert_ids or 'SLEEPMINT-2' in alert_ids)
+                        if (('SLEEPMINT-3' in alert_ids)
                             or ('MALICIOUS-ACCOUNT-FUNDING' in alert_ids or 'UMBRA-RECEIVE' in alert_ids or 'CEX-FUNDING-1' in alert_ids or 'AK-AZTEC-PROTOCOL-FUNDING' in alert_ids or 'FUNDING-CHANGENOW-NEW-ACCOUNT' in alert_ids or 'FUNDING-TORNADO-CASH' in alert_ids or 'TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION' in alert_ids or 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH' in alert_ids or 'MALICIOUS-ACCOUNT-FUNDING' in alert_ids)
                             or ('UNVERIFIED-CODE-CONTRACT-CREATION' in alert_ids or 'FLASHBOT-TRANSACTION' in alert_ids)
                             or ('SUSPICIOUS-TOKEN-CONTRACT-CREATION' in alert_ids)
