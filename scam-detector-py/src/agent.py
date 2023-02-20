@@ -14,12 +14,12 @@ from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 
-from constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID,
+from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID,
                            DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD,
                            ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS,
                            FP_MITIGATION_ADDRESSES, ALERTED_CLUSTERS_KEY, ALERTED_FP_ADDRESSES_KEY)
-from findings import AlertCombinerFinding
-from forta_explorer import FortaExplorer
+from src.findings import AlertCombinerFinding
+from src.forta_explorer import FortaExplorer
 
 label_api = "https://api.forta.network/labels/state?sourceIds=etherscan&entities="
 
