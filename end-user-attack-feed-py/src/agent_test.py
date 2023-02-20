@@ -9,7 +9,7 @@ from datetime import datetime
 EOA_ADDRESS = '0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4'
 
 
-class TestPositiveReputation:
+class TestNegativeReputation:
 
     def remove_persistent_state():
         # if os.path.isfile(f"{CACHE_VERSION}-{CONTRACT_CACHE_KEY}"):
@@ -32,21 +32,26 @@ class TestPositiveReputation:
         return create_alert_event(alert)
 
     def test_initialize(self):
-        TestPositiveReputation.remove_persistent_state()
+        TestNegativeReputation.remove_persistent_state()
 
         subscription_json = agent.initialize()
         json.dumps(subscription_json)
         assert True, "Bot should initialize successfully"
 
-    def test_parse_indicators(self):
-        attacker_address = agent.parse_indictors("0x4258ebe8ca35de27d7f60a2512015190b8ad70e7 likely involved in an attack (ATTACK-DETECTOR-ICE-PHISHING)")
-        assert attacker_address == "0x4258ebe8ca35de27d7f60a2512015190b8ad70e7", "attacker address should be parsed"
+    def test_parse_indicators_forta_foundation(self):
+        attacker_addresses = agent.parse_indictors_forta_foundation("0x4258ebe8ca35de27d7f60a2512015190b8ad70e7 likely involved in an attack (ATTACK-DETECTOR-ICE-PHISHING)")
+        assert "0x4258ebe8ca35de27d7f60a2512015190b8ad70e7" in attacker_addresses, "attacker address should be parsed"
+
+    def test_parse_indicators_scamsniffer(self):
+        attacker_addresses = agent.parse_indictors_scamsniffer("Suscipious Seaport Order detected, from: 0xff30b32c7e7da16cc7cd100a54ecd77b103d1a1c, recepients: 0xfF30b32c7E7da16CC7cD100A54ecd77b103D1ACC")
+        assert "0xff30b32c7e7da16cc7cd100a54ecd77b103d1a1c" in attacker_addresses, "attacker address should be parsed"
+        assert "0xfF30b32c7E7da16CC7cD100A54ecd77b103D1ACC".lower() in attacker_addresses, "attacker address should be parsed"
 
     def test_simple_alert_and_label(self):
-        TestPositiveReputation.remove_persistent_state()
+        TestNegativeReputation.remove_persistent_state()
         agent.initialize()
 
-        alert_event = TestPositiveReputation.generate_alert_with_description(EOA_ADDRESS, "0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23", "ATTACK-DETECTOR-ICE-PHISHING")
+        alert_event = TestNegativeReputation.generate_alert_with_description(EOA_ADDRESS, "0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23", "ATTACK-DETECTOR-ICE-PHISHING")
         findings = agent.process_alert(alert_event)
         assert len(findings) == 1, "alert should have been raised"
         assert findings[0].severity == FindingSeverity.Critical, "alert should have severity of Critical"

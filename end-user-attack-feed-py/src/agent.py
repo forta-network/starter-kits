@@ -20,6 +20,7 @@ web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 CHAIN_ID = 1
 
 DATABASE = f"https://research.forta.network/database/bot/{web3.eth.chain_id}"
+BOT_ID_TO_SOURCE_MAPPING = {}
 
 root = logging.getLogger()
 root.setLevel(logging.DEBUG)
@@ -38,6 +39,7 @@ def initialize():
     """
     logging.debug('initializing')
 
+    global BOT_ID_TO_SOURCE_MAPPING
     global CHAIN_ID
     try:
         CHAIN_ID = web3.eth.chain_id
@@ -46,14 +48,16 @@ def initialize():
         raise e
 
     subscription_json = []
-    for bot, alertId, address_information in BASE_BOTS:
-        subscription_json.append({"botId": bot, "alertId": alertId})
+    for botId, alertId, source in BASE_BOTS:
+        subscription_json.append({"botId": botId, "alertId": alertId})
+        BOT_ID_TO_SOURCE_MAPPING[botId] = source
 
     return {"alertConfig": {"subscriptions": subscription_json}}
 
 
 def process_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     global CHAIN_ID
+    global BOT_ID_TO_SOURCE_MAPPING
     findings = []
     start = time.time()
 
@@ -61,9 +65,13 @@ def process_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     if chain_id == CHAIN_ID:
         logging.info(f"alert {alert_event.alert_hash} received for proper chain {chain_id}")
 
-        attacker_address_lower = parse_indictors(alert_event.alert.description)
-
-        findings.append(NegativeReputationFinding.create_finding(attacker_address_lower, alert_event))
+        source = BOT_ID_TO_SOURCE_MAPPING[alert_event.bot_id]
+        if source == "Forta Foundation":
+            attacker_addresses_lower = parse_indictors_forta_foundation(alert_event.alert.description)
+            findings.append(NegativeReputationFinding.create_finding(attacker_addresses_lower, alert_event, source))
+        else:
+            attacker_addresses_lower = parse_indictors_scam_sniffer(alert_event.alert.description)
+            findings.append(NegativeReputationFinding.create_finding(attacker_addresses_lower, alert_event, source))
     else:
         logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
 
@@ -73,10 +81,25 @@ def process_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     return findings
 
 
-def parse_indictors(description: str) -> str:
+def parse_indictors_forta_foundation(description: str) -> set:
     #  # 0x4258ebe8ca35de27d7f60a2512015190b8ad70e7 likely involved in an attack (ATTACK-DETECTOR-ICE-PHISHING)
     attacker_address_lower = description[0:42].lower()
-    return attacker_address_lower
+    attacker_addresses = set()
+    attacker_addresses.add(attacker_address_lower)
+    return attacker_addresses
+
+
+def parse_indictors_scamsniffer(description: str) -> list:
+    #  Suscipious Seaport Order detected, from: 0xff30b32c7e7da16cc7cd100a54ecd77b103d1a1c, recepients: 0xfF30b32c7E7da16CC7cD100A54ecd77b103D1A1C
+    attacker_addresses = set()
+    
+    start = len("Suscipious Seaport Order detected, from: ")
+    attacker_address_lower1 = description[start:42+start].lower()
+    attacker_addresses.add(attacker_address_lower1)
+    start = len("Suscipious Seaport Order detected, from: 0xff30b32c7e7da16cc7cd100a54ecd77b103d1a1c, recepients: ")
+    attacker_address_lower2 = description[start:42+start].lower()
+    attacker_addresses.add(attacker_address_lower2)
+    return attacker_addresses
 
 
 def persist(obj: object, key: str):
@@ -133,7 +156,7 @@ def provide_handle_alert(w3):
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logging.debug("handle_alert inner called")
 
-        findings = process_alert(w3, alert_event)
+        findings = process_alert(alert_event)
         return findings
 
     return handle_alert

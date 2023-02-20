@@ -2,7 +2,7 @@
 
 import logging
 import sys
-import datetime
+from datetime import datetime
 
 import forta_agent
 import time
@@ -21,6 +21,7 @@ web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 CHAIN_ID = 1
 ADDRESS_TO_SOURCE_BOT_MAPPING = {}  # address -> [source_bot_1, source_bot_2, ...]
 CONTRACT_CACHE = dict()  # address -> is_contract
+BOT_ID_TO_SOURCE_MAPPING = dict()
 
 DATABASE = f"https://research.forta.network/database/bot/{web3.eth.chain_id}"
 
@@ -42,6 +43,7 @@ def initialize():
     logging.debug('initializing')
 
     global CHAIN_ID
+    global BOT_ID_TO_SOURCE_MAPPING
     try:
         CHAIN_ID = web3.eth.chain_id
     except Exception as e:
@@ -54,13 +56,14 @@ def initialize():
     logging.info(f"Loaded {len(ADDRESS_TO_SOURCE_BOT_MAPPING)} entries to address to source bot mapping data structure.")
 
     global CONTRACT_CACHE
-    contract_cache = load(CONTRACT_CACHE)
+    contract_cache = load(CONTRACT_CACHE_KEY)
     CONTRACT_CACHE = [] if contract_cache is None else contract_cache
     logging.info(f"Loaded {len(CONTRACT_CACHE)} entries to contract cache.")
 
     subscription_json = []
-    for bot, alertId, address_information in BASE_BOTS:
+    for bot, alertId, source in BASE_BOTS:
         subscription_json.append({"botId": bot, "alertId": alertId})
+        BOT_ID_TO_SOURCE_MAPPING[bot] = source
 
     return {"alertConfig": {"subscriptions": subscription_json}}
 
@@ -126,7 +129,9 @@ def process_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         else:
             ADDRESS_TO_SOURCE_BOT_MAPPING[address_lower].append(alert_event.alert.source.bot.id)
 
-        findings.append(PositiveReputationFinding.create_finding(address_lower, ADDRESS_TO_SOURCE_BOT_MAPPING[address_lower]))
+        source = BOT_ID_TO_SOURCE_MAPPING[alert_event.alert.source.bot.id]
+
+        findings.append(PositiveReputationFinding.create_finding(address_lower, ADDRESS_TO_SOURCE_BOT_MAPPING[address_lower], source))
     else:
         logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
 
@@ -194,7 +199,7 @@ def provide_handle_alert(w3):
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logging.debug("handle_alert inner called")
 
-        findings = process_alert(w3, alert_event)
+        findings = process_alert(alert_event)
         return findings
 
     return handle_alert
