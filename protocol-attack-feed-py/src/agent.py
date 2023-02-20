@@ -47,9 +47,11 @@ def initialize():
 
     subscription_json = []
     for bot, alertId, address_information in BASE_BOTS:
-        subscription_json.append({"botId": bot, "alertId": alertId})
+        subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
 
-    return {"alertConfig": {"subscriptions": subscription_json}}
+    alert_config = {"alertConfig": {"subscriptions": subscription_json}}
+    print(alert_config)
+    return alert_config
 
 
 def process_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
