@@ -6,21 +6,21 @@ from forta_agent import Finding, FindingType, FindingSeverity, EntityType, Alert
 class NegativeReputationFinding:
 
     @staticmethod
-    def create_finding(attacker_address: str, victim_address: str, victim_name: str, alert_event: AlertEvent) -> Finding:
+    def create_finding(attacker_address: str, victim_address: str, victim_name: str, alert_event: AlertEvent, source: str) -> Finding:
         labels = [{"entity": attacker_address,
-                   "entity_type": EntityType.Address,
+                   "entityType": EntityType.Address,
                    "label": "attacker",
                    "confidence": 0.6}]
 
         victim_clause = ""
         if victim_address is not None and victim_address != "":
             labels = [{"entity": attacker_address,
-                       "entity_type": EntityType.Address,
+                       "entityType": EntityType.Address,
                        "label": "victim",
                        "confidence": 0.4}]
 
             labels = [{"entity": attacker_address,
-                       "entity_type": EntityType.Unknown,
+                       "entityType": EntityType.Unknown,
                        "label": victim_name,
                        "confidence": 1.0}]
 
@@ -28,7 +28,7 @@ class NegativeReputationFinding:
 
         return Finding({
                        'name': 'Negative Reputation (protocol attack) Assigned',
-                       'description': f'EOA {attacker_address} was assigned negative reputation (protocol attack) {victim_clause}',
+                       'description': f'{source} Alert: EOA {attacker_address} was assigned negative reputation (protocol attack) {victim_clause}',
                        'alert_id': 'NEGATIVE-REPUTATION-PROTOCOL-ATTACK-1',
                        'type': FindingType.Exploit,
                        'severity': FindingSeverity.Critical,
