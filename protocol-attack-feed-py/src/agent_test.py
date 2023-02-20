@@ -39,16 +39,22 @@ class TestPositiveReputation:
         assert True, "Bot should initialize successfully"
 
     def test_parse_indicators_no_victim(self):
-        attacker_address, victim_address, victim_name = agent.parse_indictors("0x5711caa8fdcd832ce1be554f2229345181a646ac likely involved in an attack (ATTACK-DETECTOR-2).")
+        attacker_address, victim_address, victim_name = agent.parse_indictors_forta_foundation("0x5711caa8fdcd832ce1be554f2229345181a646ac likely involved in an attack (ATTACK-DETECTOR-2).")
         assert attacker_address == "0x5711caa8fdcd832ce1be554f2229345181a646ac", "attacker address should be parsed"
         assert victim_address == "", "victim address should be empty"
         assert victim_name == "", "victim name should be empty"
 
     def test_parse_indicators_with_victim(self):
-        attacker_address, victim_address, victim_name = agent.parse_indictors("0xe3174149f80d1ea429970ec5043e361bc003ddbd likely involved in an attack (ATTACK-DETECTOR-1 on 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 (wrapped ether))")
+        attacker_address, victim_address, victim_name = agent.parse_indictors_forta_foundation("0xe3174149f80d1ea429970ec5043e361bc003ddbd likely involved in an attack (ATTACK-DETECTOR-1 on 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 (wrapped ether))")
         assert attacker_address == "0xe3174149f80d1ea429970ec5043e361bc003ddbd", "attacker address should be parsed"
         assert victim_address == "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", "victim address should be parsed"
         assert victim_name == "wrapped ether", "victim name should be parsed"
+
+    def test_parse_indicators_blocksec(self):
+        attacker_address, victim_address, victim_name = agent.parse_indictors_blocksec("The suspicious address 0x5cd7df4cd1427407cc8dbd7dd9681b5dc24df4fd made a profit about 9.793598422e+29 BNB. https://phalcon.blocksec.com/tx/bsc/0x3e1508a038bd7d584285eeb1cb5044ca00545718ae6dba4817149c186e949f43")
+        assert attacker_address == "0x5cd7df4cd1427407cc8dbd7dd9681b5dc24df4fd", "attacker address should be parsed"
+        assert victim_address == "", "victim address should be empty"
+        assert victim_name == "", "victim name should be empty"
 
     def test_simple_alert_and_label(self):
         TestPositiveReputation.remove_persistent_state()
