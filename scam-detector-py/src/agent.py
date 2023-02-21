@@ -17,7 +17,7 @@ from web3 import Web3
 from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID,
                            DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD,
                            ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS,
-                           FP_MITIGATION_ADDRESSES, ALERTED_CLUSTERS_KEY)
+                           FP_MITIGATION_ADDRESSES, ALERTED_CLUSTERS_KEY, ALERTED_FP_ADDRESSES_KEY)
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
 
@@ -30,6 +30,7 @@ DATABASE = f"https://research.forta.network/database/bot/{web3.eth.chain_id}"
 
 FINDINGS_CACHE = []
 ALERTED_CLUSTERS = []
+ALERTED_FP_ADDRESSES = []
 MUTEX = False
 ICE_PHISHING_MAPPINGS_DF = pd.DataFrame()
 
@@ -54,6 +55,13 @@ def initialize():
     logging.info(f"Loaded {len(ALERTED_CLUSTERS)} alerted clusters from cache")
     if len(ALERTED_CLUSTERS) < 100:
         logging.info(f"Loaded {ALERTED_CLUSTERS} alerted clusters from cache")
+
+    global ALERTED_FP_ADDRESSES
+    alerted_fp_addresses = load(ALERTED_FP_ADDRESSES_KEY)
+    ALERTED_FP_ADDRESSES = [] if alerted_fp_addresses is None else alerted_fp_addresses
+    logging.info(f"Loaded {len(ALERTED_FP_ADDRESSES)} alerted FP addresses from cache")
+    if len(ALERTED_FP_ADDRESSES) < 100:
+        logging.info(f"Loaded {ALERTED_FP_ADDRESSES} alerted FP addresses from cache")
 
     global FINDINGS_CACHE
     FINDINGS_CACHE = []
@@ -217,6 +225,15 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
     if not MUTEX:
         MUTEX = True
 
+        # FP mitigation
+        for address in FP_MITIGATION_ADDRESSES:
+            if address not in ALERTED_FP_ADDRESSES:
+                logging.info("Emitting FP mitigation finding")
+                update_alerted_fp_addresses(w3, address)
+                FINDINGS_CACHE.append(AlertCombinerFinding.alert_FP(address))
+                logging.info(f"Findings count {len(FINDINGS_CACHE)}")
+                persist_state()
+
         ALERT_ID_STAGE_MAPPING = dict([(alert_id, stage) for bot_id, alert_id, stage in BASE_BOTS])
 
         # get alerts from API and exchange addresses with clusters from the entity cluster bot
@@ -267,7 +284,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                     logging.info(f"Cluster {potential_attacker_cluster_lower} stages: {alert_ids}")
 
                     if potential_attacker_cluster_lower not in ALERTED_CLUSTERS:
-                        if (('SLEEPMINT-1' in alert_ids or 'SLEEPMINT-2' in alert_ids)
+                        if (('SLEEPMINT-3' in alert_ids)
                             or ('MALICIOUS-ACCOUNT-FUNDING' in alert_ids or 'UMBRA-RECEIVE' in alert_ids or 'CEX-FUNDING-1' in alert_ids or 'AK-AZTEC-PROTOCOL-FUNDING' in alert_ids or 'FUNDING-CHANGENOW-NEW-ACCOUNT' in alert_ids or 'FUNDING-TORNADO-CASH' in alert_ids or 'TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION' in alert_ids or 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH' in alert_ids or 'MALICIOUS-ACCOUNT-FUNDING' in alert_ids)
                             or ('UNVERIFIED-CODE-CONTRACT-CREATION' in alert_ids or 'FLASHBOT-TRANSACTION' in alert_ids)
                             or ('SUSPICIOUS-TOKEN-CONTRACT-CREATION' in alert_ids)
@@ -364,6 +381,20 @@ def update_alerted_clusters(w3, cluster: str):
         ALERTED_CLUSTERS.pop(0)
 
 
+def update_alerted_fp_addresses(w3, address: str):
+    """
+    this function maintains a list clusters; holds up to CLUSTER_QUEUE_SIZE in memory
+    :return: None
+    """
+    global ALERTED_FP_ADDRESSES
+
+    ALERTED_FP_ADDRESSES.append(address.lower())
+    logging.info(f"Added {address.lower()} to alerted fp addresses.")
+    logging.info(f"ALERTED_FP_ADDRESSES size {len(ALERTED_FP_ADDRESSES)}.")
+    if len(ALERTED_FP_ADDRESSES) > ADDRESS_QUEUE_SIZE:
+        ALERTED_FP_ADDRESSES.pop(0)
+
+
 def persist(obj: object, key: str):
     try:
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
@@ -405,12 +436,20 @@ def load(key: str) -> object:
         logging.warn(f"Error loading {key}: {e}")
         return None
 
+
 def persist_state():
     global ALERTED_CLUSTERS
     logging.info(f"Persisting alert clusters of length {len(ALERTED_CLUSTERS)}.")
     if len(ALERTED_CLUSTERS) < 100:
         logging.info(f"Persist {ALERTED_CLUSTERS} alerted clusters from cache")
     persist(ALERTED_CLUSTERS, ALERTED_CLUSTERS_KEY)
+
+    global ALERTED_FP_ADDRESSES
+    logging.info(f"Persisting alerted fp addresses of length {len(ALERTED_FP_ADDRESSES)}.")
+    if len(ALERTED_FP_ADDRESSES) < 100:
+        logging.info(f"Persist {ALERTED_FP_ADDRESSES} alerted fp addresses from cache")
+    persist(ALERTED_FP_ADDRESSES, ALERTED_FP_ADDRESSES_KEY)
+
     logging.info("Persisted bot state.")
 
 
