@@ -17,7 +17,7 @@ from web3 import Web3
 from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID,
                            DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD,
                            ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS,
-                           FP_MITIGATION_ADDRESSES, ALERTED_CLUSTERS_KEY, ALERTED_FP_ADDRESSES_KEY)
+                           ALERTED_CLUSTERS_KEY, ALERTED_FP_ADDRESSES_KEY)
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
 
@@ -33,6 +33,7 @@ ALERTED_CLUSTERS = []
 ALERTED_FP_ADDRESSES = []
 MUTEX = False
 ICE_PHISHING_MAPPINGS_DF = pd.DataFrame()
+FP_MITIGATION_ADDRESSES = set()
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -62,6 +63,11 @@ def initialize():
     logging.info(f"Loaded {len(ALERTED_FP_ADDRESSES)} alerted FP addresses from cache")
     if len(ALERTED_FP_ADDRESSES) < 100:
         logging.info(f"Loaded {ALERTED_FP_ADDRESSES} alerted FP addresses from cache")
+
+    # read addresses from fp_list.txt
+    global FP_MITIGATION_ADDRESSES
+    for line in open('fp_list.txt', 'r').readlines():
+        FP_MITIGATION_ADDRESSES.add(line[0:42])
 
     global FINDINGS_CACHE
     FINDINGS_CACHE = []
@@ -221,18 +227,10 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
     global ALERTED_CLUSTERS
     global MUTEX
     global FINDINGS_CACHE
+    global FP_MITIGATION_ADDRESSES
 
     if not MUTEX:
         MUTEX = True
-
-        # FP mitigation
-        for address in FP_MITIGATION_ADDRESSES:
-            if address not in ALERTED_FP_ADDRESSES:
-                logging.info("Emitting FP mitigation finding")
-                update_alerted_fp_addresses(w3, address)
-                FINDINGS_CACHE.append(AlertCombinerFinding.alert_FP(address))
-                logging.info(f"Findings count {len(FINDINGS_CACHE)}")
-                persist_state()
 
         ALERT_ID_STAGE_MAPPING = dict([(alert_id, stage) for bot_id, alert_id, stage in BASE_BOTS])
 
@@ -420,7 +418,7 @@ def load(key: str) -> object:
             headers = {"Authorization": f"Bearer {token}"}
             res = requests.get(f"{DATABASE}{key}", headers=headers)
             logging.info(f"Loaded {key}. Response: {res}")
-            if res.status_code==200 and len(res.content) > 0:
+            if res.status_code == 200 and len(res.content) > 0:
                 return pickle.loads(res.content)
             else:
                 logging.info(f"{key} does not exist")
@@ -453,6 +451,21 @@ def persist_state():
     logging.info("Persisted bot state.")
 
 
+def emit_new_fp_finding(w3):
+    global FP_MITIGATION_ADDRESSES
+    res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.txt')
+    content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.txt', 'r').read()
+    for line in content.splitlines():
+        address = line[0:42]
+        FP_MITIGATION_ADDRESSES.add(address)
+        if address not in ALERTED_FP_ADDRESSES:
+            logging.info("Emitting FP mitigation finding")
+            update_alerted_fp_addresses(w3, address)
+            FINDINGS_CACHE.append(AlertCombinerFinding.alert_FP(address))
+            logging.info(f"Findings count {len(FINDINGS_CACHE)}")
+            persist_state()
+
+
 def provide_handle_block(w3, forta_explorer):
     logging.debug("provide_handle_block called")
 
@@ -464,8 +477,10 @@ def provide_handle_block(w3, forta_explorer):
         findings = FINDINGS_CACHE
         FINDINGS_CACHE = []
 
-        if block_event.block_number % 240 == 0:
-            logging.info(f"Persisting block {block_event.block_number}.")
+        if datetime.now().minute == 0:  # every hour
+            emit_new_fp_finding(w3)
+
+            logging.info(f"Persisting state at block number {block_event.block_number}.")
             persist_state()
 
         #detect_attack(w3, forta_explorer, block_event)
