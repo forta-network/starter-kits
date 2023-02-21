@@ -22,7 +22,7 @@ class AlertCombinerFinding:
         labels = []
         if alert_id == "ATTACK-DETECTOR-ICE-PHISHING":
             labels = [Label({
-                'entity_type': EntityType.Address,
+                'entityType': EntityType.Address,
                 'label': "scam",
                 'entity': attacker_address,
                 'confidence': 0.99
@@ -37,3 +37,25 @@ class AlertCombinerFinding:
             'metadata': meta_data,
             'labels': labels
         })
+
+
+    @staticmethod
+    def alert_FP(address: str) -> Finding:
+        labels = []
+        labels = [Label({
+            'entityType': EntityType.Address,
+            'label': "benign",
+            'entity': address,
+            'confidence': 0.99
+        })]
+
+        return Finding({
+            'name': 'Attack detector identified an EOA that was incorrectly alerted on. Emitting false positive alert.',
+            'description': f'{address} likely not involved in an ice phishing attack (ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE)',
+            'alert_id': 'ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE',
+            'type': FindingType.Info,
+            'severity': FindingSeverity.Info,
+            'metadata': {},
+            'labels': labels
+        })
+
