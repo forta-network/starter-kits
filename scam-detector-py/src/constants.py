@@ -7,10 +7,6 @@ ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS = 7
 ENTITY_CLUSTER_BOT = "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9"
 ENTITY_CLUSTER_BOT_ALERT_ID = "ENTITY-CLUSTER" 
 
-FP_MITIGATION_ADDRESSES = ["0x1e0049783f008a0085193e00003d00cd54003c71",  # open sea relayer
-                           "0x000000000022d473030f116ddee9f6b43ac78ba3"  # Uniswap Protocol: Permit2 
-                          ]
-
 FINDINGS_CACHE_KEY = "findings_cache_key"
 ALERTED_CLUSTERS_KEY = "alerted_clusters_key"
 ALERTED_FP_ADDRESSES_KEY = "alerted_fp_addresses_key"

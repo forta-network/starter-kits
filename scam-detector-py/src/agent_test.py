@@ -51,22 +51,7 @@ class TestAlertCombiner:
 
         agent.initialize()
 
-        forta_explorer = FortaExplorerMock()
-
-        df_forta = pd.DataFrame([
-            ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02618", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
-             "HIGH", {}, "FUNDING-TORNADO-CASH", "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4 interacted with contract 0xcc5f573a93fcab719640f660173b8217664605d3", ["0x21e13f16838e2fe78056f5fd50251ffd6e7098b4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"]
-        ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
-
-        forta_explorer.set_df(df_forta)
-        block_event = create_block_event({
-            'block': {
-                'timestamp': 1651314415,
-            }
-        })
-
-        agent.detect_attack(w3, forta_explorer, block_event)
+        agent.emit_new_fp_finding(w3)
 
         assert len(agent.FINDINGS_CACHE) == 2, "this should have triggered two FP finding"
         finding = agent.FINDINGS_CACHE[0]
