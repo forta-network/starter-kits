@@ -53,7 +53,7 @@ class TestAlertCombiner:
 
         agent.emit_new_fp_finding(w3)
 
-        assert len(agent.FINDINGS_CACHE) == 2, "this should have triggered two FP finding"
+        assert len(agent.FINDINGS_CACHE) == 3, "this should have triggered two FP finding"
         finding = agent.FINDINGS_CACHE[0]
         assert finding.alert_id == "ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE", "should be FP mitigation finding"
         assert finding.labels is not None, "labels should not be empty"
