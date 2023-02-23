@@ -42,7 +42,7 @@ class TestAlertCombiner:
         label = agent.get_etherscan_label("0xffc0022959f58aa166ce58e6a38f711c95062b99")
         assert label == 'uniswap', "this should be a uniswap address"
 
-    def test_fp_mitigation(self):
+    def test_fp_mitigation_proper_chain_id(self):
         # delete cache file
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
@@ -53,7 +53,7 @@ class TestAlertCombiner:
 
         agent.emit_new_fp_finding(w3)
 
-        assert len(agent.FINDINGS_CACHE) == 2, "this should have triggered two FP finding"
+        assert len(agent.FINDINGS_CACHE) == 3, "this should have triggered three FP finding"
         finding = agent.FINDINGS_CACHE[0]
         assert finding.alert_id == "ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE", "should be FP mitigation finding"
         assert finding.labels is not None, "labels should not be empty"
