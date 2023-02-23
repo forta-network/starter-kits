@@ -19,7 +19,7 @@ ENV NODE_ENV=production
 # Uncomment the following line to enable agent logging
 LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
-COPY ./fp_list.txt ./
+COPY ./fp_list.csv ./
 COPY ./ice_phishing_mappings.csv ./
 COPY ./src ./src
 COPY package*.json ./
