@@ -8,6 +8,7 @@ import forta_agent
 import pandas as pd
 import re
 import os
+import io
 import pickle
 import requests
 from forta_agent import get_json_rpc_url
@@ -26,7 +27,9 @@ label_api = "https://api.forta.network/labels/state?sourceIds=etherscan&entities
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 forta_explorer = FortaExplorer()
 
-DATABASE = f"https://research.forta.network/database/bot/{web3.eth.chain_id}"
+DATABASE = f"https://research.forta.network/database/bot/{CHAIN_ID}"
+
+CHAIN_ID = 1
 
 FINDINGS_CACHE = []
 ALERTED_CLUSTERS = []
@@ -50,6 +53,13 @@ def initialize():
     this function initializes the state variables that are tracked across tx and blocks
     it is called from test to reset state between tests
     """
+    global CHAIN_ID
+    try:
+        CHAIN_ID = web3.eth.chain_id
+    except Exception as e:
+        logging.error(f"Error getting chain id: {e}")
+        raise e
+
     global ALERTED_CLUSTERS
     alerted_clusters = load(ALERTED_CLUSTERS_KEY)
     ALERTED_CLUSTERS = [] if alerted_clusters is None else alerted_clusters
@@ -237,12 +247,12 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         # get alerts from API and exchange addresses with clusters from the entity cluster bot
         end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
         start_date = end_date - timedelta(days=ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS)
-        df_address_clusters_exploded = get_clusters_exploded(start_date=start_date, end_date=end_date, forta_explorer=forta_explorer, chain_id=w3.eth.chain_id)
+        df_address_clusters_exploded = get_clusters_exploded(start_date=start_date, end_date=end_date, forta_explorer=forta_explorer, chain_id=CHAIN_ID)
         logging.info(f"Fetched clusters {len(df_address_clusters_exploded)}")
 
         end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
         start_date = end_date - timedelta(days=DATE_LOOKBACK_WINDOW_IN_DAYS)
-        df_forta_alerts = get_forta_alerts(start_date=start_date, end_date=end_date, df_address_clusters=df_address_clusters_exploded, forta_explorer=forta_explorer, chain_id=w3.eth.chain_id)
+        df_forta_alerts = get_forta_alerts(start_date=start_date, end_date=end_date, df_address_clusters=df_address_clusters_exploded, forta_explorer=forta_explorer, chain_id=CHAIN_ID)
 
         # alert combiner 3 alert - ice phishing
         logging.info("Scam detector - ice phishing")
@@ -453,10 +463,15 @@ def persist_state():
 
 def emit_new_fp_finding(w3):
     global FP_MITIGATION_ADDRESSES
-    res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.txt')
-    content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.txt', 'r').read()
-    for line in content.splitlines():
-        address = line[0:42]
+    global CHAIN_ID
+    res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
+    content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
+    df_fp = pd.read_csv(io.StringIO(content))
+    for index, row in df_fp.iterrows():
+        chain_id = int(row['chain_id'])
+        if chain_id != CHAIN_ID:
+            continue
+        address = row['address'].lower()
         FP_MITIGATION_ADDRESSES.add(address)
         if address not in ALERTED_FP_ADDRESSES:
             logging.info("Emitting FP mitigation finding")

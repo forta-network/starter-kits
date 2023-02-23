@@ -42,7 +42,7 @@ class TestAlertCombiner:
         label = agent.get_etherscan_label("0xffc0022959f58aa166ce58e6a38f711c95062b99")
         assert label == 'uniswap', "this should be a uniswap address"
 
-    def test_fp_mitigation(self):
+    def test_fp_mitigation_proper_chain_id(self):
         # delete cache file
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
