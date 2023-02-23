@@ -2,7 +2,7 @@
 
 ## Description
 
-This bot 
+This bot estimates the losses associated with end users. It consumes alerts from other bots
 
 ## Supported Chains
 
