@@ -46,7 +46,7 @@ class AlertCombinerFinding:
             'entityType': EntityType.Address,
             'label': "benign",
             'entity': address,
-            'confidence': 0.99
+            'confidence': 0.74
         })]
 
         return Finding({

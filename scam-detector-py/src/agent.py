@@ -27,7 +27,7 @@ label_api = "https://api.forta.network/labels/state?sourceIds=etherscan&entities
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 forta_explorer = FortaExplorer()
 
-DATABASE = f"https://research.forta.network/database/bot/{CHAIN_ID}"
+DATABASE = f"https://research.forta.network/database/bot/{web3.eth.chain_id}"
 
 CHAIN_ID = 1
 
@@ -76,8 +76,10 @@ def initialize():
 
     # read addresses from fp_list.txt
     global FP_MITIGATION_ADDRESSES
-    for line in open('fp_list.txt', 'r').readlines():
-        FP_MITIGATION_ADDRESSES.add(line[0:42])
+    content = open('fp_list.csv', 'r').read()
+    df_fp = pd.read_csv(io.StringIO(content))
+    for index, row in df_fp.iterrows():
+        FP_MITIGATION_ADDRESSES.add(row['address'].lower())
 
     global FINDINGS_CACHE
     FINDINGS_CACHE = []
