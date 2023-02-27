@@ -5,3 +5,4 @@ address,chain_id,comment
 0x7ceb23fd6bc0add59e62ac25578270cff1b9f619,137,weth token
 0x10ed43c718714eb63d5aa57b78b54704e256024e,56,PancakeSwap: Router
 0x7c90784d6144967bf7b8c89ca06a3629d8abe642,1,MoSolid token
+0x55d398326f99059ff775485246999027b3197955,56,Binance Peg Token
