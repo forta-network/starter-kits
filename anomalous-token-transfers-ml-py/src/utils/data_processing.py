@@ -14,8 +14,6 @@ from src.utils.constants import (
 from src.utils.keys import ETHPLORER_KEY, ETHERSCAN_KEYS
 from src.utils.logger import logger
 
-GLOBAL_TOTAL_TX_COUNTER = ExpiringDict(ttl=86_400)
-BOT_ID = "0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8"
 
 # Retry if etherscan api response status is not ok = 0.
 @backoff.on_predicate(
@@ -142,53 +140,3 @@ def valid_features(features) -> bool:
         return False
 
     return True
-
-
-def luabase_request(chain_name, bot_id, query_uuid):
-    headers = {"content-type": "application/json"}
-    payload = {
-        "api_key": LUABASE_API_KEY,
-        "block": {
-            "data_uuid": query_uuid,
-            "details": {
-                "parameters": {
-                    "chain": {"type": "value", "value": chain_name},
-                    "bot_id": {"type": "value", "value": bot_id},
-                }
-            },
-        },
-    }
-    data = None
-    try:
-        response = requests.request("POST", LUABASE_URL, json=payload, headers=headers)
-        response.raise_for_status()
-        data = response.json()["data"][0]
-    except requests.exceptions.HTTPError as err:
-        logger.info(f"Luabase error: {err}")
-    return data
-
-
-def update_tx_counter(date_hour: str):
-    # Total number of transactions in the last 24 hrs
-    global GLOBAL_TOTAL_TX_COUNTER
-    GLOBAL_TOTAL_TX_COUNTER[date_hour] = GLOBAL_TOTAL_TX_COUNTER.get(date_hour, 0) + 1
-
-
-def alert_count(chain_id) -> int:
-    alert_stats_url = (
-        f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
-    )
-    alert_count = 0
-    try:
-        result = requests.get(alert_stats_url).json()
-        alert_count = result["alertIds"]["ANOMALOUS-TOKEN-TRANSFERS-TX"]["count"]
-    except Exception as err:
-        logger.error(f"Error obtaining alert counts: {err}")
-
-    return alert_count
-
-
-def get_anomaly_score(chain_id: int) -> float:
-    total_alerts = alert_count(chain_id)
-    total_tx_count = sum(GLOBAL_TOTAL_TX_COUNTER.values())
-    return total_alerts / total_tx_count
