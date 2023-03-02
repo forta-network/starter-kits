@@ -1,4 +1,4 @@
-from datetime import datetime
+from os import environ
 from timeit import default_timer as timer
 
 import forta_agent
@@ -9,14 +9,14 @@ import lime.lime_tabular
 import numpy as np
 
 from src.utils.constants import ANOMALY_THRESHOLD, ERC20_TRANSFER_EVENT, MODEL_FEATURES
-from src.utils.data_processing import get_features, get_anomaly_score, update_tx_counter
+from src.utils.data_processing import get_features
 from src.utils.findings import (
     AnomalousTransaction,
     NormalTransaction,
     InvalidModelFeatures,
 )
 from src.utils.logger import logger
-
+from src.utils.keys import ZETTABLOCK_KEY
 
 ML_MODEL = None
 ML_EXPLAINER = None
@@ -36,6 +36,7 @@ def initialize():
     with open("model_explainer.pkl", "rb") as f:
         ML_EXPLAINER = dill.load(f)
     logger.info("Complete loading model explainer")
+    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
 
 
 def get_explanations(model_input) -> str:
@@ -76,10 +77,6 @@ def detect_anomalous_transfer(w3, transaction_event):
     from_address = transaction_event.from_
 
     if len(transfer_events) > 0:
-        date_time = datetime.now()
-        date_hour = date_time.strftime("%d/%m/%Y %H:00:00")
-        update_tx_counter(date_hour)
-
         valid_features, features = get_features(
             from_address, transaction_event.timestamp, transfer_events
         )
@@ -93,10 +90,9 @@ def detect_anomalous_transfer(w3, transaction_event):
                 explanations,
                 pred_response_time,
             ) = get_prediction(features)
-            anomaly_score = get_anomaly_score(w3.eth.chain_id)
+
             metadata["prediction"] = prediction_label
             metadata["model_score"] = round(model_score, 3)
-            metadata["anomaly_score"] = round(anomaly_score, 6)
             metadata["model_pred_response_time_sec"] = pred_response_time
             metadata["model_explanations"] = explanations
 
@@ -110,7 +106,9 @@ def detect_anomalous_transfer(w3, transaction_event):
                     }
                 ]
                 findings.append(
-                    AnomalousTransaction(metadata, from_address, labels).emit_finding()
+                    AnomalousTransaction(
+                        metadata, from_address, labels, w3.eth.chain_id
+                    ).emit_finding()
                 )
             else:
                 findings.append(
