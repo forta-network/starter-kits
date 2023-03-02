@@ -16,7 +16,7 @@ class CEXFundingFinding:
         labels = [
             {
                 "entity": self.to,
-                "entity_type": EntityType.Address,
+                "entityType": EntityType.Address,
                 "label": "attacker",
                 "confidence": 0.1,
             }

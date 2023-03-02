@@ -6,11 +6,11 @@ class SuspiciousContractFindings:
     @staticmethod
     def suspicious_contract_creation_tornado_cash(from_address: str, contract_address: str, contained_addresses: set, anomaly_score: float) -> Finding:
         labels = [{"entity": from_address,
-                   "entity_type": EntityType.Address,
+                   "entityType": EntityType.Address,
                    "label": "attacker",
                    "confidence": 0.3},  # low
                   {"entity": contract_address,
-                   "entity_type": EntityType.Address,
+                   "entityType": EntityType.Address,
                    "label": "attacker_contract",
                    "confidence": 0.3}]  # low
 
@@ -30,11 +30,11 @@ class SuspiciousContractFindings:
     @staticmethod
     def suspicious_contract_creation(from_address: str, contract_address: str, contained_addresses: set, anomaly_score: float) -> Finding:
         labels = [{"entity": from_address,
-                   "entity_type": EntityType.Address,
+                   "entityType": EntityType.Address,
                    "label": "attacker",
                    "confidence": 0.1},  # very low
                   {"entity": contract_address,
-                   "entity_type": EntityType.Address,
+                   "entityType": EntityType.Address,
                    "label": "attacker_contract",
                    "confidence": 0.1}]  # very low
 

@@ -12,7 +12,7 @@ from src.findings import SocialEngContractFindings
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
-CONTRACTS_QUEUE = pd.DataFrame(columns={'contract_address', 'first_four_char', 'last_four_char'})
+CONTRACTS_QUEUE = pd.DataFrame(columns=['contract_address', 'first_four_char', 'last_four_char'])
 ALERT_COUNT = 0  # stats to emit anomaly score
 DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
