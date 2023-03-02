@@ -1,6 +1,8 @@
+from bot_alert_rate import calculate_alert_rate, ScanCountType
 from forta_agent import Finding, FindingType, FindingSeverity
 
 from src.utils.constants import MODEL_CREATED_TIMESTAMP, ANOMALY_THRESHOLD
+from src.utils.keys import BOT_ID
 
 
 class TokenTransfersTxFinding:
@@ -51,7 +53,7 @@ class NormalTransaction(TokenTransfersTxFinding):
 
 
 class AnomalousTransaction(TokenTransfersTxFinding):
-    def __init__(self, metadata, tx_executor, labels):
+    def __init__(self, metadata, tx_executor, labels, chain_id):
         super().__init__()
         self.alert_id = "ANOMALOUS-TOKEN-TRANSFERS-TX"
         self.description = f"{tx_executor} executed anomalous tx with token transfers"
@@ -60,3 +62,9 @@ class AnomalousTransaction(TokenTransfersTxFinding):
         self.type = FindingType.Suspicious
         self.metadata = metadata
         self.labels = labels
+        self.metadata["anomaly_score"] = round(
+            calculate_alert_rate(
+                chain_id, BOT_ID, self.alert_id, ScanCountType.TRANSFER_COUNT
+            ),
+            6,
+        )

@@ -32,11 +32,10 @@ class TestAnomalousTokenTransfers:
         assert len(findings) == 0
         mock_tx_event.filter_log.assert_called_once_with(agent.ERC20_TRANSFER_EVENT)
 
-    @patch("agent.get_anomaly_score")
     @patch("src.utils.data_processing.get_first_tx_timestamp")
     @patch("src.utils.data_processing.get_token_info")
     def test_returns_finding_for_normal_transfers(
-        self, mock_get_token_info, mock_get_first_tx_timestamp, mock_get_anomaly_score
+        self, mock_get_token_info, mock_get_first_tx_timestamp
     ):
         agent.initialize()
         mock_tx_event.filter_log.reset_mock()
@@ -46,7 +45,6 @@ class TestAnomalousTokenTransfers:
 
         mock_get_first_tx_timestamp.return_value = 1655403557
         mock_get_token_info.return_value = ("Tether USD", "USDT", 6)
-        mock_get_anomaly_score.return_value = 0.0001
 
         findings = agent.handle_transaction(mock_tx_event)
 
@@ -71,14 +69,12 @@ class TestAnomalousTokenTransfers:
         assert finding.metadata["token_types"] == ["Tether USD-USDT"]
         assert finding.metadata["max_single_token_transfers_name"] == "Tether USD"
         assert finding.metadata["model_score"] == 0.311
-        assert finding.metadata["anomaly_score"] == 0.0001
         assert finding.metadata["prediction"] == "NORMAL"
 
-    @patch("agent.get_anomaly_score")
     @patch("src.utils.data_processing.get_first_tx_timestamp")
     @patch("src.utils.data_processing.get_token_info")
     def test_returns_findings_if_invalid_model_features(
-        self, mock_get_token_info, mock_get_first_tx_timestamp, mock_get_anomaly_score
+        self, mock_get_token_info, mock_get_first_tx_timestamp
     ):
         mock_tx_event.filter_log.reset_mock()
         mock_tx_event.filter_log.return_value = [USDT_TRANSFER]
@@ -88,7 +84,6 @@ class TestAnomalousTokenTransfers:
             "Max rate limit reached"  # invalid first tx timestamp value
         )
         mock_get_token_info.return_value = ("Tether USD", "USDT", 6)
-        mock_get_anomaly_score.return_value = 0.0001
         findings = agent.handle_transaction(mock_tx_event)
 
         assert len(findings) == 1
@@ -103,11 +98,10 @@ class TestAnomalousTokenTransfers:
         assert finding.severity == FindingSeverity.Low
         assert finding.type == FindingType.Info
 
-    @patch("agent.get_anomaly_score")
     @patch("src.utils.data_processing.get_first_tx_timestamp")
     @patch("src.utils.data_processing.get_token_info")
     def test_returns_finding_for_anomalous_transfers(
-        self, mock_get_token_info, mock_get_first_tx_timestamp, mock_get_anomaly_score
+        self, mock_get_token_info, mock_get_first_tx_timestamp
     ):
         mock_tx_event.filter_log.reset_mock()
         mock_tx_event.filter_log.return_value = [USDT_TRANSFER] * 1_000 + [
@@ -119,7 +113,6 @@ class TestAnomalousTokenTransfers:
         mock_get_token_info.side_effect = [("Tether USD", "USDT", 6)] * 1_000 + [
             ("USD Coin", "USDC", 6)
         ] * 1_000
-        mock_get_anomaly_score.return_value = 0.0001
         findings = agent.handle_transaction(mock_tx_event)
 
         assert len(findings) == 1
@@ -136,5 +129,4 @@ class TestAnomalousTokenTransfers:
 
         assert finding.metadata["token_types"] == ["Tether USD-USDT", "USD Coin-USDC"]
         assert finding.metadata["model_score"] == 0.568
-        assert finding.metadata["anomaly_score"] == 0.0001
         assert finding.metadata["prediction"] == "ANOMALY"
