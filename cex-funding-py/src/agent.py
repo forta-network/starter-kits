@@ -1,3 +1,4 @@
+from os import environ
 import forta_agent
 from hexbytes import HexBytes
 from forta_agent import Finding, FindingType, FindingSeverity, get_json_rpc_url
@@ -5,22 +6,14 @@ from src.constants import CEXES
 from web3 import Web3
 
 from src.findings import CEXFundingFinding
+from src.keys import ZETTABLOCK_KEY
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
-ALERT_COUNT = 0  # stats to emit anomaly score
-DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
 def initialize():
-    """
-    this function initializes the state variables that are tracked across tx and blocks
-    it is called from test to reset state between tests
-    """
-    global DENOMINATOR_COUNT
-    DENOMINATOR_COUNT = 0
+    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
 
-    global ALERT_COUNT
-    ALERT_COUNT = 0
 
 def is_contract(w3, address) -> bool:
     """
@@ -30,31 +23,36 @@ def is_contract(w3, address) -> bool:
     if address is None:
         return True
     code = w3.eth.get_code(Web3.toChecksumAddress(address))
-    return code != HexBytes('0x')
+    return code != HexBytes("0x")
 
-def detect_dex_funding(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
+
+def detect_dex_funding(
+    w3, transaction_event: forta_agent.transaction_event.TransactionEvent
+) -> list:
     findings = []
-
-    global ALERT_COUNT
-    global DENOMINATOR_COUNT
 
     # alert on funding tx from CEXes
     value = transaction_event.transaction.value
     for chainId, address, name, threshold in CEXES:
         if chainId == w3.eth.chainId:
-            if (w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number) == 0
-                and not is_contract(w3, transaction_event.transaction.to)):
-                DENOMINATOR_COUNT += 1
-                if (address == transaction_event.transaction.from_ and value < threshold):
-                    ALERT_COUNT += 1
-                    anomaly_score = (ALERT_COUNT * 1.0) / DENOMINATOR_COUNT
-                    findings.append(CEXFundingFinding.cex_funding(name, transaction_event.transaction.to, value, anomaly_score))
-                
+            if w3.eth.get_transaction_count(
+                Web3.toChecksumAddress(transaction_event.transaction.to),
+                transaction_event.block.number,
+            ) == 0 and not is_contract(w3, transaction_event.transaction.to):
+                if address == transaction_event.transaction.from_ and value < threshold:
+                    findings.append(
+                        CEXFundingFinding(
+                            name, transaction_event.transaction.to, value, chainId
+                        ).emit_finding()
+                    )
+
     return findings
 
 
 def provide_handle_transaction(w3):
-    def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
+    def handle_transaction(
+        transaction_event: forta_agent.transaction_event.TransactionEvent,
+    ) -> list:
         return detect_dex_funding(w3, transaction_event)
 
     return handle_transaction
@@ -63,5 +61,7 @@ def provide_handle_transaction(w3):
 real_handle_transaction = provide_handle_transaction(web3)
 
 
-def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent):
+def handle_transaction(
+    transaction_event: forta_agent.transaction_event.TransactionEvent,
+):
     return real_handle_transaction(transaction_event)
