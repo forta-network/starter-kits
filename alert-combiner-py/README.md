@@ -112,6 +112,9 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-DISGUST-TEXT-MESSAGE | Money Laundering |
 | 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-SADNESS-TEXT-MESSAGE | Money Laundering |
 | 0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e | ChangeNow Bot | FUNDING-CHANGENOW-NEW-ACCOUNT | Funding |
+| 0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac | Large Profit Bot | LARGE-PROFIT | Exploitation |
+| 0x43d22eb5e1e3a2a98420f152825f215e6a756f32d73882ff31d8163652242832 | Role change bot | ROLE-CHANGE | Preparation |
+
 
 The following bots are used to mitigate FPs:
 | BotID | Name | AlertId |
