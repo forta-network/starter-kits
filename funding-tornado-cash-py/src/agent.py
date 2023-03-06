@@ -23,6 +23,8 @@ ALERT_COUNT_LOW = 0  # stats to emit anomaly score
 ALERT_COUNT_HIGH = 0  # stats to emit anomaly score
 DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
+CHAIN_ID = 1
+
 def initialize():
     """
     this function initializes the state variables that are tracked across tx and blocks
@@ -35,21 +37,25 @@ def initialize():
     ALERT_COUNT_HIGH = 0
 
     global DENOMINATOR_COUNT
-    DENOMINATOR_COUNT = 0
+    DENOMINATOR_COUNT = 1
+
+    global CHAIN_ID
+    CHAIN_ID = web3.eth.chain_id
 
 
 def detect_funding(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
-    global ACCOUNT_TO_TORNADO_CASH_BLOCKS
-    global ACCOUNT_QUEUE
     global DENOMINATOR_COUNT
     global ALERT_COUNT_LOW
     global ALERT_COUNT_HIGH
+    global CHAIN_ID
 
     logging.info(f"Analyzing transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
 
     findings = []
 
-    if (transaction_event.transaction.value > 0 and w3.eth.get_transaction_count(transaction_event.transaction.to, block_identifier=transaction_event.block_number) == 0):
+    transaction_count = w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to)) if CHAIN_ID == 56 else w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), block_identifier=transaction_event.block_number)
+
+    if (transaction_event.transaction.value > 0 and transaction_count == 0):
         DENOMINATOR_COUNT += 1
 
     for log in transaction_event.logs:
@@ -58,9 +64,12 @@ def detect_funding(w3, transaction_event: forta_agent.transaction_event.Transact
             #  0x000000000000000000000000a1b4355ae6b39bb403be1003b7d0330c811747db1bc589946f7bfca3950776b499ff5d952768ad0b644c71c5c4a209c04ec2b2a2000000000000000000000000000000000000000000000000003ce4ceb6836660            
             to_address = Web3.toChecksumAddress(log.data[26:66])
 
-            if(w3.eth.get_transaction_count(to_address, block_identifier=transaction_event.block_number) == 0):
+            transaction_count2 = w3.eth.get_transaction_count(to_address) if CHAIN_ID == 56 else w3.eth.get_transaction_count(to_address, block_identifier=transaction_event.block_number)
+
+            if(transaction_count2 == 0):
                 logging.info(f"Identified new account {to_address} on chain {w3.eth.chain_id}")
                 ALERT_COUNT_LOW += 1
+                logging.info(DENOMINATOR_COUNT)
                 anomaly_score = (1.0 * ALERT_COUNT_LOW) / DENOMINATOR_COUNT
                 findings.append(FundingTornadoCashFindings.funding_tornado_cash(to_address, "low", anomaly_score))
             else:
@@ -70,8 +79,9 @@ def detect_funding(w3, transaction_event: forta_agent.transaction_event.Transact
 
             #  0x000000000000000000000000a1b4355ae6b39bb403be1003b7d0330c811747db1bc589946f7bfca3950776b499ff5d952768ad0b644c71c5c4a209c04ec2b2a2000000000000000000000000000000000000000000000000003ce4ceb6836660            
             to_address = Web3.toChecksumAddress(log.data[26:66])
+            transaction_count2 = w3.eth.get_transaction_count(to_address) if CHAIN_ID == 56 else w3.eth.get_transaction_count(to_address, block_identifier=transaction_event.block_number)
 
-            if(w3.eth.get_transaction_count(to_address, block_identifier=transaction_event.block_number) < 500):
+            if(transaction_count2 < 500):
                 logging.info(f"Identified new account {to_address} on chain {w3.eth.chain_id}")
                 ALERT_COUNT_HIGH += 1
 
