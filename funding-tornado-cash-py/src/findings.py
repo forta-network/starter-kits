@@ -8,7 +8,7 @@ class FundingTornadoCashFindings:
         confidence = 0.3 if type == "low" else 0.1
 
         labels = [{"entity": to_address,
-                   "entity_type": EntityType.Address,
+                   "entityType": EntityType.Address,
                    "label": "attacker",
                    "confidence": confidence}]
 
