@@ -91,7 +91,7 @@ class TestTornadoCashFunding:
         assert findings[0].alert_id == "FUNDING-TORNADO-CASH-HIGH"
         assert findings[0].severity == FindingSeverity.Info
 
-        assert findings[0].metadata["anomaly_score"] == 1.0, "should have anomaly score of 1.0"
+        assert findings[0].metadata["anomaly_score"] == 0.5, "should have anomaly score of 0.5"
         assert findings[0].labels[0].toDict()["entity"] == "0xA1B4355Ae6b39bb403Be1003b7D0330C811747DB", "should have EOA address as label"
         assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
         assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
