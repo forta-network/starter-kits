@@ -229,7 +229,11 @@ def swap_addresses_with_clusters(addresses: list, df_address_clusters_exploded: 
         return df_addresses_joined["cluster_identifiers"].tolist()
     else:
         return []
-
+    
+def get_seaport_order_attacker_address(metadata: dict) -> str:
+    if "fromAddr" in metadata:
+        return metadata["fromAddr"]
+    return ""
 
 def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.block_event.BlockEvent):
     """
@@ -257,17 +261,26 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         df_forta_alerts = get_forta_alerts(start_date=start_date, end_date=end_date, df_address_clusters=df_address_clusters_exploded, forta_explorer=forta_explorer, chain_id=CHAIN_ID)
 
         # alert combiner 3 alert - ice phishing
-        logging.info("Scam detector - ice phishing")
+        logging.info("Scam detector - ice phishing/ fraudulent seaport orders")
+
+        seaport_order_addresses = set()
+        seaport_orders = df_forta_alerts[(df_forta_alerts["alertId"] == "SEAPORT-PHISHING-TRANSFER")]
+        seaport_orders["metadata"].apply(lambda x: seaport_order_addresses.add(get_seaport_order_attacker_address(x)))
+        logging.info(f"Got {len(seaport_order_addresses)} fraudulent seaport order addresses")
 
         ice_phishing = df_forta_alerts[(df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-PERMITTED-ERC20-TRANSFER")
                                        | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-ERC721-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL")
                                        | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC721-APPROVAL-FOR-ALL") | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC1155-APPROVAL-FOR-ALL")]
+        ice_phishing_addresses = set()
+        ice_phishing["description"].apply(lambda x: ice_phishing_addresses.add(get_ice_phishing_attacker_address(x)))
+        logging.info(f"Got {len(ice_phishing_addresses)} ice phishing addresses")
+
         addresses = set()
-        ice_phishing["description"].apply(lambda x: addresses.add(get_ice_phishing_attacker_address(x)))
-        logging.info(f"Got {len(addresses)} ice phishing addresses")
+        addresses.update(seaport_order_addresses)
+        addresses.update(ice_phishing_addresses)
 
         clusters = swap_addresses_with_clusters(list(addresses), df_address_clusters_exploded)
-        logging.info(f"Mapped ice phishing addresses to {len(clusters)} clusters.")
+        logging.info(f"Mapped addresses to {len(clusters)} clusters.")
 
         for potential_attacker_cluster_lower in clusters:
             try:
@@ -300,6 +313,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             or ('SUSPICIOUS-TOKEN-CONTRACT-CREATION' in alert_ids)
                             or ('AE-MALICIOUS-ADDR' in alert_ids or 'forta-text-messages-possible-hack' in alert_ids)
                             or ('SCAM' in alert_ids)
+                            or ('SEAPORT-PHISHING-TRANSFER' in alert_ids)
                             or ('ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS' in alert_ids)):
                             tx_count = 0
                             try:
@@ -329,7 +343,11 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
 
                             logging.info(f"Cluster {potential_attacker_cluster_lower} is scammer. Raising alert.")
                             update_alerted_clusters(w3, potential_attacker_cluster_lower)
-                            FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-ICE-PHISHING', hashes))
+
+                            if potential_attacker_cluster_lower in seaport_order_addresses:
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-FRAUDULENT-SEAPORT-ORDER', hashes))
+                            else: 
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-ICE-PHISHING', hashes))
                             logging.info(f"Findings count {len(FINDINGS_CACHE)}")
                             persist_state()
                     else: 
