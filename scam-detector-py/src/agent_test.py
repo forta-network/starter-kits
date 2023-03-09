@@ -42,6 +42,11 @@ class TestAlertCombiner:
         label = agent.get_etherscan_label("0xffc0022959f58aa166ce58e6a38f711c95062b99")
         assert label == 'uniswap', "this should be a uniswap address"
 
+    def test_get_fromAddr_seaport_order_metadata(self):
+        metadata = {"collectionFloor":"0.047","contractAddress":"0xe75512aa3bec8f00434bbd6ad8b0a3fbff100ad6","contractName":"MG Land","currency":"ETH","fromAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ecf","hash":"0x768eefcc8fdba3946749048bd8582fff41501cfe874fba2c9f0383ae2dfdd1cb","itemPrice":"0","market":"Opensea 🌊","quantity":"1","toAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ecf","tokenIds":"4297","totalPrice":"0"}
+        fromAddr = agent.get_seaport_order_attacker_address(metadata)
+        assert fromAddr == "0xc81476ae9f2748725a36b326a1831200ed4f3ecf", "this should be the attacker address"
+
     def test_fp_mitigation_proper_chain_id(self):
         # delete cache file
         if os.path.exists("alerted_clusters_key"):
@@ -53,7 +58,9 @@ class TestAlertCombiner:
 
         agent.emit_new_fp_finding(w3)
 
-        assert len(agent.FINDINGS_CACHE) == 3, "this should have triggered three FP finding"
+        
+        df_fps = pd.read_csv("fp_list.csv")
+        assert len(agent.FINDINGS_CACHE) == len(df_fps[df_fps['chain_id']==1]), "this should have triggered FP findings"
         finding = agent.FINDINGS_CACHE[0]
         assert finding.alert_id == "ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE", "should be FP mitigation finding"
         assert finding.labels is not None, "labels should not be empty"

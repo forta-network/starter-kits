@@ -12,14 +12,15 @@ It does so with the realization that an attack usually consists of 4 distinct ph
 
 As such, this feed combines previously raised alerts under the initiating address (i.e. the attacker address) for a given time window (2 calendar days, so between 24-48h) and emits a cricial alert when 
 - a certain combination associated with ice phishing fired:
-  - ice phishing & sleep minting 
-  - ice phishing & TC interaction
-  - ice phishing & (unverified contract & flashbot)
-  - ice phishing & malicious address
+  - ice phishing or fraudulent seaport order & sleep minting 
+  - ice phishing or fraudulent seaport order & TC interaction
+  - ice phishing or fraudulent seaport order & (unverified contract & flashbot)
+  - ice phishing or fraudulent seaport order & malicious address
 
 The following bots are considered by the Attack Detector Feed and mapped to the stages in the following way:
 | BotID | Name | AlertId | Stage |
 |-------|------|---------|-------|
+| 0xd9584a587a469f3cdd8a03ffccb14114bc78485657e28739b8036aee7782df5c | SEAPORT-PHISHING-TRANSFER | Exploitation |
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-HIGH-NUM-APPROVALS | Preparation |
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PREV-APPROVED-TRANSFERED | Exploitation |
 | 0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400 | tornado cash withdrawl | FUNDING-TORNADO-CASH | Funding |
@@ -52,6 +53,20 @@ Describe each of the type of alerts fired by this bot
 
 - ATTACK-DETECTOR-ICE-PHISHING
   - Fired when alert combination is observed that points to an ice phishing attack
+  - Severity is always set to "critical" 
+  - Type is always set to "exploit" 
+  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
+    - attacker_address: string
+    - start_date: date str (%Y-%m-%d)
+    - end_date: date str (%Y-%m-%d)
+    - involved_addresses_x: string
+    - involved_alert_id_x: string
+    - involved_alert_hashes_x: string
+  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
+  - Note: the detection bot will only alert once per EOA observed
+
+- ATTACK-DETECTOR-FRAUDULENT-SEAPORT-ORDER
+  - Fired when alert combination is observed that points to an fraudulent seaport order
   - Severity is always set to "critical" 
   - Type is always set to "exploit" 
   - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
