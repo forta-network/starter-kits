@@ -1,10 +1,12 @@
 # Copyright 2022 The Forta Foundation
 
 from forta_agent import create_alert_event,FindingSeverity
-
+from web3 import Web3
+from web3.middleware import geth_poa_middleware
 import agent
 import json
 import os
+from forta_agent import EntityType
 from datetime import datetime, timedelta
 from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
                        ALERTS_DATA_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY)
@@ -15,6 +17,17 @@ w3 = Web3Mock()
 
 
 class TestAlertCombiner:
+
+    def test_is_polygon_validator(self):
+        polygon_rpc = "https://polygon-rpc.com"
+        polygon_tx = "0x2568499d36d104dc5fd13484167ea5059dbc4298b85e395219a6fbdf6c1b77c3"
+        polygon_validator = "0x26c80cc193b27d73d2c40943acec77f4da2c5bd8"
+        agent.CHAIN_ID = 137
+        
+        w3 = Web3(Web3.HTTPProvider(polygon_rpc))
+        w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+        assert agent.is_polygon_validator(w3, polygon_validator, polygon_tx), "should be a polygon validator"
+        agent.CHAIN_ID = 1
 
     def remove_persistent_state():
         if os.path.isfile(f"{VERSION}-{ALERTS_DATA_KEY}"):
@@ -226,7 +239,7 @@ class TestAlertCombiner:
                     {"label": "victim",
                     "confidence": 0.25,
                     "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99CCCCC",
-                    "entityType": "ADDRESS"
+                    "entityType": EntityType.Address
                     },
                 ]
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)}, labels)  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
@@ -248,7 +261,7 @@ class TestAlertCombiner:
         label = {"label": "Attacker",
                  "confidence": 0.25,
                  "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99B3820",
-                 "entityType": "ADDRESS"
+                 "entityType": EntityType.Address
                  }
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)}, [label])  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
@@ -267,7 +280,7 @@ class TestAlertCombiner:
         assert len(findings) == 1, "alert should have been raised"
         assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
     
-    def test_alert_simple_case_labels(self):
+    def test_alert_simple_case_no_labels(self):
         # three alerts in diff stages for a given EOA
         # no FP
         # anomaly score < 10 E-8
