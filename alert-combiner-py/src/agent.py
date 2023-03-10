@@ -230,6 +230,16 @@ def get_anomaly_score(alert_event: forta_agent.alert_event.AlertEvent) -> float:
 
     return anomaly_score
 
+def is_polygon_validator(w3, cluster: str, tx_hash: str) -> bool:
+    if CHAIN_ID == 137:
+        tx = w3.eth.get_transaction_receipt(tx_hash)
+        for log in tx['logs']:
+            if len(log['topics']) > 3:
+                if log['topics'][0] == HexBytes('0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63'):  # logfeetransfer event
+                    validator = log['topics'][3].hex()[-40:]  # validator in 3rd pos
+                    if validator in cluster:
+                        return True
+    return False
 
 def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
     """
@@ -368,6 +378,10 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                                         or 'fraud' in etherscan_label
                                         or etherscan_label == ''):
                                     logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
+                                    fp_mitigated = True
+
+                                if is_polygon_validator(w3, cluster, alert_event.alert.source.block.number):
+                                    logging.info(f"alert {alert_event.alert_hash} - {cluster} is polygon validator. Wont raise finding")
                                     fp_mitigated = True
 
                                 if cluster in FP_MITIGATION_CLUSTERS:
