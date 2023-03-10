@@ -3,3 +3,5 @@ setuptools>=61.3.1
 pandas>=1.4.2
 requests>=2.27.1
 hexbytes>=0.2.2
+aiosqlite==0.17.0
+SQLAlchemy~=2.0.1
