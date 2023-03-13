@@ -111,6 +111,7 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Txt Msg Sentiment Bot | NEGATIVE-DISGUST-TEXT-MESSAGE | MoneyLaundering |
 | 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Txt Msg Sentiment Bot | NEGATIVE-SADNESS-TEXT-MESSAGE | MoneyLaundering |
 | 0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e | ChangeNow Funding | FUNDING-CHANGENOW-NEW-ACCOUNT | Funding |
+| 0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2 | Suspicious flashloand contract creation | SUSPICIOUS-FLASHLOAN-PRICE-MANIPULATOR | Preparation | 
 
 As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
 
