@@ -134,5 +134,7 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e", "FUNDING-CHANGENOW-NEW-ACCOUNT", "Funding"),  # change now bot
              ("0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad", "SUSPICIOUS-TOKEN-CONTRACT", "Preparation"),  # Malicious Token Contract ML Bot
              ("0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac", "LARGE-PROFIT", "Exploitation"),  # Large Profit Bot
-             ("0x43d22eb5e1e3a2a98420f152825f215e6a756f32d73882ff31d8163652242832", "ROLE-CHANGE", "Preparation")  # role change
+             ("0x43d22eb5e1e3a2a98420f152825f215e6a756f32d73882ff31d8163652242832", "ROLE-CHANGE", "Preparation"),  # role change
+             ("0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2", "SUSPICIOUS-FLASHLOAN-PRICE-MANIPULATOR", "Preparation")  # Suspicious flashloand contract creation
+
              ]
