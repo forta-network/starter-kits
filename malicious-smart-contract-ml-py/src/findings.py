@@ -49,10 +49,8 @@ class ContractFindings:
 
     def safe_contract_creation(
         self,
-        anomaly_score: float,
         labels: list,
     ) -> Finding:
-        self.metadata["anomaly_score"] = anomaly_score
         self.label = labels
         return Finding(
             {
