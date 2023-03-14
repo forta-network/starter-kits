@@ -65,3 +65,16 @@ class ContractFindings:
                 "labels": self.labels,
             }
         )
+
+    def non_malicious_contract_creation(self) -> Finding:
+        return Finding(
+            {
+                "name": "Non-malicious Contract Creation",
+                "description": self.description,
+                "alert_id": "NON-MALICIOUS-CONTRACT-CREATION",
+                "type": FindingType.Info,
+                "severity": FindingSeverity.Info,
+                "metadata": self.metadata,
+                "labels": self.labels,
+            }
+        )
