@@ -7,6 +7,7 @@ from web3 import Web3
 from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
     MODEL_THRESHOLD,
+    SAFE_CONTRACT_THRESHOLD,
 )
 from src.findings import ContractFindings
 from src.logger import logger
@@ -82,7 +83,7 @@ def detect_malicious_contract_tx(
                     creation_bytecode,
                     error=error,
                 ):
-                    if finding.severity == "High":
+                    if finding.alert_id == "SUSPICIOUS-TOKEN-CONTRACT-CREATION":
                         malicious_findings.append(finding)
                     else:
                         safe_findings.append(finding)
@@ -100,7 +101,7 @@ def detect_malicious_contract_tx(
                 created_contract_address,
                 creation_bytecode,
             ):
-                if finding.severity == "High":
+                if finding.alert_id == "SUSPICIOUS-TOKEN-CONTRACT-CREATION":
                     malicious_findings.append(finding)
                 else:
                     safe_findings.append(finding)
@@ -179,7 +180,7 @@ def detect_malicious_contract(
                             labels,
                         )
                     )
-                else:
+                elif model_score <= SAFE_CONTRACT_THRESHOLD:
                     anomaly_score = get_anomaly_score(
                         w3.eth.chain_id, "SAFE-CONTRACT-CREATION"
                     )
@@ -189,13 +190,13 @@ def detect_malicious_contract(
                                 "entity": created_contract_address,
                                 "entity_type": EntityType.Address,
                                 "label": "positive_reputation",
-                                "confidence": model_score,
+                                "confidence": 1 - model_score,
                             },
                             {
                                 "entity": from_,
                                 "entity_type": EntityType.Address,
                                 "label": "positive_reputation",
-                                "confidence": model_score,
+                                "confidence": 1 - model_score,
                             },
                         ]
                     )
@@ -205,6 +206,8 @@ def detect_malicious_contract(
                             labels,
                         )
                     )
+                else:
+                    findings.append(finding.non_malicious_contract_creation())
 
     return findings
 
