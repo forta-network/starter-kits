@@ -49,16 +49,27 @@ class ContractFindings:
 
     def safe_contract_creation(
         self,
-        anomaly_score: float,
         labels: list,
     ) -> Finding:
-        self.metadata["anomaly_score"] = anomaly_score
         self.label = labels
         return Finding(
             {
                 "name": "Safe Contract Creation",
                 "description": self.description,
                 "alert_id": "SAFE-CONTRACT-CREATION",
+                "type": FindingType.Info,
+                "severity": FindingSeverity.Info,
+                "metadata": self.metadata,
+                "labels": self.labels,
+            }
+        )
+
+    def non_malicious_contract_creation(self) -> Finding:
+        return Finding(
+            {
+                "name": "Non-malicious Contract Creation",
+                "description": self.description,
+                "alert_id": "NON-MALICIOUS-CONTRACT-CREATION",
                 "type": FindingType.Info,
                 "severity": FindingSeverity.Info,
                 "metadata": self.metadata,

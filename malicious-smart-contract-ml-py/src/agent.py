@@ -7,6 +7,7 @@ from web3 import Web3
 from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
     MODEL_THRESHOLD,
+    SAFE_CONTRACT_THRESHOLD,
 )
 from src.findings import ContractFindings
 from src.logger import logger
@@ -49,7 +50,9 @@ def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
 def detect_malicious_contract_tx(
     w3, transaction_event: forta_agent.transaction_event.TransactionEvent
 ) -> list:
-    all_findings = []
+    malicious_findings = []
+    safe_findings = []
+
     if len(transaction_event.traces) > 0:
         for trace in transaction_event.traces:
             if trace.type == "create":
@@ -73,15 +76,18 @@ def detect_malicious_contract_tx(
 
                 # creation bytecode contains both initialization and run-time bytecode.
                 creation_bytecode = trace.action.init
-                all_findings.extend(
-                    detect_malicious_contract(
-                        w3,
-                        trace.action.from_,
-                        created_contract_address,
-                        creation_bytecode,
-                        error=error,
-                    )
-                )
+                for finding in detect_malicious_contract(
+                    w3,
+                    trace.action.from_,
+                    created_contract_address,
+                    creation_bytecode,
+                    error=error,
+                ):
+                    if finding.alert_id == "SUSPICIOUS-TOKEN-CONTRACT-CREATION":
+                        malicious_findings.append(finding)
+                    else:
+                        safe_findings.append(finding)
+
     else:  # Trace isn't supported, To improve coverage, process contract creations from EOAs.
         if transaction_event.to is None:
             nonce = transaction_event.transaction.nonce
@@ -89,16 +95,19 @@ def detect_malicious_contract_tx(
                 w3, transaction_event.from_, nonce
             )
             creation_bytecode = transaction_event.transaction.data
-            all_findings.extend(
-                detect_malicious_contract(
-                    w3,
-                    transaction_event.from_,
-                    created_contract_address,
-                    creation_bytecode,
-                )
-            )
+            for finding in detect_malicious_contract(
+                w3,
+                transaction_event.from_,
+                created_contract_address,
+                creation_bytecode,
+            ):
+                if finding.alert_id == "SUSPICIOUS-TOKEN-CONTRACT-CREATION":
+                    malicious_findings.append(finding)
+                else:
+                    safe_findings.append(finding)
 
-    return all_findings
+    # Reduce findings to 10 because we cannot return more than 10 findings per request
+    return (malicious_findings + safe_findings)[:10]
 
 
 def detect_malicious_contract(
@@ -171,32 +180,30 @@ def detect_malicious_contract(
                             labels,
                         )
                     )
-                else:
-                    anomaly_score = get_anomaly_score(
-                        w3.eth.chain_id, "SAFE-CONTRACT-CREATION"
-                    )
+                elif model_score <= SAFE_CONTRACT_THRESHOLD:
                     labels.extend(
                         [
                             {
                                 "entity": created_contract_address,
                                 "entity_type": EntityType.Address,
                                 "label": "positive_reputation",
-                                "confidence": model_score,
+                                "confidence": 1 - model_score,
                             },
                             {
                                 "entity": from_,
                                 "entity_type": EntityType.Address,
                                 "label": "positive_reputation",
-                                "confidence": model_score,
+                                "confidence": 1 - model_score,
                             },
                         ]
                     )
                     findings.append(
                         finding.safe_contract_creation(
-                            anomaly_score,
                             labels,
                         )
                     )
+                else:
+                    findings.append(finding.non_malicious_contract_creation())
 
     return findings
 
