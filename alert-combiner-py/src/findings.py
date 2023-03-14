@@ -8,7 +8,7 @@ class AlertCombinerFinding:
 
     @staticmethod
     def alert_combiner(attacker_address: str, victim_address: str, victim_name: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set, alert_id: str, hashes: set, victim_metadata: dict) -> Finding:
-        involved_addresses = list(involved_addresses)[0:500]
+        involved_addresses = list(involved_addresses)[0:250]
         hashes = list(hashes)[0:10]
 
         attacker_address_md = {"attacker_address": attacker_address}
