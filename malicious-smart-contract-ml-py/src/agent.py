@@ -181,9 +181,6 @@ def detect_malicious_contract(
                         )
                     )
                 elif model_score <= SAFE_CONTRACT_THRESHOLD:
-                    anomaly_score = get_anomaly_score(
-                        w3.eth.chain_id, "SAFE-CONTRACT-CREATION"
-                    )
                     labels.extend(
                         [
                             {
@@ -202,7 +199,6 @@ def detect_malicious_contract(
                     )
                     findings.append(
                         finding.safe_contract_creation(
-                            anomaly_score,
                             labels,
                         )
                     )
