@@ -42,7 +42,7 @@ def is_malicious_account(chain_id: int, address: str) -> str:
         labels_url = f"https://api.forta.network/labels/state?entities={address}&sourceIds={source_id}&labels=*xploit*,*hish*,*heist*&limit=1"
         try:
             result = requests.get(labels_url).json()
-            if len(result["events"]) == 1:
+            if isinstance(result["events"], list) and len(result["events"]) == 1:
                 wallet_tag = result["events"][0]["label"]["label"]
         except Exception as err:
             logging.error(f"Error obtaining malicious accounts: {err}")
