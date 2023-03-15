@@ -42,6 +42,12 @@ class TestAlertCombiner:
         label = agent.get_etherscan_label("0xffc0022959f58aa166ce58e6a38f711c95062b99")
         assert label == 'uniswap', "this should be a uniswap address"
 
+    def test_get_addresses_address_poisoning_metadata(self):
+        metadata = {"attacker_addresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishing_contract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishing_eoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
+        addresses = agent.get_address_poisoning_addresses(metadata)
+        assert len(addresses) == 4, "should have extracted 4 addresses"
+
+
     def test_get_fromAddr_seaport_order_metadata(self):
         metadata = {"collectionFloor":"0.047","contractAddress":"0xe75512aa3bec8f00434bbd6ad8b0a3fbff100ad6","contractName":"MG Land","currency":"ETH","fromAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ecf","hash":"0x768eefcc8fdba3946749048bd8582fff41501cfe874fba2c9f0383ae2dfdd1cb","itemPrice":"0","market":"Opensea 🌊","quantity":"1","toAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ecf","tokenIds":"4297","totalPrice":"0"}
         fromAddr = agent.get_seaport_order_attacker_address(metadata)
@@ -66,6 +72,102 @@ class TestAlertCombiner:
         assert finding.labels is not None, "labels should not be empty"
 
 
+    def test_detect_address_poisoning(self):
+        # delete cache file
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
+
+        agent.initialize()
+
+        forta_explorer = FortaExplorerMock()
+
+        df_forta = pd.DataFrame([
+            ["2022-04-30T23:55:17.284158264Z", "Possible Address Poisoning", "ethereum",
+             "SUSPICIOUS", {"transactionHash": "0xc549d8cdee8a2799335785b0cc6f2cb29e7877e92a46edf5f0500ae1ebffbd79", "block": {"number": 26435976, "chainId": 1}, "bot": {"id": "0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502"}},
+             "MEDIUM", {"attacker_addresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishing_contract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishing_eoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}, 
+             "ADDRESS-POISONING", "Possible address poisoning transaction.", ["0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168","0x55d398326f99059ff775485246999027b3197955","0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","0xf6eb5da5850a1602d3d759395480179624cffe2c"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"]
+           ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+
+        forta_explorer.set_df(df_forta)
+        block_event = create_block_event({
+            'block': {
+                'timestamp': 1651314415,
+            }
+        })
+
+        agent.detect_attack(w3, forta_explorer, block_event)
+
+        assert len(agent.FINDINGS_CACHE) == 3, "this should have triggered a finding for all three EOAs"
+        finding = agent.FINDINGS_CACHE[0]
+        assert finding.alert_id == "ATTACK-DETECTOR-ADDRESS-POISONING", "should be address poisoning finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+
+
+
+    def test_detect_native_ice_phishing(self):
+        # delete cache file
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
+
+        agent.initialize()
+
+        forta_explorer = FortaExplorerMock()
+
+        df_forta = pd.DataFrame([
+            ["2022-04-30T23:55:17.284158264Z", "Possible native ice phishing with social engineering component attack", "ethereum",
+             "SUSPICIOUS", {"transactionHash": "0xc549d8cdee8a2799335785b0cc6f2cb29e7877e92a46edf5f0500ae1ebffbd79", "block": {"number": 26435976, "chainId": 1}, "bot": {"id": "0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0"}},
+             "MEDIUM", {"anomalyScore":"0.000002526532805344122","attacker":"0x63d8c1d3141a89c4dcad07d9d224bed7be8bb183","funcSig":"ClaimTokens()","victim":"0x7cfb946f174807a4746658274763e4d7642233df"}, 
+             "NIP-1", "0x7cfb946f174807a4746658274763e4d7642233df sent funds to 0x63d8c1d3141a89c4dcad07d9d224bed7be8bb183 with ClaimTokens() as input data", ["0x63d8c1d3141a89c4dcad07d9d224bed7be8bb183"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"]
+           ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+
+        forta_explorer.set_df(df_forta)
+        block_event = create_block_event({
+            'block': {
+                'timestamp': 1651314415,
+            }
+        })
+
+        agent.detect_attack(w3, forta_explorer, block_event)
+
+        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
+        finding = agent.FINDINGS_CACHE[0]
+        assert finding.alert_id == "ATTACK-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING", "should be address poisoning finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+
+
+
+    def test_detect_fraudulent_seaport_orders(self):
+        # delete cache file
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
+
+        agent.initialize()
+
+        forta_explorer = FortaExplorerMock()
+
+        df_forta = pd.DataFrame([
+            ["2022-04-30T23:55:17.284158264Z", "nft-phishing-alert", "ethereum",
+             "SUSPICIOUS", {"transactionHash": "0xc549d8cdee8a2799335785b0cc6f2cb29e7877e92a46edf5f0500ae1ebffbd79", "block": {"number": 26435976, "chainId": 1}, "bot": {"id": "0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502"}},
+             "MEDIUM", {"collectionFloor":"2.5","contractAddress":"0x764aeebcf425d56800ef2c84f2578689415a2daa","contractName":"SewerPass","currency":"ETH","fromAddr":"0x86031ba0a2fe6be8d55abfc7d51ddc4f91ba9f78","hash":"0xec6442b20f003ea9a38b8b51f7feef75f8e68618cd6d511d7ae44012786768ea","itemPrice":"0.0033333333333333335","market":"Opensea 🌊","quantity":"3","toAddr":"0xe2551ff5f1fb405247bef576e4988df32ab7674d","tokenIds":"19445,25417,5996","totalPrice":"0.01"}, 
+             "SEAPORT-PHISHING-TRANSFER", "3 SewerPass id/s: 19445,25417,5996 sold on Opensea 🌊 for 0.01 ETH with a floor price of 2.5 ETH", ["0x86031ba0a2fe6be8d55abfc7d51ddc4f91ba9f78"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"]
+           ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+
+        forta_explorer.set_df(df_forta)
+        block_event = create_block_event({
+            'block': {
+                'timestamp': 1651314415,
+            }
+        })
+
+        agent.detect_attack(w3, forta_explorer, block_event)
+
+        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
+        finding = agent.FINDINGS_CACHE[0]
+        assert finding.alert_id == "ATTACK-DETECTOR-FRAUDULENT-SEAPORT-ORDER", "should be address poisoning finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
 
     def test_detect_alert_pos_finding_combiner_3_description(self):
         # delete cache file

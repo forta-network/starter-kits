@@ -20,7 +20,7 @@ class AlertCombinerFinding:
         meta_data = {**attacker_address_md, **start_date, **end_date, **involved_addresses, **involved_alert_ids, **involved_alert_hashes}
 
         labels = []
-        if alert_id == "ATTACK-DETECTOR-ICE-PHISHING" or alert_id == 'ATTACK-DETECTOR-FRAUDULENT-SEAPORT-ORDER':
+        if alert_id == "ATTACK-DETECTOR-ICE-PHISHING" or alert_id == 'ATTACK-DETECTOR-FRAUDULENT-SEAPORT-ORDER' or alert_id == 'ATTACK-DETECTOR-1' or alert_id == 'ATTACK-DETECTOR-ADDRESS-POISONING' or alert_id == 'ATTACK-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING':
             labels = [Label({
                 'entityType': EntityType.Address,
                 'label': "scam",
