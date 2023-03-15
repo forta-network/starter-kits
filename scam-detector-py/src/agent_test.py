@@ -105,6 +105,39 @@ class TestAlertCombiner:
 
 
 
+    def test_detect_native_ice_phishing(self):
+        # delete cache file
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
+
+        agent.initialize()
+
+        forta_explorer = FortaExplorerMock()
+
+        df_forta = pd.DataFrame([
+            ["2022-04-30T23:55:17.284158264Z", "Possible native ice phishing with social engineering component attack", "ethereum",
+             "SUSPICIOUS", {"transactionHash": "0xc549d8cdee8a2799335785b0cc6f2cb29e7877e92a46edf5f0500ae1ebffbd79", "block": {"number": 26435976, "chainId": 1}, "bot": {"id": "0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0"}},
+             "MEDIUM", {"anomalyScore":"0.000002526532805344122","attacker":"0x63d8c1d3141a89c4dcad07d9d224bed7be8bb183","funcSig":"ClaimTokens()","victim":"0x7cfb946f174807a4746658274763e4d7642233df"}, 
+             "NIP-1", "0x7cfb946f174807a4746658274763e4d7642233df sent funds to 0x63d8c1d3141a89c4dcad07d9d224bed7be8bb183 with ClaimTokens() as input data", ["0x63d8c1d3141a89c4dcad07d9d224bed7be8bb183"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"]
+           ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+
+        forta_explorer.set_df(df_forta)
+        block_event = create_block_event({
+            'block': {
+                'timestamp': 1651314415,
+            }
+        })
+
+        agent.detect_attack(w3, forta_explorer, block_event)
+
+        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
+        finding = agent.FINDINGS_CACHE[0]
+        assert finding.alert_id == "ATTACK-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING", "should be address poisoning finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+
+
+
     def test_detect_fraudulent_seaport_orders(self):
         # delete cache file
         if os.path.exists("alerted_clusters_key"):

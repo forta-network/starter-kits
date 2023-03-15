@@ -42,4 +42,5 @@ BASE_BOTS = [("0xd9584a587a469f3cdd8a03ffccb14114bc78485657e28739b8036aee7782df5
            ("0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad", "SUSPICIOUS-TOKEN-CONTRACT-CREATION", "Preparation"),  # Malicious Token ML Model
            ("0xac82fb2a572c7c0d41dc19d24790db17148d1e00505596ebe421daf91c837799", "ATTACK-DETECTOR-1", "Exploitation"),  # Attack Detector V3 - has lots of rug pulls and rake tokens
            ("0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502", "ADDRESS-POISONING", "Preparation"),  # Malicious Token ML Model
+           ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-1", "Exploitation")  # Native ice phishing with a social eng component (aka a function parameter)
         ]

@@ -79,6 +79,20 @@ Describe each of the type of alerts fired by this bot
   - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
   - Note: the detection bot will only alert once per EOA observed
 
+- ATTACK-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING
+  - Fired when alert combination is observed that points to an native ice phishing involving social engineering techniques (e.g. SecurityUpdate() function sig in the input data field)
+  - Severity is always set to "critical" 
+  - Type is always set to "exploit" 
+  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
+    - attacker_address: string
+    - start_date: date str (%Y-%m-%d)
+    - end_date: date str (%Y-%m-%d)
+    - involved_addresses_x: string
+    - involved_alert_id_x: string
+    - involved_alert_hashes_x: string
+  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
+  - Note: the detection bot will only alert once per EOA observed
+
 - ATTACK-DETECTOR-1
 - Fired when alert combination is observed that points to attack on chain that spans the 4 stages of an attack (funding, preparaiton, exploitation, and money laundering) Many of the alerts here point to rug pulls and rake tokens.
   - Severity is always set to "critical" 
