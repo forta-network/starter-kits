@@ -47,6 +47,10 @@ class TestAlertCombiner:
         addresses = agent.get_address_poisoning_addresses(metadata)
         assert len(addresses) == 4, "should have extracted 4 addresses"
 
+    def test_get_addresses_wash_trading_metadata(self):
+        metadata = {"BuyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","SellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}
+        addresses = agent.get_wash_trading_addresses(metadata)
+        assert len(addresses) == 2, "should have extracted 2 addresses"
 
     def test_get_fromAddr_seaport_order_metadata(self):
         metadata = {"collectionFloor":"0.047","contractAddress":"0xe75512aa3bec8f00434bbd6ad8b0a3fbff100ad6","contractName":"MG Land","currency":"ETH","fromAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ecf","hash":"0x768eefcc8fdba3946749048bd8582fff41501cfe874fba2c9f0383ae2dfdd1cb","itemPrice":"0","market":"Opensea 🌊","quantity":"1","toAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ecf","tokenIds":"4297","totalPrice":"0"}
@@ -69,6 +73,38 @@ class TestAlertCombiner:
         assert len(agent.FINDINGS_CACHE) == len(df_fps[df_fps['chain_id']==1]), "this should have triggered FP findings"
         finding = agent.FINDINGS_CACHE[0]
         assert finding.alert_id == "ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE", "should be FP mitigation finding"
+        assert finding.labels is not None, "labels should not be empty"
+
+
+    def test_detect_wash_trading(self):
+        # delete cache file
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
+
+        agent.initialize()
+
+        forta_explorer = FortaExplorerMock()
+
+        df_forta = pd.DataFrame([
+            ["2022-04-30T23:55:17.284158264Z", "Possible Address Poisoning", "ethereum",
+             "SUSPICIOUS", {"transactionHash": "0xcb56309c68912594a316be9420b429fd0f385cbc226dd81261dbe934e7912e56", "block": {"number": 26435976, "chainId": 1}, "bot": {"id": "0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732"}},
+             "MEDIUM", {"BuyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","SellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}, 
+             "NFT-WASH-TRADE", "test Wash Trade on test.", ["0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB".lower(),"0xa53496B67eec749ac41B4666d63228A0fb0409cf".lower()], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"]
+           ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+
+        forta_explorer.set_df(df_forta)
+        block_event = create_block_event({
+            'block': {
+                'timestamp': 1651314415,
+            }
+        })
+
+        agent.detect_attack(w3, forta_explorer, block_event)
+
+        assert len(agent.FINDINGS_CACHE) == 2, "this should have triggered a finding for all two EOAs"
+        finding = agent.FINDINGS_CACHE[0]
+        assert finding.alert_id == "ATTACK-DETECTOR-WASH-TRADE", "should be address poisoning finding"
+        assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 
 

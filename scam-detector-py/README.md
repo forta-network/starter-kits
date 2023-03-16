@@ -39,6 +39,7 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0xdba64bc69511d102162914ef52441275e651f817e297276966be16aeffe013b0 | Umbra bot | UMBRA-RECEIVE | Funding |
 | 0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e | ChangeNow Funding | FUNDING-CHANGENOW-NEW-ACCOUNT | Funding |
 | 0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad | Malicious Token ML | SUSPICIOUS-TOKEN-CONTRACT-CREATION | Preparation |
+| 0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732 | Wash trading bot | NFT-WASH-TRADE | Preparation | 
 
 
 As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
@@ -53,74 +54,35 @@ Describe each of the type of alerts fired by this bot
 
 - ATTACK-DETECTOR-ICE-PHISHING
   - Fired when alert combination is observed that points to an ice phishing attack
-  - Severity is always set to "critical" 
-  - Type is always set to "exploit" 
-  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
-    - attacker_address: string
-    - start_date: date str (%Y-%m-%d)
-    - end_date: date str (%Y-%m-%d)
-    - involved_addresses_x: string
-    - involved_alert_id_x: string
-    - involved_alert_hashes_x: string
-  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
-  - Note: the detection bot will only alert once per EOA observed
+
+- ATTACK-DETECTOR-WASH-TRADE
+  - Fired when a NFT wash trade has been observed
 
 - ATTACK-DETECTOR-FRAUDULENT-SEAPORT-ORDER
   - Fired when alert combination is observed that points to an fraudulent seaport order
-  - Severity is always set to "critical" 
-  - Type is always set to "exploit" 
-  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
-    - attacker_address: string
-    - start_date: date str (%Y-%m-%d)
-    - end_date: date str (%Y-%m-%d)
-    - involved_addresses_x: string
-    - involved_alert_id_x: string
-    - involved_alert_hashes_x: string
-  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
-  - Note: the detection bot will only alert once per EOA observed
 
 - ATTACK-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING
   - Fired when alert combination is observed that points to an native ice phishing involving social engineering techniques (e.g. SecurityUpdate() function sig in the input data field)
-  - Severity is always set to "critical" 
-  - Type is always set to "exploit" 
-  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
-    - attacker_address: string
-    - start_date: date str (%Y-%m-%d)
-    - end_date: date str (%Y-%m-%d)
-    - involved_addresses_x: string
-    - involved_alert_id_x: string
-    - involved_alert_hashes_x: string
-  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
-  - Note: the detection bot will only alert once per EOA observed
 
 - ATTACK-DETECTOR-1
 - Fired when alert combination is observed that points to attack on chain that spans the 4 stages of an attack (funding, preparaiton, exploitation, and money laundering) Many of the alerts here point to rug pulls and rake tokens.
-  - Severity is always set to "critical" 
-  - Type is always set to "exploit" 
-  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
-    - attacker_address: string
-    - start_date: date str (%Y-%m-%d)
-    - end_date: date str (%Y-%m-%d)
-    - involved_addresses_x: string
-    - involved_alert_id_x: string
-    - involved_alert_hashes_x: string
-  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
-  - Note: the detection bot will only alert once per EOA observed
-
 
 - ATTACK-DETECTOR-ADDRESS-POISONING
 - Fired when alert combination is observed that points to address poisoning attack
-  - Severity is always set to "critical" 
-  - Type is always set to "exploit" 
-  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
-    - attacker_address: string
-    - start_date: date str (%Y-%m-%d)
-    - end_date: date str (%Y-%m-%d)
-    - involved_addresses_x: string
-    - involved_alert_id_x: string
-    - involved_alert_hashes_x: string
-  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
-  - Note: the detection bot will only alert once per EOA observed
+
+- Severity is always set to "critical" 
+- Type is always set to "exploit" 
+- Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
+  - attacker_address: string
+  - start_date: date str (%Y-%m-%d)
+  - end_date: date str (%Y-%m-%d)
+  - involved_addresses_x: string
+  - involved_alert_id_x: string
+  - involved_alert_hashes_x: string
+- Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
+- Note: the detection bot will only alert once per EOA observed
+
+
 
 - ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE
   - Fired when an FP has been identified
