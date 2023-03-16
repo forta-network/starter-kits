@@ -22,7 +22,7 @@ from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALE
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
 
-label_api = "https://api.forta.network/labels/state?sourceIds=etherscan&entities="
+label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 forta_explorer = FortaExplorer()
