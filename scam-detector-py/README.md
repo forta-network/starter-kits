@@ -52,22 +52,22 @@ As a result, the precision of this alert is quite high, but also some attacks ma
 
 Describe each of the type of alerts fired by this bot
 
-- ATTACK-DETECTOR-ICE-PHISHING
+- SCAM-DETECTOR-ICE-PHISHING
   - Fired when alert combination is observed that points to an ice phishing attack
 
-- ATTACK-DETECTOR-WASH-TRADE
+- SCAM-DETECTOR-WASH-TRADE
   - Fired when a NFT wash trade has been observed
 
-- ATTACK-DETECTOR-FRAUDULENT-SEAPORT-ORDER
+- SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER
   - Fired when alert combination is observed that points to an fraudulent seaport order
 
-- ATTACK-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING
+- SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING
   - Fired when alert combination is observed that points to an native ice phishing involving social engineering techniques (e.g. SecurityUpdate() function sig in the input data field)
 
-- ATTACK-DETECTOR-1
+- SCAM-DETECTOR-1
 - Fired when alert combination is observed that points to attack on chain that spans the 4 stages of an attack (funding, preparaiton, exploitation, and money laundering) Many of the alerts here point to rug pulls and rake tokens.
 
-- ATTACK-DETECTOR-ADDRESS-POISONING
+- SCAM-DETECTOR-ADDRESS-POISONING
 - Fired when alert combination is observed that points to address poisoning attack
 
 - Severity is always set to "critical" 
@@ -84,7 +84,7 @@ Describe each of the type of alerts fired by this bot
 
 
 
-- ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE
+- SCAM-DETECTOR-ICE-PHISHING-FALSE-POSITIVE
   - Fired when an FP has been identified
   - Severity is always set to "info" 
   - Type is always set to "info" 

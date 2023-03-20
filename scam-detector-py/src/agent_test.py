@@ -72,7 +72,7 @@ class TestAlertCombiner:
         df_fps = pd.read_csv("fp_list.csv")
         assert len(agent.FINDINGS_CACHE) == len(df_fps[df_fps['chain_id']==1]), "this should have triggered FP findings"
         finding = agent.FINDINGS_CACHE[0]
-        assert finding.alert_id == "ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE", "should be FP mitigation finding"
+        assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING-FALSE-POSITIVE", "should be FP mitigation finding"
         assert finding.labels is not None, "labels should not be empty"
 
 
@@ -103,7 +103,7 @@ class TestAlertCombiner:
 
         assert len(agent.FINDINGS_CACHE) == 2, "this should have triggered a finding for all two EOAs"
         finding = agent.FINDINGS_CACHE[0]
-        assert finding.alert_id == "ATTACK-DETECTOR-WASH-TRADE", "should be address poisoning finding"
+        assert finding.alert_id == "SCAM-DETECTOR-WASH-TRADE", "should be address poisoning finding"
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 
@@ -135,7 +135,7 @@ class TestAlertCombiner:
 
         assert len(agent.FINDINGS_CACHE) == 3, "this should have triggered a finding for all three EOAs"
         finding = agent.FINDINGS_CACHE[0]
-        assert finding.alert_id == "ATTACK-DETECTOR-ADDRESS-POISONING", "should be address poisoning finding"
+        assert finding.alert_id == "SCAM-DETECTOR-ADDRESS-POISONING", "should be address poisoning finding"
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 
@@ -168,7 +168,7 @@ class TestAlertCombiner:
 
         assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
         finding = agent.FINDINGS_CACHE[0]
-        assert finding.alert_id == "ATTACK-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING", "should be address poisoning finding"
+        assert finding.alert_id == "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING", "should be address poisoning finding"
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 
@@ -201,7 +201,7 @@ class TestAlertCombiner:
 
         assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
         finding = agent.FINDINGS_CACHE[0]
-        assert finding.alert_id == "ATTACK-DETECTOR-FRAUDULENT-SEAPORT-ORDER", "should be address poisoning finding"
+        assert finding.alert_id == "SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER", "should be address poisoning finding"
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 
@@ -237,6 +237,12 @@ class TestAlertCombiner:
         finding = agent.FINDINGS_CACHE[0]
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
+        label = finding.labels[0]
+        assert label.entity == "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4", "entity should be attacker address"
+        assert label.label == "scam", "entity should labeled as scam"
+        assert label.confidence == 0.99, "entity should labeled with 0.99 confidence"
+        assert label.metadata['alert_id'] == "SCAM-DETECTOR-ICE-PHISHING", "entity should labeled as ice phishing"
+        assert label.metadata['chain_id'] == 1, "entity should labeled for chain_id 1"
 
 
     def test_detect_alert_pos_finding_combiner_3_metadata(self):
