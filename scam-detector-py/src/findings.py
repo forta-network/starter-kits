@@ -25,7 +25,7 @@ class AlertCombinerFinding:
                 'entityType': EntityType.Address,
                 'label': "scam",
                 'entity': attacker_address,
-                'confidence': 0.99,
+                'confidence': 0.8,
                 'remove': "false",
                 'metadata': {
                     'alert_id': alert_id,
