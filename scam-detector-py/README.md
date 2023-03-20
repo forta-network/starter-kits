@@ -1,4 +1,4 @@
-# Attack Detector Feed
+# Scam Detector Feed
 
 ## Description
 
@@ -10,14 +10,8 @@ It does so with the realization that an attack usually consists of 4 distinct ph
 - exploitation (e.g. draining funds from a contract)
 - money laundering (e.g. sending funds to tornado cash)
 
-As such, this feed combines previously raised alerts under the initiating address (i.e. the attacker address) for a given time window (2 calendar days, so between 24-48h) and emits a cricial alert when 
-- a certain combination associated with ice phishing fired:
-  - ice phishing or fraudulent seaport order & sleep minting 
-  - ice phishing or fraudulent seaport order & TC interaction
-  - ice phishing or fraudulent seaport order & (unverified contract & flashbot)
-  - ice phishing or fraudulent seaport order & malicious address
+As such, this feed combines previously raised alerts under the initiating address (i.e. the scammer address) for a given time window (2 calendar days, so between 24-48h) and emits a cricial alert when a specific combination of alerts is observed. The following bots are utilized by the scam detector.
 
-The following bots are considered by the Attack Detector Feed and mapped to the stages in the following way:
 | BotID | Name | AlertId | Stage |
 |-------|------|---------|-------|
 | 0xd9584a587a469f3cdd8a03ffccb14114bc78485657e28739b8036aee7782df5c | SEAPORT-PHISHING-TRANSFER | Exploitation |
@@ -42,7 +36,7 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732 | Wash trading bot | NFT-WASH-TRADE | Preparation | 
 
 
-As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
+As a result, the precision of this alert is quite high, but also some scams may be missed. Note, in the case where scams are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
 
 ## Supported Chains
 
@@ -79,9 +73,8 @@ Describe each of the type of alerts fired by this bot
   - involved_addresses_x: string
   - involved_alert_id_x: string
   - involved_alert_hashes_x: string
-- Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
-- Note: the detection bot will only alert once per EOA observed
 
+Along with each alert, a 'scam' label is emitted for the EOA that was associated with the scam. 
 
 
 - SCAM-DETECTOR-ICE-PHISHING-FALSE-POSITIVE
