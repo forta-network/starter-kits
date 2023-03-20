@@ -7,7 +7,7 @@ from datetime import datetime
 class AlertCombinerFinding:
 
     @staticmethod
-    def alert_combiner(attacker_address: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set, alert_id: str, hashes: set) -> Finding:
+    def alert_combiner(attacker_address: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set, alert_id: str, hashes: set, chain_id: int) -> Finding:
         involved_addresses = list(involved_addresses)[0:500]
         hashes = list(hashes)[0:10]
 
@@ -20,12 +20,17 @@ class AlertCombinerFinding:
         meta_data = {**attacker_address_md, **start_date, **end_date, **involved_addresses, **involved_alert_ids, **involved_alert_hashes}
 
         labels = []
-        if alert_id == "ATTACK-DETECTOR-ICE-PHISHING" or alert_id == 'ATTACK-DETECTOR-FRAUDULENT-SEAPORT-ORDER' or alert_id == 'ATTACK-DETECTOR-1' or alert_id == 'ATTACK-DETECTOR-ADDRESS-POISONING' or alert_id == 'ATTACK-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING' or alert_id == 'ATTACK-DETECTOR-WASH-TRADE':
+        if alert_id == "SCAM-DETECTOR-ICE-PHISHING" or alert_id == 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER' or alert_id == 'SCAM-DETECTOR-1' or alert_id == 'SCAM-DETECTOR-ADDRESS-POISONING' or alert_id == 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING' or alert_id == 'SCAM-DETECTOR-WASH-TRADE':
             labels = [Label({
                 'entityType': EntityType.Address,
                 'label': "scam",
                 'entity': attacker_address,
-                'confidence': 0.99
+                'confidence': 0.99,
+                'remove': "false",
+                'metadata': {
+                    'alert_id': alert_id,
+                    'chain_id': chain_id
+                }
     	    })]
 
         return Finding({
@@ -43,16 +48,17 @@ class AlertCombinerFinding:
     def alert_FP(address: str) -> Finding:
         labels = []
         labels = [Label({
-            'entityType': EntityType.Address,
-            'label': "benign",
-            'entity': address,
-            'confidence': 0.74
-        })]
+                'entityType': EntityType.Address,
+                'label': "scam",
+                'entity': address,
+                'confidence': 0.99,
+                'remove': "true",
+    	    })]
 
         return Finding({
             'name': 'Attack detector identified an EOA that was incorrectly alerted on. Emitting false positive alert.',
-            'description': f'{address} likely not involved in an ice phishing or fraudulent seaport order attack (ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE)',
-            'alert_id': 'ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE',
+            'description': f'{address} likely not involved in an ice phishing or fraudulent seaport order attack (SCAM-DETECTOR-ICE-PHISHING-FALSE-POSITIVE)',
+            'alert_id': 'SCAM-DETECTOR-ICE-PHISHING-FALSE-POSITIVE',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'metadata': {},
