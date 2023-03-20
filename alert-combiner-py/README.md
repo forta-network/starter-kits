@@ -25,7 +25,7 @@ As such, this feed combines previously raised alerts under the initiating addres
     - ICE-PHISHING-PREV-APPROVED-TRANSFERED with an anomaly score of 0.0005 and an attack stage mapping of Exploitation
     - SUSPICIOUS-CONTRACT-CREATION with an anomaly score of 0.01 and an attack stage mapping of Preparation
    3. Result
-    - The overall anomaly score would be min_preparation_anomaly_score(0.0001, 0.01) * min_exploitation_anomaly_score(0.0005) results in an overall anomaly score of 5*10-8. Since 3 alerts were raised in total, the Attack Detector would emit a critical alert.
+    - The overall anomaly score would be min_preparation_anomaly_score(0.0001, 0.01) * min_exploitation_anomaly_score(0.0005) results in an overall anomaly score of 5*10-8. Since 3 alerts were raised in total, the Attack Detector would emit a critical ATTACK-DETECTOR-3 alert.
 
 2. Heuristic Approach utilizing highly precise alert from a subset of the base bots (currently the ML contract model bot and the attack simulation bot)
    1. Alert Criteria
@@ -37,7 +37,7 @@ As such, this feed combines previously raised alerts under the initiating addres
    - CEX-FUNDING-1
 
    3. Result
-    - The anomaly score is not relevant, but rather a heurstic would cause the bot to trigger a critical alert.
+    - The anomaly score is not relevant, but rather a heurstic would cause the bot to trigger a critical ATTACK-DETECTOR-2 alert.
 
 3. Heuristic Approach utilizing the alert to attack stage mapping
    1. Alert Criteria
@@ -49,7 +49,7 @@ As such, this feed combines previously raised alerts under the initiating addres
     - FLASHBOT-TRANSACTION (Exploitation)
     - POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH (Money Laundering)
    3. Result
-    - The anomaly score is not relevant, but rather a heurstic would cause the bot to trigger a critical alert. 
+    - The anomaly score is not relevant, but rather a heurstic would cause the bot to trigger a critical ATTACK-DETECTOR-1 alert. 
 
 As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
 
@@ -59,7 +59,7 @@ As a result, the precision of this alert is quite high, but also some attacks ma
 
 ## Alerts
 
-Describe each of the type of alerts fired by this bot
+The Attack Detector bot emits the following alerts:
 
 - ATTACK-DETECTOR-1
   - Fired when 4 alerts in each stages fire (this is consistent with attack detector V1 behavior)
@@ -92,6 +92,20 @@ Describe each of the type of alerts fired by this bot
   - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
   - Note: the detection bot will only alert once per cluster observed
 
+## Labels
+
+The Attack Detector bot emits labels for each attacker address observed. The meta data contains the corresponding alertID. E.g.
+```
+    'entityType': EntityType.Address,
+    'label': "attacker",
+    'entity': address,
+    'confidence': 0.99,
+    'remove': "false",
+    'metadata': {
+      'alert_id': alert_id,
+      'chain_id': chain_id
+    }
+```
 
 ## Base Bots Utilized By Attack Detector
 
