@@ -1,15 +1,8 @@
 DATE_LOOKBACK_WINDOW_IN_DAYS = 1
 ADDRESS_QUEUE_SIZE = 10000
 
-TX_COUNT_FILTER_THRESHOLD = 500  # ignore EOAs with tx count larger than this threshold to mitigate FPs
-
-ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS = 7
 ENTITY_CLUSTER_BOT = "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9"
 ENTITY_CLUSTER_BOT_ALERT_ID = "ENTITY-CLUSTER" 
-
-FINDINGS_CACHE_KEY = "findings_cache_key"
-ALERTED_CLUSTERS_KEY = "alerted_clusters_key"
-ALERTED_FP_ADDRESSES_KEY = "alerted_fp_addresses_key"
 
 BASE_BOTS = [("0xd9584a587a469f3cdd8a03ffccb14114bc78485657e28739b8036aee7782df5c", "SEAPORT-PHISHING-TRANSFER", "Exploitation"),  # seaport orders
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS", "Exploitation"),  # ice phishing
