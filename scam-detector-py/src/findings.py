@@ -1,13 +1,11 @@
-from operator import inv
-from time import strftime
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
 from datetime import datetime
 
 
-class AlertCombinerFinding:
+class ScamDetectorFinding:
 
     @staticmethod
-    def alert_combiner(attacker_address: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set, alert_id: str, hashes: set) -> Finding:
+    def scam_finding(attacker_address: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set, alert_id: str, hashes: set) -> Finding:
         involved_addresses = list(involved_addresses)[0:500]
         hashes = list(hashes)[0:10]
 
@@ -18,6 +16,8 @@ class AlertCombinerFinding:
         involved_alert_ids = {"involved_alert_id_" + str(i): alert_id for i, alert_id in enumerate(involved_alerts, 1)}
         involved_alert_hashes = {"involved_alert_hashes_" + str(i): alert_id for i, alert_id in enumerate(hashes, 1)}
         meta_data = {**attacker_address_md, **start_date, **end_date, **involved_addresses, **involved_alert_ids, **involved_alert_hashes}
+
+        #TODO - get all deployed contracts by EOA and add label for those
 
         labels = []
         if alert_id == "ATTACK-DETECTOR-ICE-PHISHING" or alert_id == 'ATTACK-DETECTOR-FRAUDULENT-SEAPORT-ORDER':

@@ -4,3 +4,4 @@ forta.config.json
 __pycache__
 .pytest_cache
 .env
+secrets.json

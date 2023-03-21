@@ -1,3 +1,5 @@
+EOA_ADDRESS = '0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb5'  
+
 class Web3Mock:
     def __init__(self):
         self.eth = EthMock()
