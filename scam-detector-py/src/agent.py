@@ -341,6 +341,8 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                 logging.debug(potential_attacker_cluster_lower)
                 if "0x000000000000000000000000000" in potential_attacker_cluster_lower:
                     continue
+                if len(potential_attacker_cluster_lower.split(",")) > 10:
+                    continue
 
                 alert_ids = set()
                 involved_clusters = set()
@@ -416,7 +418,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-ICE-PHISHING', hashes, CHAIN_ID))
                             logging.info(f"Findings count {len(FINDINGS_CACHE)}")
                             persist_state()
-                    else: 
+                    else:
                         logging.info(f"Cluster {potential_attacker_cluster_lower} already alerted on.")
             except Exception as e:
                 logging.warn(f"Error processing address combiner alert 1 {potential_attacker_cluster_lower}: {e}")
@@ -575,8 +577,10 @@ def provide_handle_block(w3, forta_explorer):
         global FINDINGS_CACHE
         global MUTEX
 
-        findings = FINDINGS_CACHE
-        FINDINGS_CACHE = []
+        findings = []
+        for finding in FINDINGS_CACHE[0:10]:  # 10 findings per block due to size limitation
+            findings.append(finding)
+        FINDINGS_CACHE = FINDINGS_CACHE[10:]
 
         if datetime.now().minute == 0:  # every hour
             emit_new_fp_finding(w3)
