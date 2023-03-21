@@ -377,7 +377,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                             logging.info(f"alert {alert_event.alert_hash} - Have sufficient number of alerts for {cluster}. Overall anomaly score is {anomaly_score}, {len(anomaly_scores)} stages.")
                             logging.info(f"alert {alert_event.alert_hash} - {cluster} anomaly scores {anomaly_scores}.")
 
-                            if anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE or len(anomaly_scores) == 4 or (contains_highly_precise_bot and len(anomaly_score)>1):
+                            if anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE or len(anomaly_scores) == 4 or (contains_highly_precise_bot and len(anomaly_scores)>1):
                                 logging.info(f"alert {alert_event.alert_hash} - Overall anomaly score for {cluster} is below threshold, 4 stages, or highly precise bot with 2 stages have been observed. Unless FP mitigation kicks in, will raise finding.")
 
                                 fp_mitigated = False

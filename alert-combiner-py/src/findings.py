@@ -37,11 +37,12 @@ class AlertCombinerFinding:
                 'label': "attacker",
                 'entity': address,
                 'confidence': 0.99,
-                'remove': "false",
-                'metadata': {
-                    'alert_id': alert_id,
-                    'chain_id': chain_id
-                }
+                'remove': "false"
+                # ,
+                # 'metadata': {
+                #     'alert_id': alert_id,
+                #     'chain_id': chain_id
+                # }
             }))
 
         return Finding({
