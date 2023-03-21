@@ -26,16 +26,17 @@ class AlertCombinerFinding:
                 'label': "scam",
                 'entity': attacker_address,
                 'confidence': 0.8,
-                'remove': "false",
-                'metadata': {
-                    'alert_id': alert_id,
-                    'chain_id': chain_id
-                }
+                'remove': "false"
+                # ,
+                # 'metadata': {
+                #     'alert_id': alert_id,
+                #     'chain_id': chain_id
+                # }
     	    })]
 
         return Finding({
-            'name': 'Attack detector identified an EOA with past alerts mapping to attack behavior',
-            'description': f'{attacker_address} likely involved in an attack ({alert_id})',
+            'name': 'Scam detector identified an EOA with past alerts mapping to scam behavior',
+            'description': f'{attacker_address} likely involved in an scam ({alert_id})',
             'alert_id': alert_id,
             'type': FindingType.Exploit,
             'severity': FindingSeverity.Critical,
@@ -52,12 +53,12 @@ class AlertCombinerFinding:
                 'label': "scam",
                 'entity': address,
                 'confidence': 0.99,
-                'remove': "true",
+                'remove': "true"
     	    })]
 
         return Finding({
-            'name': 'Attack detector identified an EOA that was incorrectly alerted on. Emitting false positive alert.',
-            'description': f'{address} likely not involved in an ice phishing or fraudulent seaport order attack (SCAM-DETECTOR-ICE-PHISHING-FALSE-POSITIVE)',
+            'name': 'Scam detector identified an EOA that was incorrectly alerted on. Emitting false positive alert.',
+            'description': f'{address} likely not involved in scam (SCAM-DETECTOR-ICE-PHISHING-FALSE-POSITIVE)',
             'alert_id': 'SCAM-DETECTOR-ICE-PHISHING-FALSE-POSITIVE',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
