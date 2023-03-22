@@ -1,4 +1,4 @@
-BLOCK_RANGE = {1: 240, 56: 1200, 42161:3600, 10: 300, 137: 1300}  # what block range should be utilized to assess the TORNADO_CASH_TRANSFER_COUNT_THRESHOLD; about an hour
+BLOCK_RANGE = {1: 240, 56: 1200, 42161: 3600, 10: 300, 137: 1300}  # what block range should be utilized to assess the TORNADO_CASH_TRANSFER_COUNT_THRESHOLD; about an hour
 
 
 # how many tornado cash transfers should be in a block range to be considered suspicious; currently configured to be about 1M USD

@@ -1,7 +1,7 @@
 {
   "name": "social-eng-contract-creation",
-  "version": "0.0.3",
-  "description": "Forta Agent Python starter project",
+  "version": "0.0.6",
+  "description": "Identifies when a new social engineering contract is created.",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
   ],
@@ -22,7 +22,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.4"
+    "forta-agent": "^0.1.19"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

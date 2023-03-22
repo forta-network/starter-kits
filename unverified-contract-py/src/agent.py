@@ -9,6 +9,7 @@ from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from pyevmasm import disassemble_hex
 from web3 import Web3
+import time
 
 from src.blockexplorer import BlockExplorer
 from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, WAIT_TIME
@@ -19,7 +20,10 @@ blockexplorer = BlockExplorer(web3.eth.chain_id)
 
 FINDINGS_CACHE = []
 MUTEX = False
+THREAD_STARTED = False
 CREATED_CONTRACTS = {}  # contract and creation timestamp
+ALERT_COUNT = 0  # stats to emit anomaly score
+DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -29,6 +33,8 @@ handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 root.addHandler(handler)
+
+
 
 
 def initialize():
@@ -41,6 +47,9 @@ def initialize():
 
     global MUTEX
     MUTEX = False
+
+    global THREAD_STARTED
+    THREAD_STARTED = False
 
     global CREATED_CONTRACTS
     CREATED_CONTRACTS = {}
@@ -110,10 +119,24 @@ def get_opcode_addresses(w3, address) -> set:
 
 def cache_contract_creation(w3, blockexplorer, transaction_event: forta_agent.transaction_event.TransactionEvent):
     global CREATED_CONTRACTS
+    global MUTEX
+    global DENOMINATOR_COUNT
 
     logging.info(f"Scanning transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
+    while MUTEX:
+        time.sleep(1)  # 1 sec
 
+    MUTEX = True
     created_contract_addresses = []
+    if transaction_event.to is None:
+        nonce = transaction_event.transaction.nonce
+        created_contract_address = calc_contract_address(
+            w3, transaction_event.from_, nonce
+        )
+        DENOMINATOR_COUNT += 1
+        logging.info(f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}")
+        CREATED_CONTRACTS[created_contract_address] = transaction_event
+
     for trace in transaction_event.traces:
         if trace.type == 'create':
             if (transaction_event.from_ == trace.action.from_ or trace.action.from_ in created_contract_addresses):
@@ -121,40 +144,75 @@ def cache_contract_creation(w3, blockexplorer, transaction_event: forta_agent.tr
                 nonce = transaction_event.transaction.nonce if transaction_event.from_ == trace.action.from_ else 1  # for contracts creating other contracts, the nonce would be 1
                 created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
                 logging.info(f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}")
+                DENOMINATOR_COUNT += 1
                 CREATED_CONTRACTS[created_contract_address] = transaction_event
+    MUTEX = False
 
 
-def detect_unverified_contract_creation(w3, blockexplorer, infinite=True):
+def detect_unverified_contract_creation(w3, blockexplorer, wait_time=WAIT_TIME, infinite=True):
     global CREATED_CONTRACTS
     global FINDINGS_CACHE
     global MUTEX
+    global ALERT_COUNT
+    global DENOMINATOR_COUNT
 
     try:
         while(True):
-            for created_contract_address, transaction_event in CREATED_CONTRACTS.items():
-                logging.info(f"Evaluating contract {created_contract_address} from cache.")
-                created_contract_addresses = []
-                for trace in transaction_event.traces:
-                    if trace.type == 'create':
-                        if (transaction_event.from_ == trace.action.from_ or trace.action.from_ in created_contract_addresses):
-                            nonce = transaction_event.transaction.nonce if transaction_event.from_ == trace.action.from_ else 1  # for contracts creating other contracts, the nonce would be 1
-                            calc_created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
-                            if(created_contract_address == calc_created_contract_address):
-                                if datetime.fromtimestamp(transaction_event.timestamp) > datetime.now() - timedelta(minutes=WAIT_TIME):
-                                    logging.info(f"Evaluating contract {created_contract_address} from cache. Is old enough.")
-                                    if not blockexplorer.is_verified(created_contract_address):
-                                        logging.info(f"Identified unverified contract: {created_contract_address}")
-                                        storage_addresses = get_storage_addresses(w3, created_contract_address)
-                                        opcode_addresses = get_opcode_addresses(w3, created_contract_address)
+            if not MUTEX:
+                MUTEX = True
+                for created_contract_address, transaction_event in CREATED_CONTRACTS.items():
+                    logging.info(f"Evaluating contract {created_contract_address} from cache.")
+                    created_contract_addresses = []
+                    if transaction_event.to is None:
+                        logging.info(f"Contract {created_contract_address} created by EOA.")
+                        nonce = transaction_event.transaction.nonce
+                        created_contract_address = calc_contract_address(
+                            w3, transaction_event.from_, nonce
+                        )
+                        if (datetime.now() - datetime.fromtimestamp(transaction_event.timestamp)) > timedelta(minutes=wait_time):
+                            logging.info(f"Evaluating contract {created_contract_address} from cache. Is old enough.")
+                            if not blockexplorer.is_verified(created_contract_address):
+                                logging.info(f"Identified unverified contract: {created_contract_address}")
+                                storage_addresses = get_storage_addresses(w3, created_contract_address)
+                                opcode_addresses = get_opcode_addresses(w3, created_contract_address)
 
-                                        created_contract_addresses.append(created_contract_address.lower())
+                                created_contract_addresses.append(created_contract_address.lower())
+                                ALERT_COUNT += 1
 
-                                        FINDINGS_CACHE.append(UnverifiedCodeContractFindings.unverified_code(trace.action.from_, created_contract_address, set.union(storage_addresses, opcode_addresses)))
-                                        CREATED_CONTRACTS.pop(created_contract_address)
-                                    else:
-                                        logging.info(f"Identified verified contract: {created_contract_address}")
-            if not infinite:
-                break
+                                anomaly_score = (ALERT_COUNT * 1.0) / DENOMINATOR_COUNT
+
+                                FINDINGS_CACHE.append(UnverifiedCodeContractFindings.unverified_code(transaction_event.from_, created_contract_address, anomaly_score, set.union(storage_addresses, opcode_addresses)))
+                                CREATED_CONTRACTS.pop(created_contract_address)
+                            else:
+                                logging.info(f"Identified verified contract: {created_contract_address}")
+
+                    for trace in transaction_event.traces:
+                        if trace.type == 'create':
+                            logging.info(f"Contract {created_contract_address} created within trace.")
+
+                            if (transaction_event.from_ == trace.action.from_ or trace.action.from_ in created_contract_addresses):
+                                nonce = transaction_event.transaction.nonce if transaction_event.from_ == trace.action.from_ else 1  # for contracts creating other contracts, the nonce would be 1
+                                calc_created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
+                                if(created_contract_address == calc_created_contract_address):
+                                    if (datetime.now() - datetime.fromtimestamp(transaction_event.timestamp)) > timedelta(minutes=wait_time):
+                                        logging.info(f"Evaluating contract {created_contract_address} from cache. Is old enough.")
+                                        if not blockexplorer.is_verified(created_contract_address):
+                                            logging.info(f"Identified unverified contract: {created_contract_address}")
+                                            storage_addresses = get_storage_addresses(w3, created_contract_address)
+                                            opcode_addresses = get_opcode_addresses(w3, created_contract_address)
+
+                                            created_contract_addresses.append(created_contract_address.lower())
+                                            ALERT_COUNT += 1
+
+                                            anomaly_score = (ALERT_COUNT * 1.0) / DENOMINATOR_COUNT
+
+                                            FINDINGS_CACHE.append(UnverifiedCodeContractFindings.unverified_code(trace.action.from_, created_contract_address, anomaly_score, set.union(storage_addresses, opcode_addresses)))
+                                            CREATED_CONTRACTS.pop(created_contract_address)
+                                        else:
+                                            logging.info(f"Identified verified contract: {created_contract_address}")
+                if not infinite:
+                    break
+                MUTEX = False
 
     except Exception as e:
         logging.warn(f"Exception: {e}")
@@ -164,11 +222,11 @@ def detect_unverified_contract_creation(w3, blockexplorer, infinite=True):
 def provide_handle_transaction(w3, blockexplorer):
     def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
         global FINDINGS_CACHE
-        global MUTEX
+        global THREAD_STARTED
 
-        if not MUTEX:
-            MUTEX = True
-            thread = threading.Thread(target=detect_unverified_contract_creation, args=(w3, blockexplorer, transaction_event))
+        if not THREAD_STARTED:
+            THREAD_STARTED = True
+            thread = threading.Thread(target=detect_unverified_contract_creation, args=(w3, blockexplorer))
             thread.start()
 
         cache_contract_creation(w3, blockexplorer, transaction_event)

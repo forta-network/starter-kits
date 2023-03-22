@@ -1,0 +1,9 @@
+address,chain_id,comment
+0x1e0049783f008a0085193e00003d00cd54003c71,1,open sea relayer
+0x000000000022d473030f116ddee9f6b43ac78ba3,1,Uniswap Protocol: Permit2
+0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0,1,Wsteth token
+0x7ceb23fd6bc0add59e62ac25578270cff1b9f619,137,weth token
+0x10ed43c718714eb63d5aa57b78b54704e256024e,56,PancakeSwap: Router
+0x7c90784d6144967bf7b8c89ca06a3629d8abe642,1,MoSolid token
+0x55d398326f99059ff775485246999027b3197955,56,Binance Peg Token
+0x6F5aC65CA70F2a44d73c8f711Cb2bDf425D9F304,56,BitKeep: Swap Router v1

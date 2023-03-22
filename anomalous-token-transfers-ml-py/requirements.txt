@@ -1,4 +1,4 @@
-forta_agent>=0.1.1
+forta_agent>=0.1.11
 setuptools>=61.3.1
 requests>=2.26.0
 scikit-learn==1.1.1 # model trained on 1.1.1
@@ -7,3 +7,7 @@ dill
 numpy
 lime
 backoff
+cachetools>=5.2.0
+expiring-dict>=1.1.0
+bot-alert-rate
+

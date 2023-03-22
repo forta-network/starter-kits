@@ -1,23 +1,23 @@
 import forta_agent
 import rlp
-from forta_agent import get_json_rpc_url
-from hexbytes import HexBytes
+from forta_agent import get_json_rpc_url, EntityType
 from joblib import load
 from evmdasm import EvmBytecode
 from web3 import Web3
 
 from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
-    CONTRACT_SLOT_ANALYSIS_DEPTH,
     MODEL_THRESHOLD,
-    TOKEN_TYPES,
-    ERC721_SIGHASHES,
-    ERC20_SIGHASHES,
-    ERC1155_SIGHASHES,
-    ERC777_SIGHASHES,
+    SAFE_CONTRACT_THRESHOLD,
 )
-from src.findings import MaliciousTokenContractFindings
+from src.findings import TokenContractFindings
 from src.logger import logger
+from src.utils import (
+    get_anomaly_score,
+    get_features,
+    get_storage_addresses,
+    is_contract,
+)
 
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -30,116 +30,28 @@ def initialize():
     """
     global ML_MODEL
     logger.info("Start loading model")
-    ML_MODEL = load("malicious_token_model_sighashes_10_29_22.joblib")
+    ML_MODEL = load("malicious_token_model_02_07_23_exp6.joblib")
     logger.info("Complete loading model")
 
 
-def is_contract(w3, address) -> bool:
-    """
-    this function determines whether address is a contract
-    :return: is_contract: bool
-    """
-    if address is None:
-        return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
-    return code != HexBytes("0x")
-
-
-def get_storage_addresses(w3, address) -> set:
-    """
-    this function returns the addresses that are references in the storage of a contract (first CONTRACT_SLOT_ANALYSIS_DEPTH slots)
-    :return: address_list: list (only returning contract addresses)
-    """
-    if address is None:
-        return set()
-
-    address_set = set()
-    for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH):
-        mem = w3.eth.get_storage_at(Web3.toChecksumAddress(address), i)
-        if mem != HexBytes(
-            "0x0000000000000000000000000000000000000000000000000000000000000000"
-        ):
-            # looking at both areas of the storage slot as - depending on packing - the address could be at the beginning or the end.
-            addr_on_left = mem[0:20].hex()
-            addr_on_right = mem[12:].hex()
-            if is_contract(w3, addr_on_left):
-                address_set.add(Web3.toChecksumAddress(addr_on_left))
-            if is_contract(w3, addr_on_right):
-                address_set.add(Web3.toChecksumAddress(addr_on_right))
-
-    return address_set
-
-
-def get_contract_type(opcodes: str, function_sighashes: set) -> str:
-    """
-    this function determines contract type based on available sighashes.
-    :return: contract_type: str
-    """
-    if function_sighashes.intersection(ERC777_SIGHASHES):
-        return "erc777"
-    elif function_sighashes.intersection(ERC1155_SIGHASHES):
-        return "erc1155"
-    elif function_sighashes.intersection(ERC721_SIGHASHES):
-        return "erc721"
-    elif function_sighashes.intersection(ERC20_SIGHASHES):
-        return "erc20"
-    elif "DELEGATECALL" in opcodes:
-        return "proxy"
-    else:
-        return "non-token-or-proxy"
-
-
-def get_features(w3, opcodes) -> list:
-    """
-    this function returns the opcodes + function hashes contained in the contract
-    :return: features: list
-    """
-    features = []
-    function_sighashes = set()
-    opcode_addresses = set()
-
-    for i, opcode in enumerate(opcodes):
-        opcode_name = opcode.name
-        # treat unique unknown and invalid opcodes as UNKNOWN OR INVALID
-        if opcode_name.startswith("UNKNOWN") or opcode_name.startswith("INVALID"):
-            opcode_name = opcode.name.split("_")[0]
-        features.append(opcode_name)
-        if len(opcode.operand) == 40 and is_contract(w3, opcode.operand):
-            opcode_addresses.add(Web3.toChecksumAddress(f"0x{opcode.operand}"))
-
-        if i < (len(opcodes) - 3):
-            if (
-                opcodes[i].name == "PUSH4"
-                and opcodes[i + 1].name == "EQ"
-                and opcodes[i + 2].name == "PUSH2"
-                and opcodes[i + 3].name == "JUMPI"
-            ):  # add function sighashes
-                features.append(opcode.operand)
-                function_sighashes.add(opcode.operand)
-    features = " ".join(features)
-    contract_type = get_contract_type(features, function_sighashes)
-
-    return features, opcode_addresses, contract_type
-
-
-def exec_model(w3, opcodes: str) -> tuple:
+def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     """
     this function executes the model to obtain the score for the contract
     :return: score: float
     """
     score = None
-    features, opcode_addresses, contract_type = get_features(w3, opcodes)
-    if contract_type in TOKEN_TYPES:
-        score = ML_MODEL.predict_proba([features])[0][1]
-    logger.info(f"{contract_type}: {score}")
+    features, opcode_addresses = get_features(w3, opcodes, contract_creator)
+    score = ML_MODEL.predict_proba([features])[0][1]
 
-    return score, opcode_addresses, contract_type
+    return score, opcode_addresses
 
 
 def detect_malicious_token_contract_tx(
     w3, transaction_event: forta_agent.transaction_event.TransactionEvent
 ) -> list:
-    all_findings = []
+    malicious_findings = []
+    safe_findings = []
+
     if len(transaction_event.traces) > 0:
         for trace in transaction_event.traces:
             if trace.type == "create":
@@ -162,14 +74,16 @@ def detect_malicious_token_contract_tx(
                     )
                 # creation bytecode contains both initialization and run-time bytecode.
                 creation_bytecode = trace.action.init
-                all_findings.extend(
-                    detect_malicious_token_contract(
-                        w3,
-                        trace.action.from_,
-                        created_contract_address,
-                        creation_bytecode,
-                    )
-                )
+                for finding in detect_malicious_token_contract(
+                    w3,
+                    trace.action.from_,
+                    created_contract_address,
+                    creation_bytecode,
+                ):
+                    if finding.alert_id == "SUSPICIOUS-TOKEN-CONTRACT-CREATION":
+                        malicious_findings.append(finding)
+                    else:
+                        safe_findings.append(finding)
     else:  # Trace isn't supported, To improve coverage, process contract creations from EOAs.
         if transaction_event.to is None:
             nonce = transaction_event.transaction.nonce
@@ -179,16 +93,19 @@ def detect_malicious_token_contract_tx(
             runtime_bytecode = w3.eth.get_code(
                 Web3.toChecksumAddress(created_contract_address)
             ).hex()
-            all_findings.extend(
-                detect_malicious_token_contract(
-                    w3,
-                    transaction_event.from_,
-                    created_contract_address,
-                    runtime_bytecode,
-                )
-            )
+            for finding in detect_malicious_token_contract(
+                w3,
+                transaction_event.from_,
+                created_contract_address,
+                runtime_bytecode,
+            ):
+                if finding.alert_id == "SUSPICIOUS-TOKEN-CONTRACT-CREATION":
+                    malicious_findings.append(finding)
+                else:
+                    safe_findings.append(finding)
 
-    return all_findings
+    # Reduce findings to 10 because we cannot return more than 10 findings per request
+    return (malicious_findings + safe_findings)[:10]
 
 
 def detect_malicious_token_contract(w3, from_, created_contract_address, code) -> list:
@@ -202,18 +119,82 @@ def detect_malicious_token_contract(w3, from_, created_contract_address, code) -
                 logger.warn(f"Error disassembling evm bytecode: {e}")
             # obtain all the addresses contained in the created contract and propagate to the findings
             storage_addresses = get_storage_addresses(w3, created_contract_address)
-            model_score, opcode_addresses, contract_type = exec_model(w3, opcodes)
-            if model_score is not None and model_score >= MODEL_THRESHOLD:
-                findings.append(
-                    MaliciousTokenContractFindings.malicious_contract_creation(
-                        from_,
-                        contract_type,
-                        created_contract_address,
-                        set.union(storage_addresses, opcode_addresses),
-                        model_score,
-                        MODEL_THRESHOLD,
+            model_score, opcode_addresses = exec_model(w3, opcodes, from_)
+            from_label_type = "contract" if is_contract(w3, from_) else "eoa"
+            finding = TokenContractFindings(
+                from_,
+                created_contract_address,
+                set.union(storage_addresses, opcode_addresses),
+                model_score,
+                MODEL_THRESHOLD,
+            )
+            if model_score is not None:
+                from_label_type = "contract" if is_contract(w3, from_) else "eoa"
+                labels = [
+                    {
+                        "entity": created_contract_address,
+                        "entity_type": EntityType.Address,
+                        "label": "contract",
+                        "confidence": 1.0,
+                    },
+                    {
+                        "entity": from_,
+                        "entity_type": EntityType.Address,
+                        "label": from_label_type,
+                        "confidence": 1.0,
+                    },
+                ]
+
+                if model_score >= MODEL_THRESHOLD:
+                    labels.extend(
+                        [
+                            {
+                                "entity": created_contract_address,
+                                "entity_type": EntityType.Address,
+                                "label": "attacker",
+                                "confidence": model_score,
+                            },
+                            {
+                                "entity": from_,
+                                "entity_type": EntityType.Address,
+                                "label": "attacker",
+                                "confidence": model_score,
+                            },
+                        ]
                     )
-                )
+                    anomaly_score = get_anomaly_score(
+                        w3.eth.chain_id, "SUSPICIOUS-TOKEN-CONTRACT-CREATION"
+                    )
+                    findings.append(
+                        finding.malicious_contract_creation(
+                            anomaly_score,
+                            labels,
+                        )
+                    )
+                elif model_score <= SAFE_CONTRACT_THRESHOLD:
+                    labels.extend(
+                        [
+                            {
+                                "entity": created_contract_address,
+                                "entity_type": EntityType.Address,
+                                "label": "positive_reputation",
+                                "confidence": 1 - model_score,
+                            },
+                            {
+                                "entity": from_,
+                                "entity_type": EntityType.Address,
+                                "label": "positive_reputation",
+                                "confidence": 1 - model_score,
+                            },
+                        ]
+                    )
+                    findings.append(
+                        finding.safe_contract_creation(
+                            labels,
+                        )
+                    )
+                else:
+                    findings.append(finding.non_malicious_contract_creation())
 
     return findings
 

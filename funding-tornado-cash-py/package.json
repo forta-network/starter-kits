@@ -1,6 +1,6 @@
 {
   "name": "funding-tornado-cash",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "A bot that clusters entities",
   "chainIds": [
     1, 56, 137, 42161, 10
@@ -24,7 +24,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.10"
+    "forta-agent": "^0.1.19"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"
