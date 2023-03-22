@@ -1,10 +1,7 @@
-.vscode
 node_modules
 dist
 forta.config.json
 __pycache__
 .pytest_cache
-.DS_Store
-*.tar.gz
-*.tgz
-secrets.json
+.env
+api_keys.py

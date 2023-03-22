@@ -19,6 +19,7 @@ ENV NODE_ENV=production
 # Uncomment the following line to enable agent logging
 LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
+COPY ./.env ./
 COPY ./src ./src
 COPY package*.json ./
 RUN npm ci --production
