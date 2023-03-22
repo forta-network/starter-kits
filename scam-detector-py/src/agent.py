@@ -232,24 +232,28 @@ def swap_addresses_with_clusters(addresses: list, df_address_clusters_exploded: 
 
 
 def get_wash_trading_addresses(metadata: dict) -> set:
+    
     addresses = set()
-    if "BuyerWallet" in metadata:
-        addresses.add(metadata["BuyerWallet"].lower())
-    if "SellerWallet" in metadata:
-        addresses.add(metadata["SellerWallet"].lower())
+    if "buyerWallet" in metadata:
+        addresses.add(metadata["buyerWallet"].lower())
+    if "sellerWallet" in metadata:
+        addresses.add(metadata["sellerWallet"].lower())
+    logging.info(f"Found {len(addresses)} addresses in wash trading metadata")
     return addresses
 
 
 def get_address_poisoning_addresses(metadata: dict) -> set:
+    print(f"address poisoning metadata: {metadata}")
     addresses = set()
-    if "phishing_eoa" in metadata:
-        addresses.add(metadata["phishing_eoa"])
-    if "phishing_contract" in metadata:
-        addresses.add(metadata["phishing_contract"])
-    if "attacker_addresses" in metadata:
-        attacker_addresses = metadata["attacker_addresses"]
+    if "phishingEoa" in metadata:
+        addresses.add(metadata["phishingEoa"].lower())
+    if "phishingContract" in metadata:
+        addresses.add(metadata["phishingContract"].lower())
+    if "attackerAddresses" in metadata:
+        attacker_addresses = metadata["attackerAddresses"]
         for attacker_address in attacker_addresses.split(","):
-            addresses.add(attacker_address)
+            addresses.add(attacker_address.lower())
+    logging.info(f"Found {len(addresses)} addresses in address poisoning metadata")
     return addresses
 
 

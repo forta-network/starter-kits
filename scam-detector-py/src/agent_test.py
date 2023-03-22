@@ -43,12 +43,12 @@ class TestAlertCombiner:
         assert label == 'uniswap', "this should be a uniswap address"
 
     def test_get_addresses_address_poisoning_metadata(self):
-        metadata = {"attacker_addresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishing_contract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishing_eoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
+        metadata = {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
         addresses = agent.get_address_poisoning_addresses(metadata)
         assert len(addresses) == 4, "should have extracted 4 addresses"
 
     def test_get_addresses_wash_trading_metadata(self):
-        metadata = {"BuyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","SellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}
+        metadata = {"buyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","sellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}
         addresses = agent.get_wash_trading_addresses(metadata)
         assert len(addresses) == 2, "should have extracted 2 addresses"
 
@@ -88,7 +88,7 @@ class TestAlertCombiner:
         df_forta = pd.DataFrame([
             ["2022-04-30T23:55:17.284158264Z", "Possible Address Poisoning", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0xcb56309c68912594a316be9420b429fd0f385cbc226dd81261dbe934e7912e56", "block": {"number": 26435976, "chainId": 1}, "bot": {"id": "0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732"}},
-             "MEDIUM", {"BuyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","SellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}, 
+             "MEDIUM", {"buyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","sellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}, 
              "NFT-WASH-TRADE", "test Wash Trade on test.", ["0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB".lower(),"0xa53496B67eec749ac41B4666d63228A0fb0409cf".lower()], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"]
            ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
 
@@ -120,7 +120,7 @@ class TestAlertCombiner:
         df_forta = pd.DataFrame([
             ["2022-04-30T23:55:17.284158264Z", "Possible Address Poisoning", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0xc549d8cdee8a2799335785b0cc6f2cb29e7877e92a46edf5f0500ae1ebffbd79", "block": {"number": 26435976, "chainId": 1}, "bot": {"id": "0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502"}},
-             "MEDIUM", {"attacker_addresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishing_contract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishing_eoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}, 
+             "MEDIUM", {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}, 
              "ADDRESS-POISONING", "Possible address poisoning transaction.", ["0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168","0x55d398326f99059ff775485246999027b3197955","0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","0xf6eb5da5850a1602d3d759395480179624cffe2c"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"]
            ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
 
