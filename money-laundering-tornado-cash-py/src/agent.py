@@ -29,6 +29,8 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
+ALERT_COUNT = 0  # stats to emit anomaly score
+DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
 def initialize():
     """
@@ -40,11 +42,18 @@ def initialize():
 
     global ACCOUNT_QUEUE
     ACCOUNT_QUEUE = []
+    
+    global ALERT_COUNT
+    ALERT_COUNT = 0
 
+    global DENOMINATOR_COUNT
+    DENOMINATOR_COUNT = 0
 
 def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     global ACCOUNT_TO_TORNADO_CASH_BLOCKS
     global ACCOUNT_QUEUE
+    global ALERT_COUNT
+    global DENOMINATOR_COUNT
 
     logging.info(f"Analyzing transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
 
@@ -53,6 +62,9 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
 
     if transaction_event.to is None:
         return findings
+
+    if (transaction_event.transaction.value is not None and transaction_event.transaction.value > 0):
+        DENOMINATOR_COUNT += 1
 
     for log in transaction_event.logs:
         if (transaction_event.transaction.value is not None and transaction_event.transaction.value > 0 and
@@ -95,7 +107,10 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
             tx_threshold = TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_BSC
 
         if total_txs >= tx_threshold:
-            findings.append(MoneyLaunderingTornadoCashFindings.possible_money_laundering_tornado_cash(account, total_txs * deposit_size))
+            ALERT_COUNT += 1
+
+            anomaly_score = (ALERT_COUNT * 1.0) / DENOMINATOR_COUNT
+            findings.append(MoneyLaunderingTornadoCashFindings.possible_money_laundering_tornado_cash(account, total_txs * deposit_size, anomaly_score))
 
     logging.info(f"Return {transaction_event.transaction.hash}")
             

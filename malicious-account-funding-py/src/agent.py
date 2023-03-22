@@ -1,19 +1,16 @@
+from datetime import datetime
 import logging
 import sys
-import requests
-import pandas as pd
 
+from expiring_dict import ExpiringDict
+from functools import lru_cache
 import forta_agent
 from forta_agent import get_json_rpc_url
+import requests
 from web3 import Web3
 
-from src.constants import LUABASE_QUERY
 from src.findings import MaliciousAccountFundingFinding
 
-import os
-
-from dotenv import load_dotenv
-load_dotenv()
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
@@ -22,65 +19,93 @@ root.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
-KNOWN_MALICIOUS_ACCOUNTS = dict()  # lower case address -> tag
+
+CHAIN_SOURCE_IDS_MAPPING = {
+    1: ["etherscan", "etherscan-tags"],  # Ethereum
+    137: ["polygon-tags"],  # Polygon
+    250: ["fantom-tags"],  # Fantom
+}
+GLOBAL_TOTAL_TX_COUNTER = ExpiringDict(ttl=86_400)
+BOT_ID = "0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46"
 
 
-def initialize():
-    """
-    this function initializes the state variables that are tracked across tx and blocks
-    it is called from test to reset state between tests
-    """
-    global KNOWN_MALICIOUS_ACCOUNTS
-    KNOWN_MALICIOUS_ACCOUNTS = dict()
+@lru_cache(maxsize=1_000_000)
+def is_malicious_account(chain_id: int, address: str) -> str:
+    source_ids = CHAIN_SOURCE_IDS_MAPPING[chain_id]
+    wallet_tag = None
+
+    for source_id in source_ids:
+        labels_url = f"https://api.forta.network/labels/state?entities={address}&sourceIds={source_id}&labels=*xploit*,*hish*,*heist*&limit=1"
+        try:
+            result = requests.get(labels_url).json()
+            if isinstance(result["events"], list) and len(result["events"]) == 1:
+                wallet_tag = result["events"][0]["label"]["label"]
+        except Exception as err:
+            logging.error(f"Error obtaining malicious accounts: {err}")
+
+    return wallet_tag
 
 
-def update_known_malicious_accounts(chain_id: int):
-    global KNOWN_MALICIOUS_ACCOUNTS
-    KNOWN_MALICIOUS_ACCOUNTS = dict()
+def update_tx_counter(date_hour: str):
+    # Total number of transactions in the last 24 hrs
+    global GLOBAL_TOTAL_TX_COUNTER
+    GLOBAL_TOTAL_TX_COUNTER[date_hour] = GLOBAL_TOTAL_TX_COUNTER.get(date_hour, 0) + 1
 
-    logging.info("Updating known malicious accounts.")
 
-    # Get all known malicious accounts from LuaBase
-    sql = LUABASE_QUERY[chain_id]
-    url = "https://q.luabase.com/run"
-    payload = {
-        "block": {
-            "details": {
-                "sql": sql,
-                "limit": 50000,
-            }
-        },
-        "api_key": os.environ.get('LUABASE_API_KEY')
-    }
+def alert_count(chain_id) -> int:
+    alert_stats_url = (
+        f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
+    )
+    alert_count = 0
+    try:
+        result = requests.get(alert_stats_url).json()
+        alert_count = result["total"]["count"]
+    except Exception as err:
+        logging.error(f"Error obtaining alert counts: {err}")
 
-    headers = {"content-type": "application/json"}
-    try: 
-        response = requests.request("POST", url, json=payload, headers=headers)
-        data = response.json()
+    return alert_count
 
-        KNOWN_MALICIOUS_ACCOUNTS = pd.DataFrame(data["data"]).reset_index(drop=True).set_index("address").to_dict(orient="index")
-        logging.info(f"Obtained {len(KNOWN_MALICIOUS_ACCOUNTS)} malicious accounts.")
-    except Exception as e:
-        logging.error(f"Error obtaining malicious accounts: {e}")
 
-def detect_funding(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
-    global KNOWN_MALICIOUS_ACCOUNTS
+def calculate_anomaly_score(chain_id: int) -> float:
+    total_alerts = alert_count(chain_id)
+    total_tx_count = sum(GLOBAL_TOTAL_TX_COUNTER.values())
+    return total_alerts / total_tx_count
 
+
+def detect_funding(
+    w3, transaction_event: forta_agent.transaction_event.TransactionEvent
+) -> list:
     findings = []
 
+    date_time = datetime.now()
+    date_hour = date_time.strftime("%d/%m/%Y %H:00:00")
+    update_tx_counter(date_hour)
     from_ = transaction_event.transaction.from_.lower()
-    if transaction_event.transaction.value > 0 and from_ in KNOWN_MALICIOUS_ACCOUNTS.keys():
-        findings.append(MaliciousAccountFundingFinding.funding(transaction_event.transaction.to, from_, KNOWN_MALICIOUS_ACCOUNTS[from_]))
+    malicious_account = is_malicious_account(w3.eth.chain_id, from_)
+    anomaly_score = calculate_anomaly_score(w3.eth.chain_id)
+
+    if transaction_event.transaction.value > 0 and malicious_account is not None:
+        findings.append(
+            MaliciousAccountFundingFinding.funding(
+                transaction_event.hash,
+                transaction_event.transaction.to,
+                from_,
+                malicious_account,
+                anomaly_score,
+            )
+        )
 
     return findings
 
 
 def provide_handle_transaction(w3):
-    def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
+    def handle_transaction(
+        transaction_event: forta_agent.transaction_event.TransactionEvent,
+    ) -> list:
         return detect_funding(w3, transaction_event)
 
     return handle_transaction
@@ -89,16 +114,7 @@ def provide_handle_transaction(w3):
 real_handle_transaction = provide_handle_transaction(web3)
 
 
-def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent):
+def handle_transaction(
+    transaction_event: forta_agent.transaction_event.TransactionEvent,
+):
     return real_handle_transaction(transaction_event)
-
-
-def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
-    logging.info(f"Handling block {block_event.block_number}.")
-    global KNOWN_MALICIOUS_ACCOUNTS
-    if len(KNOWN_MALICIOUS_ACCOUNTS) == 0 or block_event.block_number % 240 == 0:
-        logging.info(f"Updating known malicious accounts at block {block_event.block_number}.")
-        update_known_malicious_accounts(web3.eth.chain_id)
-
-    findings = []
-    return findings

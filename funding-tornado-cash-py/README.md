@@ -19,10 +19,14 @@ Describe each of the type of alerts fired by this agent
 - FUNDING-TORNADO-CASH
   - Fired when small amounts of funds are withdrawn from tornado cash into a new account.
   - Findings severity will be Low
+  - Low confidence labels (0.3) for attacker address and attacker_contract address are emitted
+  - Metadata exposes the anomaly_score for the alert (calculated by dividing TC new address funding by all new address funding)
 
 - FUNDING-TORNADO-CASH-HIGH
   - Fired when high amounts of funds are withdrawn from tornado cash into a new account.
   - Findings severity will be info
+  - Low confidence labels (0.1) for attacker address and attacker_contract address are emitted
+  - Metadata exposes the anomaly_score for the alert (calculated by dividing high TC new address funding by all new address funding)
 
 ## Test Data
 

@@ -13,7 +13,9 @@ from src.findings import SuspiciousContractFindings
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 TORNADO_CASH_FUNDED_ACCOUNTS = []
-
+ALERT_COUNT_LOW = 0  # stats to emit anomaly score
+ALERT_COUNT_HIGH = 0  # stats to emit anomaly score
+DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
 def initialize():
     """
@@ -22,6 +24,15 @@ def initialize():
     """
     global TORNADO_CASH_FUNDED_ACCOUNTS
     TORNADO_CASH_FUNDED_ACCOUNTS = []
+
+    global ALERT_COUNT_LOW
+    ALERT_COUNT_LOW = 0
+
+    global ALERT_COUNT_HIGH
+    ALERT_COUNT_HIGH = 0
+
+    global DENOMINATOR_COUNT
+    DENOMINATOR_COUNT = 0
 
 
 def is_contract(w3, address) -> bool:
@@ -78,15 +89,43 @@ def get_opcode_addresses(w3, address) -> set:
 
 def detect_suspicious_contract_creations(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     global TORNADO_CASH_FUNDED_ACCOUNTS
+    global ALERT_COUNT_LOW
+    global ALERT_COUNT_HIGH
+    global DENOMINATOR_COUNT
 
     findings = []
 
     update_tornado_cash_funded_accounts(w3, transaction_event)
 
     created_contract_addresses = []
+    if transaction_event.to is None:
+        nonce = transaction_event.transaction.nonce
+        created_contract_address = calc_contract_address(
+            w3, transaction_event.from_, nonce
+        )
+        DENOMINATOR_COUNT += 1
+        storage_addresses = get_storage_addresses(w3, created_contract_address)
+        opcode_addresses = get_opcode_addresses(w3, created_contract_address)
+
+        created_contract_addresses.append(created_contract_address.lower())
+
+        if Web3.toChecksumAddress(transaction_event.from_) in TORNADO_CASH_FUNDED_ACCOUNTS:
+            TORNADO_CASH_FUNDED_ACCOUNTS.append(Web3.toChecksumAddress(created_contract_address))  # needed in case the contract creates another contract
+            ALERT_COUNT_HIGH += 1
+
+            anomaly_score = (ALERT_COUNT_HIGH * 1.0) / DENOMINATOR_COUNT
+            findings.append(SuspiciousContractFindings.suspicious_contract_creation_tornado_cash(transaction_event.from_, created_contract_address, set.union(storage_addresses, opcode_addresses), anomaly_score))
+        else:
+            ALERT_COUNT_LOW += 1
+
+            anomaly_score = (ALERT_COUNT_LOW * 1.0) / DENOMINATOR_COUNT
+            findings.append(SuspiciousContractFindings.suspicious_contract_creation(transaction_event.from_, created_contract_address, set.union(storage_addresses, opcode_addresses), anomaly_score))
+
+
     for trace in transaction_event.traces:
         if trace.type == 'create':
             if (transaction_event.from_ == trace.action.from_ or trace.action.from_ in created_contract_addresses):
+                DENOMINATOR_COUNT += 1
 
                 nonce = transaction_event.transaction.nonce if transaction_event.from_ == trace.action.from_ else 1  # for contracts creating other contracts, the nonce would be 1
                 created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
@@ -99,10 +138,15 @@ def detect_suspicious_contract_creations(w3, transaction_event: forta_agent.tran
 
                 if Web3.toChecksumAddress(trace.action.from_) in TORNADO_CASH_FUNDED_ACCOUNTS:
                     TORNADO_CASH_FUNDED_ACCOUNTS.append(Web3.toChecksumAddress(created_contract_address))  # needed in case the contract creates another contract
+                    ALERT_COUNT_HIGH += 1
 
-                    findings.append(SuspiciousContractFindings.suspicious_contract_creation_tornado_cash(trace.action.from_, created_contract_address, set.union(storage_addresses, opcode_addresses)))
+                    anomaly_score = (ALERT_COUNT_HIGH * 1.0) / DENOMINATOR_COUNT
+                    findings.append(SuspiciousContractFindings.suspicious_contract_creation_tornado_cash(trace.action.from_, created_contract_address, set.union(storage_addresses, opcode_addresses), anomaly_score))
                 else:
-                    findings.append(SuspiciousContractFindings.suspicious_contract_creation(trace.action.from_, created_contract_address, set.union(storage_addresses, opcode_addresses)))
+                    ALERT_COUNT_LOW += 1
+
+                    anomaly_score = (ALERT_COUNT_LOW * 1.0) / DENOMINATOR_COUNT
+                    findings.append(SuspiciousContractFindings.suspicious_contract_creation(trace.action.from_, created_contract_address, set.union(storage_addresses, opcode_addresses), anomaly_score))
 
     return findings
 

@@ -16,6 +16,8 @@ class EthMock:
     def __init__(self):
         self.contract = ContractMock()
 
+    chainId = 1
+
     def get_balance(self, address, block_identifier):
         if address == Web3.toChecksumAddress(ADDRESS_WITH_LARGE_BALANCE) and block_identifier <= OLDER_CURRENT_BLOCK:
             return 50000000000000000000

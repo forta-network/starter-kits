@@ -6,16 +6,18 @@ This agent alerts when a new contract is created with unverified source code as 
 
 ## Supported Chains
 
-- Ethereum
+- All EVM compatible chains; if tracing is supported, the bot is able to check contract creations by contracts
 
 ## Alerts
 
 Describe each of the type of alerts fired by this agent
 
 - UNVERIFIED-CODE-CONTRACT-CREATION
-  - Fires when a contract is created but Etherscan has no verified code for the contract
+  - Fires when a contract is created but blockchain explorer has no verified code for the contract
   - Severity is always set to "medium" 
   - Type is always set to "suspicious"
+  - Low confidence labels (0.3) for attacker address and attacker_contract address are emitted
+  - Metadata exposes the anomaly_score for the alert (calculated by dividing unverified contract creations by all contract creations)
 
 ## Test Data
 

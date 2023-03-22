@@ -20,11 +20,15 @@ Describe each of the type of alerts fired by this agent
   - Fired when a new contract is created
   - Metadata will contain the addresses observed in the created contract (either through storage or static analysis)
   - Findings severity will be Low
+  - Low confidence labels (0.1) for attacker address and attacker_contract address are emitted
+  - Metadata exposes the anomaly_score for the alert (calculated by dividing unverified contract creations by all contract creations)
 
 - SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH'
   - Fired when a new contract is created by an account that was funded by tornado cash
   - Metadata will contain the addresses observed in the created contract (either through storage or static analysis)
   - Findings severity will be High
+  - Low confidence labels (0.3) for attacker address and attacker_contract address are emitted
+  - Metadata exposes the anomaly_score for the alert (calculated by dividing unverified contract creations by all contract creations)
 
 ## Test Data
 
