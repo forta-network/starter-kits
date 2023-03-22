@@ -29,7 +29,7 @@ forta_explorer = FortaExplorer()
 
 DATABASE = f"https://research.forta.network/database/bot/{web3.eth.chain_id}"
 
-CHAIN_ID = 1
+CHAIN_ID = -1
 
 FINDINGS_CACHE = []
 ALERTED_CLUSTERS = []
@@ -278,6 +278,11 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
     global MUTEX
     global FINDINGS_CACHE
     global FP_MITIGATION_ADDRESSES
+    global CHAIN_ID
+
+    if CHAIN_ID == -1:
+        logging.error("Chain ID not set")
+        return
 
     if not MUTEX:
         MUTEX = True
@@ -580,6 +585,11 @@ def provide_handle_block(w3, forta_explorer):
         logging.debug("handle_block with w3 called")
         global FINDINGS_CACHE
         global MUTEX
+        global CHAIN_ID
+
+        if CHAIN_ID == -1:
+            logging.error("Chain ID not set")
+            return []
 
         findings = []
         for finding in FINDINGS_CACHE[0:10]:  # 10 findings per block due to size limitation
