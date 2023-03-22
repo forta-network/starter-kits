@@ -1,16 +1,54 @@
-import time
+# Copyright 2022 The Forta Foundation
 
-import pandas as pd
-from forta_agent import create_block_event
-
+from forta_agent import create_alert_event,FindingSeverity
+from web3 import Web3
+from web3.middleware import geth_poa_middleware
 import agent
-from forta_explorer_mock import FortaExplorerMock
-from web3_mock import CONTRACT, EOA_ADDRESS, Web3Mock, EOA_ADDRESS_LARGE_TX
+import json
+import os
+from forta_agent import EntityType
+from datetime import datetime, timedelta
+from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
+                       ALERTS_DATA_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY)
+from web3_mock import CONTRACT, EOA_ADDRESS, EOA_ADDRESS_2, Web3Mock
+from L2Cache import VERSION
 
 w3 = Web3Mock()
 
 
 class TestAlertCombiner:
+
+    def test_label(self):
+        labels = [{"label": "Attacker","confidence":0.25,"entity":"0x123","entityType":"ADDRESS"}]
+        alert = {"alert": {"name":"X","labels":labels}}
+        event = create_alert_event(alert)
+        event.alert.labels[0].label
+        event.alert.labels[0].entity
+
+
+    def test_is_polygon_validator(self):
+        polygon_rpc = "https://polygon-rpc.com"
+        polygon_tx = "0x2568499d36d104dc5fd13484167ea5059dbc4298b85e395219a6fbdf6c1b77c3"
+        polygon_validator = "0x26c80cc193b27d73d2c40943acec77f4da2c5bd8"
+        agent.CHAIN_ID = 137
+        
+        w3 = Web3(Web3.HTTPProvider(polygon_rpc))
+        w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+        assert agent.is_polygon_validator(w3, polygon_validator, polygon_tx), "should be a polygon validator"
+        agent.CHAIN_ID = 1
+
+    def remove_persistent_state():
+        if os.path.isfile(f"{VERSION}-{ALERTS_DATA_KEY}"):
+            os.remove(f"{VERSION}-{ALERTS_DATA_KEY}")
+        if os.path.isfile(f"{VERSION}-{ALERTED_CLUSTERS_STRICT_KEY}"):
+            os.remove(f"{VERSION}-{ALERTED_CLUSTERS_STRICT_KEY}")
+        if os.path.isfile(f"{VERSION}-{ALERTED_CLUSTERS_LOOSE_KEY}"):
+            os.remove(f"{VERSION}-{ALERTED_CLUSTERS_LOOSE_KEY}")
+        if os.path.isfile(f"{VERSION}-{ENTITY_CLUSTERS_KEY}"):
+            os.remove(f"{VERSION}-{ENTITY_CLUSTERS_KEY}")
+        if os.path.isfile(f"{VERSION}-{FP_MITIGATION_CLUSTERS_KEY}"):
+            os.remove(f"{VERSION}-{FP_MITIGATION_CLUSTERS_KEY}")
+
     def test_is_contract_eoa(self):
         assert not agent.is_contract(w3, EOA_ADDRESS), "EOA shouldn't be identified as a contract"
 
@@ -38,253 +76,512 @@ class TestAlertCombiner:
     def test_is_address_aAa(self):
         assert not agent.is_address(w3, '0x7328BBaaaaAaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
 
+    def test_in_list(self):
+        alert = create_alert_event(
+            {"alert":
+                {"name": "x",
+                 "hash": "0xabc",
+                 "description": "description",
+                 "alertId": "AK-ATTACK-SIMULATION-0",
+                 "source":
+                    {"bot": {'id': "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6"}}
+                 }
+             })
 
+        assert agent.in_list(alert, BASE_BOTS), "should be in list"
 
-    def test_detect_alert_pos_finding_combiner_1(self):
+    def test_in_list_incorrect_alert_id(self):
+        alert = create_alert_event(
+            {"alert":
+                {"name": "x",
+                 "hash": "0xabc",
+                 "description": "description",
+                 "alertId": "AK-ATTACK-SIMULATION-1",
+                 "source":
+                    {"bot": {'id': "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6"}}
+                 }
+             })
+
+        assert not agent.in_list(alert, BASE_BOTS), "should be in list"
+
+    def test_in_list_incorrect_bot_id(self):
+        alert = create_alert_event(
+            {"alert":
+                {"name": "x",
+                 "hash": "0xabc",
+                 "description": "description",
+                 "alertId": "AK-ATTACK-SIMULATION-1",
+                 "source":
+                    {"bot": {'id': "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6"}}
+                 }
+             })
+
+        assert not agent.in_list(alert, BASE_BOTS), "should be in list"
+
+    def test_initialize(self):
+        TestAlertCombiner.remove_persistent_state()
+
+        subscription_json = agent.initialize()
+        json.dumps(subscription_json)
+        assert True, "Bot should initialize successfully"
+
+    def test_update_list(self):
+        items = []
+        agent.update_list(items, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, '0xabc')
+
+        assert len(items) == 1, "should be in list"
+
+    def test_update_list_queue_limit(self):
+        TestAlertCombiner.remove_persistent_state()
+        items = []
+        for i in range(0, 11):
+            agent.update_list(items, 10, str(i))
+
+        assert len(items) == 10, "there should be 10 items in list"
+        assert '0' not in items, "first item should have been removed"
+
+    def test_persist_and_load(self):
+        TestAlertCombiner.remove_persistent_state()
+        chain_id = 1
+
+        items = []
+        agent.update_list(items, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, '0xabc')
+
+        assert len(items) == 1, "should be in list"
+
+        agent.persist(items, chain_id, ALERTS_DATA_KEY)
+        items_loaded = agent.load(chain_id, ALERTS_DATA_KEY)
+
+        assert len(items_loaded) == 1, "should be in loaded list"
+
+    def test_persist_and_initialize(self):
+        TestAlertCombiner.remove_persistent_state()
+        chain_id = 1
+        items = []
+        agent.update_list(items, 10, '0xabc')
+
+        assert len(items) == 1, "should be in list"
+
+        agent.persist(items, chain_id, FP_MITIGATION_CLUSTERS_KEY)
+        agent.initialize()
+        items_loaded = agent.load(chain_id, FP_MITIGATION_CLUSTERS_KEY)
+
+        assert len(items_loaded) == 1, "should be in loaded list"
+
+    def generate_alert(address: str, bot_id: str, alert_id: str, metadata={}, labels=[]):
+        # {
+        #       "label": "Attacker",
+        #       "confidence": 0.25,
+        #       "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99B3820",
+        #       "entityType": "ADDRESS",
+        #       "remove": false
+        # },
+
+        if len(labels)>0:
+            alert = {"alert":
+                    {"name": "x",
+                    "hash": "0xabc",
+                    "addresses": [],
+                    "description": f"{address} description",
+                    "alertId": alert_id,
+                    "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
+                    "source":
+                        {"bot": {'id': bot_id}, "block": {"chainId": 1}, 'transactionHash': '0x123'},
+                    "metadata": metadata,
+                    "labels": labels
+                    }
+                    }
+        else:
+            addresses = [address] 
+            alert = {"alert":
+                    {"name": "x",
+                    "hash": "0xabc",
+                    "addresses": addresses,
+                    "description": f"{address} description",
+                    "alertId": alert_id,
+                    "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
+                    "source":
+                        {"bot": {'id': bot_id}, "block": {"chainId": 1}, 'transactionHash': '0x123'},
+                    "metadata": metadata,
+                   
+                    }
+                    }
+        return create_alert_event(alert)
+
+    def test_alert_simple_case(self):
+        # three alerts in diff stages for a given EOA
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
         agent.initialize()
 
-        forta_explorer = FortaExplorerMock()
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        df_forta = pd.DataFrame([
-            ["2022-04-30T23:55:17.284158264Z", "Suspicious Contract Creation by Tornado Cash funded account", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99"}},
-             "HIGH", {}, "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x12abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-            ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
-             "HIGH", {}, "FUNDING-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
 
-            ["2022-04-30T23:55:17.284158264Z", "Reentrancy", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9"}},
-             "HIGH", {}, "NETHFORTA-25", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e12"],
+        # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
-            ["2022-04-30T23:55:17.284158264Z", "Money Laundering", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2"}},
-             "HIGH", {}, "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4 potentially engaged in money laundering", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x42abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e13"]
-        ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
-
-        forta_explorer.set_df(df_forta)
-        block_event = create_block_event({
-            'block': {
-                'timestamp': 1651314415,
-            }
-        })
-
-        agent.detect_attack(w3, forta_explorer, block_event)
-
-        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
+        assert len(findings) == 1, "alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
 
 
-    def test_detect_alert_pos_finding_combiner_2(self):
+    def test_alert_highly_precise_bots(self):
+        # two alerts in two stages for a given EOA for a given highly precise bot
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
         agent.initialize()
 
-        forta_explorer = FortaExplorerMock()
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        df_forta = pd.DataFrame([
-            ["2022-04-30T23:55:17.284158264Z", "Attack Simulation", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6"}},
-             "HIGH", {}, "AK-ATTACK-SIMULATION-0", "Invocation of the function 0x53000000 of the created contract 0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # smart contract ML bot
+        findings = agent.detect_attack(w3, alert_event)
 
-            ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02618", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
-             "HIGH", {}, "FUNDING-TORNADO-CASH", "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4 description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"]
-        ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+        assert len(findings) == 1, "alert should have been raised"
 
-        forta_explorer.set_df(df_forta)
-        block_event = create_block_event({
-            'block': {
-                'timestamp': 1651314415,
-            }
-        })
 
-        agent.detect_attack(w3, forta_explorer, block_event)
+    def test_get_attacker_from_labels(self):
+        labels = [
+                    {"label": "Attacker",
+                    "confidence": 0.25,
+                    "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99AAAAA",
+                    "entityType": "ADDRESS"
+                    },
+                    {"label": "attack-contract",
+                    "confidence": 0.25,
+                    "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99BBBBB",
+                    "entityType": "ADDRESS"
+                    },
+                    {"label": "victim",
+                    "confidence": 0.25,
+                    "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99CCCCC",
+                    "entityType": EntityType.Address
+                    },
+                ]
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)}, labels)  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        
+        attacker_addresses = agent.get_pot_attacker_addresses(alert_event)
+        assert len(attacker_addresses) == 2, "should be two attacker addresses"
+        assert "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99AAAAA" in attacker_addresses, "should be attacker address"
+        assert "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99BBBBB" in attacker_addresses, "should be attacker address"
+        assert "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99CCCCC" not in attacker_addresses, "should not be attacker address"
+        
 
-        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
-
-    def test_detect_alert_no_finding_large_tx_count(self):
+    def test_alert_simple_case_with_labels(self):
+        # three alerts in diff stages for a given EOA
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
         agent.initialize()
 
-        forta_explorer = FortaExplorerMock()
+        label = {"label": "Attacker",
+                 "confidence": 0.25,
+                 "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99B3820",
+                 "entityType": EntityType.Address
+                 }
 
-        df_forta = pd.DataFrame([
-            ["2022-04-30T23:55:17.284158264Z", "Suspicious Contract Creation by Tornado Cash funded account", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99"}},
-             "HIGH", {}, "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "description", [EOA_ADDRESS_LARGE_TX], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)}, [label])  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-            ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
-             "HIGH", {}, "FUNDING-TORNADO-CASH", "description", [EOA_ADDRESS_LARGE_TX], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)}, [label])  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-            ["2022-04-30T23:55:17.284158264Z", "Reentrancy", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9"}},
-             "HIGH", {}, "NETHFORTA-25", "description", [EOA_ADDRESS_LARGE_TX], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e12"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)}, [label])  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
 
-            ["2022-04-30T23:55:17.284158264Z", "Money Laundering", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2"}},
-             "HIGH", {}, "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", f"{EOA_ADDRESS_LARGE_TX} potentially engaged in money laundering", [EOA_ADDRESS_LARGE_TX], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e13"]
-        ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+        # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
-        forta_explorer.set_df(df_forta)
-        block_event = create_block_event({
-            'block': {
-                'timestamp': 1651314415,
-            }
-        })
-
-        agent.detect_attack(w3, forta_explorer, block_event)
-
-        time.sleep(1)
-
-        assert len(agent.FINDINGS_CACHE) == 0, "this should have not triggered a finding as the EOA has too many txs"
-
-    def test_detect_alert_pos_no_repeat_finding(self):
+        assert len(findings) == 1, "alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
+    
+    def test_alert_simple_case_no_labels(self):
+        # three alerts in diff stages for a given EOA
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
         agent.initialize()
 
-        forta_explorer = FortaExplorerMock()
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        df_forta = pd.DataFrame([
-            ["2022-04-30T23:55:17.284158264Z", "Suspicious Contract Creation by Tornado Cash funded account", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99"}},
-             "HIGH", {}, "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x12abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-            ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
-             "HIGH", {}, "FUNDING-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
 
-            ["2022-04-30T23:55:17.284158264Z", "Reentrancy", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9"}},
-             "HIGH", {}, "NETHFORTA-25", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e12"],
+        # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
-            ["2022-04-30T23:55:17.284158264Z", "Money Laundering", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2"}},
-             "HIGH", {}, "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4 potentially engaged in money laundering", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x42abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e13"]
-        ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+        assert len(findings) == 1, "alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
 
-        forta_explorer.set_df(df_forta)
-        block_event = create_block_event({
-            'block': {
-                'timestamp': 1651314415,
-            }
-        })
 
-        agent.detect_attack(w3, forta_explorer, block_event)
-        time.sleep(1)
-        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
-        agent.FINDINGS_CACHE = []
-
-        agent.detect_attack(w3, forta_explorer, block_event)
-        time.sleep(1)
-        assert len(agent.FINDINGS_CACHE) == 0, "this should have have triggered another finding"
-
-    def test_detect_alert_pos_nofinding(self):
+    def test_alert_simple_case_missing_anomaly_score(self):
+        # three alerts in diff stages for a given EOA
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
         agent.initialize()
 
-        forta_explorer = FortaExplorerMock()
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        df_forta = pd.DataFrame([
-            ["2022-04-30T23:55:17.284158264Z", "Suspicious Contract Creation by Tornado Cash funded account", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99"}},
-             "HIGH", {}, "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION")  
+        agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-            ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
-             "HIGH", {}, "FUNDING-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
 
-            ["2022-04-30T23:55:17.284158264Z", "Money Laundering", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2"}},
-             "HIGH", {}, "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4 potentially engaged in money laundering", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e13"]
-        ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+        # 100/100000 * 1.0 * 50/10000000 -> 5E-9
 
-        forta_explorer.set_df(df_forta)
-        block_event = create_block_event({
-            'block': {
-                'timestamp': 1651314415,
-            }
-        })
+        assert len(findings) == 1, "alert should have been raised given three alerts and score exceeds threshold"
+        assert abs(findings[0].metadata["anomaly_score"] - 5e-9) < 1e-20, 'incorrect anomaly score'
 
-        agent.detect_attack(w3, forta_explorer, block_event)
-
-        time.sleep(1)
-
-        assert len(agent.FINDINGS_CACHE) == 0, "this should not have triggered a finding"
-
-
-    def test_detect_alert_pos_finding_combiner_with_cluster(self):
+    def test_alert_simple_case_with_victim(self):
+        # three alerts in diff stages for a given EOA
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
         agent.initialize()
 
-        forta_explorer = FortaExplorerMock()
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
- #   createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'
-        df_forta = pd.DataFrame([
-            ["2022-04-30T23:55:17.284158264Z", "Entity identified", "ethereum",
-             "INFO", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02618", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9"}},
-             "INFO", {"entityAddresses":"0x7A2a13C269b3B908Ca5599956A248c5789Cc953f,0x91C1B58F24F5901276b1F2CfD197a5B73e31F96E"}, "ENTITY-CLUSTER", "Entity of size 2 has been identified. Transaction from 0x7a2a13c269b3b908ca5599956a248c5789cc953f created this entity.", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x12abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-            ["2022-04-30T23:55:17.284158264Z", "Suspicious Contract Creation by Tornado Cash funded account", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99"}},
-             "HIGH", {}, "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "description", ["0x7A2a13C269b3B908Ca5599956A248c5789Cc953f"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+        metadata = {"address1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "holders1": "", "protocolTwitter1": "wrappedEth", "protocolUrl1": "", "tag1": "Wrapped Ether"}
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250", "VICTIM-IDENTIFIER-PREPARATION-STAGE", metadata)  # contains victim info
+        findings = agent.detect_attack(w3, alert_event)
 
-            ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02619", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
-             "HIGH", {}, "FUNDING-TORNADO-CASH", "description", ["0x91C1B58F24F5901276b1F2CfD197a5B73e31F96E"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
 
-            ["2022-04-30T23:55:17.284158264Z", "Reentrancy", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02620", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9"}},
-             "HIGH", {}, "NETHFORTA-25", "description", ["0x91C1B58F24F5901276b1F2CfD197a5B73e31F96E"], [], "0x42abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e12"],
+        # 100.0/100000 * 200.0/10000 * 50.0/10000000 -> 1E-10
 
-            ["2022-04-30T23:55:17.284158264Z", "Money Laundering", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02621", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2"}},
-             "HIGH", {}, "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", "0x91C1B58F24F5901276b1F2CfD197a5B73e31F96E potentially engaged in money laundering", ["0x91C1B58F24F5901276b1F2CfD197a5B73e31F96E", EOA_ADDRESS, EOA_ADDRESS_LARGE_TX], [], "0x52abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e13"]
-        ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+        assert len(findings) == 1, "alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
+        assert "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2".lower() in findings[0].description, "victim not included in description"
+        assert "Wrapped Ether" in findings[0].description, "victim name not included in description"
 
-        forta_explorer.set_df(df_forta)
-        block_event = create_block_event({
-            'block': {
-                'timestamp': 1651314415,
-            }
-        })
-
-        agent.detect_attack(w3, forta_explorer, block_event)
-
-        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
-
-
-    def test_detect_alert_pos_finding_combiner_1_with_victim(self):
+    def test_alert_repeat_alerts(self):
+        # three alerts in diff stages for a given EOA
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
         agent.initialize()
 
-        forta_explorer = FortaExplorerMock()
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        df_forta = pd.DataFrame([
-            ["2022-04-30T23:55:17.284158264Z", "Suspicious Contract Creation by Tornado Cash funded account", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02615", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99"}},
-             "HIGH", {}, "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x12abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-            ["2022-04-30T23:55:17.284158264Z", "Tornado Cash Funding", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02616", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"}},
-             "HIGH", {}, "FUNDING-TORNADO-CASH", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x22abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
 
-            ["2022-04-30T23:55:17.284158264Z", "Reentrancy", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02617", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9"}},
-             "HIGH", {}, "NETHFORTA-25", "description", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e12"],
+        # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
-            ["2022-04-30T23:55:17.284158264Z", "Victim Identification", "ethereum",
-             "INFO", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02615", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250"}},
-             "INFO", {"address1": "0xAD7b4C162707E0B2b5f6fdDbD3f8538A5fbA0d60", "holders1": "", "protocolTwitter1": "VaultyFi", "protocolUrl1": "https://vaulty.fi", "tag1": "Vault"}, "VICTIM-IDENTIFIER-PREPARATION-STAGE", "Victim Identified - Exploitation Stage", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e11"],
+        assert len(findings) == 1, "alert should have been raised"
+        findings = []
 
-            ["2022-04-30T23:55:17.284158264Z", "Money Laundering", "ethereum",
-             "SUSPICIOUS", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02619", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2"}},
-             "HIGH", {}, "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4 potentially engaged in money laundering", ["0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4"], [], "0x42abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e13"]
-        ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        forta_explorer.set_df(df_forta)
-        block_event = create_block_event({
-            'block': {
-                'timestamp': 1651314415,
-            }
-        })
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
 
-        agent.detect_attack(w3, forta_explorer, block_event)
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
 
-        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
-        assert "0xAD7b4C162707E0B2b5f6fdDbD3f8538A5fbA0d60".lower() in agent.FINDINGS_CACHE[0].description.lower(), "this should have contained the victim information"
-        assert "vault".lower() in agent.FINDINGS_CACHE[0].description.lower(), "this should have contained the victim information"
+        assert len(findings) == 0, "alert should not have been raised again"
+
+    def test_alert_simple_case_contract(self):
+        # three alerts in diff stages for a given contract
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
+
+        assert len(findings) == 0, "alert should have been raised as this is a contract"
+
+    def test_alert_simple_case_older_alerts(self):
+        # three alerts in diff stages for a given older alerts
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        alert_event.alert.created_at = (datetime.now() - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS + 1)).strftime("%Y-%m-%dT%H:%M:%S.%f123Z")
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
+
+        assert len(findings) == 0, "alert should not have been raised funding alert is too old"
+
+    def test_alert_proper_handling_of_min(self):
+        # three alerts in diff stages for a given older alerts
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0e82982faa7878af3fad8ddf5042762a3b78d8949da2e301f1adfedc973f25ea", "EXPLOITER-ADDR-TX", {"anomaly_score": (1000.0 / 10000000)})  # preparation -> alert count = 1000, blocklist account tx; ad-scorer contract-creation -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 1, "only 1 alert should have been raised"
+        assert findings[0].severity == FindingSeverity.Low, "low severity alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
+        
+
+        # 100/100000 * 1000/10000000 * 50/10000000 -> 5E-13
+        assert len(findings) == 1, "alert should have been raised"
+        assert findings[0].severity == FindingSeverity.Critical, "critical severity alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 5e-13) < 1e-20, 'incorrect anomaly score'
+
+    def test_alert_too_few_alerts(self):
+        # two alerts in diff stages for a given EOA
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
+
+        # 100/100000 * 50/10000000 -> 5E-9
+        assert len(findings) == 0, "no alert should have been raised"
+
+    def test_alert_FP_mitigation(self):
+        # FP mitigation
+        # three alerts in diff stages for a given EOA
+        # anomaly score < 10 E-8
+
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f", "POSITIVE-REPUTATION-1")  # positive reputation alert
+        findings = agent.detect_attack(w3, alert_event)
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
+
+        # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
+
+        assert len(findings) == 0, "no alert should have been raised as this is FP mitigated"
+
+    def test_alert_cluster_alert(self):
+        # three alerts in diff stages across two EOAs that are clustered
+        # no FP
+        # anomaly score < 10 E-8
+
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entityAddresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})   # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings =  agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})   # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS_2, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})   # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
+
+        # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
+
+        assert len(findings) == 1, "alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
+
+    def test_alert_cluster_alert_after(self):
+        # three alerts in diff stages across two EOAs that are clustered, but the cluster comes in after some key alerts are raised
+        # no FP
+        # anomaly score < 10 E-8
+
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS_2, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})   # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entityAddresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})   # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
+
+        # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
+
+        assert len(findings) == 1, "alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'

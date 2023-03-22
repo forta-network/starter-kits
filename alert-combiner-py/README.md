@@ -2,19 +2,114 @@
 
 ## Description
 
-Individual alerts can have low precision (in other words raise false positives). This feed combines past alerts to separate the signal from noise. 
+The Attack Detector bot combines past alerts under a common address from a variety of underlying base bots to emit a high precision alert. It does so by mapping each alert to the four attack stages (Funding, Preparation, Exploitaiton and Money Laundering/ Post Exploitation) utilizing an anomaly as well as heuristic detection approach.
+
+Individual alerts can have low precision (in other words raise false positives). This bot combines past alerts from base bots to separate the signal from noise. 
 
 It does so with the realization that an attack usually consists of 4 distinct phases:
 - funding (e.g. tornado cash funding)
 - preparation (e.g. creation of an attacker contract)
 - exploitation (e.g. draining funds from a contract)
-- money laundering (e.g. sending funds to tornado cash)
+- money laundering (e.g. sending funds to tornado cash)/ post exploitation (e.g. on-chain txt messages)
 
-As such, this feed combines previously raised alerts under the initiating address (i.e. the attacker address) for a given time window (2 calendar days, so between 24-48h) and emits a cricial alert when 
-- alerts from all four phases have been observed 
-- a certain combination of the first two stages (i.e. funding with tornado cash and attack simulation fired)
+As such, this feed combines previously raised alerts under the initiating address (i.e. the attacker address/ addresses) and emits a cricial alert when:
+1. Anomaly Detection Appoach
+   1. Alert Criteria
+    - each alert emits an anomaly score
+    - anomaly score from each base bot is mapped to an attack stage
+    - the minimum anomaly scores per attack stage are combined (multiplied) across all stages for a common cluster (a set of addresses clustered by the cluster entity bot)
+    - thresholds on the number of total alerts (3) and anomaly score (threshold of 1 * 10-7 for critical, 1 * 10-4 for low severity alerts)
+    - is not part of a FP mitigation alert
+   2. Example
+    - ICE-PHISHING-HIGH-NUM-APPROVALS with an anomaly score of 0.0001 and an attack stage mapping of Preparation
+    - ICE-PHISHING-PREV-APPROVED-TRANSFERED with an anomaly score of 0.0005 and an attack stage mapping of Exploitation
+    - SUSPICIOUS-CONTRACT-CREATION with an anomaly score of 0.01 and an attack stage mapping of Preparation
+   3. Result
+    - The overall anomaly score would be min_preparation_anomaly_score(0.0001, 0.01) * min_exploitation_anomaly_score(0.0005) results in an overall anomaly score of 5*10-8. Since 3 alerts were raised in total, the Attack Detector would emit a critical ATTACK-DETECTOR-3 alert.
 
-The following bots are considered by the Attack Detector Feed and mapped to the stages in the following way:
+2. Heuristic Approach utilizing highly precise alert from a subset of the base bots (currently the ML contract model bot and the attack simulation bot)
+   1. Alert Criteria
+    - a highly precise alert is emitted plus one more additional alert is emitted for a common cluster (a set of addresses clustered by the cluster entity bot)
+    - is not part of a FP mitigation alert
+
+   2. Example 
+   - AK-ATTACK-SIMULATION-0 (this is a highly precise alert)
+   - CEX-FUNDING-1
+
+   3. Result
+    - The anomaly score is not relevant, but rather a heurstic would cause the bot to trigger a critical ATTACK-DETECTOR-2 alert.
+
+3. Heuristic Approach utilizing the alert to attack stage mapping
+   1. Alert Criteria
+    - an alert is emitted in each of the 4 attack stages for a common cluster (a set of addresses clustered by the cluster entity bot)
+    - is not part of a FP mitigation alert
+   2. Example
+    - CEX-FUNDING-1 (Funding)
+    - SUSPICIOUS-CONTRACT-CREATION (Preparation)
+    - FLASHBOT-TRANSACTION (Exploitation)
+    - POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH (Money Laundering)
+   3. Result
+    - The anomaly score is not relevant, but rather a heurstic would cause the bot to trigger a critical ATTACK-DETECTOR-1 alert. 
+
+As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
+
+## Supported Chains
+
+- All EVM compatible chains
+
+## Alerts
+
+The Attack Detector bot emits the following alerts:
+
+- ATTACK-DETECTOR-1
+  - Fired when 4 alerts in each stages fire (this is consistent with attack detector V1 behavior)
+  - Severity is always set to "critical" 
+  - Type is always set to "exploit" 
+  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
+  - Note: the detection bot will only alert once per cluster observed
+
+
+- ATTACK-DETECTOR-2
+  - Fired when 2 alerts in each stage fire, but do involve a highly precice bot (e.g. contract ML model or attack simulation)
+  - Severity is always set to "critical" 
+  - Type is always set to "exploit" 
+  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
+  - Note: the detection bot will only alert once per cluster observed
+
+
+- ATTACK-DETECTOR-3
+  - Fired when 3 alerts are fired and anomaly score across the stages (per cluster) exceed the strict threshold (1 * 10-7)
+  - Severity is always set to "critical" 
+  - Type is always set to "exploit" 
+  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
+  - Note: the detection bot will only alert once per cluster observed
+
+
+- ATTACK-DETECTOR-4
+  - Fired when 3 alerts are fired and anomaly score across the stages (per cluster) exceed the loose threshold 1 * 10-4)
+  - Severity is always set to "low" 
+  - Type is always set to "exploit" 
+  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
+  - Note: the detection bot will only alert once per cluster observed
+
+## Labels
+
+The Attack Detector bot emits labels for each attacker address observed. The meta data contains the corresponding alertID. E.g.
+```
+    'entityType': EntityType.Address,
+    'label': "attacker",
+    'entity': address,
+    'confidence': 0.99,
+    'remove': "false",
+    'metadata': {
+      'alert_id': alert_id,
+      'chain_id': chain_id
+    }
+```
+
+## Base Bots Utilized By Attack Detector
+
+The following bots are considered by the Attack Detector bot and mapped to the stages in the following way:
 | BotID | Name | AlertId | Stage |
 |-------|------|---------|-------|
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-HIGH-NUM-APPROVALS | Preparation |
@@ -89,7 +184,7 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6 | attack simulation - Ethereum Mainnet | AK-ATTACK-SIMULATION-0 | Preparation |
 | 0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8 | Social Engineering Contract Creation Bot | SOCIAL-ENG-CONTRACT-CREATION | Preparation |
 | 0xd935a697faab13282b3778b2cb8dd0aa4a0dde07877f9425f3bf25ac7b90b895 | Malicious Address Bot | AE-MALICIOUS-ADDR | Exploitation |
-| 0x46ce98e921e2766a922840a56e89f24409001052c284e0bd6cbaa4fecd95e9b6 | Sleep Minting | SLEEPMINT-2, SLEEPMINT-1 | Preparation |
+| 0x33faef3222e700774af27d0b71076bfa26b8e7c841deb5fb10872a78d1883dba | Sleep Minting | SLEEPMINT-3 | Preparation |
 | 0xeab3b34f9c32e9a5cafb76fccbd98f98f441d9e0499d93c4b476ba754f8f0773 | Suspicious Contract Creation ML | SUSPICIOUS-CONTRACT-CREATION | Preparation | 
 | 0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8 | Anomalous Token Transfers Detection Machine Learning Bot | ANOMALOUS-TOKEN-TRANSFERS-TX | Exploitation |
 | 0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f | Assets Drained | FORTA-1 | Exploitation |
@@ -97,49 +192,28 @@ The following bots are considered by the Attack Detector Feed and mapped to the 
 | 0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef | Aztec funded contract interaction | AK-AZTEC-PROTOCOL-FUNDED-ACCOUNT-INTERACTION-0 | Exploitation |
 | 0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f | Aztec money laundering | AK-AZTEC-PROTOCOL-POSSIBLE-MONEY-LAUNDERING-NATIVE | Money Laundering |
 | 0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb | CEX Funding bot | CEX-FUNDING-1 | Funding |
-| 0x47b86137077e18a093653990e80cb887be98e7445291d8cf811d3b2932a3c4d2 | Aztec bot | AK-AZTEC-PROTOCOL-DEPOSIT-EVENT | Money Laundering |
+| 0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f | Aztec bot | AK-AZTEC-PROTOCOL-DEPOSIT-EVENT | Money Laundering |
 | 0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad | Token Impersonation ML Bot | SUSPICIOUS-TOKEN-CONTRACT-CREATION | Funding |
-| 0x9fbf4db19f23627633d86bb1936dabad0b27ebe09b7a38028a126392156f7f32 | Aztec Funding bot | AK-AZTEC-PROTOCOL-FUNDING | Funding |
+| 0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef | Aztec Funding bot | AK-AZTEC-PROTOCOL-FUNDING | Funding |
 | 0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46 | Malicious Account Funding Bot | MALICIOUS-ACCOUNT-FUNDING | Funding |
-| 0xdba64bc69511d102162914ef52441275e651f817e297276966be16aeffe013b0 | Umbra bot | UMBRA-RECEIVE | Funding |
-| 0xdba64bc69511d102162914ef52441275e651f817e297276966be16aeffe013b0 | Umbra bot | UMBRA-SEND | MoneyLaundering |
-| 0xaf9ac4c204eabdd39e9b00f91c8383dc01ef1783e010763cad05cc39e82643bb | large native transfer out  | LARGE-TRANSFER-OUT | MoneyLaundering |           
-| 0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46 | Malicious Account Funding | MALICIOUS-ACCOUNT-FUNDING | Funding |
-| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | Funding Laundering Detector | FLD_NEW_FUNDING | Funding |
-| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | Funding Laundering Detector | FLD_Laundering | MoneyLaundering |
-| 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Txt Msg Sentiment Bot | NEGATIVE-ANGER-TEXT-MESSAGE | MoneyLaundering |
-| 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Txt Msg Sentiment Bot | NEGATIVE-DISGUST-TEXT-MESSAGE | MoneyLaundering |
-| 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Txt Msg Sentiment Bot | NEGATIVE-SADNESS-TEXT-MESSAGE | MoneyLaundering |
-| 0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e | ChangeNow Funding | FUNDING-CHANGENOW-NEW-ACCOUNT | Funding |
+| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | New Account Funding | FLD_NEW_FUNDING | Funding |
+| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | Account Funding | FLD_FUNDING | Funding |
+| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | Money Laundering | FLD_Laundering | Money Laundering |
+| 0x3858be37e155f84e8e0d6212db1b47d4e83b1d41e8a2bebecb902651ed1125d6 | high gas usage | NETHFORTA-1 | Exploitation |
+| 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-ANGER-TEXT-MESSAGE | Money Laundering |
+| 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-DISGUST-TEXT-MESSAGE | Money Laundering |
+| 0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d | Text msg sentiment analysis | NEGATIVE-SADNESS-TEXT-MESSAGE | Money Laundering |
+| 0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e | ChangeNow Bot | FUNDING-CHANGENOW-NEW-ACCOUNT | Funding |
+| 0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac | Large Profit Bot | LARGE-PROFIT | Exploitation |
+| 0x43d22eb5e1e3a2a98420f152825f215e6a756f32d73882ff31d8163652242832 | Role change bot | ROLE-CHANGE | Preparation |
+| 0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2 | Suspicious flashloand contract creation | SUSPICIOUS-FLASHLOAN-PRICE-MANIPULATOR | Preparation |
 
-As a result, the precision of this alert is quite high, but also some attacks may be missed. Note, in the case where attacks are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
 
-## Supported Chains
-
-- All Forta supported chains (note, it will appear that the bot only executes on one chain, but as it queries past Forta alerts, it essentially covers all chains)
-
-## Alerts
-
-Describe each of the type of alerts fired by this bot
-
-- ATTACK-DETECTOR-1
-  - Fired when alerts mapping to all 4 stages under one common EOA (the attacker address) have been observed
-  - Severity is always set to "critical" 
-  - Type is always set to "exploit" 
-  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
-  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
-  - Note: the detection bot will only alert once per EOA observed
-
-- ATTACK-DETECTOR-2
-  - Fired when alerts mapping to funding and preparation stages (attack simulation bot or smart contract ML v2 bot needs to fire) under one common EOA (the attacker address) have been observed
-  - Severity is always set to "critical" 
-  - Type is always set to "exploit" 
-  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
-  - Note: the block number that will be reported as part of this alert may be unrelated to the alert, but represents more of a timestamp on when the attack was discovered.
-  - Note: the detection bot will only alert once per EOA observed
-
-## Test Data
-
-The bot behaviour can be verified with the following blocks (assuming a default time window):
-
-- Fei Rari - block number 14685062 (date range: April 29-30 2022) (only works on version 0.6 and prior)
+The following bots are used to mitigate FPs:
+| BotID | Name | AlertId |
+|-------|------|---------|
+| 0xabdeff7672e59d53c7702777652e318ada644698a9faf2e7f608ec846b07325b | MEV account bot | MEV-ACCOUNT |
+| 0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400 | High funding activity through TC | FUNDING-TORNADO-CASH-HIGH |
+| 0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f | Positive reputation bot | POSITIVE-REPUTATION-1 |
+| 0xe04b3fa79bd6bc6168a211bcec5e9ac37d5dd67a41a1884aa6719f8952fbc274 | Victim Notification bot | VICTIM-NOTIFICATION-1 |
+In addtion, Etherscan tags are used for FP mitigation.

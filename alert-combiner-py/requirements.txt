@@ -1,5 +1,6 @@
-forta_agent>=0.1.6
+forta_agent>=0.1.14
 setuptools>=61.3.1
 pandas>=1.4.2
 requests>=2.27.1
 hexbytes>=0.2.2
+python-dotenv>=0.16.0

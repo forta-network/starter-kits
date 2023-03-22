@@ -1,56 +1,161 @@
+# Copyright 2022 The Forta Foundation
+
 import logging
 import sys
 import threading
 from datetime import datetime, timedelta
-from xmlrpc.client import _datetime
 
 import forta_agent
 import pandas as pd
-import re
+import time
+import os
+import requests
 from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
+from forta_agent import FindingSeverity
 
-from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, SCAM_DETECTOR, ATTACK_DETECTOR, ENTITY_CLUSTER_BOT_ALERT_ID,
-                           DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD, ENTITY_CLUSTER_BOT, 
-                           ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS)
 from src.findings import AlertCombinerFinding
-from src.forta_explorer import FortaExplorer
+from src.constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
+                           FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE,
+                           MIN_ALERTS_COUNT, ALERTS_DATA_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, 
+                           VICTIMS_KEY, VICTIM_QUEUE_MAX_SIZE, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS, DEFAULT_ANOMALY_SCORE, HIGHLY_PRECISE_BOTS)
+from src.L2Cache import L2Cache
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
-forta_explorer = FortaExplorer()
+
+
+CHAIN_ID = 1
 
 FINDINGS_CACHE = []
-ALERTED_CLUSTERS = []
-MUTEX = False
-ICE_PHISHING_MAPPINGS_DF = pd.DataFrame()
+CONTRACT_CACHE = dict()  # address -> is_contract
+ENTITY_CLUSTERS = dict()  # address -> cluster
+ALERTS = []
+ALERT_DATA = dict()  # cluster -> pd.DataFrame
+ALERTED_CLUSTERS_STRICT = []  # cluster
+ALERTED_CLUSTERS_LOOSE = []  # cluster
+FP_MITIGATION_CLUSTERS = []  # cluster
+VICTIMS = dict()  # transaction_hash, metadata
+ALERT_ID_STAGE_MAPPING = dict()  # (bot_id, alert_id) -> stage
 
 root = logging.getLogger()
-root.setLevel(logging.INFO)
+root.setLevel(logging.DEBUG)
 
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
+handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
+label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
 
 def initialize():
     """
     this function initializes the state variables that are tracked across tx and blocks
     it is called from test to reset state between tests
     """
-    global ALERTED_CLUSTERS
-    ALERTED_CLUSTERS = []
+    logging.debug('initializing')
+
+    global CHAIN_ID
+    try:
+        CHAIN_ID = web3.eth.chain_id
+    except Exception as e:
+        logging.error(f"Error getting chain id: {e}")
+        raise e
+
+    global ALERT_ID_STAGE_MAPPING
+    ALERT_ID_STAGE_MAPPING = dict([((bot_id, alert_id), stage) for bot_id, alert_id, stage in BASE_BOTS])
+
+    global ALERTED_CLUSTERS_STRICT
+    alerted_clusters = load(CHAIN_ID, ALERTED_CLUSTERS_STRICT_KEY)
+    ALERTED_CLUSTERS_STRICT = [] if alerted_clusters is None else list(alerted_clusters)
+
+    global ALERTED_CLUSTERS_LOOSE
+    alerted_clusters = load(CHAIN_ID, ALERTED_CLUSTERS_LOOSE_KEY)
+    ALERTED_CLUSTERS_LOOSE = [] if alerted_clusters is None else list(alerted_clusters)
+
+    global ALERT_DATA
+    alerts = load(CHAIN_ID, ALERTS_DATA_KEY)
+    ALERT_DATA = {} if alerts is None else dict(alerts)
+
+    global ENTITY_CLUSTERS
+    entity_cluster_alerts = load(CHAIN_ID, ENTITY_CLUSTERS_KEY)
+    ENTITY_CLUSTERS = {} if entity_cluster_alerts is None else dict(entity_cluster_alerts)
+
+    global VICTIMS
+    victims = load(CHAIN_ID, VICTIMS_KEY)
+    VICTIMS = {} if victims is None else dict(victims)
+
+    global FP_MITIGATION_CLUSTERS
+    fp_mitigation_alerts = load(CHAIN_ID, FP_MITIGATION_CLUSTERS_KEY)
+    FP_MITIGATION_CLUSTERS = [] if fp_mitigation_alerts is None else list(fp_mitigation_alerts)
 
     global FINDINGS_CACHE
     FINDINGS_CACHE = []
 
-    global MUTEX
-    MUTEX = False
+    global CONTRACT_CACHE
+    CONTRACT_CACHE = {}
 
-    global ICE_PHISHING_MAPPINGS_DF
-    ICE_PHISHING_MAPPINGS_DF = pd.read_csv('ice_phishing_mappings.csv')
+    subscription_json = []
+    for bot, alertId, stage in BASE_BOTS:
+        subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
+
+    for bot, alertId in FP_MITIGATION_BOTS:
+        subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
+
+    subscription_json.append({"botId": ENTITY_CLUSTER_BOT, "alertId": ENTITY_CLUSTER_BOT_ALERT_ID, "chainId": CHAIN_ID})
+
+    subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0], "chainId": CHAIN_ID})
+
+    subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1], "chainId": CHAIN_ID})
+
+    return {"alertConfig": {"subscriptions": subscription_json}}
+
+
+def get_pot_attacker_addresses(alert_event: forta_agent.alert_event.AlertEvent) -> list:
+    """
+    this function returns the attacker addresses from the labels
+    :param alert_event: alert event with labels and addresses arrray
+    :return: attacker_addresses: list of attacker addresses
+    """
+    pot_attacker_addresses = []
+    try:
+        for label in alert_event.alert.labels:
+            if label.label is not None and ('attack' in label.label.lower() or 'exploit' in label.label.lower() or 'scam' in label.label.lower()):
+                pot_attacker_addresses.append(label.entity)
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} - Analysing {len(pot_attacker_addresses)} pot attacker addresses obtained from labels")
+
+        for key in alert_event.alert.metadata.keys():
+            if key is not None and ('attack' in key.lower() or 'exploit' in key.lower() or 'scam' in key.lower()):
+                pot_address = alert_event.alert.metadata[key]
+                if pot_address is not None and len(pot_address) == 42:
+                    pot_attacker_addresses.append(pot_address.lower())
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} - Analysing {len(pot_attacker_addresses)} pot attacker addresses obtained from labels and metadata")
+
+    except Exception as e:
+        logging.warning(f"alert {alert_event.alert_hash} {alert_event.alert_id} - Exception in get_pot_attacker_addresses from labels: {e}")
+
+    if len(pot_attacker_addresses) == 0:
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} - No attack labels in alert. Using addresses field.")
+        pot_attacker_addresses = alert_event.alert.addresses
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} - Analysing {len(pot_attacker_addresses)} pot attacker addresses obtained from addresses field")
+
+    return pot_attacker_addresses
+
+
+def get_etherscan_label(address: str):
+    if address is None:
+        return ""
+        
+    try:
+        res = requests.get(label_api + address.lower())
+        if res.status_code == 200:
+            labels = res.json()
+            if len(labels) > 0:
+                return labels['events'][0]['label']['label']
+    except Exception as e:
+        logging.warning(f"Exception in get_etherscan_label {e}")
+        return ""
 
 
 def handle_alert(alert_event):
@@ -62,19 +167,25 @@ def is_contract(w3, addresses) -> bool:
     this function determines whether address/ addresses is a contract; if all are contracts, returns true; otherwise false
     :return: is_contract: bool
     """
+    global CONTRACT_CACHE
+
     if addresses is None:
         return True
 
-    is_contract = True
-    for address in addresses.split(','):
-        try:
-            code = w3.eth.get_code(Web3.toChecksumAddress(address))
-        except: # Exception as e:
-            logging.error("Exception in is_contract")
-            
-        is_contract = is_contract & (code != HexBytes('0x'))
+    if CONTRACT_CACHE.get(addresses) is not None:
+        return CONTRACT_CACHE[addresses]
+    else:
+        is_contract = True
+        for address in addresses.split(','):
+            try:
+                code = w3.eth.get_code(Web3.toChecksumAddress(address))
+            except Exception as e:
+                logging.error(f"Exception in is_contract {e}")
 
-    return is_contract
+            is_contract = is_contract & (code != HexBytes('0x'))
+        CONTRACT_CACHE[addresses] = is_contract
+        return is_contract
+
 
 def is_address(w3, addresses: str) -> bool:
     """
@@ -94,450 +205,323 @@ def is_address(w3, addresses: str) -> bool:
     return is_address
 
 
-def replace_with_cluster_identifiers(addresses: list, clusters: list) -> list:
-    cluster_identifiers = []
+def get_victim_info(alert_data: pd.DataFrame, victims: dict):
+    victim_address, victim_name = "", ""
+    victim_metadata = dict()
 
-    for address in addresses:
-        address_lower = address.lower()
-        found = False
-        for cluster in clusters:
-            cluster_lower = cluster.lower()
-            if address_lower in cluster_lower:
-                found = True
-                cluster_identifiers.append(cluster_lower)
-                break
-        if not found:
-            cluster_identifiers.append(address_lower)
+    df_intersection = alert_data[alert_data["transaction_hash"].isin(victims.keys())]
 
-    return cluster_identifiers
-
-
-def get_max_transaction_count(w3, cluster: str) -> int:
-    max_transaction_count = 0
-    for address in cluster.split(','):
-        transaction_count = w3.eth.get_transaction_count(Web3.toChecksumAddress(address))
-        if transaction_count > max_transaction_count:
-            max_transaction_count = transaction_count
-    return max_transaction_count
-
-
-def get_clusters_exploded(start_date: datetime, end_date: datetime, forta_explorer: FortaExplorer, chain_id: int) -> pd.DataFrame:
-    df_address_clusters_alerts = forta_explorer.alerts_by_bot(ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_ALERT_ID, chain_id, start_date, end_date)  #  metadate entity_addresses: "address1, address2, address3" (web3 checksum)
-    logging.info(f"Fetched {len(df_address_clusters_alerts)} for entity clusters")
-
-    df_address_clusters = pd.DataFrame()
-    df_address_clusters["entity_addresses"] = df_address_clusters_alerts["metadata"].apply(lambda x: x["entityAddresses"].lower())
-    df_address_clusters["entity_addresses_arr"] = df_address_clusters_alerts["metadata"].apply(lambda x: x["entityAddresses"].lower().split(","))
-    df_address_clusters = df_address_clusters.explode("entity_addresses_arr")
-    df_address_clusters["addresses"] = df_address_clusters["entity_addresses_arr"].apply(lambda x: x.lower())
-    df_address_clusters = df_address_clusters.set_index("addresses")
-
-    return df_address_clusters
-
-
-def get_victim_alerts(start_date: datetime, end_date: datetime, forta_explorer: FortaExplorer, chain_id: int) -> pd.DataFrame:
-    df_victim_alerts1 = forta_explorer.alerts_by_bot(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0], chain_id, start_date, end_date)  
-    df_victim_alerts2 = forta_explorer.alerts_by_bot(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1], chain_id, start_date, end_date)  
-    df_victim_alerts = pd.concat([df_victim_alerts1, df_victim_alerts2])
-    logging.info(f"Fetched {len(df_victim_alerts)} victim alerts")
-
-    return df_victim_alerts
-
-
-
-def get_forta_alerts(start_date: datetime, end_date: datetime, df_address_clusters: pd.DataFrame, forta_explorer: FortaExplorer, chain_id: int) -> pd.DataFrame:
-    logging.info(f"Analyzing alerts from {start_date} to {end_date}, chain_id: {chain_id}")
-
-    # get all alerts for date range
-    df_forta_alerts = forta_explorer.empty_alerts()
-    for bot_id, alert_id, stage in BASE_BOTS:
-        bot_alerts = forta_explorer.alerts_by_bot(bot_id, alert_id, chain_id, start_date, end_date)
-        df_forta_alerts = pd.concat([df_forta_alerts, bot_alerts])
-        if len(bot_alerts) > 0:
-            logging.info(f"Fetched {len(bot_alerts)} for bot {bot_id}, alert_id {alert_id}, chain_id {chain_id}")
-
-    # add a new field cluster_identifiers where all addresses are replaced with cluster identifiers if they exist
-    df_forta_alerts.drop(columns=["createdAt", "name", "protocol", "findingType", "source", "contracts"], inplace=True)
-    df_forta_alerts_exploded = df_forta_alerts.explode("addresses")
-    df_forta_alerts_exploded["addresses"] = df_forta_alerts_exploded["addresses"].apply(lambda x: x.lower())
-    df_forta_alerts_exploded = df_forta_alerts_exploded.set_index("addresses")
-
-    df_forta_alerts_clusters_joined = df_forta_alerts_exploded.join(df_address_clusters, on="addresses", how="left", lsuffix="_alert", rsuffix="_cluster")
-    df_forta_alerts_clusters_joined = df_forta_alerts_clusters_joined.reset_index()
-    df_forta_alerts_clusters_joined["cluster_identifiers"] = df_forta_alerts_clusters_joined.apply(lambda x: x["addresses"] if pd.isnull(x["entity_addresses"]) else x["entity_addresses"], axis=1)
-    df_forta_alerts_clusters_joined.drop(columns=["entity_addresses_arr", "entity_addresses"], inplace=True)
-
-    df_forta_alerts = df_forta_alerts_clusters_joined.groupby(['hash']).agg({"cluster_identifiers": lambda x: x.tolist(), "severity": "first", "alertId": "first", "bot_id": "first", "description": "first", "metadata": "first", "transactionHash": "first"})
-
-    # severity filter hack; dont want high funding alerts or medium-info laundering alerts
-    df_forta_alerts = df_forta_alerts[~((df_forta_alerts["bot_id"] == "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058") & (df_forta_alerts["alertId"] == "FLD_NEW_FUNDING") & (df_forta_alerts["severity"] == "HIGH"))]
-    df_forta_alerts = df_forta_alerts[~((df_forta_alerts["bot_id"] == "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058") & (df_forta_alerts["alertId"] == "FLD_Laundering") & (df_forta_alerts["severity"] == "MEDIUM"))]
-    df_forta_alerts = df_forta_alerts[~((df_forta_alerts["bot_id"] == "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058") & (df_forta_alerts["alertId"] == "FLD_Laundering") & (df_forta_alerts["severity"] == "LOW"))]
-    df_forta_alerts = df_forta_alerts[~((df_forta_alerts["bot_id"] == "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058") & (df_forta_alerts["alertId"] == "FLD_Laundering") & (df_forta_alerts["severity"] == "INFO"))]
-
-    df_forta_alerts.reset_index(inplace=True)
-
-    logging.info("Added cluster identifiers to alerts")
-
-    return df_forta_alerts
-
-
-def swap_addresses_with_clusters(addresses: list, df_address_clusters_exploded: pd.DataFrame) -> list:
-    df_addresses = pd.DataFrame(addresses, columns=["addresses"])
-    df_addresses["addresses"] = df_addresses["addresses"].apply(lambda x: x.lower())
-
-    df_addresses_joined = df_addresses.join(df_address_clusters_exploded, on="addresses", how="left", lsuffix="_alert", rsuffix="_cluster")
-    df_addresses_joined = df_addresses_joined.reset_index()
-    if len(df_addresses_joined) > 0:
-        df_addresses_joined["cluster_identifiers"] = df_addresses_joined.apply(lambda x: x["addresses"] if pd.isnull(x["entity_addresses"]) else x["entity_addresses"], axis=1)
-        df_addresses_joined.drop(columns=["entity_addresses_arr", "entity_addresses"], inplace=True)
-
-        return df_addresses_joined["cluster_identifiers"].tolist()
-    else:
-        return []
-
-
-def get_victim_info(df_victim_alerts):
-    victim_address = ""
-    victim_name = ""
-    victim_metadata = {}
-
-    # preference on preparation
-    df_prep_victim_alerts = df_victim_alerts[df_victim_alerts["alertId_y"] == VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0]]
-    if(len(df_prep_victim_alerts) > 0):
-        victim_metadata = df_prep_victim_alerts.iloc[0]["metadata_y"]
-
-    df_exploitation_victim_alerts = df_victim_alerts[df_victim_alerts["alertId_y"] == VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1]]
-    if(len(df_exploitation_victim_alerts) > 0):
-        victim_metadata = df_exploitation_victim_alerts.iloc[0]["metadata_y"]
-
-    victim_metadata.pop("holders1", "")
-    victim_address = victim_metadata["address1"] if "address1" in victim_metadata.keys() else ""
-    victim_name = victim_metadata["tag1"] if "tag1" in victim_metadata.keys() else ""
+    if(len(df_intersection) > 0):
+        tx_hash_with_victim_info = df_intersection.iloc[0]["transaction_hash"]
+        victim_metadata = victims[tx_hash_with_victim_info]
+        victim_address = victim_metadata["address1"] if "address1" in victim_metadata.keys() else ""
+        victim_name = victim_metadata["tag1"] if "tag1" in victim_metadata.keys() else ""
 
     return victim_address, victim_name, victim_metadata
 
-def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.block_event.BlockEvent):
+
+def get_anomaly_score(alert_event: forta_agent.alert_event.AlertEvent) -> float:
+    global DEFAULT_ANOMALY_SCORE
+
+    anomaly_score = 1.0
+    if alert_event.alert.metadata is not None and "anomaly_score" in alert_event.alert.metadata.keys():
+        anomaly_score_str = alert_event.alert.metadata["anomaly_score"]
+    elif alert_event.alert.metadata is not None and "anomalyScore" in alert_event.alert.metadata.keys():
+        anomaly_score_str = alert_event.alert.metadata["anomalyScore"]
+    else:
+        logging.warning(f"alert {alert_event.alert_hash} {alert_event.alert_id} - no anomaly_score in metadata found: {alert_event.alert.metadata}. Treating as anomaly_score of 1.0.")
+        anomaly_score_str = "1.0"
+
+    anomaly_score = float(anomaly_score_str)
+    if anomaly_score <= 0.0:
+        anomaly_score = DEFAULT_ANOMALY_SCORE
+        logging.warning(f"alert {alert_event.alert_hash} - anomaly_score is less or equal than 0.0. Treating as anomaly_score of {DEFAULT_ANOMALY_SCORE}.")
+    elif anomaly_score > 1.0:
+        anomaly_score = 1.0
+        logging.warning(f"alert {alert_event.alert_hash} - anomaly_score is greater than 1.0. Treating as anomaly_score of 1.0.")
+
+    return anomaly_score
+
+def is_polygon_validator(w3, cluster: str, tx_hash: str) -> bool:
+    if CHAIN_ID == 137:
+        tx = w3.eth.get_transaction_receipt(tx_hash)
+        for log in tx['logs']:
+            if len(log['topics']) > 3:
+                if log['topics'][0] == HexBytes('0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63'):  # logfeetransfer event
+                    validator = log['topics'][3].hex()[-40:]  # validator in 3rd pos
+                    if validator in cluster:
+                        return True
+    return False
+
+def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
     """
-    this function returns finding for any address for which alerts in 4 stages were observed in a given time window
+    this function returns finding for any address with at least 3 alerts observed on that address; it will generate an anomaly score
     :return: findings: list
     """
-    global ALERTED_CLUSTERS
-    global MUTEX
+    global ALERT_ID_STAGE_MAPPING
 
-    if not MUTEX:
-        MUTEX = True
+    global ALERTED_CLUSTERS_LOOSE
+    global ALERTED_CLUSTERS_STRICT
+    global ALERT_DATA
+    global FP_MITIGATION_CLUSTERS
+    global VICTIMS
+    global ENTITY_CLUSTERS
+    global CHAIN_ID
+    global HIGHLY_PRECISE_BOTS
 
-        ALERT_ID_STAGE_MAPPING = dict([(alert_id, stage) for bot_id, alert_id, stage in BASE_BOTS])
+    findings = []
+    try:
+        start = time.time()
 
-        # get alerts from API and exchange addresses with clusters from the entity cluster bot
-        end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
-        start_date = end_date - timedelta(days=ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS)
-        df_address_clusters_exploded = get_clusters_exploded(start_date=start_date, end_date=end_date, forta_explorer=forta_explorer, chain_id=w3.eth.chain_id)
-        logging.info(f"Fetched clusters {len(df_address_clusters_exploded)}")
+        chain_id = int(alert_event.alert.source.block.chain_id) if alert_event.alert.source.block.chain_id is not None else int(alert_event.chain_id)
+        if chain_id == CHAIN_ID:
+            logging.info(f"alert {alert_event.alert_hash} received for proper chain {chain_id}")
 
-        end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
-        start_date = end_date - timedelta(days=DATE_LOOKBACK_WINDOW_IN_DAYS)
-        df_victim_alerts = get_victim_alerts(start_date=start_date, end_date=end_date, forta_explorer=forta_explorer, chain_id=w3.eth.chain_id)
-        logging.info(f"Fetched victim alerts {len(df_victim_alerts)}")
+            #  assess whether we generate a finding
+            #  note, only one instance will be running at a time to keep up with alert volume
+            try:
 
+                # update entity clusters
+                if in_list(alert_event, [(ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_ALERT_ID)]):
+                    logging.info(f"alert {alert_event.alert_hash} is entity cluster alert")
+                    cluster = alert_event.alert.metadata["entityAddresses"].lower()
 
-        end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
-        start_date = end_date - timedelta(days=DATE_LOOKBACK_WINDOW_IN_DAYS)
-        df_forta_alerts = get_forta_alerts(start_date=start_date, end_date=end_date, df_address_clusters=df_address_clusters_exploded, forta_explorer=forta_explorer, chain_id=w3.eth.chain_id)
+                    for address in cluster.split(','):
+                        ENTITY_CLUSTERS[address] = cluster
+                        logging.info(f"alert {alert_event.alert_hash} - adding cluster mapping: {address} -> {cluster}")
+                        while len(ENTITY_CLUSTERS) > ENTITY_CLUSTERS_MAX_QUEUE_SIZE:
+                            ENTITY_CLUSTERS.pop(next(iter(ENTITY_CLUSTERS)))
+                        logging.info(f"alert {alert_event.alert_hash} entity clusters size now: {len(ENTITY_CLUSTERS)}")
 
+                        if ALERT_DATA.get(address) is not None:
+                            alert_data = ALERT_DATA.pop(address)
+                            if ALERT_DATA.get(cluster) is not None:
+                                alert_data = pd.concat([alert_data, ALERT_DATA[cluster]], ignore_index=True, axis=0)
+                            ALERT_DATA[cluster] = alert_data
+                            logging.info(f"alert {alert_event.alert_hash} alert data size now: {len(ALERT_DATA)}")
 
-        # get all addresses that were part of the alerts
-        # to optimize, we only check money laundering addresses as this is required to fullfill all 4 stage requirements
-        if ATTACK_DETECTOR:
-            logging.info("Attack detector - 4 stages")
+                        if address in FP_MITIGATION_CLUSTERS:
+                            FP_MITIGATION_CLUSTERS.append(cluster)
+                            logging.info(f"alert {alert_event.alert_hash} FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
 
-            addresses = set()
-            money_laundering_tc = df_forta_alerts[df_forta_alerts["alertId"] == "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH"]
-            for index, row in money_laundering_tc.iterrows():
-                addresses.add(row["description"][0:42].lower())  # the money laundering TC bot transaction may not be the transaction that contains the TC transfer and therefore a set of addresses unrelated, so we parse the address from the description
+                # update victim alerts
+                if (in_list(alert_event, [(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0]),(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1])])):
+                    logging.info(f"alert {alert_event.alert_hash} is a victim identification alert")
+                    logging.info(f"alert {alert_event.alert_hash} adding victim identification list: Victim Identification list size now: {len(VICTIMS)}")
+                    VICTIMS[alert_event.alert.source.transaction_hash] = alert_event.alert.metadata
 
-            money_laundering_azn = df_forta_alerts[df_forta_alerts["alertId"] == "AK-AZTEC-PROTOCOL-POSSIBLE-MONEY-LAUNDERING-NATIVE"]
-            for index, row in money_laundering_azn.iterrows():
-                addresses.add(row["description"][8:50].lower())  # the money laundering TC bot transaction may not be the transaction that contains the TC transfer and therefore a set of addresses unrelated, so we parse the address from the description
+                    while len(VICTIMS) > VICTIM_QUEUE_MAX_SIZE:
+                        VICTIMS.pop(next(iter(VICTIMS)))
 
-            money_laundering_az = df_forta_alerts[df_forta_alerts["alertId"] == "AK-AZTEC-PROTOCOL-DEPOSIT-EVENT"]
-            for index, row in money_laundering_az.iterrows():
-                addresses.add(row["description"][8:50].lower())  # the money laundering TC bot transaction may not be the transaction that contains the TC transfer and therefore a set of addresses unrelated, so we parse the address from the description
+                # update FP mitigation clusters
+                if in_list(alert_event, FP_MITIGATION_BOTS):
+                    logging.info(f"alert {alert_event.alert_hash} is a FP mitigation alert")
+                    address = alert_event.alert.description[0:42]
+                    cluster = address
+                    if address in ENTITY_CLUSTERS.keys():
+                        cluster = ENTITY_CLUSTERS[address]
+                    update_list(FP_MITIGATION_CLUSTERS, FP_CLUSTERS_QUEUE_MAX_SIZE, cluster)
+                    logging.info(f"alert {alert_event.alert_hash} adding FP mitigation cluster: {cluster}. FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
+                    
+                # update alerts and process them for a given cluster
+                if in_list(alert_event, BASE_BOTS):
+                    logging.info(f"alert {alert_event.alert_hash}: is a base bot {alert_event.alert.source.bot.id}, {alert_event.alert_id} alert for addresses {alert_event.alert.addresses}")
+                    end_date = datetime.strptime(alert_event.alert.created_at[0:25]+'Z', '%Y-%m-%dT%H:%M:%S.%fZ')  # getting block time stamp would be more accurate, but more expensive as it requires an RPC call
+                    start_date = end_date - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS)
 
-            money_laundering_umbra = df_forta_alerts[df_forta_alerts["alertId"] == "UMBRA-SEND"]
-            for index, row in money_laundering_umbra.iterrows():
-                addresses.add(row['metadata']['fromAddress'].lower())
+                    # analyze attacker addresses from labels if there are any; otherwise analyze all addresses
+                    pot_attacker_addresses = get_pot_attacker_addresses(alert_event)
+                    
 
-            money_laundering_generic = df_forta_alerts[df_forta_alerts["alertId"] == "FLD_Laundering"]
-            for index, row in money_laundering_generic.iterrows():
-                addresses.add(row["description"][0:42].lower())
+                    for address in pot_attacker_addresses:
+                        logging.info(f"alert {alert_event.alert_hash} - Analysing address {address}")
+                        address_lower = address.lower()
+                        cluster = address_lower
+                        if address_lower in ENTITY_CLUSTERS.keys():
+                            cluster = ENTITY_CLUSTERS[address_lower]
+                        if(not is_address(w3, cluster)):  # ignore contracts and invalid addresses like 0x0000000000000blabla
+                            logging.info(f"alert {alert_event.alert_hash}: {cluster} is not an address. Continue ... ")
+                            continue
 
-            money_laundering_lto = df_forta_alerts[df_forta_alerts["alertId"] == "LARGE-TRANSFER-OUT"]
-            for index, row in money_laundering_lto.iterrows():
-                addresses.add(row['metadata']['from'].lower())
+                        logging.info(f"alert {alert_event.alert_hash}: {cluster} is valid EOA.")
 
-            txt_msg_high = df_forta_alerts[(df_forta_alerts["alertId"] == "forta-text-messages-possible-hack") & (df_forta_alerts["severity"] == "HIGH")]
-            for index, row in txt_msg_high.iterrows():
-                addresses = addresses.union(set(row['cluster_identifiers']))
+                        alert_anomaly_score = get_anomaly_score(alert_event)
+                    
+                        stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
+                        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} {stage}: {cluster} anomaly score of {alert_anomaly_score}")
 
-            # replace with cluster identifiers if they exist
-            clusters = swap_addresses_with_clusters(list(addresses), df_address_clusters_exploded)
+                        if ALERT_DATA.get(cluster) is None:
+                            ALERT_DATA[cluster] = pd.DataFrame(columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])
 
-            logging.info(f"Found {len(clusters)} clusters to analyze")
+                        alert_data = ALERT_DATA[cluster]
+                        stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
+                        alert_data = pd.concat([alert_data, pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])], ignore_index=True, axis=0)
+                        logging.info(f"alert {alert_event.alert_hash} - alert data size for cluster {cluster} now: {len(alert_data)}")
 
-            # analyze each address' alerts
-            for potential_attacker_cluster_lower in clusters:
-                try:
-                    logging.debug(potential_attacker_cluster_lower)
-                    # if address is a contract or unlikely address, skip
-                    if(is_contract(w3, potential_attacker_cluster_lower) or not is_address(w3, potential_attacker_cluster_lower)):
-                        continue
+                        # add new alert and purge old alerts
+                        ALERT_DATA[cluster] = alert_data[alert_data['created_at'] > start_date]
+                        alert_data = ALERT_DATA[cluster]
+                        logging.info(f"alert {alert_event.alert_hash} - alert data size for cluster {cluster} now (after date pruning): {len(alert_data)}")
 
-                    # map each alert to 4 stages
-                    stages = set()
-                    hashes = set()
-                    involved_clusters = set()
-                    if(len(df_forta_alerts) > 0):
-                        cluster_alerts = df_forta_alerts[df_forta_alerts["cluster_identifiers"].apply(lambda x: potential_attacker_cluster_lower in x if x is not None else False)]
-                        cluster_victim_alerts = pd.merge(cluster_alerts, df_victim_alerts, how ='inner', on =['transactionHash', 'transactionHash'])
-                        involved_alert_ids = cluster_alerts["alertId"].unique()
-                        for alert_id in involved_alert_ids:
-                            if alert_id in ALERT_ID_STAGE_MAPPING.keys():
-                                stage = ALERT_ID_STAGE_MAPPING[alert_id]
-                                stages.add(stage)
-                                # get addresses from address field to add to involved_addresses
-                                cluster_alerts[cluster_alerts["alertId"] == alert_id]["cluster_identifiers"].apply(lambda x: involved_clusters.update(set(x)))
-                                cluster_alerts[cluster_alerts["alertId"] == alert_id]["hash"].apply(lambda x: hashes.add(x))
-                                logging.info(f"Found alert {alert_id} in stage {stage} for cluster {potential_attacker_cluster_lower}")
+                        # 3. contains highly precise bot
+                        contains_highly_precise_bot = False
+                        uniq_bot_alert_ids = alert_data[['bot_id', 'alert_id']].drop_duplicates(inplace=False)
+                        for bot_id, alert_id, s in HIGHLY_PRECISE_BOTS:
+                            if len(uniq_bot_alert_ids[(uniq_bot_alert_ids['bot_id'] == bot_id) & (uniq_bot_alert_ids['alert_id'] == alert_id)]) > 0:
+                                contains_highly_precise_bot = True
+                                break
 
-                        logging.info(f"Address {potential_attacker_cluster_lower} stages: {stages}")
+                        # analyze ALERT_DATA to see whether conditions are met to generate a finding
+                        # 1. Have to have at least MIN_ALERTS_COUNT bots reporting alerts
+                        if len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT or contains_highly_precise_bot:
+                            # 2. Have to have overall anomaly score of less than ANOMALY_SCORE_THRESHOLD
+                            anomaly_scores_by_stages = alert_data[['stage', 'anomaly_score']].drop_duplicates(inplace=False)
+                            anomaly_scores = anomaly_scores_by_stages.groupby('stage').min()
+                            anomaly_score = anomaly_scores['anomaly_score'].prod()
+                            logging.info(f"alert {alert_event.alert_hash} - Have sufficient number of alerts for {cluster}. Overall anomaly score is {anomaly_score}, {len(anomaly_scores)} stages.")
+                            logging.info(f"alert {alert_event.alert_hash} - {cluster} anomaly scores {anomaly_scores}.")
 
-                        # if all 4 stages are observed, update the address alerted list and add a finding
-                        if len(stages) == 4 and potential_attacker_cluster_lower not in ALERTED_CLUSTERS:
-                            tx_count = 0
-                            try:
-                                tx_count = get_max_transaction_count(w3, potential_attacker_cluster_lower)
-                            except Exception as e:
-                                logging.error(e)
-                                logging.error("Exception in assessing get_transaction_count")
+                            if anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE or len(anomaly_scores) == 4 or (contains_highly_precise_bot and len(anomaly_scores)>1):
+                                logging.info(f"alert {alert_event.alert_hash} - Overall anomaly score for {cluster} is below threshold, 4 stages, or highly precise bot with 2 stages have been observed. Unless FP mitigation kicks in, will raise finding.")
 
-                            if tx_count > TX_COUNT_FILTER_THRESHOLD:
-                                logging.info(f"Cluster {potential_attacker_cluster_lower} transacton count: {tx_count}")
-                                continue
-                            update_alerted_clusters(w3, potential_attacker_cluster_lower)
-                            victim_address, victim_name, victim_metadata = get_victim_info(cluster_victim_alerts)
-                            FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, victim_address.lower(), victim_name.lower(), start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-1', hashes, victim_metadata))
-                            logging.info(f"Findings count {len(FINDINGS_CACHE)}")
-                except: # Exception as e:
-                    #logging.warn(f"Error processing address combiner alert 1 {potential_attacker_address}: {e}")
-                    logging.warn(f"Error processing address combiner alert 1 {potential_attacker_cluster_lower}")
-                    continue
+                                fp_mitigated = False
+                                if(is_contract(w3, cluster)):
+                                    logging.info(f"alert {alert_event.alert_hash} - {cluster} is contract. Wont raise finding")
+                                    fp_mitigated = True
 
-            # alert combiner 2 alert
-            logging.info("Attack detector - 2 stages")
+                                etherscan_label = get_etherscan_label(cluster).lower()
+                                if not ('attack' in etherscan_label
+                                        or 'phish' in etherscan_label
+                                        or 'hack' in etherscan_label
+                                        or 'heist' in etherscan_label
+                                        or 'exploit' in etherscan_label
+                                        or 'scam' in etherscan_label
+                                        or 'fraud' in etherscan_label
+                                        or etherscan_label == ''):
+                                    logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
+                                    fp_mitigated = True
 
-            attack_simulation = df_forta_alerts[(df_forta_alerts["alertId"] == "AK-ATTACK-SIMULATION-0")]
-            suspicious_smart_contract_ml = df_forta_alerts[((df_forta_alerts["alertId"] == "SUSPICIOUS-CONTRACT-CREATION") & (df_forta_alerts["bot_id"] == "0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e42a97150ec91"))]
+                                if is_polygon_validator(w3, cluster, alert_event.alert.source.block.number):
+                                    logging.info(f"alert {alert_event.alert_hash} - {cluster} is polygon validator. Wont raise finding")
+                                    fp_mitigated = True
 
-            addresses = set()
-            for index, row in attack_simulation.iterrows():
-                addresses.add(row["description"][62:104].lower())  #  "Invocation of the function 0x53000000 of the created contract 0xfd0000000100069ad1670066004306009b487ad7 "
-  
-            for index, row in suspicious_smart_contract_ml.iterrows():
-                addresses.add(row["description"][0:42].lower())
+                                if cluster in FP_MITIGATION_CLUSTERS:
+                                    logging.info(f"alert {alert_event.alert_hash} - Mitigating FP for {cluster}. Wont raise finding")
+                                    fp_mitigated = True
 
-            # replace with cluster identifiers if they exist
-            clusters = swap_addresses_with_clusters(list(addresses), df_address_clusters_exploded)
+                                if not fp_mitigated and (len(anomaly_scores) == 4) and cluster not in ALERTED_CLUSTERS_STRICT:
+                                    logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
+                                    victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
+                                    update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
+                                    findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
+                                elif not fp_mitigated and (contains_highly_precise_bot and len(anomaly_scores) > 1) and cluster not in ALERTED_CLUSTERS_STRICT:
+                                    logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
+                                    victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
+                                    update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
+                                    findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
+                                elif not fp_mitigated and (len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT and anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT) and cluster not in ALERTED_CLUSTERS_STRICT:
+                                    logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
+                                    victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
+                                    update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
+                                    findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-3", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
+                                elif not fp_mitigated and (len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT  and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE) and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT:
+                                    logging.info(f"alert {alert_event.alert_hash} -1 low severity finding for {cluster}. Anomaly score is {anomaly_score}.")
+                                    victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
+                                    update_list(ALERTED_CLUSTERS_LOOSE, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
+                                    findings.append(AlertCombinerFinding.create_finding(cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-4", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
+                                else:
+                                    logging.info(f"alert {alert_event.alert_hash} - Not raising finding for {cluster}. Already alerted.")
 
-            # analyze each address' alerts
-            for potential_attacker_cluster_lower in clusters:
-                try:
-                    logging.debug(potential_attacker_cluster_lower)
-                    # if address is a contract or unlikely address, skip
-                    if(is_contract(w3, potential_attacker_cluster_lower) or not is_address(w3, potential_attacker_cluster_lower)):
-                        continue
+            except Exception as e:
+                logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
+        else:
+            logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
+            raise AssertionError(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
 
-                    # map each alert to 4 stages
-                    stages = set()
-                    involved_clusters = set()
-                    hashes = set()
-                    if(len(df_forta_alerts) > 0):
-                        cluster_alerts = df_forta_alerts[df_forta_alerts["cluster_identifiers"].apply(lambda x: potential_attacker_cluster_lower in x if x is not None else False)]
-                        cluster_victim_alerts = pd.merge(cluster_alerts, df_victim_alerts, how ='inner', on =['transactionHash', 'transactionHash'])
-                        involved_alert_ids = cluster_alerts["alertId"].unique()
-                        for alert_id in involved_alert_ids:
-                            if alert_id in ALERT_ID_STAGE_MAPPING.keys():
-                                stage = ALERT_ID_STAGE_MAPPING[alert_id]
-                                stages.add(stage)
-                                # get addresses from address field to add to involved_addresses
-                                cluster_alerts[cluster_alerts["alertId"] == alert_id]["cluster_identifiers"].apply(lambda x: involved_clusters.update(set(x)))
-                                cluster_alerts[cluster_alerts["alertId"] == alert_id]["hash"].apply(lambda x: hashes.add(x))
-                                logging.info(f"Found alert {alert_id} in stage {stage} for cluster {potential_attacker_cluster_lower}")
+        end = time.time()
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} {alert_event.chain_id} processing took {end - start} seconds")
+    except Exception as e:
+        logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+            logging.info(f"alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
+            raise e
 
-                        logging.info(f"Cluster {potential_attacker_cluster_lower} stages: {stages}")
-
-                        # if funding stage is also observed, update the address alerted list and add a finding
-                        if 'Funding' in stages and potential_attacker_cluster_lower not in ALERTED_CLUSTERS:
-                            tx_count = 0
-                            try:
-                                tx_count = get_max_transaction_count(w3, potential_attacker_cluster_lower)
-                            except: # Exception as e:
-                                #logging.error("Exception in assessing get_transaction_count: {}".format(e))
-                                logging.error("Exception in assessing get_transaction_count")
-                            
-                            if tx_count > TX_COUNT_FILTER_THRESHOLD:
-                                logging.info(f"Cluster {potential_attacker_cluster_lower} transacton count: {tx_count}")
-                                continue
-                            update_alerted_clusters(w3, potential_attacker_cluster_lower)
-                            victim_address, victim_name, victim_metadata = get_victim_info(cluster_victim_alerts)
-                            FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, victim_address, victim_name, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-2', hashes, victim_metadata))
-                            logging.info(f"Findings count {len(FINDINGS_CACHE)}")
-                except: # Exception as e:
-                    #logging.warn(f"Error processing address combiner alert 1 {potential_attacker_address}: {e}")
-                    logging.warn(f"Error processing address combiner alert 2 {potential_attacker_cluster_lower}")
-                    continue
-
-        # alert combiner 3 alert - ice phishing
-        if SCAM_DETECTOR:
-            logging.info("Scam detector - ice phishing")
-
-            ice_phishing = df_forta_alerts[(df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-PERMITTED-ERC20-TRANSFER")
-                                           | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-HIGH-NUM-ERC721-APPROVALS") | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL")
-                                           | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC721-APPROVAL-FOR-ALL") | (df_forta_alerts["alertId"] == "ICE-PHISHING-ERC1155-APPROVAL-FOR-ALL")]
-            addresses = set()
-            ice_phishing["description"].apply(lambda x: addresses.add(get_ice_phishing_attacker_address(x)))
-            logging.info(f"Got {len(addresses)} ice phishing addresses")
-
-            clusters = swap_addresses_with_clusters(list(addresses), df_address_clusters_exploded)
-            logging.info(f"Mapped ice phishing addresses to {len(clusters)} clusters.")
-
-            for potential_attacker_cluster_lower in clusters:
-                try:
-                    logging.debug(potential_attacker_cluster_lower)
-                    if "0x000000000000000000000000000" in potential_attacker_cluster_lower:
-                        continue
-
-                    alert_ids = set()
-                    involved_clusters = set()
-                    hashes = set()
-                    if(len(df_forta_alerts) > 0):
-                        cluster_alerts = df_forta_alerts[df_forta_alerts["cluster_identifiers"].apply(lambda x: potential_attacker_cluster_lower in x if x is not None else False)]
-                        cluster_alerts = cluster_alerts[cluster_alerts.apply(lambda x: contains_attacker_addresses_ice_phishing(w3, x, potential_attacker_cluster_lower), axis=1)]
-                        cluster_victim_alerts = pd.merge(cluster_alerts, df_victim_alerts, how ='inner', on =['transactionHash', 'transactionHash'])
-                        involved_alert_ids = cluster_alerts["alertId"].unique()
-                        for alert_id in involved_alert_ids:
-                            if alert_id in ALERT_ID_STAGE_MAPPING.keys():
-                                stage = ALERT_ID_STAGE_MAPPING[alert_id]
-                                alert_ids.add(alert_id)
-                                # get addresses from address field to add to involved_addresses
-                                cluster_alerts[cluster_alerts["alertId"] == alert_id]["cluster_identifiers"].apply(lambda x: involved_clusters.update(set(x)))
-                                cluster_alerts[cluster_alerts["alertId"] == alert_id]["hash"].apply(lambda x: hashes.add(x))
-                                logging.info(f"Found alert {alert_id} in stage {stage} for cluster {potential_attacker_cluster_lower}")
-
-                        logging.info(f"Cluster {potential_attacker_cluster_lower} stages: {alert_ids}")
-
-                        if potential_attacker_cluster_lower not in ALERTED_CLUSTERS:
-                            if (('SLEEPMINT-1' in alert_ids or 'SLEEPMINT-2' in alert_ids)
-                            or ('FUNDING-TORNADO-CASH' in alert_ids or 'TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION' in alert_ids or 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH' in alert_ids or 'MALICIOUS-ACCOUNT-FUNDING' in alert_ids)
-                            or ('UNVERIFIED-CODE-CONTRACT-CREATION' in alert_ids and 'FLASHBOT-TRANSACTION' in alert_ids)
-                            or ('AE-MALICIOUS-ADDR' in alert_ids or 'forta-text-messages-possible-hack' in alert_ids)):
-
-                                tx_count = 0
-                                try:
-                                    tx_count = get_max_transaction_count(w3, potential_attacker_cluster_lower)
-                                except: # Exception as e:
-                                    #logging.error("Exception in assessing get_transaction_count: {}".format(e))
-                                    logging.error("Exception in assessing get_transaction_count")
-                            
-                                if tx_count > TX_COUNT_FILTER_THRESHOLD:
-                                    logging.info(f"Cluster {potential_attacker_cluster_lower} transacton count: {tx_count}")
-                                    continue
-                                update_alerted_clusters(w3, potential_attacker_cluster_lower)
-                                victim_address, victim_name, victim_metadata = get_victim_info(cluster_victim_alerts)
-                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, victim_address, victim_name, start_date, end_date, involved_clusters, involved_alert_ids, 'ATTACK-DETECTOR-ICE-PHISHING', hashes, victim_metadata))
-                                logging.info(f"Findings count {len(FINDINGS_CACHE)}")
-                except Exception as e:
-                    logging.warn(f"Error processing address combiner alert 1 {potential_attacker_cluster_lower}: {e}")
-                    #logging.warn(f"Error processing address combiner alert 3 {potential_attacker_cluster_lower}")
-                    continue
-
-        MUTEX = False
+    return findings
 
 
-def get_ice_phishing_attacker_address(description: str) -> str:
-    # 0x7DA4580bF3168A78f5e30d9bb82f7Ce46daB2dE7 obtained transfer approval for 3 assets by 6 accounts over period of 2 days. ICE-PHISHING-HIGH-NUM-APPROVALS
-    # 0x2f993D27649d935cCcD44E6591eee3f7175866cf obtained transfer approval for all tokens from 0xf45CFeaf03BD53C8e5Ff5524a58d974126284c67. ICE-PHISHING-APPROVAL-FOR-ALL
-    # 0x0899935fe73759DCBd7CCd18982980A0733A01Aa transferred 3 assets from 1 accounts over period of 1 days. ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS
-    return description[:42].lower()
+def update_list(items: list, max_size: int, item: str):
+
+    items.append(item.lower())
+
+    while len(items) > max_size:
+        items.pop(0)  # remove oldest item
 
 
-def contains_attacker_addresses_ice_phishing(w3, alert: pd.Series, potential_attacker_address: str) -> bool:
-    global ICE_PHISHING_MAPPINGS_DF
-    # iterate over ice phishing mappings and assess whether the potential attacker address is involved according to the mapping
-    if "ICE-PHISHING" in alert["alertId"]:
-        return True
-
-    for index, row in ICE_PHISHING_MAPPINGS_DF.iterrows():
-        #  bot_id,alert_id,location,attacker_address_location_in_description,metadata_field
-        if row['bot_id'] == alert['bot_id'] and row['alert_id'] == alert['alertId']:
-            if row['location'] == 'description':
-                if alert['description'][int(row["attacker_address_location_in_description"]):42].lower() == potential_attacker_address:
-                    return True
-            elif row['location'] == 'metadata':
-                if row['metadata_field'] in alert['metadata'].keys():
-                    metadata = alert['metadata'][row["metadata_field"]]
-                    for address in re.findall(r"0x[a-fA-F0-9]{40}", metadata):
-                        if address == potential_attacker_address:
-                            return True
-            elif row['location'] == 'cluster_identifiers':
-                if potential_attacker_address in alert['cluster_identifiers']:  # lower not required as it comes from the network as opposed to user field
-                    return True
-            elif row['location'] == 'tx_to':
-                if potential_attacker_address == w3.eth.get_transaction(alert['transactionHash'])['to'].lower():
-                    return True
+def in_list(alert_event: forta_agent.alert_event.AlertEvent, bots: tuple) -> bool:
+    """
+    this function returns True if the alert is from a bot in the bots tuple
+    :return: bool
+    """
+    for tup in bots:
+        if alert_event.alert.source.bot.id == tup[0] and alert_event.alert.alert_id == tup[1]:
+            return True
 
     return False
 
 
-def update_alerted_clusters(w3, cluster: str):
-    """
-    this function maintains a list clusters; holds up to CLUSTER_QUEUE_SIZE in memory
-    :return: None
-    """
-    global ALERTED_CLUSTERS
+def persist_state():
+    global ALERTS_DATA_KEY
+    global FP_MITIGATION_CLUSTERS_KEY
+    global ALERTED_CLUSTERS_STRICT_KEY
+    global ALERTED_CLUSTERS_LOOSE_KEY
+    global ENTITY_CLUSTERS_KEY
+    global CHAIN_ID
 
-    ALERTED_CLUSTERS.append(cluster.lower())
-    if len(ALERTED_CLUSTERS) > ADDRESS_QUEUE_SIZE:
-        ALERTED_CLUSTERS.pop(0)
+    start = time.time()
+    persist(ALERT_DATA, CHAIN_ID, ALERTS_DATA_KEY)
+    persist(FP_MITIGATION_CLUSTERS, CHAIN_ID, FP_MITIGATION_CLUSTERS_KEY)
+    persist(ENTITY_CLUSTERS, CHAIN_ID, ENTITY_CLUSTERS_KEY)
+    persist(ALERTED_CLUSTERS_LOOSE, CHAIN_ID, ALERTED_CLUSTERS_LOOSE_KEY)
+    persist(ALERTED_CLUSTERS_STRICT, CHAIN_ID, ALERTED_CLUSTERS_STRICT_KEY)
+    end = time.time()
+    logging.info(f"Persisted bot state. took {end - start} seconds")
 
 
-def provide_handle_block(w3, forta_explorer):
-    logging.debug("provide_handle_block called")
+def persist(obj: object, chain_id: int, key: str):
+    L2Cache.write(obj, chain_id, key)
 
-    def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
-        logging.debug("handle_block with w3 called")
-        global FINDINGS_CACHE
-        global MUTEX
 
-        #detect_attack(w3, forta_explorer, block_event)
-        if not MUTEX:
-            thread = threading.Thread(target=detect_attack, args=(w3, forta_explorer, block_event))
-            thread.start()
+def load(chain_id: int, key: str) -> object:
+    return L2Cache.load(chain_id, key)
 
-        # uncomment for local testing of tx/block ranges (ok for npm run start); otherwise the process will exit
-        #while (thread.is_alive()):
-        #    pass
-        findings = FINDINGS_CACHE
-        FINDINGS_CACHE = []
+
+def provide_handle_alert(w3):
+    logging.debug("provide_handle_alert called")
+
+    def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
+        logging.debug("handle_alert inner called")
+
+        findings = detect_attack(w3, alert_event)
+        if not ('NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV')):
+            persist_state()
+
         return findings
 
-    return handle_block
+    return handle_alert
 
 
-real_handle_block = provide_handle_block(web3, forta_explorer)
+real_handle_alert = provide_handle_alert(web3)
 
 
-def handle_block(block_event: forta_agent.block_event.BlockEvent):
+def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
+    logging.debug("handle_alert called")
+    return real_handle_alert(alert_event)
+
+
+def handle_block(block_event: forta_agent.BlockEvent):
     logging.debug("handle_block called")
-    return real_handle_block(block_event)
+
+    if datetime.now().minute == 0:  # every hour
+        persist_state()
+
+    return []

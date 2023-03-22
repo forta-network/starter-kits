@@ -267,5 +267,3 @@ class TestEntityClusterBot:
 
         findings = agent.cluster_entities(w3, native_transfer1)
         assert len(findings) == 0, "No findings should be returned as it old account transfer"
-
-
