@@ -2,7 +2,7 @@ from forta_agent import create_alert_event,FindingSeverity, AlertEvent
 import agent
 import json
 from datetime import datetime
-from web3_mock import Web3Mock, EOA_ADDRESS
+from web3_mock import Web3Mock, EOA_ADDRESS_2, EOA_ADDRESS
 
 from constants import BASE_BOTS
 
@@ -10,7 +10,7 @@ w3 = Web3Mock()
 
 
 class TestScamDetector:
-    def generate_alert(address: str, bot_id: str, alert_id: str, block_number: int, metadata={}, labels=[]) -> AlertEvent:
+    def generate_alert(address: str, bot_id: str, alert_id: str, timestamp: int, metadata={}, labels=[]) -> AlertEvent:
         # {
         #       "label": "Attacker",
         #       "confidence": 0.25,
@@ -26,9 +26,9 @@ class TestScamDetector:
                     "addresses": [],
                     "description": f"{address} description",
                     "alertId": alert_id,
-                    "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
+                    "createdAt": datetime.fromtimestamp(timestamp).strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
                     "source":
-                        {"bot": {'id': bot_id}, "block": {"chainId": 1, 'number': block_number},  'transactionHash': '0x123'},
+                        {"bot": {'id': bot_id}, "block": {"chainId": 1, 'number': 5},  'transactionHash': '0x123'},
                     "metadata": metadata,
                     "labels": labels
                     }
@@ -41,9 +41,9 @@ class TestScamDetector:
                     "addresses": addresses,
                     "description": f"{address} description",
                     "alertId": alert_id,
-                    "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
+                    "createdAt": datetime.fromtimestamp(timestamp).strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
                     "source":
-                        {"bot": {'id': bot_id}, "block": {"chainId": 1, 'number': block_number}, 'transactionHash': '0x123'},
+                        {"bot": {'id': bot_id}, "block": {"chainId": 1, 'number': 5}, 'transactionHash': '0x123'},
                     "metadata": metadata,
                    
                     }
@@ -122,34 +122,32 @@ class TestScamDetector:
     def test_put_alert(self):
         agent.initialize()
        
-        block_number = 5
-        alert = TestScamDetector.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", block_number)
+        timestamp = 1679508064
+        alert = TestScamDetector.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-4", timestamp)
         agent.put_alert(alert, EOA_ADDRESS)
-
-        alert = TestScamDetector.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", block_number)
         agent.put_alert(alert, EOA_ADDRESS)
 
         alerts = agent.read_alerts(EOA_ADDRESS)
         assert len(alerts) == 1, "should be 1 alert"
-        assert ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", "0xabc") in alerts, "should be in alerts"
+        assert ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-4", "0xabc") in alerts, "should be in alerts"
 
     def test_put_alert_multiple_shards(self):
         agent.initialize()
 
-        block_number_1 = 5
-        shard1 = agent.get_shard(block_number_1)
+        timestamp_1 = 1679508064
+        shard1 = agent.get_shard(timestamp_1)
 
-        block_number_2 = 6
-        shard2 = agent.get_shard(block_number_2)
+        timestamp_2 = timestamp_1 + 1
+        shard2 = agent.get_shard(timestamp_2)
         assert shard1 != shard2, "should be different shards"
 
-        alert = TestScamDetector.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", block_number_1)
-        agent.put_alert(alert, EOA_ADDRESS)
+        alert = TestScamDetector.generate_alert(EOA_ADDRESS_2, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-1", timestamp_1)
+        agent.put_alert(alert, EOA_ADDRESS_2)
 
-        alert = TestScamDetector.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-2", block_number_2)
-        agent.put_alert(alert, EOA_ADDRESS)
+        alert = TestScamDetector.generate_alert(EOA_ADDRESS_2, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-2", timestamp_2)
+        agent.put_alert(alert, EOA_ADDRESS_2)
 
-        alerts = agent.read_alerts(EOA_ADDRESS)
+        alerts = agent.read_alerts(EOA_ADDRESS_2)
         assert len(alerts) == 2, "should be 2 alert"
-        assert ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", "0xabc") in alerts, "should be in alerts"
+        assert ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-1", "0xabc") in alerts, "should be in alerts"
         assert ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-2", "0xabc") in alerts, "should be in alerts"

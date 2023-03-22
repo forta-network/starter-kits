@@ -111,9 +111,9 @@ def get_total_shards() -> int:
     return total_shards
     
 
-def get_shard(block_number: int) -> int:
+def get_shard(timestamp: int) -> int:
     total_shards = get_total_shards()
-    return block_number % total_shards
+    return timestamp % total_shards
 
 
 # put in item alerts per cluster by shard id
@@ -176,33 +176,33 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         if chain_id == CHAIN_ID:
             # got alert from the right chain
 
-            # update entity clusters
-            if in_list(alert_event, ENTITY_CLUSTER_BOTS):
-                    logging.info(f"alert {alert_event.alert_hash} is entity cluster alert")
-                    cluster = alert_event.alert.metadata["entityAddresses"].lower()
+            # # update entity clusters
+            # if in_list(alert_event, ENTITY_CLUSTER_BOTS):
+            #         logging.info(f"alert {alert_event.alert_hash} is entity cluster alert")
+            #         cluster = alert_event.alert.metadata["entityAddresses"].lower()
 
-                    for address in cluster.split(','):
-                        ENTITY_CLUSTERS[address] = cluster
-                        logging.info(f"alert {alert_event.alert_hash} - adding cluster mapping: {address} -> {cluster}")
-                        while len(ENTITY_CLUSTERS) > ENTITY_CLUSTERS_MAX_QUEUE_SIZE:
-                            ENTITY_CLUSTERS.pop(next(iter(ENTITY_CLUSTERS)))
-                        logging.info(f"alert {alert_event.alert_hash} entity clusters size now: {len(ENTITY_CLUSTERS)}")
+            #         for address in cluster.split(','):
+            #             ENTITY_CLUSTERS[address] = cluster
+            #             logging.info(f"alert {alert_event.alert_hash} - adding cluster mapping: {address} -> {cluster}")
+            #             while len(ENTITY_CLUSTERS) > ENTITY_CLUSTERS_MAX_QUEUE_SIZE:
+            #                 ENTITY_CLUSTERS.pop(next(iter(ENTITY_CLUSTERS)))
+            #             logging.info(f"alert {alert_event.alert_hash} entity clusters size now: {len(ENTITY_CLUSTERS)}")
 
-            # update FP mitigation clusters
-            if in_list(alert_event, FP_MITIGATION_BOTS):
-                logging.info(f"alert {alert_event.alert_hash} is a FP mitigation alert")
-                address = alert_event.alert.description[0:42]
-                cluster = address
-                if address in ENTITY_CLUSTERS.keys():
-                    cluster = ENTITY_CLUSTERS[address]
-                update_list(FP_MITIGATION_CLUSTERS, FP_CLUSTERS_QUEUE_MAX_SIZE, cluster)
-                logging.info(f"alert {alert_event.alert_hash} adding FP mitigation cluster: {cluster}. FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
+            # # update FP mitigation clusters
+            # if in_list(alert_event, FP_MITIGATION_BOTS):
+            #     logging.info(f"alert {alert_event.alert_hash} is a FP mitigation alert")
+            #     address = alert_event.alert.description[0:42]
+            #     cluster = address
+            #     if address in ENTITY_CLUSTERS.keys():
+            #         cluster = ENTITY_CLUSTERS[address]
+            #     update_list(FP_MITIGATION_CLUSTERS, FP_CLUSTERS_QUEUE_MAX_SIZE, cluster)
+            #     logging.info(f"alert {alert_event.alert_hash} adding FP mitigation cluster: {cluster}. FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
                 
 
     # get alert from base bot and store in DB with time stamp and cluster as the key
     
-    if in_list(alert_event, BASE_BOTS):
-        return []
+            if in_list(alert_event, BASE_BOTS):
+                return []
 
     # pull all alerts from DB with the same cluster and check if they are within the time window
 
