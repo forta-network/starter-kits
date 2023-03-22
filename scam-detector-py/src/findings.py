@@ -26,12 +26,11 @@ class AlertCombinerFinding:
                 'label': "scam",
                 'entity': attacker_address,
                 'confidence': 0.8,
-                'remove': "false"
-                # ,
-                # 'metadata': {
-                #     'alert_id': alert_id,
-                #     'chain_id': chain_id
-                # }
+                'remove': "false",
+                'metadata': {
+                    'alert_id': alert_id,
+                    'chain_id': chain_id
+                }
     	    })]
 
         return Finding({
