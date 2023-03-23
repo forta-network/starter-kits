@@ -4,3 +4,4 @@ pandas>=1.4.2
 requests>=2.27.1
 hexbytes>=0.2.2
 boto3>=1.26.96
+ratelimiter>=1.2.0.post0
