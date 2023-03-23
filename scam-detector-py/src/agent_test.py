@@ -2,7 +2,7 @@ from forta_agent import create_alert_event,FindingSeverity, AlertEvent
 import agent
 import json
 from datetime import datetime
-from web3_mock import Web3Mock, EOA_ADDRESS_2, EOA_ADDRESS
+from web3_mock import Web3Mock, EOA_ADDRESS_2, EOA_ADDRESS, CONTRACT
 
 from constants import BASE_BOTS
 
@@ -49,6 +49,11 @@ class TestScamDetector:
                     }
                     }
         return create_alert_event(alert)
+    
+    def test_is_contract(self):
+        assert agent.is_contract(w3, EOA_ADDRESS) == False, "should be false"
+        assert agent.is_contract(w3, CONTRACT) == False, "should be false"
+        
     
     def test_initialize(self):
         subscription_json = agent.initialize()

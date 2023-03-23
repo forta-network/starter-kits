@@ -1,37 +1,37 @@
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
 from datetime import datetime
+import pandas as pd
 
 
 class ScamDetectorFinding:
 
     @staticmethod
-    def scam_finding(attacker_address: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set, alert_id: str, hashes: set) -> Finding:
-        involved_addresses = list(involved_addresses)[0:500]
-        hashes = list(hashes)[0:10]
-
-        attacker_address_md = {"attacker_address": attacker_address}
-        start_date = {"start_date": start_date.strftime("%Y-%m-%d")}
-        end_date = {"end_date": end_date.strftime("%Y-%m-%d")}
-        involved_addresses = {"involved_addresses_" + str(i): address for i, address in enumerate(involved_addresses, 1)}
+    def scam_finding(scammer_cluster: str, score: set, feature_vector: pd.DataFrame, alert_hash_sample: list, chain_id: int) -> Finding:
+        
+        attacker_address_md = {"attacker_addresses": scammer_cluster}
         involved_alert_ids = {"involved_alert_id_" + str(i): alert_id for i, alert_id in enumerate(involved_alerts, 1)}
-        involved_alert_hashes = {"involved_alert_hashes_" + str(i): alert_id for i, alert_id in enumerate(hashes, 1)}
-        meta_data = {**attacker_address_md, **start_date, **end_date, **involved_addresses, **involved_alert_ids, **involved_alert_hashes}
+        meta_data = {**attacker_address_md, **involved_alert_ids}
 
-        #TODO - get all deployed contracts by EOA and add label for those
+        #TODO - get all deployed contracts by EOA and add label for those using etherscan or allium
 
         labels = []
-        if alert_id == "ATTACK-DETECTOR-ICE-PHISHING" or alert_id == 'ATTACK-DETECTOR-FRAUDULENT-SEAPORT-ORDER':
-            labels = [Label({
+        for scammer_address in scammer_cluster.split(","):
+            labels.append(Label({
                 'entityType': EntityType.Address,
-                'label': "scam",
-                'entity': attacker_address,
-                'confidence': 0.99
-    	    })]
+                'label': "scammer",
+                'entity': scammer_address,
+                'confidence': score,
+                'remove': "false",
+                'metadata': {
+                    'alert_id': alert_id, #TODO - create explanation from model
+                    'chain_id': chain_id
+                }
+    	    }))
 
         return Finding({
-            'name': 'Attack detector identified an EOA with past alerts mapping to attack behavior',
-            'description': f'{attacker_address} likely involved in an attack ({alert_id})',
-            'alert_id': alert_id,
+            'name': 'Scam detector identified an EOA with past alerts mapping to attack behavior',
+            'description': f'{scammer_address} likely involved in an attack (SCAM-DETECTOR-1)',
+            'alert_id': "SCAM-DETECTOR-1",
             'type': FindingType.Exploit,
             'severity': FindingSeverity.Critical,
             'metadata': meta_data,
@@ -40,19 +40,20 @@ class ScamDetectorFinding:
 
 
     @staticmethod
-    def alert_FP(address: str) -> Finding:
+    def alert_FP(benign_address: str) -> Finding:
         labels = []
         labels = [Label({
             'entityType': EntityType.Address,
-            'label': "benign",
-            'entity': address,
-            'confidence': 0.74
+            'label': "scammer",
+            'entity': benign_address,
+            'confidence': 0.99,
+            'remove': "true"
         })]
 
         return Finding({
-            'name': 'Attack detector identified an EOA that was incorrectly alerted on. Emitting false positive alert.',
-            'description': f'{address} likely not involved in an ice phishing or fraudulent seaport order attack (ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE)',
-            'alert_id': 'ATTACK-DETECTOR-ICE-PHISHING-FALSE-POSITIVE',
+            'name': 'Scam detector identified an EOA that was incorrectly alerted on. Emitting false positive alert.',
+            'description': f'{benign_address} likely not involved in scam (SCAM-DETECTOR-1-FALSE-POSITIVE)',
+            'alert_id': 'SCAM-DETECTOR-1-FALSE-POSITIVE',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'metadata': {},

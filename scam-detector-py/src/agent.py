@@ -5,14 +5,19 @@ import os
 import json
 from datetime import datetime
 import time
+import pandas as pd
+import io
+import hexbytes
+from 
 
 import forta_agent
-from forta_agent import get_json_rpc_url
+from forta_agent import get_json_rpc_url, EntityType
 from web3 import Web3
 
 from constants import (ENTITY_CLUSTER_BOTS, FP_MITIGATION_BOTS, BASE_BOTS, ALERT_LOOKBACK_WINDOW_IN_DAYS,
                          ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE)
 from storage import s3_client, dynamo_table, get_secrets, bucket_name
+from findings import ScamDetectorFinding
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
@@ -20,6 +25,7 @@ CHAIN_ID = 1
 
 ENTITY_CLUSTERS = dict()  # address -> cluster
 FP_MITIGATION_CLUSTERS = []  # cluster
+FP_MITIGATION_ADDRESSES = set()  # address, not clusters
 
 s3 = None
 dynamo = None
@@ -47,6 +53,13 @@ def initialize():
         logging.error(f"Error getting chain id: {e}")
         raise e
     
+    # read addresses from fp_list.txt
+    global FP_MITIGATION_ADDRESSES
+    content = open('fp_list.csv', 'r').read()
+    df_fp = pd.read_csv(io.StringIO(content))
+    for index, row in df_fp.iterrows():
+        FP_MITIGATION_ADDRESSES.add(row['address'].lower())
+
     # initialize dynamo DB
     global s3, dynamo
     secrets = get_secrets()
@@ -68,6 +81,26 @@ def initialize():
     logging.info("Initializing scam detector bot. Subscribed to bots successfully.")
     logging.info("Initialized scam detector bot.")
     return subscription_json
+
+
+def is_contract(w3, addresses) -> bool:
+    """
+    this function determines whether address/ addresses is a contract; if all are contracts, returns true; otherwise false
+    :return: is_contract: bool
+    """
+    if addresses is None:
+        return True
+
+    is_contract = True
+    for address in addresses.split(','):
+        try:
+            code = w3.eth.get_code(Web3.toChecksumAddress(address))
+        except: # Exception as e:
+            logging.error("Exception in is_contract")
+
+        is_contract = is_contract & (code != HexBytes('0x'))
+
+    return is_contract
 
 
 def in_list(alert_event: forta_agent.alert_event.AlertEvent, bots: tuple) -> bool:
@@ -163,6 +196,22 @@ def read_alerts(cluster: str) -> list:
     return alert_items
 
 
+def get_scammer_addresses(alert_event: forta_agent.alert_event.AlertEvent) -> set:
+    scammer_addresses = set()
+    for label in alert_event.alert.labels:
+        label_lower = label.lower()
+        if ("scam" in label_lower or "attack" in label_lower) and label.entity_type == EntityType.Address:
+            scammer_addresses.add(label.entity.lower())
+
+    if alert_event.alert.metadata is not None:
+        if "attackerAddresses" in alert_event.alert.metadata.keys(): # address poisoning bot
+            attacker_addresses = alert_event.alert.metadata["attackerAddresses"]
+            for attacker_address in attacker_addresses.split(','):
+                scammer_addresses.add(attacker_address.lower())
+
+    return scammer_addresses
+
+
 def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     
     global ENTITY_CLUSTERS
@@ -197,24 +246,45 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
             #         cluster = ENTITY_CLUSTERS[address]
             #     update_list(FP_MITIGATION_CLUSTERS, FP_CLUSTERS_QUEUE_MAX_SIZE, cluster)
             #     logging.info(f"alert {alert_event.alert_hash} adding FP mitigation cluster: {cluster}. FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
+            
                 
-
-    # get alert from base bot and store in DB with time stamp and cluster as the key
-    
+            # for basebots, store in dynamo; then query dynamo for the cluster (this will pull all alerts from multiple shards), build feature vector and then call the model for inference
             if in_list(alert_event, BASE_BOTS):
-                return []
+                scammer_addresses_lower = get_scammer_addresses(alert_event)
+                for scammer_address_lower in scammer_addresses_lower:
+                    cluster = scammer_address_lower
+                    if is_contract(scammer_address_lower):
+                        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} is contract, skipping")
+                        continue
 
-    # pull all alerts from DB with the same cluster and check if they are within the time window
+                    if scammer_address_lower in ENTITY_CLUSTERS.keys():
+                        cluster = ENTITY_CLUSTERS[scammer_address_lower]
+                    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got alert for cluster {cluster}")
+                    put_alert(alert_event, cluster)
+                
+                    # get all alerts from dynamo for the cluster
+                    alerts = read_alerts(cluster) # tuple of (botId, alertId, alertHash)
+                    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got {len(alerts)} alerts from dynamo for cluster {cluster}")
 
+                    # build feature vector
+                    feature_vector = build_feature_vector(alerts, cluster)
 
-    # call model
+                    # call model
+                    score = get_model_score(feature_vector)
 
+                    # if model says it is a scam, assess for FP mitigation
+                    if score > MODEL_ALERT_THRESHOLD:
+                        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - model score {score} > {MODEL_ALERT_THRESHOLD} for cluster {cluster}")
+                        # if cluster not an FP, emit scam finding
+                        if not is_FP(cluster):
+                            logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
+                            findings.append(ScamDetectorFinding.scam_finding(cluster, 
+                            logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
 
-    # if model says it is a scam, assess for FP mitigation
+                    # if no FP mitigation, emit scam finding
 
-
-    # if no FP mitigation, emit scam finding
-
+        end = time.time()
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} {alert_event.chain_id} processing took {end - start} seconds")
     except Exception as e:
         logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
