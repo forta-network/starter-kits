@@ -25,7 +25,7 @@ from src.L2Cache import L2Cache
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 
-CHAIN_ID = 1
+CHAIN_ID = -1
 
 FINDINGS_CACHE = []
 CONTRACT_CACHE = dict()  # address -> is_contract
