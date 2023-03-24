@@ -5,13 +5,13 @@ import json
 import rlp
 import time
 from web3 import Web3
-from dotenv import load_dotenv
 import pandas as pd
 import logging
 
 class BlockChainIndexer:
 
     FIRST_BLOCK_NUMBER = 15000000
+    SECRETS_JSON = json.loads(open("secrets.json").read())
 
     @staticmethod
     def get_etherscan_url(chain_id):
@@ -34,23 +34,20 @@ class BlockChainIndexer:
 
     @staticmethod
     def get_api_key(chain_id):
-        if os.environ.get('ETHERSCAN_TOKEN') is None:
-            load_dotenv()
-
         if chain_id == 1:
-            return os.environ.get('ETHERSCAN_TOKEN')
+            return BlockChainIndexer.SECRETS_JSON['apiKeys']['ETHERSCAN_TOKEN']
         elif chain_id == 137:
-            return os.environ.get('POLYGONSCAN_TOKEN')
+            return BlockChainIndexer.SECRETS_JSON['apiKeys']['POLYGONSCAN_TOKEN']
         elif chain_id == 56:
-            return os.environ.get('BSCSCAN_TOKEN')
+            return BlockChainIndexer.SECRETS_JSON['apiKeys']['BSCSCAN_TOKEN']
         elif chain_id == 42161:
-            return os.environ.get('ARBISCAN_TOKEN')
+            return BlockChainIndexer.SECRETS_JSON['apiKeys']['ARBISCAN_TOKEN']
         elif chain_id == 10:
-            return os.environ.get('OPTIMISTICSCAN_TOKEN')
+            return BlockChainIndexer.SECRETS_JSON['apiKeys']['OPTIMISTICSCAN_TOKEN']
         elif chain_id == 250:
-            return os.environ.get('FTMSCAN_TOKEN')
+            return BlockChainIndexer.SECRETS_JSON['apiKeys']['FTMSCAN_TOKEN']
         elif chain_id == 43114:
-            return os.environ.get('SNOWTRACE_TOKEN')
+            return BlockChainIndexer.SECRETS_JSON['apiKeys']['SNOWTRACE_TOKEN']
         
         raise Exception("Chain ID not supported")
 

@@ -8,3 +8,6 @@ __pycache__
 positive-reputation-py/src/api_keys.py
 *.tar.gz
 *.tgz
+alert-combiner-py/V2-*
+alert-combiner-py/secrets.json
+

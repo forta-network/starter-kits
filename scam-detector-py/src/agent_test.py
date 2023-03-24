@@ -104,7 +104,7 @@ class TestScamDetector:
 
     def test_get_etherscan_label_has_label(self):
         label = agent.get_etherscan_label("0x12D66f87A04A9E220743712cE6d9bB1B5616B8Fc")
-        assert "sanctioned" in label, "should be sanctioned label"
+        assert "name|tornado.cash: 0.1 eth" in label, "should be sanctioned label"
 
     def test_get_etherscan_label_no_label(self):
         label = agent.get_etherscan_label("0xa0109274F53609f6Be97ec5f3052C659AB80f012")
