@@ -52,7 +52,7 @@ class TestScamDetector:
     
     def test_is_contract(self):
         assert agent.is_contract(w3, EOA_ADDRESS) == False, "should be false"
-        assert agent.is_contract(w3, CONTRACT) == False, "should be false"
+        assert agent.is_contract(w3, CONTRACT) == True, "should be false"
         
     
     def test_initialize(self):

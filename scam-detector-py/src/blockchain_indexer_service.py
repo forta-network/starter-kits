@@ -2,8 +2,12 @@ from ratelimiter import RateLimiter
 import os
 import requests
 import json
+import rlp
+import time
+from web3 import Web3
 from dotenv import load_dotenv
 import pandas as pd
+import logging
 
 class BlockChainIndexer:
 
@@ -11,42 +15,83 @@ class BlockChainIndexer:
 
     @staticmethod
     def get_etherscan_url(chain_id):
-        if os.environ.get('ETHERSCAN_TOKEN') is None:
-            load_dotenv()
-        return ""
+        if chain_id == 1:
+            return "https://api.etherscan.io"
+        elif chain_id == 137:
+            return  "https://api.polygonscan.com"
+        elif chain_id == 56:
+            return  "https://api.bscscan.com"
+        elif chain_id == 42161:
+            return "https://api.arbiscan.io"
+        elif chain_id == 10:
+            return "https://api-optimistic.etherscan.io"
+        elif chain_id == 250:
+            return "https://api.ftmscan.com"
+        elif chain_id == 43114:
+            return "https://api.snowtrace.io"
+
+        raise Exception("Chain ID not supported")
 
     @staticmethod
-    def get_etherscan_api_key(chain_id):
+    def get_api_key(chain_id):
         if os.environ.get('ETHERSCAN_TOKEN') is None:
             load_dotenv()
-        return ""
+
+        if chain_id == 1:
+            return os.environ.get('ETHERSCAN_TOKEN')
+        elif chain_id == 137:
+            return os.environ.get('POLYGONSCAN_TOKEN')
+        elif chain_id == 56:
+            return os.environ.get('BSCSCAN_TOKEN')
+        elif chain_id == 42161:
+            return os.environ.get('ARBISCAN_TOKEN')
+        elif chain_id == 10:
+            return os.environ.get('OPTIMISTICSCAN_TOKEN')
+        elif chain_id == 250:
+            return os.environ.get('FTMSCAN_TOKEN')
+        elif chain_id == 43114:
+            return os.environ.get('SNOWTRACE_TOKEN')
+        
+        raise Exception("Chain ID not supported")
+
+    @staticmethod
+    def calc_contract_address(address, nonce) -> str:
+        """
+        this function calculates the contract address from sender/nonce
+        :return: contract address: str
+        """
+
+        address_bytes = bytes.fromhex(address[2:].lower())
+        return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
+
 
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
-    def get_contracts(address, chain_id):
-        df_etherscan = pd.DataFrame(columns=['blockNumber', 'timeStamp', 'hash', 'nonce', 'blockHash',
-                                             'transactionIndex', 'from', 'to', 'value', 'gas', 'gasPrice', 'isError',
-                                             'txreceipt_status', 'input', 'contractAddress', 'cumulativeGasUsed',
-                                             'gasUsed', 'confirmations', 'type', 'traceId', 'errCode'])
+    def get_contracts(address, chain_id) -> set:
+        contracts = set()
 
-        for address in addresses:
-            etherscan_transaction_for_address = f"https://api.etherscan.io/api?module=account&action=txlist&address={address}&startblock={FIRST_BLOCK_NUMBER}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={os.environ.get('ETHERSCAN_TOKEN')}"
-            #etherscan_transaction_for_address = f"https://api-goerli.etherscan.io/api?module=account&action=txlist&address={address}&startblock={firstBlockNumber}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={os.environ.get('ETHERSCAN_TOKEN')}"
-            
-            data = requests.get(etherscan_transaction_for_address)
-            success2 = False
-            count = 0
-            while not success2:
-                try:
-                    data = requests.get(etherscan_transaction_for_address)
-                    json_data = json.loads(data.content)
-                    count += 1
-                    if count > 10:
-                        break
-                    success2 = True
-                    df_etherscan = df_etherscan.append(pd.DataFrame(data=json_data["result"]))
-                except JSONDecodeError as e:
-                    print(f"Error {e} {data.content}")
-                    time.sleep(1)
-            if count>10:
-                continue
+        df_etherscan = pd.DataFrame(columns=['nonce', 'to', 'isError'])
+
+        transaction_for_address = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={address}&startblock={BlockChainIndexer.FIRST_BLOCK_NUMBER}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
+        
+        success = False
+        count = 0
+        while not success:
+            try:
+                data = requests.get(transaction_for_address)
+                json_data = json.loads(data.content)
+                count += 1
+                if count > 10:
+                    break
+                success = True
+                df_etherscan = df_etherscan.append(pd.DataFrame(data=json_data["result"]))
+            except json.JSONDecodeError as e:
+                logging.warn(f"Error getting contract for {address}, {chain_id} {e} {data.content}")
+                time.sleep(1)
+        
+        for index, row in df_etherscan.iterrows():
+            if row["isError"] == "0":
+                if row["to"] == "":
+                    contracts.add(BlockChainIndexer.calc_contract_address(address, int(row["nonce"])).lower())
+
+        return contracts
