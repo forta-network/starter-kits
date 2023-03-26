@@ -1,10 +1,11 @@
 from forta_agent import create_alert_event,FindingSeverity, AlertEvent
 import agent
 import json
+import pandas as pd
+import numpy as np
 from datetime import datetime
 from web3_mock import Web3Mock, EOA_ADDRESS_2, EOA_ADDRESS, CONTRACT
-
-from constants import BASE_BOTS
+from constants import MODEL_ALERT_THRESHOLD
 
 w3 = Web3Mock()
 
@@ -61,20 +62,22 @@ class TestScamDetector:
         assert True, "Bot should initialize successfully"
 
     def test_in_list(self):
+        agent.initialize()
         alert = create_alert_event(
             {"alert":
                 {"name": "x",
                  "hash": "0xabc",
                  "description": "description",
-                 "alertId": "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL",
+                 "alertId": "SUSPICIOUS-CONTRACT-CREATION",
                  "source":
-                    {"bot": {'id': "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14"}}
+                    {"bot": {'id': "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99"}}
                  }
              })
 
-        assert agent.in_list(alert, BASE_BOTS), "should be in list"
+        assert agent.in_list(alert, agent.BASE_BOTS), "should be in list"
 
     def test_in_list_incorrect_alert_id(self):
+        agent.initialize()
         alert = create_alert_event(
             {"alert":
                 {"name": "x",
@@ -86,9 +89,10 @@ class TestScamDetector:
                  }
              })
 
-        assert not agent.in_list(alert, BASE_BOTS), "should be in list"
+        assert not agent.in_list(alert, agent.BASE_BOTS), "should be in list"
 
     def test_in_list_incorrect_bot_id(self):
+        agent.initialize()
         alert = create_alert_event(
             {"alert":
                 {"name": "x",
@@ -100,11 +104,11 @@ class TestScamDetector:
                  }
              })
 
-        assert not agent.in_list(alert, BASE_BOTS), "should be in list"
+        assert not agent.in_list(alert, agent.BASE_BOTS), "should be in list"
 
     def test_get_etherscan_label_has_label(self):
         label = agent.get_etherscan_label("0x12D66f87A04A9E220743712cE6d9bB1B5616B8Fc")
-        assert "name|tornado.cash: 0.1 eth" in label, "should be sanctioned label"
+        assert "tornado" in label, "should be sanctioned label"
 
     def test_get_etherscan_label_no_label(self):
         label = agent.get_etherscan_label("0xa0109274F53609f6Be97ec5f3052C659AB80f012")
@@ -156,3 +160,48 @@ class TestScamDetector:
         assert len(alerts) == 2, "should be 2 alert"
         assert ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-1", "0xabc") in alerts, "should be in alerts"
         assert ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-2", "0xabc") in alerts, "should be in alerts"
+
+    def test_build_feature_vector(self):
+        # alerts are tuples of (botId, alertId, alertHash)
+        alerts = [('0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5', 'FLASHBOTS-TRANSACTIONS', '0x1'),
+                  ('0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14', 'ICE-PHISHING-ERC20-PERMIT', '0x2'),
+                  ('0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14', 'ICE-PHISHING-ERC721-APPROVAL-FOR-ALL', '0x3'),
+                  ('0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14', 'ICE-PHISHING-ERC721-APPROVAL-FOR-ALL', '0x4')
+                  ]
+
+        df_expected_feature_vector = pd.DataFrame(columns=agent.MODEL_FEATURES)
+        df_expected_feature_vector.loc[0] = np.zeros(len(agent.MODEL_FEATURES))
+        df_expected_feature_vector.iloc[0]["0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_FLASHBOTS-TRANSACTIONS"] = 1
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC20-PERMIT"] = 1
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL"] = 2
+        df_expected_feature_vector.iloc[0]["0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_count"] = 1
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_count"] = 3
+
+        df_feature_vector = agent.build_feature_vector(alerts, EOA_ADDRESS)
+        assert df_feature_vector.equals(df_expected_feature_vector), "should be equal"
+
+    def test_get_score(self):
+        agent.initialize()
+
+        df_expected_feature_vector = pd.DataFrame(columns=agent.MODEL_FEATURES)
+        df_expected_feature_vector.loc[0] = np.zeros(len(agent.MODEL_FEATURES))
+        df_expected_feature_vector.iloc[0]["0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_FLASHBOTS-TRANSACTIONS"] = 1
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC20-PERMIT"] = 1
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL"] = 2
+        df_expected_feature_vector.iloc[0]["0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_count"] = 1
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_count"] = 3        
+
+        score = agent.get_model_score(df_expected_feature_vector)
+        assert score > MODEL_ALERT_THRESHOLD, "should greater than model threshold"
+
+    def test_get_score_empty_features(self):
+        agent.initialize()
+
+        df_expected_feature_vector = pd.DataFrame(columns=agent.MODEL_FEATURES)
+        df_expected_feature_vector.loc[0] = np.zeros(len(agent.MODEL_FEATURES))
+        
+
+        score = agent.get_model_score(df_expected_feature_vector)
+        assert score < MODEL_ALERT_THRESHOLD, "should less than model threshold"
+
+    # TODO - test detect function

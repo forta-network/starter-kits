@@ -6,16 +6,18 @@ import json
 from datetime import datetime
 import time
 import pandas as pd
+import numpy as np
 import io
+import joblib
 from hexbytes import HexBytes
-
+from sklearn.ensemble import RandomForestClassifier
 
 import forta_agent
 from forta_agent import get_json_rpc_url, EntityType
 from web3 import Web3
 
 from L2Cache import L2Cache
-from constants import (ENTITY_CLUSTER_BOTS, FP_MITIGATION_BOTS, BASE_BOTS, ALERT_LOOKBACK_WINDOW_IN_DAYS,
+from constants import (ENTITY_CLUSTER_BOTS, FP_MITIGATION_BOTS, ALERT_LOOKBACK_WINDOW_IN_DAYS,
                          ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE,
                          ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, ALERTED_CLUSTERS_KEY, ALERTED_FP_CLUSTERS_KEY,
                          MODEL_ALERT_THRESHOLD, MODEL_FEATURES, MODEL_NAME, CLUSTER_QUEUE_SIZE)
@@ -35,6 +37,9 @@ FP_MITIGATION_CLUSTERS = set()  # cluster that are considered FPs
 ALERTED_CLUSTERS = set()  # cluster that have been alerted on
 ALERTED_FP_CLUSTERS = set()  # clusters which are considered FPs that have been alerted on
 
+BASE_BOTS = []
+
+MODEL = None
 
 s3 = None
 dynamo = None
@@ -81,6 +86,9 @@ def initialize():
     global CONTRACT_CACHE
     CONTRACT_CACHE = {}
 
+    global MODEL
+    MODEL =  joblib.load(MODEL_NAME)
+
     # read addresses from fp_list.txt
     content = open('fp_list.tsv', 'r').read()
     df_fp = pd.read_csv(io.StringIO(content), sep='\t')
@@ -95,9 +103,13 @@ def initialize():
     logging.info("Initializing scam detector bot. Initialized dynamo DB successfully.")
 
     # subscribe to the base bots, FP mitigation and entity clustering bot
+    global BASE_BOTS
     subscription_json = []
-    for bot, alertId, stage in BASE_BOTS:
-        subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
+    for feature in MODEL_FEATURES:
+        tokens = feature.split("_")
+        if len(tokens) == 2 and tokens[1] != 'count':
+            BASE_BOTS.append((tokens[0], tokens[1]))
+            subscription_json.append({"botId": tokens[0], "alertId": tokens[1], "chainId": CHAIN_ID})
 
     for bot, alertId in FP_MITIGATION_BOTS:
         subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
@@ -239,13 +251,47 @@ def get_scammer_addresses(alert_event: forta_agent.alert_event.AlertEvent) -> se
 
     return scammer_addresses
 
+# alerts are tuples of (botId, alertId, alertHash)
+def build_feature_vector(alerts: list, cluster: str) -> pd.DataFrame: 
+    df_feature_vector = pd.DataFrame(columns=MODEL_FEATURES)
+    df_feature_vector.loc[0] = np.zeros(len(MODEL_FEATURES))
 
-def build_feature_vector(alert_event: forta_agent.alert_event.AlertEvent, cluster: set) -> pd.Series:
-    return pd.Series()
+    # create dataframe out of list of alert tuples
+    df_alerts_all = pd.DataFrame(alerts, columns=['bot_id', 'alert_id', 'alert_hash'])
+    df_alerts_all.drop_duplicates(inplace=True)
+    df_alerts_all['cluster'] = cluster
+    df_alerts_all['alert_hash'] = 1
 
 
-def get_model_score(feature_vector: pd.Series) -> float:
-    return 0.0
+    grouped = df_alerts_all.groupby(['cluster', 'bot_id', 'alert_id'])['alert_hash'].sum().reset_index()
+    pivoted = pd.pivot_table(grouped, values='alert_id', index = 'cluster', columns=['bot_id', 'alert_id'], aggfunc='sum')
+    pivoted.columns = [f'{col[0]}_{col[1]}' for col in pivoted.columns]
+    pivoted.fillna(0, inplace=True)
+
+
+    bot_count_features = set()
+    for column in pivoted.columns:
+        bot_count_features.add(column[0:66])
+
+    for bot_count_feature in bot_count_features:
+        pivoted[bot_count_feature + '_count'] = 0
+
+    for index, row in pivoted.iterrows():
+        for column in pivoted.columns:
+            if column[0:66] in bot_count_features and column[0:66] + '_count' not in column:
+                count = row[column]
+                pivoted.loc[index, column[0:66] + '_count'] += count
+
+
+    for column in pivoted.columns:
+        df_feature_vector.loc[0, column] = pivoted.loc[cluster, column]
+
+    return df_feature_vector
+
+def get_model_score(df_feature_vector: pd.DataFrame) -> float:
+    global MODEL 
+    predictions_proba = MODEL.predict_proba(df_feature_vector)[:, 1]
+    return predictions_proba
 
 
 def is_fp(cluster: str) -> bool:
@@ -337,7 +383,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                     logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got {len(alerts)} alerts from dynamo for cluster {cluster}")
 
                     # build feature vector
-                    feature_vector = build_feature_vector(alerts, cluster)
+                    feature_vector = build_feature_vector(alerts)
 
                     # # call model
                     score = get_model_score(feature_vector)
