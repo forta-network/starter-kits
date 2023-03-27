@@ -53,9 +53,9 @@ class TestAlertCombiner:
         assert len(addresses) == 2, "should have extracted 2 addresses"
 
     def test_get_fromAddr_seaport_order_metadata(self):
-        metadata = {"collectionFloor":"0.047","contractAddress":"0xe75512aa3bec8f00434bbd6ad8b0a3fbff100ad6","contractName":"MG Land","currency":"ETH","fromAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ecf","hash":"0x768eefcc8fdba3946749048bd8582fff41501cfe874fba2c9f0383ae2dfdd1cb","itemPrice":"0","market":"Opensea 🌊","quantity":"1","toAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ecf","tokenIds":"4297","totalPrice":"0"}
-        fromAddr = agent.get_seaport_order_attacker_address(metadata)
-        assert fromAddr == "0xc81476ae9f2748725a36b326a1831200ed4f3ecf", "this should be the attacker address"
+        metadata = {"collectionFloor":"0.047","contractAddress":"0xe75512aa3bec8f00434bbd6ad8b0a3fbff100ad6","contractName":"MG Land","currency":"ETH","fromAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ece","hash":"0x768eefcc8fdba3946749048bd8582fff41501cfe874fba2c9f0383ae2dfdd1cb","itemPrice":"0","market":"Opensea 🌊","quantity":"1","toAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ecf","tokenIds":"4297","totalPrice":"0"}
+        toAddr = agent.get_seaport_order_attacker_address(metadata)
+        assert toAddr == "0xc81476ae9f2748725a36b326a1831200ed4f3ecf", "this should be the attacker address"
 
     def test_fp_mitigation_proper_chain_id(self):
         # delete cache file
@@ -186,8 +186,8 @@ class TestAlertCombiner:
         df_forta = pd.DataFrame([
             ["2022-04-30T23:55:17.284158264Z", "nft-phishing-alert", "ethereum",
              "SUSPICIOUS", {"transactionHash": "0xc549d8cdee8a2799335785b0cc6f2cb29e7877e92a46edf5f0500ae1ebffbd79", "block": {"number": 26435976, "chainId": 1}, "bot": {"id": "0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502"}},
-             "MEDIUM", {"collectionFloor":"2.5","contractAddress":"0x764aeebcf425d56800ef2c84f2578689415a2daa","contractName":"SewerPass","currency":"ETH","fromAddr":"0x86031ba0a2fe6be8d55abfc7d51ddc4f91ba9f78","hash":"0xec6442b20f003ea9a38b8b51f7feef75f8e68618cd6d511d7ae44012786768ea","itemPrice":"0.0033333333333333335","market":"Opensea 🌊","quantity":"3","toAddr":"0xe2551ff5f1fb405247bef576e4988df32ab7674d","tokenIds":"19445,25417,5996","totalPrice":"0.01"}, 
-             "SEAPORT-PHISHING-TRANSFER", "3 SewerPass id/s: 19445,25417,5996 sold on Opensea 🌊 for 0.01 ETH with a floor price of 2.5 ETH", ["0x86031ba0a2fe6be8d55abfc7d51ddc4f91ba9f78"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"]
+             "MEDIUM", {"collectionFloor":"2.5","contractAddress":"0x764aeebcf425d56800ef2c84f2578689415a2daa","contractName":"SewerPass","currency":"ETH","fromAddr":"0x86031ba0a2fe6be8d55abfc7d51ddc4f91ba9f78","hash":"0xec6442b20f003ea9a38b8b51f7feef75f8e68618cd6d511d7ae44012786768ea","itemPrice":"0.0033333333333333335","market":"Opensea 🌊","quantity":"3","toAddr":"0x86031ba0a2fe6be8d55abfc7d51ddc4f91ba9f79","tokenIds":"19445,25417,5996","totalPrice":"0.01"}, 
+             "SEAPORT-PHISHING-TRANSFER", "3 SewerPass id/s: 19445,25417,5996 sold on Opensea 🌊 for 0.01 ETH with a floor price of 2.5 ETH", ["0x86031ba0a2fe6be8d55abfc7d51ddc4f91ba9f78","0x86031ba0a2fe6be8d55abfc7d51ddc4f91ba9f79"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"]
            ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
 
         forta_explorer.set_df(df_forta)
@@ -201,7 +201,7 @@ class TestAlertCombiner:
 
         assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
         finding = agent.FINDINGS_CACHE[0]
-        assert finding.alert_id == "SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER", "should be address poisoning finding"
+        assert finding.alert_id == "SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER", "should be seaport order finding"
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 

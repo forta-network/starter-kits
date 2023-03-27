@@ -264,8 +264,8 @@ def get_native_ice_phishing_address(metadata: dict) -> str:
 
 
 def get_seaport_order_attacker_address(metadata: dict) -> str:
-    if "fromAddr" in metadata:
-        return metadata["fromAddr"]
+    if "toAddr" in metadata:
+        return metadata["toAddr"]
     return ""
 
 
