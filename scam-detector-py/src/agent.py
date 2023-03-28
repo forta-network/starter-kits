@@ -322,7 +322,17 @@ def is_fp(cluster: str) -> bool:
 def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
     
     global ENTITY_CLUSTERS
+    global ENTITY_CLUSTER_BOTS
+    global ENTITY_CLUSTERS_MAX_QUEUE_SIZE
     global CHAIN_ID
+    global ALERTED_CLUSTERS_STRICT
+    global ALERTED_CLUSTERS_LOOSE
+    global FP_MITIGATION_CLUSTERS
+    global FP_MITIGATION_CLUSTERS
+    global FP_CLUSTERS_QUEUE_MAX_SIZE
+    global FP_MITIGATION_BOTS
+    global BASE_BOTS
+
     
     findings = []
     try:
@@ -445,7 +455,7 @@ def emit_new_fp_finding(w3) -> list:
         chain_id = int(row['chain_id'])
         if chain_id != CHAIN_ID:
             continue
-        cluster = row['address'].lower()
+        cluster = row['cluster'].lower()
         FP_MITIGATION_CLUSTERS.add(cluster)
         if cluster not in ALERTED_FP_CLUSTERS:
             logging.info("Emitting FP mitigation finding")
@@ -458,7 +468,7 @@ def emit_new_fp_finding(w3) -> list:
 
 
 def emit_manual_finding(w3) -> list:
-    global ALERTED_CLUSTERS
+    global ALERTED_CLUSTERS_STRICT
     global CHAIN_ID
     findings = []
 
@@ -470,19 +480,19 @@ def emit_manual_finding(w3) -> list:
     content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
     df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
     for index, row in df_manual_findings.iterrows():
-        chain_id = int(row['chain_id'])
+        chain_id = int(row['Chain ID'])
         if chain_id != CHAIN_ID:
             continue
 
-        address_lower = row['address'].lower()
+        address_lower = row['Address'].lower()
         cluster = address_lower
         if address_lower in ENTITY_CLUSTERS.keys():
             cluster = ENTITY_CLUSTERS[address_lower]
 
-        if cluster not in ALERTED_CLUSTERS:
+        if cluster not in ALERTED_CLUSTERS_STRICT:
             logging.info("Emitting manual finding")
-            update_list(ALERTED_CLUSTERS, CLUSTER_QUEUE_SIZE, cluster)
-            findings.append(ScamDetectorFinding.scam_finding_manual(cluster, row['comment'], chain_id))
+            update_list(ALERTED_CLUSTERS_STRICT, CLUSTER_QUEUE_SIZE, cluster)
+            findings.append(ScamDetectorFinding.scam_finding_manual(block_chain_indexer, cluster, row['Threat category'], row['Account'] + " " + row['Tweet'], chain_id))
             logging.info(f"Findings count {len(findings)}")
             persist_state()
 

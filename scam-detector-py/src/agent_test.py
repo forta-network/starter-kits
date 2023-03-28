@@ -297,5 +297,22 @@ class TestScamDetector:
         agent.initialize()
 
         findings = agent.emit_new_fp_finding(w3)
-        assert len(findings) == 4, "should have one finding"
+        df_fps = pd.read_csv("fp_list.tsv", sep="\t")
+        assert len(findings) == len(df_fps[df_fps['chain_id']==1]), "this should have triggered FP findings"
+
         assert findings[0].alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be SCAM-DETECTOR-FALSE-POSITIVE"
+
+
+    def test_emit_new_manual_finding(self):
+        agent.initialize()
+
+        findings = agent.emit_manual_finding(w3)
+        df_manual_entries = pd.read_csv("manual_alert_list.tsv", sep="\t")
+        assert len(findings) == len(df_manual_entries[df_manual_entries['Chain ID']==1]), "this should have triggered manual findings"
+
+        for finding in findings:
+            if '0x6939432e462f7dCB6a3Ca39b9723d18a58FE9A65' in finding.description.lower():
+                assert findings[0].alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+                assert findings[0].description == "0x6939432e462f7dCB6a3Ca39b9723d18a58FE9A65 likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING)", "wrong description"
+                assert findings[0].metadata["reported_by"] == "@CertiKAlert https://twitter.com/CertiKAlert/status/1640288904317378560?s=20"
+

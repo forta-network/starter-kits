@@ -78,8 +78,11 @@ class ScamDetectorFinding:
             })
         
     @staticmethod
-    def scam_finding_manual(block_chain_indexer, scammer_cluster: str, comment: str, chain_id: int) -> Finding:
+    def scam_finding_manual(block_chain_indexer, scammer_cluster: str, threat_category: str, reported_by: str, chain_id: int) -> Finding:
         labels = []
+
+        alert_id_threat_category = threat_category.upper().replace(" ", "-")
+
         for scammer_address in scammer_cluster.split(","):
             labels.append(Label({
                 'entityType': EntityType.Address,
@@ -88,8 +91,8 @@ class ScamDetectorFinding:
                 'confidence': 1,
                 'remove': "false",
                 'metadata': {
-                    'alert_ids': "SCAM-DETECTOR-MANUAL",
-                    'comment': comment,
+                    'alert_ids': "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category,
+                    'reported_by': reported_by,
                     'chain_id': chain_id
                 }
             }))
@@ -104,19 +107,19 @@ class ScamDetectorFinding:
                     'confidence': 1,
                     'remove': "false",
                     'metadata': {
-                        'alert_ids': "SCAM-DETECTOR-MANUAL",
-                        'comment': comment,
+                        'alert_ids': "SCAM-DETECTOR-MANUAL-" + alert_id_threat_category,
+                        'reported_by': reported_by,
                         'chain_id': chain_id
                     }
                 }))
 
         return Finding({
             'name': 'Scam detector identified an EOA with past alerts mapping to attack behavior',
-            'description': f'{scammer_address} likely involved in an attack (SCAM-DETECTOR-MANUAL)',
-            'alert_id': "SCAM-DETECTOR-MANUAL",
+            'description': f'{scammer_address} likely involved in an attack (SCAM-DETECTOR-MANUAL-{alert_id_threat_category})',
+            'alert_id': "SCAM-DETECTOR-MANUAL-" + alert_id_threat_category,
             'type': FindingType.Exploit,
             'severity': FindingSeverity.Critical,
-            'metadata': {"comment": comment},
+            'metadata': {"reported_by": reported_by},
             'labels': labels
         })
 
