@@ -12,8 +12,10 @@ class ScamDetectorFinding:
         feature_vector = {"feature_vector": feature_vector.to_json()}
 
         bot_id_alert_id = set()
+        alert_ids = set()
         for bot_id_1, alert_id_1, alert_hash in alerts:
             bot_id_alert_id.add((bot_id_1, alert_id_1))
+            alert_ids.add(alert_id_1)
         
         example_alerts = dict()
         for (bot_id_1, alert_id_1) in bot_id_alert_id:
@@ -34,7 +36,7 @@ class ScamDetectorFinding:
                 'confidence': score,
                 'remove': "false",
                 'metadata': {
-                    'alert_ids': alert_id,
+                    'alert_ids': ','.join(str(x) for x in alert_ids),
                     'chain_id': chain_id
                 }
     	    }))
@@ -49,7 +51,7 @@ class ScamDetectorFinding:
                     'confidence': score,
                     'remove': "false",
                     'metadata': {
-                        'alert_ids': alert_id,
+                        'alert_ids': ','.join(str(x) for x in alert_ids),
                         'chain_id': chain_id
                     }
     	        }))
@@ -132,8 +134,8 @@ class ScamDetectorFinding:
 
         return Finding({
             'name': 'Scam detector identified an EOA that was incorrectly alerted on. Emitting false positive alert.',
-            'description': f'{benign_address} likely not involved in scam (SCAM-DETECTOR-1-FALSE-POSITIVE)',
-            'alert_id': 'SCAM-DETECTOR-1-FALSE-POSITIVE',
+            'description': f'{benign_address} likely not involved in scam (SCAM-DETECTOR-FALSE-POSITIVE)',
+            'alert_id': 'SCAM-DETECTOR-FALSE-POSITIVE',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'metadata': {},

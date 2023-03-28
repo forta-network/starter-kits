@@ -74,18 +74,18 @@ class BlockChainIndexer:
         success = False
         count = 0
         while not success:
-            try:
-                data = requests.get(transaction_for_address)
+            data = requests.get(transaction_for_address)
+            if data.status_code == 200:
                 json_data = json.loads(data.content)
+                success = True
+                df_etherscan = df_etherscan.append(pd.DataFrame(data=json_data["result"]))
+            else:
+                logging.warn(f"Error getting contract for {address}, {chain_id} {data.status_code} {data.content}")
                 count += 1
                 if count > 10:
                     break
-                success = True
-                df_etherscan = df_etherscan.append(pd.DataFrame(data=json_data["result"]))
-            except json.JSONDecodeError as e:
-                logging.warn(f"Error getting contract for {address}, {chain_id} {e} {data.content}")
                 time.sleep(1)
-        
+    
         for index, row in df_etherscan.iterrows():
             if row["isError"] == "0":
                 if row["to"] == "":

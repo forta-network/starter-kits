@@ -11,6 +11,7 @@ import io
 import joblib
 from hexbytes import HexBytes
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
 
 import forta_agent
 from forta_agent import get_json_rpc_url, EntityType
@@ -44,6 +45,7 @@ MODEL = None
 
 s3 = None
 dynamo = None
+item_id_prefix = ""
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -162,7 +164,7 @@ def in_list(alert_event: forta_agent.alert_event.AlertEvent, bots: tuple) -> boo
 
 def get_etherscan_label(address: str) -> str:
     if address is None:
-        return None
+        return ""
         
     try:
         res = requests.get(label_api + address.lower())
@@ -172,7 +174,7 @@ def get_etherscan_label(address: str) -> str:
                 return labels['events'][0]['label']['label']
     except Exception as e:
         logging.warning(f"Exception in get_etherscan_label {e}")
-        return None
+        return ""
     
 
 def update_list(items: set, max_size: int, item: str):
@@ -199,7 +201,7 @@ def get_shard(timestamp: int) -> int:
 # whereas alerts with the same hash will be overwritten
 def put_alert(alert_event: forta_agent.alert_event.AlertEvent, cluster: str):
     shard = get_shard(alert_event.block_number)
-    itemId = f"{CHAIN_ID}|{shard}|alert|{cluster}"
+    itemId = f"{item_id_prefix}|{CHAIN_ID}|{shard}|alert|{cluster}"
 
     expiry_offset = ALERT_LOOKBACK_WINDOW_IN_DAYS * 24 * 60 * 60
     alert_created_at_str = alert_event.alert.created_at
@@ -226,7 +228,7 @@ def put_alert(alert_event: forta_agent.alert_event.AlertEvent, cluster: str):
 def read_alerts(cluster: str) -> list:
     alert_items = []
     for shard in range(get_total_shards()):
-        itemId = f"{CHAIN_ID}|{shard}|alert|{cluster}"
+        itemId = f"{item_id_prefix}|{CHAIN_ID}|{shard}|alert|{cluster}"
         response = dynamo.query(KeyConditionExpression='itemId = :id',
                                 ExpressionAttributeValues={
                                     ':id': itemId
@@ -244,7 +246,7 @@ def read_alerts(cluster: str) -> list:
 def get_scammer_addresses(alert_event: forta_agent.alert_event.AlertEvent) -> set:
     scammer_addresses = set()
     for label in alert_event.alert.labels:
-        label_lower = label.lower()
+        label_lower = label.label.lower()
         if ("scam" in label_lower or "attack" in label_lower) and label.entity_type == EntityType.Address:
             scammer_addresses.add(label.entity.lower())
 
@@ -373,7 +375,7 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                         cluster = ENTITY_CLUSTERS[scammer_address_lower]
                     logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got alert for cluster {cluster}")
                     
-                    if is_contract(cluster):
+                    if is_contract(w3, cluster):
                         logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} is contract, skipping")
                         continue
 
@@ -388,10 +390,11 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                     logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got {len(alerts)} alerts from dynamo for cluster {cluster}")
 
                     # build feature vector
-                    feature_vector = build_feature_vector(alerts)
+                    feature_vector = build_feature_vector(alerts, cluster)
 
                     # # call model
                     score = get_model_score(feature_vector)
+                    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - model score for {cluster}: {score}")
 
                     # if model says it is a scam, assess for FP mitigation
                     if score > MODEL_ALERT_THRESHOLD_STRICT:
