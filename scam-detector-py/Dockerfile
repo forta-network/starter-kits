@@ -22,5 +22,6 @@ WORKDIR /app
 COPY ./src ./src
 COPY package*.json ./
 COPY *.joblib ./
+COPY *.tsv ./
 RUN npm ci --production
 CMD [ "npm", "run", "start:prod" ]

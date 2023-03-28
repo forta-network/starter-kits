@@ -21,7 +21,8 @@ class TestScamFindings:
         assert len(finding.labels) == 1, "should be 1"
         assert finding.labels[0].entity == EOA_ADDRESS_2, "should be EOA_ADDRESS_2"
         assert finding.severity == FindingSeverity.Critical, "should be critical"
-        assert finding.labels[0].metadata['alert_ids'] == "SCAM-DETECTOR-MODEL-1", "should be SCAM-DETECTOR-MODEL-1"
+        assert "SEAPORT-PHISHING-TRANSFER" in finding.labels[0].metadata['alert_ids'], "should have SEAPORT-PHISHING-TRANSFER"
+        assert "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS" in finding.labels[0].metadata['alert_ids'], "should have ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS"
         assert finding.labels[0].metadata['chain_id'] == 1, "should be 1"
 
         assert finding.metadata['feature_vector'] == feature_vector.to_json(), "should be the same"
@@ -53,7 +54,8 @@ class TestScamFindings:
         assert len(finding.labels) == 1, "should be 1"
         assert finding.severity == FindingSeverity.Low, "should be low"
         assert finding.labels[0].entity == EOA_ADDRESS_2, "should be EOA_ADDRESS_2"
-        assert finding.labels[0].metadata['alert_ids'] == "SCAM-DETECTOR-MODEL-2", "should be SCAM-DETECTOR-MODEL-2"
+        assert "SEAPORT-PHISHING-TRANSFER" in finding.labels[0].metadata['alert_ids'], "should have SEAPORT-PHISHING-TRANSFER"
+        assert "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS" in finding.labels[0].metadata['alert_ids'], "should have ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS"
         assert finding.labels[0].metadata['chain_id'] == 1, "should be 1"
 
         assert finding.metadata['feature_vector'] == feature_vector.to_json(), "should be the same"
@@ -75,26 +77,26 @@ class TestScamFindings:
         
     
     def test_scam_finding_manual(self):
-        finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, EOA_ADDRESS, "test", 1)  # this EOA deployed a contract
-        assert finding.alert_id == "SCAM-DETECTOR-MANUAL", "should be SCAM-DETECTOR-MANUAL"
-        assert finding.description == f'{EOA_ADDRESS} likely involved in an attack (SCAM-DETECTOR-MANUAL)', "should be SCAM-DETECTOR-MANUAL"
-        assert finding.metadata['comment'] == "test", "should be test"
+        finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, EOA_ADDRESS, "ice phishing", "me http://foo.com", 1)  # this EOA deployed a contract
+        assert finding.alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+        assert finding.description == f'{EOA_ADDRESS} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING)', "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+        assert finding.metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
         assert len(finding.labels) == 2, "should be 2"  # one for EOA and one for contract
         assert finding.labels[0].entity == EOA_ADDRESS, "should be EOA_ADDRESS"
         assert finding.labels[1].entity == CONTRACT, "should be CONTRACT"
-        assert finding.labels[0].metadata['alert_ids'] == "SCAM-DETECTOR-MANUAL", "should be SCAM-DETECTOR-MANUAL"
+        assert finding.labels[0].metadata['alert_ids'] == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
         assert finding.labels[0].metadata['chain_id'] == 1, "should be 1"
-        assert finding.labels[0].metadata['comment'] == "test", "should be test"
+        assert finding.labels[0].metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
         assert finding.labels[0].label == "scammer", "should be scammer"
     
     def test_alert_FP(self):
         finding = ScamDetectorFinding.alert_FP(EOA_ADDRESS)
-        assert finding.alert_id == "SCAM-DETECTOR-1-FALSE-POSITIVE", "should be FP"
-        assert finding.description == f'{EOA_ADDRESS} likely not involved in scam (SCAM-DETECTOR-1-FALSE-POSITIVE)', "should be FP"
+        assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be FP"
+        assert finding.description == f'{EOA_ADDRESS} likely not involved in scam (SCAM-DETECTOR-FALSE-POSITIVE)', "should be FP"
         assert len(finding.labels) == 1, "should be 1"
         
     def test_alert_FP_cluster(self):
         finding = ScamDetectorFinding.alert_FP(EOA_ADDRESS+","+EOA_ADDRESS_2)
-        assert finding.alert_id == "SCAM-DETECTOR-1-FALSE-POSITIVE", "should be FP"
+        assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be FP"
         assert len(finding.labels) == 2, "should be 2"
     

@@ -4,6 +4,7 @@ import json
 import pandas as pd
 import numpy as np
 import random
+import os
 from datetime import datetime
 from web3_mock import Web3Mock, EOA_ADDRESS_2, EOA_ADDRESS, CONTRACT
 from constants import MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT
@@ -12,6 +13,12 @@ w3 = Web3Mock()
 
 
 class TestScamDetector:
+    def remove_persistent_state():
+        persistent_state = ['V3-alerted_clusters_loose_key', 'V3-alerted_clusters_strict_key', 'V3-alerted_fp_clusters_key', 'V3-entity_clusters_key', 'V3-fp_mitigation_clusters_key']
+        for key in persistent_state:
+            if os.path.exists(key):
+                os.remove(key)
+
     def generate_alert(address: str, bot_id: str, alert_id: str, timestamp: int, metadata={}, labels=[], alert_hash = '0xabc') -> AlertEvent:
         # {
         #       "label": "Attacker",
@@ -216,6 +223,8 @@ class TestScamDetector:
 
 
     def test_scam_critical(self):
+        TestScamDetector.remove_persistent_state()
+
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
@@ -256,6 +265,8 @@ class TestScamDetector:
 
 
     def test_scam_low(self):
+        TestScamDetector.remove_persistent_state()
+
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
@@ -294,6 +305,8 @@ class TestScamDetector:
         #all_findings[0].labels
 
     def test_emit_new_fp_finding(self):
+        TestScamDetector.remove_persistent_state()
+
         agent.initialize()
 
         findings = agent.emit_new_fp_finding(w3)
@@ -304,6 +317,8 @@ class TestScamDetector:
 
 
     def test_emit_new_manual_finding(self):
+        TestScamDetector.remove_persistent_state()
+
         agent.initialize()
 
         findings = agent.emit_manual_finding(w3)

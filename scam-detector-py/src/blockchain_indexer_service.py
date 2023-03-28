@@ -1,4 +1,5 @@
 from ratelimiter import RateLimiter
+from src.storage import get_secrets
 import os
 import requests
 import json
@@ -11,7 +12,7 @@ import logging
 class BlockChainIndexer:
 
     FIRST_BLOCK_NUMBER = 15000000
-    SECRETS_JSON = json.loads(open("secrets.json").read())
+    SECRETS_JSON = get_secrets()
 
     @staticmethod
     def get_etherscan_url(chain_id):

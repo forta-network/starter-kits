@@ -17,14 +17,14 @@ import forta_agent
 from forta_agent import get_json_rpc_url, EntityType
 from web3 import Web3
 
-from L2Cache import L2Cache
-from constants import (ENTITY_CLUSTER_BOTS, FP_MITIGATION_BOTS, ALERT_LOOKBACK_WINDOW_IN_DAYS,
+from src.L2Cache import L2Cache
+from src.constants import (ENTITY_CLUSTER_BOTS, FP_MITIGATION_BOTS, ALERT_LOOKBACK_WINDOW_IN_DAYS,
                          ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE,
                          ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_FP_CLUSTERS_KEY,
                          MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT, MODEL_FEATURES, MODEL_NAME, CLUSTER_QUEUE_SIZE)
-from storage import s3_client, dynamo_table, get_secrets, bucket_name
-from findings import ScamDetectorFinding
-from blockchain_indexer_service import BlockChainIndexer
+from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
+from src.findings import ScamDetectorFinding
+from src.blockchain_indexer_service import BlockChainIndexer
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 block_chain_indexer = BlockChainIndexer()
@@ -48,10 +48,10 @@ dynamo = None
 item_id_prefix = ""
 
 root = logging.getLogger()
-root.setLevel(logging.INFO)
+root.setLevel(logging.DEBUG)
 
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
+handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 root.addHandler(handler)
@@ -124,7 +124,7 @@ def initialize():
     for bot, alertId in ENTITY_CLUSTER_BOTS:
         subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
 
-    logging.info("Initializing scam detector bot. Subscribed to bots successfully.")
+    logging.info(f"Initializing scam detector bot. Subscribed to bots successfully: {subscription_json}")
     logging.info("Initialized scam detector bot.")
     return subscription_json
 
@@ -460,6 +460,7 @@ def emit_new_fp_finding(w3) -> list:
         if cluster not in ALERTED_FP_CLUSTERS:
             logging.info("Emitting FP mitigation finding")
             update_list(FP_MITIGATION_CLUSTERS, FP_CLUSTERS_QUEUE_MAX_SIZE, cluster)
+            update_list(ALERTED_FP_CLUSTERS, CLUSTER_QUEUE_SIZE, cluster)
             findings.append(ScamDetectorFinding.alert_FP(cluster))
             logging.info(f"Findings count {len(findings)}")
             persist_state()
@@ -559,8 +560,10 @@ def provide_handle_block(w3):
 
 real_handle_block = provide_handle_block(web3)
 
+def handle_alert(alert_event: forta_agent.alert_event.AlertEvent):
+    logging.debug("handle_alert called")
+    return real_handle_alert(alert_event)
 
 def handle_block(block_event: forta_agent.block_event.BlockEvent):
     logging.debug("handle_block called")
-    
     return real_handle_block(block_event)
