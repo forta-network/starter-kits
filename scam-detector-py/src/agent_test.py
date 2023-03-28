@@ -1,11 +1,11 @@
-from forta_agent import create_alert_event,FindingSeverity, AlertEvent
+from forta_agent import create_alert_event,FindingSeverity, AlertEvent, Label, EntityType
 import agent
 import json
 import pandas as pd
 import numpy as np
 from datetime import datetime
 from web3_mock import Web3Mock, EOA_ADDRESS_2, EOA_ADDRESS, CONTRACT
-from constants import MODEL_ALERT_THRESHOLD
+from constants import MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT
 
 w3 = Web3Mock()
 
@@ -189,10 +189,10 @@ class TestScamDetector:
         df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC20-PERMIT"] = 1
         df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL"] = 2
         df_expected_feature_vector.iloc[0]["0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_count"] = 1
-        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_count"] = 3        
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_count"] = 3
 
         score = agent.get_model_score(df_expected_feature_vector)
-        assert score > MODEL_ALERT_THRESHOLD, "should greater than model threshold"
+        assert score > MODEL_ALERT_THRESHOLD_LOOSE, "should greater than model threshold"
 
     def test_get_score_empty_features(self):
         agent.initialize()
@@ -202,6 +202,23 @@ class TestScamDetector:
         
 
         score = agent.get_model_score(df_expected_feature_vector)
-        assert score < MODEL_ALERT_THRESHOLD, "should less than model threshold"
+        assert score < MODEL_ALERT_THRESHOLD_LOOSE, "should less than model threshold"
 
-    # TODO - test detect function
+
+    def test_scam(self):
+        agent.initialize()
+
+        label = Label({
+                'entityType': EntityType.Address,
+                'label': "scammer",
+                'entity': EOA_ADDRESS,
+                'confidence': 1.0,
+                'remove': "false"
+                })
+
+        timestamp = datetime.now().timestamp()
+        alert1 = TestScamDetector.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5","FLASHBOTS-TRANSACTIONS", timestamp, {}, [label])
+        findings = agent.detect_scam(w3, alert1)
+        assert len(findings) == 0, "should be 0 finding"
+
+        

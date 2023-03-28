@@ -19,8 +19,8 @@ from web3 import Web3
 from L2Cache import L2Cache
 from constants import (ENTITY_CLUSTER_BOTS, FP_MITIGATION_BOTS, ALERT_LOOKBACK_WINDOW_IN_DAYS,
                          ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE,
-                         ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, ALERTED_CLUSTERS_KEY, ALERTED_FP_CLUSTERS_KEY,
-                         MODEL_ALERT_THRESHOLD, MODEL_FEATURES, MODEL_NAME, CLUSTER_QUEUE_SIZE)
+                         ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_FP_CLUSTERS_KEY,
+                         MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT, MODEL_FEATURES, MODEL_NAME, CLUSTER_QUEUE_SIZE)
 from storage import s3_client, dynamo_table, get_secrets, bucket_name
 from findings import ScamDetectorFinding
 from blockchain_indexer_service import BlockChainIndexer
@@ -34,7 +34,8 @@ ENTITY_CLUSTERS = dict()  # address -> cluster
 CONTRACT_CACHE = dict()  # address -> is_contract
 
 FP_MITIGATION_CLUSTERS = set()  # cluster that are considered FPs
-ALERTED_CLUSTERS = set()  # cluster that have been alerted on
+ALERTED_CLUSTERS_LOOSE = set()  # cluster that have been alerted on
+ALERTED_CLUSTERS_STRICT = set()  # cluster that have been alerted on
 ALERTED_FP_CLUSTERS = set()  # clusters which are considered FPs that have been alerted on
 
 BASE_BOTS = []
@@ -75,9 +76,13 @@ def initialize():
     fp_mitigation_alerts = load(CHAIN_ID, FP_MITIGATION_CLUSTERS_KEY)
     FP_MITIGATION_CLUSTERS = set() if fp_mitigation_alerts is None else set(fp_mitigation_alerts)
 
-    global ALERTED_CLUSTERS
-    alerted_clusters = load(CHAIN_ID, ALERTED_CLUSTERS_KEY)
-    ALERTED_CLUSTERS = set() if alerted_clusters is None else set(alerted_clusters)
+    global ALERTED_CLUSTERS_LOOSE
+    alerted_clusters_loose = load(CHAIN_ID, ALERTED_CLUSTERS_LOOSE_KEY)
+    ALERTED_CLUSTERS_LOOSE = set() if alerted_clusters_loose is None else set(alerted_clusters_loose)
+
+    global ALERTED_CLUSTERS_STRICT
+    alerted_clusters_strict = load(CHAIN_ID, ALERTED_CLUSTERS_STRICT_KEY)
+    ALERTED_CLUSTERS_STRICT = set() if alerted_clusters_strict is None else set(alerted_clusters_strict)
 
     global ALERTED_FP_CLUSTERS
     alerted_fp_addresses = load(CHAIN_ID, ALERTED_FP_CLUSTERS_KEY)
@@ -312,7 +317,7 @@ def is_fp(cluster: str) -> bool:
         return True
 
 
-def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
+def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
     
     global ENTITY_CLUSTERS
     global CHAIN_ID
@@ -372,8 +377,8 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                         logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} is contract, skipping")
                         continue
 
-                    if cluster in ALERTED_CLUSTERS:
-                        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on; skipping")
+                    if cluster in ALERTED_CLUSTERS_STRICT:
+                        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on (strict); skipping")
                         continue
 
                     put_alert(alert_event, cluster)
@@ -389,13 +394,23 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                     score = get_model_score(feature_vector)
 
                     # if model says it is a scam, assess for FP mitigation
-                    if score > MODEL_ALERT_THRESHOLD:
-                        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - model score {score} > {MODEL_ALERT_THRESHOLD} for cluster {cluster}")
+                    if score > MODEL_ALERT_THRESHOLD_STRICT:
+                        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - model score {score} > {MODEL_ALERT_THRESHOLD_STRICT} (strict) for cluster {cluster}")
                         # if cluster not an FP, emit scam finding
                         if not is_fp(cluster):
                             logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
-                            findings.append(ScamDetectorFinding.scam_finding_model(block_chain_indexer, cluster, score, feature_vector, alerts, chain_id))
-                            update_list(ALERTED_CLUSTERS, CLUSTER_QUEUE_SIZE, cluster)
+                            findings.append(ScamDetectorFinding.scam_finding_model(block_chain_indexer, cluster, score, "SCAM-DETECTOR-MODEL-1", feature_vector, alerts, chain_id))
+                            update_list(ALERTED_CLUSTERS_STRICT, CLUSTER_QUEUE_SIZE, cluster)
+                            logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
+                        else:
+                            logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} in FP.")
+                    if score > MODEL_ALERT_THRESHOLD_LOOSE and cluster not in ALERTED_CLUSTERS_LOOSE:
+                        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - model score {score} > {MODEL_ALERT_THRESHOLD_LOOSE} (loose) for cluster {cluster}")
+                        # if cluster not an FP, emit scam finding
+                        if not is_fp(cluster):
+                            logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
+                            findings.append(ScamDetectorFinding.scam_finding_model(block_chain_indexer, cluster, score, "SCAM-DETECTOR-MODEL-2", feature_vector, alerts, chain_id))
+                            update_list(ALERTED_CLUSTERS_LOOSE, CLUSTER_QUEUE_SIZE, cluster)
                             logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
                         else:
                             logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} in FP.")
@@ -482,7 +497,8 @@ def persist_state():
     start = time.time()
     persist(FP_MITIGATION_CLUSTERS, CHAIN_ID, FP_MITIGATION_CLUSTERS_KEY)
     persist(ENTITY_CLUSTERS, CHAIN_ID, ENTITY_CLUSTERS_KEY)
-    persist(ALERTED_CLUSTERS, CHAIN_ID, ALERTED_CLUSTERS_KEY)
+    persist(ALERTED_CLUSTERS_LOOSE, CHAIN_ID, ALERTED_CLUSTERS_LOOSE_KEY)
+    persist(ALERTED_CLUSTERS_STRICT, CHAIN_ID, ALERTED_CLUSTERS_STRICT_KEY)
     persist(ALERTED_FP_CLUSTERS, CHAIN_ID, ALERTED_FP_CLUSTERS_KEY)
 
     end = time.time()
@@ -502,7 +518,7 @@ def provide_handle_alert(w3):
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logging.debug("handle_alert inner called")
 
-        findings = detect_attack(w3, alert_event)
+        findings = detect_scam(w3, alert_event)
         if not ('NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV')):
             persist_state()
 

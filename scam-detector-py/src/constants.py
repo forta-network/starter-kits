@@ -39,14 +39,16 @@ MODEL_FEATURES = ['0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8d
        '0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3_count',
        '0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f_count',
        '0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_count']
-MODEL_ALERT_THRESHOLD = 0.52
+MODEL_ALERT_THRESHOLD_LOOSE = 0.52 # precison of 83% on test set; 97% on train set
+MODEL_ALERT_THRESHOLD_STRICT = 0.74 # precision of 100% on test and train set
 
 ENTITY_CLUSTER_BOTS = [("0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER")]
 ENTITY_CLUSTERS_MAX_QUEUE_SIZE = 50000
 ENTITY_CLUSTERS_KEY = "entity_clusters_key"
 
 FP_MITIGATION_CLUSTERS_KEY = "fp_mitigation_clusters_key"
-ALERTED_CLUSTERS_KEY = "alerted_clusters_key"
+ALERTED_CLUSTERS_LOOSE_KEY = "alerted_clusters_loose_key"
+ALERTED_CLUSTERS_STRICT_KEY = "alerted_clusters_strict_key"
 ALERTED_FP_CLUSTERS_KEY = "alerted_fp_clusters_key"
 CLUSTER_QUEUE_SIZE = 1000000
 
