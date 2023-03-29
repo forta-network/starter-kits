@@ -4,11 +4,30 @@ from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
 class VictimNotificationFinding:
 
     @staticmethod
-    def Victim(victim_address: str, notifier_address: str) -> Finding:
-        labels = [{"entity": victim_address,
-            "entity_type": EntityType.Address,
-            "label": "victim",
-            "confidence": 0.99}]  
+    def Victim(victim_address: str, notifier_address: str, chain_id:int) -> Finding:
+        labels = []
+        labels.append(Label({
+            'entityType': EntityType.Address,
+            'label': "benign",
+            'entity': victim_address,
+            'confidence': 0.80,
+            'remove': "false",
+            'metadata': {
+                'alert_id': 'VICTIM-NOTIFICATION-1',
+                'chain_id': chain_id
+            }
+        }))
+        labels.append(Label({
+            'entityType': EntityType.Address,
+            'label': "victim",
+            'entity': victim_address,
+            'confidence': 0.99,
+            'remove': "false",
+            'metadata': {
+                'alert_id': 'VICTIM-NOTIFICATION-1',
+                'chain_id': chain_id
+            }
+        }))
 
         finding = Finding({
             'name': 'Victim Notified',
