@@ -514,7 +514,7 @@ def emit_new_fp_finding(w3) -> list:
         logging.error("Chain ID not set")
         raise Exception("Chain ID not set")
 
-    res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.tsv')
+    res = requests.get('https://github.com/forta-network/starter-kits/blob/Scam-Detector-ML/scam-detector-py/fp_list.tsv')
     content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.tsv', 'r').read()
     df_fp = pd.read_csv(io.StringIO(content), sep='\t')
     for index, row in df_fp.iterrows():
@@ -543,7 +543,7 @@ def emit_manual_finding(w3) -> list:
         logging.error("Chain ID not set")
         raise Exception("Chain ID not set")
 
-    res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/manual_alert_list.tsv')
+    res = requests.get('https://github.com/forta-network/starter-kits/blob/Scam-Detector-ML/scam-detector-py/manual_alert_list.tsv')
     content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
     df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
     for index, row in df_manual_findings.iterrows():
