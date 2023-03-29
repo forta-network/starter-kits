@@ -18,14 +18,14 @@ import forta_agent
 from forta_agent import get_json_rpc_url, EntityType
 from web3 import Web3
 
-from L2Cache import L2Cache
-from constants import (ENTITY_CLUSTER_BOTS, FP_MITIGATION_BOTS, ALERT_LOOKBACK_WINDOW_IN_DAYS,
+from src.L2Cache import L2Cache
+from src.constants import (ENTITY_CLUSTER_BOTS, FP_MITIGATION_BOTS, ALERT_LOOKBACK_WINDOW_IN_DAYS,
                          ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE,
                          ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_FP_CLUSTERS_KEY,
                          MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT, MODEL_FEATURES, MODEL_NAME, CLUSTER_QUEUE_SIZE)
-from storage import s3_client, dynamo_table, get_secrets, bucket_name
-from findings import ScamDetectorFinding
-from blockchain_indexer_service import BlockChainIndexer
+from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
+from src.findings import ScamDetectorFinding
+from src.blockchain_indexer_service import BlockChainIndexer
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 block_chain_indexer = BlockChainIndexer()

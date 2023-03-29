@@ -8,7 +8,7 @@ from web3 import Web3
 import pandas as pd
 import logging
 
-from storage import get_secrets
+from src.storage import get_secrets
 
 class BlockChainIndexer:
 
