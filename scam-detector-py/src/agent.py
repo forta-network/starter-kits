@@ -8,6 +8,7 @@ import time
 import pandas as pd
 import numpy as np
 import io
+import traceback
 import joblib
 from hexbytes import HexBytes
 from sklearn.ensemble import RandomForestClassifier
@@ -17,14 +18,14 @@ import forta_agent
 from forta_agent import get_json_rpc_url, EntityType
 from web3 import Web3
 
-from src.L2Cache import L2Cache
-from src.constants import (ENTITY_CLUSTER_BOTS, FP_MITIGATION_BOTS, ALERT_LOOKBACK_WINDOW_IN_DAYS,
+from L2Cache import L2Cache
+from constants import (ENTITY_CLUSTER_BOTS, FP_MITIGATION_BOTS, ALERT_LOOKBACK_WINDOW_IN_DAYS,
                          ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE,
                          ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_FP_CLUSTERS_KEY,
                          MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT, MODEL_FEATURES, MODEL_NAME, CLUSTER_QUEUE_SIZE)
-from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
-from src.findings import ScamDetectorFinding
-from src.blockchain_indexer_service import BlockChainIndexer
+from storage import s3_client, dynamo_table, get_secrets, bucket_name
+from findings import ScamDetectorFinding
+from blockchain_indexer_service import BlockChainIndexer
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 block_chain_indexer = BlockChainIndexer()
@@ -48,15 +49,15 @@ dynamo = None
 item_id_prefix = ""
 
 root = logging.getLogger()
-root.setLevel(logging.DEBUG)
+root.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
-label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
+etherscan_label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
 
 def initialize():
     """
@@ -94,7 +95,7 @@ def initialize():
     CONTRACT_CACHE = {}
 
     global MODEL
-    MODEL =  joblib.load(MODEL_NAME)
+    MODEL = joblib.load(MODEL_NAME)
 
     # read addresses from fp_list.txt
     content = open('fp_list.tsv', 'r').read()
@@ -124,9 +125,10 @@ def initialize():
     for bot, alertId in ENTITY_CLUSTER_BOTS:
         subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
 
-    logging.info(f"Initializing scam detector bot. Subscribed to bots successfully: {subscription_json}")
+    alert_config = {"alertConfig": {"subscriptions": subscription_json}}
+    logging.info(f"Initializing scam detector bot. Subscribed to bots successfully: {alert_config}")
     logging.info("Initialized scam detector bot.")
-    return subscription_json
+    return alert_config
 
 
 def is_contract(w3, addresses) -> bool:
@@ -161,21 +163,48 @@ def in_list(alert_event: forta_agent.alert_event.AlertEvent, bots: tuple) -> boo
 
     return False
 
+def get_fp_mitigation_bot_labels(cluster: str) -> str:
+    if cluster is None:
+        return []
+    
+    label_api = "https://api.forta.network/labels/state?sourceIds="
+    fp_mitigation_bot_ids = set()
+    for bot_id, alert_id in FP_MITIGATION_BOTS:
+        fp_mitigation_bot_ids.add(bot_id)
+    label_api += ",".join(fp_mitigation_bot_ids)
+    label_api += "&entities=" + cluster.lower() # already comma separated
 
-def get_etherscan_label(address: str) -> str:
-    if address is None:
-        return ""
-        
+    label_strs = []
     try:
-        res = requests.get(label_api + address.lower())
+        res = requests.get(label_api)  
         if res.status_code == 200:
             labels = res.json()
             if len(labels) > 0:
+                for i in range(len(labels)):
+                    logging.info(f"retreived label for {cluster}: {labels['events'][i]}")
+                    label_strs.append(labels['events'][i]['label']['label'])
+
+    except Exception as e:
+        logging.warning(f"Exception in get_fp_mitigation_bot_labels {e}")
+    
+    return []
+    
+    
+def get_etherscan_label(cluster: str) -> str:
+    if cluster is None:
+        return ""
+        
+    try:
+        res = requests.get(etherscan_label_api + cluster.lower())  # already comma separated
+        if res.status_code == 200:
+            labels = res.json()
+            if len(labels) > 0 and labels['events'] is not None:
+                logging.info(f"retreived label for {cluster}: {labels['events'][0]}")
                 return labels['events'][0]['label']['label']
     except Exception as e:
         logging.warning(f"Exception in get_etherscan_label {e}")
-        return ""
     
+    return ""
 
 def update_list(items: set, max_size: int, item: str):
 
@@ -186,35 +215,55 @@ def update_list(items: set, max_size: int, item: str):
 
 
 def get_total_shards() -> int:
+    logging.debug("getting total shards")
     package = json.load(open("package.json"))
-    total_shards = package["chainSettings"][str(CHAIN_ID)]["shards"]
+    logging.debug("loaded package.json")
+    logging.debug(f"getting shard count for chain id {CHAIN_ID}")
+    if str(CHAIN_ID) in package["chainSettings"]:   
+        logging.debug(f"have specific shard count value for chain id {CHAIN_ID}")
+        total_shards = package["chainSettings"][str(CHAIN_ID)]["shards"]
+    else:
+        logging.debug(f"have specific shard count value for default")
+        total_shards = package["chainSettings"]["default"]["shards"]
+    logging.debug(f"total shards: {total_shards}")
     return total_shards
     
 
 def get_shard(timestamp: int) -> int:
+    logging.debug(f"getting shard for timestamp {timestamp}")
     total_shards = get_total_shards()
-    return timestamp % total_shards
+    shard = int(timestamp % total_shards)
+    logging.debug(f"shard: {shard}")
+    return shard
 
 
 # put in item alerts per cluster by shard id
 # note, given sort key is part of the key, alerts with different hashes will result in different entries
 # whereas alerts with the same hash will be overwritten
 def put_alert(alert_event: forta_agent.alert_event.AlertEvent, cluster: str):
-    shard = get_shard(alert_event.block_number)
-    itemId = f"{item_id_prefix}|{CHAIN_ID}|{shard}|alert|{cluster}"
-
-    expiry_offset = ALERT_LOOKBACK_WINDOW_IN_DAYS * 24 * 60 * 60
+    logging.debug(f"putting alert {alert_event.alert_hash} in dynamo DB")
     alert_created_at_str = alert_event.alert.created_at
     alert_created_at = datetime.strptime(alert_created_at_str[0:19], "%Y-%m-%dT%H:%M:%S").timestamp()
-
+    logging.debug(f"alert_created_at: {alert_created_at}")
+    shard = get_shard(alert_created_at)
+    logging.debug(f"shard: {shard}")
+    itemId = f"{item_id_prefix}|{CHAIN_ID}|{shard}|alert|{cluster}"
+    logging.debug(f"itemId: {itemId}")
+    sortId = f"{alert_event.alert.source.bot.id}|{alert_event.alert.alert_id}|{alert_event.alert_hash}"
+    logging.debug(f"sortId: {sortId}")
+    
+    expiry_offset = ALERT_LOOKBACK_WINDOW_IN_DAYS * 24 * 60 * 60
+    
+    expiresAt = int(alert_created_at) + int(expiry_offset)
+    logging.debug(f"expiresAt: {expiresAt}")
     response = dynamo.put_item(Item={
         "itemId": itemId,
-        "sortKey": f"{alert_event.alert.source.bot.id}|{alert_event.alert.alert_id}|{alert_event.alert_hash}",
+        "sortKey": sortId,
         "botId": alert_event.alert.source.bot.id,
         "alertId": alert_event.alert.alert_id,
         "alertHash": alert_event.alert_hash,
         "cluster": cluster,
-        "expiresAt": int(alert_created_at + expiry_offset)
+        "expiresAt": expiresAt
     })
 
     if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
@@ -226,9 +275,12 @@ def put_alert(alert_event: forta_agent.alert_event.AlertEvent, cluster: str):
 
 
 def read_alerts(cluster: str) -> list:
+    logging.debug(f"Reading alerts for cluster {cluster}")
     alert_items = []
     for shard in range(get_total_shards()):
         itemId = f"{item_id_prefix}|{CHAIN_ID}|{shard}|alert|{cluster}"
+        logging.debug(f"Reading alerts for cluster {cluster} from shard {shard}, itemId {itemId}")
+        logging.debug(f"Dynamo : {dynamo}")
         response = dynamo.query(KeyConditionExpression='itemId = :id',
                                 ExpressionAttributeValues={
                                     ':id': itemId
@@ -237,12 +289,14 @@ def read_alerts(cluster: str) -> list:
 
         # Print retrieved item
         items = response.get('Items', [])
-
+        logging.debug(f"Items retrieved: {len(items)}")
         for item in items:
+            logging.debug(f"Item retrieved: {item}")
             alert_items.append((item["botId"], item["alertId"], item["alertHash"]))
+    logging.info(f"Read alerts for cluster {cluster}. Retrieved {len(alert_items)} alerts.")
     return alert_items
 
-
+# TODO - bring in line with training scripts
 def get_scammer_addresses(alert_event: forta_agent.alert_event.AlertEvent) -> set:
     scammer_addresses = set()
     for label in alert_event.alert.labels:
@@ -251,10 +305,11 @@ def get_scammer_addresses(alert_event: forta_agent.alert_event.AlertEvent) -> se
             scammer_addresses.add(label.entity.lower())
 
     if alert_event.alert.metadata is not None:
-        if "attackerAddresses" in alert_event.alert.metadata.keys(): # address poisoning bot
-            attacker_addresses = alert_event.alert.metadata["attackerAddresses"]
-            for attacker_address in attacker_addresses.split(','):
-                scammer_addresses.add(attacker_address.lower())
+        for key in ["attackerAddresses", "attacker_address"]:
+            if key in alert_event.alert.metadata.keys(): # address poisoning bot
+                attacker_addresses = alert_event.alert.metadata[key]
+                for attacker_address in attacker_addresses.split(','):
+                    scammer_addresses.add(attacker_address.lower())
 
     return scammer_addresses
 
@@ -293,14 +348,16 @@ def build_feature_vector(alerts: list, cluster: str) -> pd.DataFrame:
     for column in pivoted.columns:
         df_feature_vector.loc[0, column] = pivoted.loc[cluster, column]
 
+    df_feature_vector = df_feature_vector.sort_index(axis=1) #sort columns alphabetically
     return df_feature_vector
 
 def get_model_score(df_feature_vector: pd.DataFrame) -> float:
-    global MODEL 
+    global MODEL
+    logging.debug(f"Feature vector: {df_feature_vector.loc[0]}")
+
     predictions_proba = MODEL.predict_proba(df_feature_vector)[:, 1]
     return predictions_proba
-
-
+    
 def is_fp(cluster: str) -> bool:
     global FP_MITIGATION_CLUSTERS
 
@@ -317,6 +374,13 @@ def is_fp(cluster: str) -> bool:
             or 'fraud' in etherscan_label
             or etherscan_label == ''):
         return True
+    
+    fp_mitigation_bot_labels = get_fp_mitigation_bot_labels(cluster)
+    for label in fp_mitigation_bot_labels:
+        if 'benign' in label.lower():
+            return True
+    
+    return False
 
 
 def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
@@ -346,6 +410,7 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
         if chain_id == CHAIN_ID:
             # got alert from the right chain
 
+            # TODO - change to using dynamo as the bot shards
             # update entity clusters
             if in_list(alert_event, ENTITY_CLUSTER_BOTS):
                 logging.info(f"alert {alert_event.alert_hash} is entity cluster alert")
@@ -374,17 +439,18 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                     cluster = ENTITY_CLUSTERS[address]
                 update_list(FP_MITIGATION_CLUSTERS, FP_CLUSTERS_QUEUE_MAX_SIZE, cluster)
                 logging.info(f"alert {alert_event.alert_hash} adding FP mitigation cluster: {cluster}. FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
-            
-                
+
+
             # for basebots, store in dynamo; then query dynamo for the cluster (this will pull all alerts from multiple shards), build feature vector and then call the model for inference
             if in_list(alert_event, BASE_BOTS):
                 scammer_addresses_lower = get_scammer_addresses(alert_event)
+                logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got base bot alert; extracted {len(scammer_addresses_lower)} scammer addresses.")
                 for scammer_address_lower in scammer_addresses_lower:
                     cluster = scammer_address_lower
                     if scammer_address_lower in ENTITY_CLUSTERS.keys():
                         cluster = ENTITY_CLUSTERS[scammer_address_lower]
                     logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got alert for cluster {cluster}")
-                    
+
                     if is_contract(w3, cluster):
                         logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} is contract, skipping")
                         continue
@@ -394,7 +460,7 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                         continue
 
                     put_alert(alert_event, cluster)
-                
+
                     # get all alerts from dynamo for the cluster
                     alerts = read_alerts(cluster)  # list of tuple of (botId, alertId, alertHash)
                     logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got {len(alerts)} alerts from dynamo for cluster {cluster}")
@@ -417,7 +483,7 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                             logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
                         else:
                             logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} in FP.")
-                    if score > MODEL_ALERT_THRESHOLD_LOOSE and cluster not in ALERTED_CLUSTERS_LOOSE:
+                    elif score > MODEL_ALERT_THRESHOLD_LOOSE and cluster not in ALERTED_CLUSTERS_LOOSE:
                         logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - model score {score} > {MODEL_ALERT_THRESHOLD_LOOSE} (loose) for cluster {cluster}")
                         # if cluster not an FP, emit scam finding
                         if not is_fp(cluster):
@@ -431,7 +497,7 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
         end = time.time()
         logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} {alert_event.chain_id} processing took {end - start} seconds")
     except Exception as e:
-        logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
+        logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e} - {traceback.format_exc()}")
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
             logging.info(f"alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
             raise e

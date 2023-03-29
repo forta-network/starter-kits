@@ -1,5 +1,4 @@
 from ratelimiter import RateLimiter
-from src.storage import get_secrets
 import os
 import requests
 import json
@@ -8,6 +7,8 @@ import time
 from web3 import Web3
 import pandas as pd
 import logging
+
+from storage import get_secrets
 
 class BlockChainIndexer:
 
@@ -79,7 +80,8 @@ class BlockChainIndexer:
             if data.status_code == 200:
                 json_data = json.loads(data.content)
                 success = True
-                df_etherscan = df_etherscan.append(pd.DataFrame(data=json_data["result"]))
+                df_etherscan_temp = pd.DataFrame(data=json_data["result"])
+                df_etherscan = pd.concat([df_etherscan, df_etherscan_temp], axis=0)
             else:
                 logging.warn(f"Error getting contract for {address}, {chain_id} {data.status_code} {data.content}")
                 count += 1

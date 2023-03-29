@@ -114,6 +114,13 @@ class TestScamDetector:
 
         assert not agent.in_list(alert, agent.BASE_BOTS), "should be in list"
 
+
+    # currently failing as the base bots dont emit a benign label yet
+    def test_get_fp_mitigation_bot_labels(self):
+        labels = agent.get_etherscan_label("0xedc8e3b2ae699a23d4a6d73e2171acac809156ee")
+        assert len(labels)>0, "should be at least one label"
+        assert "benign" in labels, "should be benign label"
+    
     def test_get_etherscan_label_has_label(self):
         label = agent.get_etherscan_label("0x12D66f87A04A9E220743712cE6d9bB1B5616B8Fc")
         assert "tornado" in label, "should be sanctioned label"
@@ -189,6 +196,8 @@ class TestScamDetector:
         df_expected_feature_vector.iloc[0]["0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_count"] = 1
         df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_count"] = 3
 
+        df_expected_feature_vector = df_expected_feature_vector.sort_index(axis=1)  # sort columns alphabetically
+
         df_feature_vector = agent.build_feature_vector(alerts, EOA_ADDRESS)
         assert df_feature_vector.equals(df_expected_feature_vector), "should be equal"
 
@@ -220,9 +229,9 @@ class TestScamDetector:
 
         score = agent.get_model_score(df_expected_feature_vector)
         assert score < MODEL_ALERT_THRESHOLD_LOOSE, "should less than model threshold"
-
-
     def test_scam_critical(self):
+
+
         TestScamDetector.remove_persistent_state()
 
         agent.initialize()
@@ -233,16 +242,13 @@ class TestScamDetector:
                  "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99B3820",
                  "entityType": EntityType.Address
                  }
-        
+
         alerts = {"0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_NORMAL-TOKEN-TRANSFERS-TX": 1,
                   "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL": 1,
                   "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS": 3,
                   "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS": 1,
                   "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-SUSPICIOUS-APPROVAL": 5,
-                  "0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f_ASSET-DRAINED": 3,
-                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_count": 10,
-                  "0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f_count": 3,
-                  "0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_count": 1}
+                  "0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f_ASSET-DRAINED": 3}
 
         timestamp = datetime.now().timestamp()
         all_findings = []
@@ -256,12 +262,12 @@ class TestScamDetector:
                 alert = TestScamDetector.generate_alert(EOA_ADDRESS, bot_id, alert_id, timestamp, {}, [label], alert_hash)
                 findings = agent.detect_scam(w3, alert)
                 all_findings.extend(findings)
+                count += 1
 
-        assert len(all_findings) == 2, "should have two finding"
-        assert all_findings[0].alert_id == "SCAM-DETECTOR-MODEL-2", "should be SCAM-DETECTOR-MODEL-2"
-        assert all_findings[0].severity == FindingSeverity.Low, "should be Low"
-        assert all_findings[1].alert_id == "SCAM-DETECTOR-MODEL-1", "should be SCAM-DETECTOR-MODEL-1"
-        assert all_findings[1].severity == FindingSeverity.Critical, "should be Critical"
+        assert len(all_findings) == 1, "should have one finding"
+        assert all_findings[0].alert_id == "SCAM-DETECTOR-MODEL-1", "should be SCAM-DETECTOR-MODEL-1"
+        assert all_findings[0].severity == FindingSeverity.Critical, "should be Critical"
+
 
 
     def test_scam_low(self):
@@ -276,10 +282,10 @@ class TestScamDetector:
                  "entityType": EntityType.Address
                  }
         
-        alerts = {"0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_NORMAL-TOKEN-TRANSFERS-TX": 1,
-                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL": 1,
-                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS": 3,
-                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS": 1}
+        alerts = {"0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_NORMAL-TOKEN-TRANSFERS-TX": 5,
+                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS": 1,
+                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-SUSPICIOUS-APPROVAL": 3
+                  }
 
         timestamp = datetime.now().timestamp()
         all_findings = []
@@ -293,16 +299,16 @@ class TestScamDetector:
                 alert = TestScamDetector.generate_alert(EOA_ADDRESS, bot_id, alert_id, timestamp, {}, [label], alert_hash)
                 findings = agent.detect_scam(w3, alert)
                 all_findings.extend(findings)
+                count += 1
 
         assert len(all_findings) == 1, "should have one finding"
         assert all_findings[0].alert_id == "SCAM-DETECTOR-MODEL-2", "should be SCAM-DETECTOR-MODEL-2"
         assert all_findings[0].severity == FindingSeverity.Low, "should be Low"
         assert "NORMAL-TOKEN-TRANSFERS-TX" in all_findings[0].labels[0].metadata['alert_ids'], "should be all alert ids"
-        assert "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS" in all_findings[0].labels[0].metadata['alert_ids'], "should be all alert ids"
+        assert "ICE-PHISHING-SUSPICIOUS-APPROVAL" in all_findings[0].labels[0].metadata['alert_ids'], "should be all alert ids"
         assert "ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS" in all_findings[0].labels[0].metadata['alert_ids'], "should be all alert ids"
-        assert "ICE-PHISHING-ERC721-APPROVAL-FOR-ALL" in all_findings[0].labels[0].metadata['alert_ids'], "should be all alert ids"
+        
 
-        #all_findings[0].labels
 
     def test_emit_new_fp_finding(self):
         TestScamDetector.remove_persistent_state()

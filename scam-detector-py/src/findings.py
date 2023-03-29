@@ -1,8 +1,6 @@
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
 from datetime import datetime
 import pandas as pd
-from src.blockchain_indexer_service import BlockChainIndexer
-
 
 class ScamDetectorFinding:
 
