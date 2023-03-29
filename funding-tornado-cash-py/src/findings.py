@@ -1,18 +1,23 @@
-from forta_agent import Finding, FindingType, FindingSeverity, EntityType
+from forta_agent import Finding, FindingType, FindingSeverity, EntityType, Label
 
 
 class FundingTornadoCashFindings:
 
     @staticmethod
-    def funding_tornado_cash(to_address: str, type:str, anomaly_score: float) -> Finding:
-        confidence = 0.3 if type == "low" else 0.1
-
-        labels = [{"entity": to_address,
-                   "entityType": EntityType.Address,
-                   "label": "attacker",
-                   "confidence": confidence}]
-
+    def funding_tornado_cash(to_address: str, type: str, anomaly_score: float, chain_id:int) -> Finding:
         if type=="low":
+            labels = [Label({
+                'entityType': EntityType.Address,
+                'label': "attacker",
+                'entity': to_address,
+                'confidence': 0.3,
+                'remove': "false",
+                'metadata': {
+                    'alert_id': 'FUNDING-TORNADO-CASH',
+                    'chain_id': chain_id
+                }
+    	    })]
+
             finding = Finding({
                 'name': 'Tornado Cash Funding',
                 'description': f'{to_address} received initial funds from Tornado Cash',
@@ -23,6 +28,18 @@ class FundingTornadoCashFindings:
                 'labels': labels
             })
         else:
+            labels = [Label({
+                'entityType': EntityType.Address,
+                'label': "benign",
+                'entity': to_address,
+                'confidence': 0.1,
+                'remove': "false",
+                'metadata': {
+                    'alert_id': 'FUNDING-TORNADO-CASH-HIGH',
+                    'chain_id': chain_id
+                }
+    	    })]
+
             finding = Finding({
                 'name': 'Tornado Cash Funding',
                 'description': f'{to_address} received large funds from Tornado Cash',

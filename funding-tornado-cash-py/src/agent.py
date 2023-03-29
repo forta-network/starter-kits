@@ -23,7 +23,7 @@ ALERT_COUNT_LOW = 0  # stats to emit anomaly score
 ALERT_COUNT_HIGH = 0  # stats to emit anomaly score
 DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
-CHAIN_ID = 1
+CHAIN_ID = -1
 
 def initialize():
     """
@@ -71,7 +71,7 @@ def detect_funding(w3, transaction_event: forta_agent.transaction_event.Transact
                 ALERT_COUNT_LOW += 1
                 logging.info(DENOMINATOR_COUNT)
                 anomaly_score = (1.0 * ALERT_COUNT_LOW) / DENOMINATOR_COUNT
-                findings.append(FundingTornadoCashFindings.funding_tornado_cash(to_address, "low", anomaly_score))
+                findings.append(FundingTornadoCashFindings.funding_tornado_cash(to_address, "low", anomaly_score, CHAIN_ID))
             else:
                 logging.info(f"Identified existing account {to_address} on chain {w3.eth.chain_id}. Wont emit finding.")
         
@@ -86,7 +86,7 @@ def detect_funding(w3, transaction_event: forta_agent.transaction_event.Transact
                 ALERT_COUNT_HIGH += 1
 
                 anomaly_score = (1.0 * ALERT_COUNT_HIGH) / DENOMINATOR_COUNT
-                findings.append(FundingTornadoCashFindings.funding_tornado_cash(to_address, "high", anomaly_score))
+                findings.append(FundingTornadoCashFindings.funding_tornado_cash(to_address, "high", anomaly_score, CHAIN_ID))
             else:
                 logging.info(f"Identified older account {to_address} on chain {w3.eth.chain_id}. Wont emit finding.")
 
