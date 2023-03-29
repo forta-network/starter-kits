@@ -1,6 +1,6 @@
 {
   "name": "mev-identification-bot",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/mev-identification-bot-py",
   "description": "Bot identifying addresses involved in MEV activity",
   "chainIds": [
@@ -25,7 +25,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.13"
+    "forta-agent": "^0.1.24"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

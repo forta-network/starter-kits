@@ -1,6 +1,7 @@
 from forta_agent import FindingSeverity, create_transaction_event, EntityType
 
 import agent
+from forta_agent import Label
 from constants import TORNADO_CASH_ADDRESSES, TORNADO_CASH_WITHDRAW_TOPIC, TORNADO_CASH_ADDRESSES_HIGH
 from web3_mock import EOA_ADDRESS_TC,EOA_ADDRESS_NEW, EOA_ADDRESS_OLD, Web3Mock
 
@@ -94,6 +95,6 @@ class TestTornadoCashFunding:
         assert findings[0].metadata["anomaly_score"] == 0.5, "should have anomaly score of 0.5"
         assert findings[0].labels[0].toDict()["entity"] == "0xA1B4355Ae6b39bb403Be1003b7D0330C811747DB", "should have EOA address as label"
         assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
-        assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
+        assert findings[0].labels[0].toDict()["label"] == 'benign', "should have benign as label"
         assert findings[0].labels[0].toDict()["confidence"] == 0.1, "should have 0.1 as label confidence"
 

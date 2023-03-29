@@ -20,12 +20,16 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
+CHAIN_ID = -1
+
 
 def initialize():
     """
     this function initializes the state variables that are tracked across tx and blocks
     it is called from test to reset state between tests
     """
+    global CHAIN_ID
+    CHAIN_ID = web3.eth.chain_id
 
 
 def is_contract(w3, address) -> bool:
@@ -40,6 +44,8 @@ def is_contract(w3, address) -> bool:
 
 
 def detect_mev(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
+    global CHAIN_ID 
+
     findings = []
 
     transfer_count = 0
@@ -59,7 +65,7 @@ def detect_mev(w3, transaction_event: forta_agent.transaction_event.TransactionE
     logging.info(f"tx {transaction_event.hash} transfer_count: {transfer_count} unique_token_count: {len(tokens)} unique_contract_address_count: {len(contracts)}")
 
     if transfer_count >= MIN_TRANSFER_COUNT and len(tokens) >= MIN_TOKEN_COUNT and len(contracts) >= MIN_CONTRACT_COUNT:
-        findings.append(MEVAccountFinding.MEVAccount(transaction_event.from_, transfer_count, len(tokens), len(contracts)))
+        findings.append(MEVAccountFinding.MEVAccount(transaction_event.from_, transfer_count, len(tokens), len(contracts), CHAIN_ID))
 
     return findings
 

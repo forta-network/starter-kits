@@ -25,6 +25,7 @@ root.addHandler(handler)
 
 ADDRESS_CACHE = set()
 FIRST_TXS = {}
+CHAIN_ID = -1
 
 
 def initialize():
@@ -38,10 +39,14 @@ def initialize():
     global FIRST_TXS
     FIRST_TXS = {}
 
+    global CHAIN_ID
+    CHAIN_ID = web3.eth.chain_id
+
 
 def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     logging.info(f"Analyzing transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
 
+    global CHAIN_ID
     findings = []
 
     # get the nonce of the sender
@@ -58,7 +63,7 @@ def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent
 
             if first_tx < datetime.now() - timedelta(days=MIN_AGE_IN_DAYS):
                 update_address_cache(transaction_event.transaction.from_.lower())
-                findings.append(PositiveReputationFindings.positive_reputation(transaction_event.transaction.from_))
+                findings.append(PositiveReputationFindings.positive_reputation(transaction_event.transaction.from_, CHAIN_ID))
 
     return findings
 
