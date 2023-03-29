@@ -19,22 +19,27 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
+CHAIN_ID = -1
+
 
 def initialize():
     """
     this function initializes the state variables that are tracked across tx and blocks
     it is called from test to reset state between tests
     """
+    global CHAIN_ID
+    CHAIN_ID = web3.eth.chain_id
 
 
 def detect_victim_notification(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
+    global CHAIN_ID
     findings = []
 
     if transaction_event.to is None or transaction_event.from_ is None or transaction_event.transaction.data is None:
         return findings
 
     if transaction_event.from_.lower() in VICTIM_NOTIFIER_LIST and transaction_event.transaction.data != '0x':
-        findings.append(VictimNotificationFinding.Victim(transaction_event.to, transaction_event.from_))
+        findings.append(VictimNotificationFinding.Victim(transaction_event.to, transaction_event.from_, CHAIN_ID))
 
     return findings
 
