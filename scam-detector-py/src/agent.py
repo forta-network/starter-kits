@@ -20,8 +20,8 @@ from web3 import Web3
 
 from src.L2Cache import L2Cache
 from src.constants import (ENTITY_CLUSTER_BOTS, FP_MITIGATION_BOTS, ALERT_LOOKBACK_WINDOW_IN_DAYS,
-                         ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE,
-                         ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_FP_CLUSTERS_KEY,
+                         ENTITY_CLUSTERS_MAX_QUEUE_SIZE,
+                         ENTITY_CLUSTERS_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_FP_CLUSTERS_KEY,
                          MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT, MODEL_FEATURES, MODEL_NAME, CLUSTER_QUEUE_SIZE)
 from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
 from src.findings import ScamDetectorFinding
@@ -35,7 +35,6 @@ CHAIN_ID = -1
 ENTITY_CLUSTERS = dict()  # address -> cluster
 CONTRACT_CACHE = dict()  # address -> is_contract
 
-FP_MITIGATION_CLUSTERS = set()  # cluster that are considered FPs
 ALERTED_CLUSTERS_LOOSE = set()  # cluster that have been alerted on
 ALERTED_CLUSTERS_STRICT = set()  # cluster that have been alerted on
 ALERTED_FP_CLUSTERS = set()  # clusters which are considered FPs that have been alerted on
@@ -75,10 +74,6 @@ def initialize():
     entity_cluster_alerts = load(CHAIN_ID, ENTITY_CLUSTERS_KEY)
     ENTITY_CLUSTERS = {} if entity_cluster_alerts is None else dict(entity_cluster_alerts)
 
-    global FP_MITIGATION_CLUSTERS
-    fp_mitigation_alerts = load(CHAIN_ID, FP_MITIGATION_CLUSTERS_KEY)
-    FP_MITIGATION_CLUSTERS = set() if fp_mitigation_alerts is None else set(fp_mitigation_alerts)
-
     global ALERTED_CLUSTERS_LOOSE
     alerted_clusters_loose = load(CHAIN_ID, ALERTED_CLUSTERS_LOOSE_KEY)
     ALERTED_CLUSTERS_LOOSE = set() if alerted_clusters_loose is None else set(alerted_clusters_loose)
@@ -97,12 +92,6 @@ def initialize():
     global MODEL
     MODEL = joblib.load(MODEL_NAME)
 
-    # read addresses from fp_list.txt
-    content = open('fp_list.tsv', 'r').read()
-    df_fp = pd.read_csv(io.StringIO(content), sep='\t')
-    for index, row in df_fp.iterrows():
-        FP_MITIGATION_CLUSTERS.add(row['cluster'].lower())
-
     # initialize dynamo DB
     global s3, dynamo
     secrets = get_secrets()
@@ -118,9 +107,6 @@ def initialize():
         if len(tokens) == 2 and tokens[1] != 'count':
             BASE_BOTS.append((tokens[0], tokens[1]))
             subscription_json.append({"botId": tokens[0], "alertId": tokens[1], "chainId": CHAIN_ID})
-
-    for bot, alertId in FP_MITIGATION_BOTS:
-        subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
 
     for bot, alertId in ENTITY_CLUSTER_BOTS:
         subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
@@ -361,11 +347,6 @@ def get_model_score(df_feature_vector: pd.DataFrame) -> float:
     return predictions_proba
     
 def is_fp(cluster: str) -> bool:
-    global FP_MITIGATION_CLUSTERS
-
-    if cluster in FP_MITIGATION_CLUSTERS:
-        return True
-
     etherscan_label = ','.join(get_etherscan_label(cluster)).lower()
     if not ('attack' in etherscan_label
             or 'phish' in etherscan_label
@@ -393,10 +374,6 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
     global CHAIN_ID
     global ALERTED_CLUSTERS_STRICT
     global ALERTED_CLUSTERS_LOOSE
-    global FP_MITIGATION_CLUSTERS
-    global FP_MITIGATION_CLUSTERS
-    global FP_CLUSTERS_QUEUE_MAX_SIZE
-    global FP_MITIGATION_BOTS
     global BASE_BOTS
 
     
@@ -427,20 +404,6 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
 
                     # TODO - read all entries from dynamoDB and update entries for cluster
 
-                    if address in FP_MITIGATION_CLUSTERS:
-                        FP_MITIGATION_CLUSTERS.append(cluster)
-                        logging.info(f"alert {alert_event.alert_hash} FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
-
-
-            # update FP mitigation clusters
-            if in_list(alert_event, FP_MITIGATION_BOTS):
-                logging.info(f"alert {alert_event.alert_hash} is a FP mitigation alert")
-                address = alert_event.alert.description[0:42]
-                cluster = address
-                if address in ENTITY_CLUSTERS.keys():
-                    cluster = ENTITY_CLUSTERS[address]
-                update_list(FP_MITIGATION_CLUSTERS, FP_CLUSTERS_QUEUE_MAX_SIZE, cluster)
-                logging.info(f"alert {alert_event.alert_hash} adding FP mitigation cluster: {cluster}. FP mitigation clusters size now: {len(FP_MITIGATION_CLUSTERS)}")
 
 
             # for basebots, store in dynamo; then query dynamo for the cluster (this will pull all alerts from multiple shards), build feature vector and then call the model for inference
@@ -508,10 +471,8 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
 
 
 def emit_new_fp_finding(w3) -> list:
-    global FP_MITIGATION_CLUSTERS
     global ALERTED_FP_CLUSTERS
     global CLUSTER_QUEUE_SIZE
-    global FP_CLUSTERS_QUEUE_MAX_SIZE
     global CHAIN_ID
     findings = []
 
@@ -527,10 +488,8 @@ def emit_new_fp_finding(w3) -> list:
         if chain_id != CHAIN_ID:
             continue
         cluster = row['cluster'].lower()
-        FP_MITIGATION_CLUSTERS.add(cluster)
         if cluster not in ALERTED_FP_CLUSTERS:
             logging.info("Emitting FP mitigation finding")
-            update_list(FP_MITIGATION_CLUSTERS, FP_CLUSTERS_QUEUE_MAX_SIZE, cluster)
             update_list(ALERTED_FP_CLUSTERS, CLUSTER_QUEUE_SIZE, cluster)
             findings.append(ScamDetectorFinding.alert_FP(cluster))
             logging.info(f"Findings count {len(findings)}")
@@ -574,13 +533,11 @@ def emit_manual_finding(w3) -> list:
 
 
 def persist_state():
-    global FP_MITIGATION_CLUSTERS_KEY
     global ALERTED_CLUSTERS_LOOSE_KEY
     global ALERTED_CLUSTERS_STRICT_KEY
     global ALERTED_FP_CLUSTERS_KEY
     global ENTITY_CLUSTERS_KEY
 
-    global FP_MITIGATION_CLUSTERS
     global ALERTED_CLUSTERS_LOOSE
     global ALERTED_CLUSTERS_STRICT
     global ALERTED_FP_CLUSTERS
@@ -589,7 +546,6 @@ def persist_state():
     global CHAIN_ID
 
     start = time.time()
-    persist(FP_MITIGATION_CLUSTERS, CHAIN_ID, FP_MITIGATION_CLUSTERS_KEY)
     persist(ENTITY_CLUSTERS, CHAIN_ID, ENTITY_CLUSTERS_KEY)
     persist(ALERTED_CLUSTERS_LOOSE, CHAIN_ID, ALERTED_CLUSTERS_LOOSE_KEY)
     persist(ALERTED_CLUSTERS_STRICT, CHAIN_ID, ALERTED_CLUSTERS_STRICT_KEY)

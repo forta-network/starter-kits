@@ -69,7 +69,6 @@ ENTITY_CLUSTER_BOTS = [("0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc64
 ENTITY_CLUSTERS_MAX_QUEUE_SIZE = 50000
 ENTITY_CLUSTERS_KEY = "entity_clusters_key"
 
-FP_MITIGATION_CLUSTERS_KEY = "fp_mitigation_clusters_key"
 ALERTED_CLUSTERS_LOOSE_KEY = "alerted_clusters_loose_key"
 ALERTED_CLUSTERS_STRICT_KEY = "alerted_clusters_strict_key"
 ALERTED_FP_CLUSTERS_KEY = "alerted_fp_clusters_key"
