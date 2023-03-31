@@ -317,6 +317,7 @@ class TestScamDetector:
 
         findings = agent.emit_new_fp_finding(w3)
         df_fps = pd.read_csv("fp_list.tsv", sep="\t")
+        assert len(findings) > 0, "this should have triggered FP findings"
         assert len(findings) == len(df_fps[df_fps['chain_id']==1]), "this should have triggered FP findings"
 
         assert findings[0].alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be SCAM-DETECTOR-FALSE-POSITIVE"
@@ -329,6 +330,7 @@ class TestScamDetector:
 
         findings = agent.emit_manual_finding(w3)
         df_manual_entries = pd.read_csv("manual_alert_list.tsv", sep="\t")
+        assert len(findings) > 0, "this should have triggered FP findings"
         assert len(findings) == len(df_manual_entries[df_manual_entries['Chain ID']==1]), "this should have triggered manual findings"
 
         for finding in findings:

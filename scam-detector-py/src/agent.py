@@ -506,7 +506,10 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
 
 
 def emit_new_fp_finding(w3) -> list:
-    global FP_MITIGATION_ADDRESSES
+    global FP_MITIGATION_CLUSTERS
+    global ALERTED_FP_CLUSTERS
+    global CLUSTER_QUEUE_SIZE
+    global FP_CLUSTERS_QUEUE_MAX_SIZE
     global CHAIN_ID
     findings = []
 
@@ -514,7 +517,7 @@ def emit_new_fp_finding(w3) -> list:
         logging.error("Chain ID not set")
         raise Exception("Chain ID not set")
 
-    res = requests.get('https://github.com/forta-network/starter-kits/blob/Scam-Detector-ML/scam-detector-py/fp_list.tsv')
+    res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/fp_list.tsv')
     content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.tsv', 'r').read()
     df_fp = pd.read_csv(io.StringIO(content), sep='\t')
     for index, row in df_fp.iterrows():
@@ -543,7 +546,7 @@ def emit_manual_finding(w3) -> list:
         logging.error("Chain ID not set")
         raise Exception("Chain ID not set")
 
-    res = requests.get('https://github.com/forta-network/starter-kits/blob/Scam-Detector-ML/scam-detector-py/manual_alert_list.tsv')
+    res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/manual_alert_list.tsv')
     content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
     df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
     for index, row in df_manual_findings.iterrows():
@@ -570,8 +573,17 @@ def emit_manual_finding(w3) -> list:
 
 def persist_state():
     global FP_MITIGATION_CLUSTERS_KEY
-    global ALERTED_CLUSTERS_KEY
+    global ALERTED_CLUSTERS_LOOSE_KEY
+    global ALERTED_CLUSTERS_STRICT_KEY
+    global ALERTED_FP_CLUSTERS_KEY
     global ENTITY_CLUSTERS_KEY
+
+    global FP_MITIGATION_CLUSTERS
+    global ALERTED_CLUSTERS_LOOSE
+    global ALERTED_CLUSTERS_STRICT
+    global ALERTED_FP_CLUSTERS
+    global ENTITY_CLUSTERS
+
     global CHAIN_ID
 
     start = time.time()
@@ -591,6 +603,7 @@ def persist(obj: object, chain_id: int, key: str):
 
 def load(chain_id: int, key: str) -> object:
     return L2Cache.load(chain_id, key)
+
 
 def provide_handle_alert(w3):
     logging.debug("provide_handle_alert called")
