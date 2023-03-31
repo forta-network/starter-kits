@@ -1,5 +1,3 @@
-# Copyright 2022 The Forta Foundation
-
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
 import pandas as pd
 import forta_agent

@@ -1,5 +1,3 @@
-# Copyright 2022 The Forta Foundation
-
 import logging
 import os
 import pickle
