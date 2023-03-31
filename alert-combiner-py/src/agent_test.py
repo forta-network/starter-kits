@@ -1,5 +1,3 @@
-# Copyright 2022 The Forta Foundation
-
 from forta_agent import create_alert_event,FindingSeverity
 from web3 import Web3
 from web3.middleware import geth_poa_middleware

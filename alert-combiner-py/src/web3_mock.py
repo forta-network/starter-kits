@@ -1,5 +1,3 @@
-# Copyright 2022 The Forta Foundation
-
 from hexbytes import HexBytes
 from datetime import datetime
 
