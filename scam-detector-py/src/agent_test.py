@@ -239,7 +239,7 @@ class TestAlertCombiner:
         assert finding.labels is not None, "labels should not be empty"
         label = finding.labels[0]
         assert label.entity == "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4", "entity should be attacker address"
-        assert label.label == "scam", "entity should labeled as scam"
+        assert label.label == "scammer-eoa", "entity should labeled as scam"
         assert label.confidence == 0.8, "entity should labeled with 0.8 confidence"
         assert label.metadata['alert_id'] == "SCAM-DETECTOR-ICE-PHISHING", "entity should labeled as ice phishing"
         assert label.metadata['chain_id'] == 1, "entity should labeled for chain_id 1"
