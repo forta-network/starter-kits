@@ -12,7 +12,6 @@ class MEVAccountFinding:
             'label': "benign",
             'entity': address,
             'confidence': 0.80,
-            'remove': "false",
             'metadata': {
                 'alert_id': 'MEV-ACCOUNT',
                 'chain_id': chain_id

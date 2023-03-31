@@ -1,6 +1,6 @@
 {
   "name": "funding-tornado-cash",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A bot that clusters entities",
   "chainIds": [
     1, 56, 137, 42161, 10
