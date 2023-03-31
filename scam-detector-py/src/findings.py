@@ -21,7 +21,7 @@ class AlertCombinerFinding:
         meta_data = {**attacker_address_md, **start_date, **end_date, **involved_addresses, **involved_alert_ids, **involved_alert_hashes}
 
         labels = []
-        if alert_id == "SCAM-DETECTOR-ICE-PHISHING" or alert_id == 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER' or alert_id == 'SCAM-DETECTOR-1' or alert_id == 'SCAM-DETECTOR-ADDRESS-POISONING' or alert_id == 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING' or alert_id == 'SCAM-DETECTOR-WASH-TRADE':
+        if alert_id in ["SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-SLEEP-MINTING']:
             labels = []
             for scammer_address in scammer_addresses.split(","):
                 labels.append(Label({
@@ -29,7 +29,6 @@ class AlertCombinerFinding:
                     'label': "scammer-eoa",
                     'entity': scammer_address,
                     'confidence': 0.8,
-                    'remove': "false",
                     'metadata': {
                         'alert_id': alert_id,
                         'chain_id': chain_id
@@ -44,7 +43,6 @@ class AlertCombinerFinding:
                         'label': "scammer-contract",
                         'entity': contract,
                         'confidence': 0.8,
-                        'remove': "false",
                         'metadata': {
                             'alert_ids': alert_id,
                             'chain_id': chain_id
