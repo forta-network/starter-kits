@@ -11,6 +11,7 @@ import os
 import io
 import pickle
 import requests
+import traceback
 from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
@@ -21,10 +22,12 @@ from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALE
                            ALERTED_CLUSTERS_KEY, ALERTED_FP_ADDRESSES_KEY)
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
+from src.blockchain_indexer_service import BlockChainIndexer
 
 label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
+block_chain_indexer = BlockChainIndexer()
 forta_explorer = FortaExplorer()
 
 DATABASE = f"https://research.forta.network/database/bot/{web3.eth.chain_id}"
@@ -318,7 +321,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         logging.info(f"Got {len(attack_detector_addresses)} attack detector addresses")
 
         address_poisoning_addresses = set()
-        address_poisoning = df_forta_alerts[(df_forta_alerts["alertId"] == "ADDRESS-POISONING")]
+        address_poisoning = df_forta_alerts[(df_forta_alerts["alertId"] == "ADDRESS-POISONING") | (df_forta_alerts["alertId"] == "ADDRESS-POISONING-LOW-VALUE") | (df_forta_alerts["alertId"] == "ADDRESS-POISONING-FAKE-TOKEN")]
         address_poisoning["metadata"].apply(lambda x: address_poisoning_addresses.update(get_address_poisoning_addresses(x)))
         logging.info(f"Got {len(address_poisoning_addresses)} address poisoning addresses")
 
@@ -380,7 +383,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             or ('SCAM' in alert_ids)
                             or ('ATTACK-DETECTOR-1' in alert_ids)
                             or ('SEAPORT-PHISHING-TRANSFER' in alert_ids)
-                            or ('ADDRESS-POISONING' in alert_ids)
+                            or ('ADDRESS-POISONING' in alert_ids or 'ADDRESS-POISONING-LOW-VALUE' in alert_ids or 'ADDRESS-POISONING-FAKE-TOKEN' in alert_ids)
                             or ('NIP-1' in alert_ids)
                             or ('ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS' in alert_ids)
                             or ('NFT-WASH-TRADE' in alert_ids)):
@@ -414,23 +417,23 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             update_alerted_clusters(w3, potential_attacker_cluster_lower)
 
                             if potential_attacker_cluster_lower in seaport_order_addresses:
-                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER', hashes, CHAIN_ID))
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER', hashes, CHAIN_ID))
                             elif potential_attacker_cluster_lower in native_ice_phishing_addresses:
-                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', hashes, CHAIN_ID))
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', hashes, CHAIN_ID))
                             elif potential_attacker_cluster_lower in wash_trading_addresses:
-                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-WASH-TRADE', hashes, CHAIN_ID))
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-WASH-TRADE', hashes, CHAIN_ID))
                             elif potential_attacker_cluster_lower in attack_detector_addresses:
-                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-1', hashes, CHAIN_ID))
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-1', hashes, CHAIN_ID))
                             elif potential_attacker_cluster_lower in address_poisoning_addresses:
-                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-ADDRESS-POISONING', hashes, CHAIN_ID))
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-ADDRESS-POISONING', hashes, CHAIN_ID))
                             else: 
-                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-ICE-PHISHING', hashes, CHAIN_ID))
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-ICE-PHISHING', hashes, CHAIN_ID))
                             logging.info(f"Findings count {len(FINDINGS_CACHE)}")
                             persist_state()
                     else:
                         logging.info(f"Cluster {potential_attacker_cluster_lower} already alerted on.")
             except Exception as e:
-                logging.warn(f"Error processing address combiner alert 1 {potential_attacker_cluster_lower}: {e}")
+                logging.warning(f"Error processing address combiner alert 1 {potential_attacker_cluster_lower}: {e} - {traceback.format_exc()}")
                 #logging.warn(f"Error processing address combiner alert 3 {potential_attacker_cluster_lower}")
                 continue
 
