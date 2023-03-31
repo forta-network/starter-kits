@@ -102,7 +102,7 @@ def get_etherscan_label(address: str):
             if len(labels) > 0:
                 return labels['events'][0]['label']['label']
     except Exception as e:
-        logging.error(f"Exception in get_etherscan_label {e}")
+        logging.warning(f"Exception in get_etherscan_label {e}")
         return ""
 
 
@@ -234,6 +234,12 @@ def swap_addresses_with_clusters(addresses: list, df_address_clusters_exploded: 
         return []
 
 
+def get_sleep_minting_addresses(description: str) -> str:
+    # An NFT Transfer was initiated by 0x09b34e69363d37379e1c5e27fc793fdb5aca893d to transfer an NFT owned by 0xeb9fcf2fb7c0d95edc5beb9b142e8c024d885fb2. It had been previously minted by the 0x09b34e69363d37379e1c5e27fc793fdb5aca893d to 0xeb9fcf2fb7c0d95edc5beb9b142e8c024d885fb2. The NFT contract address is 0xd57474e76c9ebecc01b65a1494f0a1211df7bcd8
+    loc = len("An NFT Transfer was initiated by ")
+    return description[loc:loc+42]
+
+
 def get_wash_trading_addresses(metadata: dict) -> set:
     
     addresses = set()
@@ -339,11 +345,25 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
 
         addresses = set()
         addresses.update(seaport_order_addresses)
+        seaport_order_clusters = swap_addresses_with_clusters(list(seaport_order_addresses), df_address_clusters_exploded)
         addresses.update(ice_phishing_addresses)
+        ice_phishing_clusters = swap_addresses_with_clusters(list(ice_phishing_addresses), df_address_clusters_exploded)
         addresses.update(attack_detector_addresses)
+        attack_detector_clusters = swap_addresses_with_clusters(list(attack_detector_addresses), df_address_clusters_exploded)
         addresses.update(address_poisoning_addresses)
+        address_poisoning_clusters = swap_addresses_with_clusters(list(address_poisoning_addresses), df_address_clusters_exploded)
         addresses.update(native_ice_phishing_addresses)
+        native_ice_phishing_clusters = swap_addresses_with_clusters(list(native_ice_phishing_addresses), df_address_clusters_exploded)
         addresses.update(wash_trading_addresses)
+        wash_trading_clusters = swap_addresses_with_clusters(list(wash_trading_addresses), df_address_clusters_exploded)
+
+        # these are not processed as main attacker address candidates, but need to be combined with other alerts
+        sleep_minting_addresses = set()
+        sleep_minting = df_forta_alerts[(df_forta_alerts["alertId"] == "SLEEPMINT-3")]
+        sleep_minting["description"].apply(lambda x: sleep_minting_addresses.update(get_sleep_minting_addresses(x)))
+        logging.info(f"Got {len(sleep_minting_addresses)} sleep minting addresses")
+        sleep_minting_clusters = swap_addresses_with_clusters(list(sleep_minting_addresses), df_address_clusters_exploded)
+
 
         clusters = swap_addresses_with_clusters(list(addresses), df_address_clusters_exploded)
         logging.info(f"Mapped addresses to {len(clusters)} clusters.")
@@ -374,6 +394,9 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
 
                     logging.info(f"Cluster {potential_attacker_cluster_lower} stages: {alert_ids}")
 
+
+                    # most attacks are straight passthroughs
+                    # for most ice phishing, we need more evidence and one of these conditions need to be met
                     if potential_attacker_cluster_lower not in ALERTED_CLUSTERS:
                         if (('SLEEPMINT-3' in alert_ids)
                             or ('MALICIOUS-ACCOUNT-FUNDING' in alert_ids or 'UMBRA-RECEIVE' in alert_ids or 'CEX-FUNDING-1' in alert_ids or 'AK-AZTEC-PROTOCOL-FUNDING' in alert_ids or 'FUNDING-CHANGENOW-NEW-ACCOUNT' in alert_ids or 'FUNDING-TORNADO-CASH' in alert_ids or 'TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION' in alert_ids or 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH' in alert_ids or 'MALICIOUS-ACCOUNT-FUNDING' in alert_ids)
@@ -416,18 +439,23 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             logging.info(f"Cluster {potential_attacker_cluster_lower} is scammer. Raising alert.")
                             update_alerted_clusters(w3, potential_attacker_cluster_lower)
 
-                            if potential_attacker_cluster_lower in seaport_order_addresses:
+                            if potential_attacker_cluster_lower in seaport_order_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER', hashes, CHAIN_ID))
-                            elif potential_attacker_cluster_lower in native_ice_phishing_addresses:
+                            elif potential_attacker_cluster_lower in native_ice_phishing_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', hashes, CHAIN_ID))
-                            elif potential_attacker_cluster_lower in wash_trading_addresses:
+                            elif potential_attacker_cluster_lower in wash_trading_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-WASH-TRADE', hashes, CHAIN_ID))
-                            elif potential_attacker_cluster_lower in attack_detector_addresses:
+                            elif potential_attacker_cluster_lower in attack_detector_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-1', hashes, CHAIN_ID))
-                            elif potential_attacker_cluster_lower in address_poisoning_addresses:
+                            elif potential_attacker_cluster_lower in address_poisoning_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-ADDRESS-POISONING', hashes, CHAIN_ID))
-                            else: 
+                            elif potential_attacker_cluster_lower in ice_phishing_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-ICE-PHISHING', hashes, CHAIN_ID))
+
+                            # if we identify a threat and sleep minting is observed as well, we emit an additional sleep minting alert
+                            if potential_attacker_cluster_lower in sleep_minting_clusters and 'SLEEPMINT-3' in alert_ids:
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-SLEEP-MINTING', hashes, CHAIN_ID))
+
                             logging.info(f"Findings count {len(FINDINGS_CACHE)}")
                             persist_state()
                     else:
