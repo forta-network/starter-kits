@@ -29,7 +29,7 @@ class ScamDetectorFinding:
         for scammer_address in scammer_cluster.split(","):
             labels.append(Label({
                 'entityType': EntityType.Address,
-                'label': "scammer",
+                'label': "scammer-eoa",
                 'entity': scammer_address,
                 'confidence': score,
                 'remove': "false",
@@ -40,7 +40,7 @@ class ScamDetectorFinding:
     	    }))
 
             # get all deployed contracts by EOA and add label for those using etherscan or allium
-            contracts = block_chain_indexer.get_contracts(scammer_cluster, chain_id)
+            contracts = block_chain_indexer.get_contracts(scammer_address, chain_id)
             for contract in contracts:
                 labels.append(Label({
                     'entityType': EntityType.Address,
