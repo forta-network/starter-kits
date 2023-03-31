@@ -1,4 +1,4 @@
-from blockchainindexer import BlockChainIndexer
+from blockchain_indexer_service import BlockChainIndexer
 from web3_mock import EOA_ADDRESS
 
 class TestBlockChainIndexer:
