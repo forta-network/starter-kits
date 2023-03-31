@@ -13,9 +13,9 @@ class PositiveReputationFinding:
 
         labels = [{"entity": address,
                    "entityType": EntityType.Address,
-                   "label": "attacker",
-                   "confidence": confidence}]  # very low
-
+                   "label": "benign",
+                   "confidence": confidence}]  
+        
         return Finding({
                        'name': 'Positive Reputation Assigned',
                        'description': f'{source} Alert: EOA {address} was assigned positive reputation.',
