@@ -182,29 +182,31 @@ def get_fp_mitigation_bot_labels(cluster: str) -> str:
             if len(labels) > 0:
                 for i in range(len(labels)):
                     logging.info(f"retreived label for {cluster}: {labels['events'][i]}")
-                    label_strs.append(labels['events'][i]['label']['label'])
+                    if 'benign' in labels['events'][i]['label']['label'].lower():
+                        label_strs.append(labels['events'][i]['label']['label'])
 
     except Exception as e:
         logging.warning(f"Exception in get_fp_mitigation_bot_labels {e}")
     
-    return []
+    return label_strs
     
     
-def get_etherscan_label(cluster: str) -> str:
+def get_etherscan_label(cluster: str) -> list:
     if cluster is None:
         return ""
-        
+
+    labels_str = []    
     try:
         res = requests.get(etherscan_label_api + cluster.lower())  # already comma separated
         if res.status_code == 200:
             labels = res.json()
             if len(labels) > 0 and labels['events'] is not None:
                 logging.info(f"retreived label for {cluster}: {labels['events'][0]}")
-                return labels['events'][0]['label']['label']
+                labels_str.append(labels['events'][0]['label']['label'])
     except Exception as e:
         logging.warning(f"Exception in get_etherscan_label {e}")
     
-    return ""
+    return labels_str
 
 def update_list(items: set, max_size: int, item: str):
 
@@ -364,7 +366,7 @@ def is_fp(cluster: str) -> bool:
     if cluster in FP_MITIGATION_CLUSTERS:
         return True
 
-    etherscan_label = get_etherscan_label(cluster).lower()
+    etherscan_label = ','.join(get_etherscan_label(cluster)).lower()
     if not ('attack' in etherscan_label
             or 'phish' in etherscan_label
             or 'hack' in etherscan_label

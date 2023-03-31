@@ -117,17 +117,17 @@ class TestScamDetector:
 
     # currently failing as the base bots dont emit a benign label yet
     def test_get_fp_mitigation_bot_labels(self):
-        labels = agent.get_fp_mitigation_bot_labels("0xedc8e3b2ae699a23d4a6d73e2171acac809156ee")
+        labels = agent.get_fp_mitigation_bot_labels("0xf167b212b1c73c6a8e11fcb03780e33cdb550b9e")
         assert len(labels)>0, "should be at least one label"
         assert "benign" in labels, "should be benign label"
     
     def test_get_etherscan_label_has_label(self):
-        label = agent.get_etherscan_label("0x12D66f87A04A9E220743712cE6d9bB1B5616B8Fc")
-        assert "tornado" in label, "should be sanctioned label"
+        labels = agent.get_etherscan_label("0x12D66f87A04A9E220743712cE6d9bB1B5616B8Fc")
+        assert "tornado" in ",".join(labels), "should be sanctioned label"
 
     def test_get_etherscan_label_no_label(self):
-        label = agent.get_etherscan_label("0xa0109274F53609f6Be97ec5f3052C659AB80f012")
-        assert label == "", "should be no label"
+        labels = agent.get_etherscan_label("0xa0109274F53609f6Be97ec5f3052C659AB80f012")
+        assert len(labels) == 0, "should be no label"
 
     def test_get_shard(self):
         package_json = json.load(open("package.json"))
