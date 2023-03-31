@@ -23,10 +23,10 @@ DATABASE = f"https://research.forta.network/database/bot/{web3.eth.chain_id}"
 BOT_ID_TO_SOURCE_MAPPING = {}
 
 root = logging.getLogger()
-root.setLevel(logging.DEBUG)
+root.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 root.addHandler(handler)
@@ -49,7 +49,7 @@ def initialize():
 
     subscription_json = []
     for botId, alertId, source in BASE_BOTS:
-        subscription_json.append({"botId": botId, "alertId": alertId})
+        subscription_json.append({"botId": botId, "alertId": alertId, "chainId": CHAIN_ID})
         BOT_ID_TO_SOURCE_MAPPING[botId] = source
 
     return {"alertConfig": {"subscriptions": subscription_json}}
@@ -60,6 +60,7 @@ def process_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     global BOT_ID_TO_SOURCE_MAPPING
     findings = []
     start = time.time()
+    logging.info(f"alert {alert_event.alert_hash} received.")
 
     chain_id = int(alert_event.alert.source.block.chain_id) if alert_event.alert.source.block.chain_id is not None else int(alert_event.chain_id)
     if chain_id == CHAIN_ID:
@@ -70,7 +71,7 @@ def process_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
             attacker_addresses_lower = parse_indictors_forta_foundation(alert_event.alert.description)
             findings.append(NegativeReputationFinding.create_finding(attacker_addresses_lower, alert_event, source))
         else:
-            attacker_addresses_lower = parse_indictors_scam_sniffer(alert_event.alert.description)
+            attacker_addresses_lower = parse_indictors_scamsniffer(alert_event.alert.description)
             findings.append(NegativeReputationFinding.create_finding(attacker_addresses_lower, alert_event, source))
     else:
         logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
