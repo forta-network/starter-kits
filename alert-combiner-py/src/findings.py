@@ -5,6 +5,7 @@ import pandas as pd
 import forta_agent
 
 
+
 class AlertCombinerFinding:
 
     @staticmethod
@@ -43,6 +44,7 @@ class AlertCombinerFinding:
                     'chain_id': chain_id
                 }
             }))
+            contracts = 
 
         return Finding({
                        'name': 'Attack detector identified an EOA with behavior consistent with an attack',
