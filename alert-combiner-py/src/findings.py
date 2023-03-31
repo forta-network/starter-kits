@@ -36,7 +36,6 @@ class AlertCombinerFinding:
                 'label': "attacker-eoa",
                 'entity': address,
                 'confidence': 0.20,
-                'remove': "false",
                 'metadata': {
                     'alert_id': alert_id,
                     'chain_id': chain_id
@@ -50,7 +49,6 @@ class AlertCombinerFinding:
                     'label': "attacker-contract",
                     'entity': contract,
                     'confidence': 0.20,
-                    'remove': "false",
                     'metadata': {
                         'alert_ids': alert_id,
                         'chain_id': chain_id
