@@ -11,7 +11,6 @@ class PositiveReputationFindings:
             'label': "benign",
             'entity': address,
             'confidence': 0.80,
-            'remove': "false",
             'metadata': {
                 'alert_id': 'POSITIVE-REPUTATION-1',
                 'chain_id': chain_id

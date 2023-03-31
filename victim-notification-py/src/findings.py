@@ -11,7 +11,6 @@ class VictimNotificationFinding:
             'label': "benign",
             'entity': victim_address,
             'confidence': 0.80,
-            'remove': "false",
             'metadata': {
                 'alert_id': 'VICTIM-NOTIFICATION-1',
                 'chain_id': chain_id
@@ -22,7 +21,6 @@ class VictimNotificationFinding:
             'label': "victim",
             'entity': victim_address,
             'confidence': 0.99,
-            'remove': "false",
             'metadata': {
                 'alert_id': 'VICTIM-NOTIFICATION-1',
                 'chain_id': chain_id

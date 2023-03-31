@@ -1,6 +1,6 @@
 {
   "name": "mev-identification-bot",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/mev-identification-bot-py",
   "description": "Bot identifying addresses involved in MEV activity",
   "chainIds": [

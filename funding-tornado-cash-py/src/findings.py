@@ -11,7 +11,6 @@ class FundingTornadoCashFindings:
                 'label': "attacker",
                 'entity': to_address,
                 'confidence': 0.3,
-                'remove': "false",
                 'metadata': {
                     'alert_id': 'FUNDING-TORNADO-CASH',
                     'chain_id': chain_id
@@ -33,7 +32,6 @@ class FundingTornadoCashFindings:
                 'label': "benign",
                 'entity': to_address,
                 'confidence': 0.1,
-                'remove': "false",
                 'metadata': {
                     'alert_id': 'FUNDING-TORNADO-CASH-HIGH',
                     'chain_id': chain_id
