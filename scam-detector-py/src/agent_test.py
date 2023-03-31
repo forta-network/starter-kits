@@ -117,7 +117,7 @@ class TestScamDetector:
 
     # currently failing as the base bots dont emit a benign label yet
     def test_get_fp_mitigation_bot_labels(self):
-        labels = agent.get_etherscan_label("0xedc8e3b2ae699a23d4a6d73e2171acac809156ee")
+        labels = agent.get_fp_mitigation_bot_labels("0xedc8e3b2ae699a23d4a6d73e2171acac809156ee")
         assert len(labels)>0, "should be at least one label"
         assert "benign" in labels, "should be benign label"
     
