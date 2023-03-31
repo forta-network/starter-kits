@@ -32,7 +32,6 @@ class ScamDetectorFinding:
                 'label': "scammer-eoa",
                 'entity': scammer_address,
                 'confidence': score,
-                'remove': "false",
                 'metadata': {
                     'alert_ids': ','.join(str(x) for x in alert_ids),
                     'chain_id': chain_id
@@ -47,7 +46,6 @@ class ScamDetectorFinding:
                     'label': "scammer-contract",
                     'entity': contract,
                     'confidence': score,
-                    'remove': "false",
                     'metadata': {
                         'alert_ids': ','.join(str(x) for x in alert_ids),
                         'chain_id': chain_id
@@ -87,7 +85,6 @@ class ScamDetectorFinding:
                 'label': "scammer",
                 'entity': scammer_address,
                 'confidence': 1,
-                'remove': "false",
                 'metadata': {
                     'alert_ids': "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category,
                     'reported_by': reported_by,
@@ -103,7 +100,6 @@ class ScamDetectorFinding:
                     'label': "scammer",
                     'entity': contract,
                     'confidence': 1,
-                    'remove': "false",
                     'metadata': {
                         'alert_ids': "SCAM-DETECTOR-MANUAL-" + alert_id_threat_category,
                         'reported_by': reported_by,
