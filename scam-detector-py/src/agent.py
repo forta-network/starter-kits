@@ -314,9 +314,14 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         logging.info("Scam detector - ice phishing/ fraudulent seaport orders")
 
         native_ice_phishing_addresses = set()
-        native_ice_phishing = df_forta_alerts[(df_forta_alerts["alertId"] == "NIP-1")]
+        native_ice_phishing = df_forta_alerts[((df_forta_alerts["alertId"] == "NIP-4"))]
         native_ice_phishing["metadata"].apply(lambda x: native_ice_phishing_addresses.add(get_native_ice_phishing_address(x)))
         logging.info(f"Got {len(native_ice_phishing_addresses)} native ice phishing addresses")
+
+        native_ice_phishing_se_addresses = set()
+        native_ice_phishing_se = df_forta_alerts[((df_forta_alerts["alertId"] == "NIP-1"))]
+        native_ice_phishing_se["metadata"].apply(lambda x: native_ice_phishing_se_addresses.add(get_native_ice_phishing_address(x)))
+        logging.info(f"Got {len(native_ice_phishing_se_addresses)} native ice phishing addresses (social eng)")
 
         wash_trading_addresses = set()
         wash_trading = df_forta_alerts[(df_forta_alerts["alertId"] == "NFT-WASH-TRADE")]
@@ -354,6 +359,8 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         attack_detector_clusters = swap_addresses_with_clusters(list(attack_detector_addresses), df_address_clusters_exploded)
         addresses.update(address_poisoning_addresses)
         address_poisoning_clusters = swap_addresses_with_clusters(list(address_poisoning_addresses), df_address_clusters_exploded)
+        addresses.update(native_ice_phishing_se_addresses)
+        native_ice_phishing_se_clusters = swap_addresses_with_clusters(list(native_ice_phishing_se_addresses), df_address_clusters_exploded)
         addresses.update(native_ice_phishing_addresses)
         native_ice_phishing_clusters = swap_addresses_with_clusters(list(native_ice_phishing_addresses), df_address_clusters_exploded)
         addresses.update(wash_trading_addresses)
@@ -409,7 +416,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             or ('ATTACK-DETECTOR-1' in alert_ids)
                             or ('SEAPORT-PHISHING-TRANSFER' in alert_ids)
                             or ('ADDRESS-POISONING' in alert_ids or 'ADDRESS-POISONING-LOW-VALUE' in alert_ids or 'ADDRESS-POISONING-FAKE-TOKEN' in alert_ids)
-                            or ('NIP-1' in alert_ids)
+                            or ('NIP-1' in alert_ids or 'NIP-4' in alert_ids)
                             or ('ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS' in alert_ids)
                             or ('NFT-WASH-TRADE' in alert_ids)):
                             tx_count = 0
@@ -444,6 +451,8 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             if potential_attacker_cluster_lower in seaport_order_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER', hashes, CHAIN_ID))
                             elif potential_attacker_cluster_lower in native_ice_phishing_clusters:
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', hashes, CHAIN_ID))
+                            elif potential_attacker_cluster_lower in native_ice_phishing_se_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', hashes, CHAIN_ID))
                             elif potential_attacker_cluster_lower in wash_trading_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-WASH-TRADE', hashes, CHAIN_ID))
@@ -480,7 +489,7 @@ def get_ice_phishing_attacker_address(description: str) -> str:
 def contains_attacker_addresses_ice_phishing(w3, alert: pd.Series, potential_attacker_address: str) -> bool:
     global ICE_PHISHING_MAPPINGS_DF
     # iterate over ice phishing mappings and assess whether the potential attacker address is involved according to the mapping
-    if "ICE-PHISHING" in alert["alertId"] or "ADDRESS-POISONING" in alert["alertId"] or "SEAPORT-PHISHING-TRANSFER" in alert["alertId"] or "ATTACK-DETECTOR-1" in alert["alertId"]  or "NIP-1" in alert["alertId"] or "NFT-WASH-TRADE" in alert["alertId"]:
+    if "ICE-PHISHING" in alert["alertId"] or "ADDRESS-POISONING" in alert["alertId"] or "SEAPORT-PHISHING-TRANSFER" in alert["alertId"] or "ATTACK-DETECTOR-1" in alert["alertId"] or "NIP-1" in alert["alertId"] or "NIP-4" in alert["alertId"] or "NFT-WASH-TRADE" in alert["alertId"]:
         return True
 
     for index, row in ICE_PHISHING_MAPPINGS_DF.iterrows():
