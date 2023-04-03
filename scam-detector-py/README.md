@@ -24,6 +24,9 @@ As a result, the precision of this alert is quite high, but also some scams may 
 
 The Scam Detector bot emits the following alerts:
 
+- SCAM-DETECTOR-SLEEP-MINTING
+  - Fired when alert combination is observed that points to a sleep minting attack
+
 - SCAM-DETECTOR-ICE-PHISHING
   - Fired when alert combination is observed that points to an ice phishing attack
 
