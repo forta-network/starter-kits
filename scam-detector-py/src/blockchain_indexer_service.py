@@ -1,3 +1,4 @@
+
 from ratelimiter import RateLimiter
 import os
 import requests
@@ -35,6 +36,25 @@ class BlockChainIndexer:
         raise Exception("Chain ID not supported")
 
     @staticmethod
+    def get_allium_query(chain_id):
+        if chain_id == 1:
+            return "JhpUSRVEYONMoFqXrbKY"
+        elif chain_id == 137:
+            return  "RYr8M3SYvoamKaMSrJn3"
+        elif chain_id == 42161:
+            return "gfEcYla8Tk5qPAIpextm"
+        elif chain_id == 10:
+            return "gfEcYla8Tk5qPAIpextm"
+        elif chain_id == 250:
+            return "https://api.ftmscan.com"
+
+        raise Exception("Chain ID not supported")
+
+    @staticmethod
+    def get_allium_api_key():
+        return BlockChainIndexer.SECRETS_JSON['apiKeys']['ALLIUM']
+
+    @staticmethod
     def get_api_key(chain_id):
         if chain_id == 1:
             return BlockChainIndexer.SECRETS_JSON['apiKeys']['ETHERSCAN_TOKEN']
@@ -69,8 +89,8 @@ class BlockChainIndexer:
     def get_contracts(address, chain_id) -> set:
         contracts = set()
 
+        #etherscan for all chains except bsc and fantom
         df_etherscan = pd.DataFrame(columns=['nonce', 'to', 'isError'])
-
         transaction_for_address = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={address}&startblock={BlockChainIndexer.FIRST_BLOCK_NUMBER}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
         
         success = False
@@ -83,7 +103,7 @@ class BlockChainIndexer:
                 df_etherscan_temp = pd.DataFrame(data=json_data["result"])
                 df_etherscan = pd.concat([df_etherscan, df_etherscan_temp], axis=0)
             else:
-                logging.warn(f"Error getting contract for {address}, {chain_id} {data.status_code} {data.content}")
+                logging.warning(f"Error getting contract on etherscan for {address}, {chain_id} {data.status_code} {data.content}")
                 count += 1
                 if count > 10:
                     break
@@ -93,5 +113,18 @@ class BlockChainIndexer:
             if row["isError"] == "0":
                 if row["to"] == "":
                     contracts.add(BlockChainIndexer.calc_contract_address(address, int(row["nonce"])).lower())
+
+        if chain_id != 56 and chain_id != 250:
+            response = requests.post(f"https://api.allium.so/api/v1/explorer/queries/{BlockChainIndexer.get_allium_query(chain_id)}/run",
+                json={"address_lower":address},
+                headers={"X-API-Key": BlockChainIndexer.get_allium_api_key()},
+            )
+            if response.status_code == 200:
+                json_data = json.loads(response.content)
+                df_allium_temp = pd.DataFrame(data=json_data["data"])
+                for index, row in df_allium_temp.iterrows():
+                    contracts.add(row["address"].lower())
+            else:
+                logging.warning(f"Error getting contract on allium for {address}, {chain_id} {response.status_code} {response.content}")
 
         return contracts
