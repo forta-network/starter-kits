@@ -52,7 +52,10 @@ class BlockChainIndexer:
 
     @staticmethod
     def get_allium_api_key():
-        return BlockChainIndexer.SECRETS_JSON['apiKeys']['ALLIUM']
+        if "ALLIUM" in BlockChainIndexer.SECRETS_JSON['apiKeys']:
+            return BlockChainIndexer.SECRETS_JSON['apiKeys']['ALLIUM']
+        else:
+            return ""
 
     @staticmethod
     def get_api_key(chain_id):

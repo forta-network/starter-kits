@@ -68,6 +68,8 @@ def initialize():
         CHAIN_ID = os.environ.get('FORTA_CHAIN_ID')
         if CHAIN_ID is None:
             CHAIN_ID = web3.eth.chain_id
+        else:
+            CHAIN_ID = int(CHAIN_ID)
         logging.info(f"Set chain id to {CHAIN_ID}")
     except Exception as e:
         logging.error(f"Error getting chain id: {e}")
@@ -347,7 +349,7 @@ def get_model_score(df_feature_vector: pd.DataFrame) -> float:
     logging.debug(f"Feature vector: {df_feature_vector.loc[0]}")
 
     predictions_proba = MODEL.predict_proba(df_feature_vector)[:, 1]
-    return predictions_proba
+    return predictions_proba[0]
     
 def is_fp(cluster: str) -> bool:
     etherscan_label = ','.join(get_etherscan_label(cluster)).lower()
