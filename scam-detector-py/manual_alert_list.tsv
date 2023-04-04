@@ -1,5 +1,5 @@
 Date	Address	Account	Tweet	Chain ID	Threat category	Comment
-03/27/23	0x7f5723783c650a085ed15c675651fab4eb50fbd7	@realScamSniffer	https://twitter.com/realScamSniffer/status/1640311496461918209?s=20	56	Ice phishing	
+03/27/23	0x7f5723783c650a085ed15c675651fab4eb50fbd7	@realScamSniffer	https://twitter.com/realScamSniffer/status/1640311496461918209?s=20	56	Ice phishing    
 03/27/23	0xb0bb54aefcfd8594193d942af225b62080b8588f	@realScamSniffer	https://twitter.com/realScamSniffer/status/1640311496461918209?s=20	56	Ice phishing	Smart_contract
 03/27/23	0x97a259f23b95f8e090a7000fc75633ea8e2209fc	@realScamSniffer	https://twitter.com/realScamSniffer/status/1640311496461918209?s=20	56	Ice phishing	
 03/27/23	0xbaca2500b0f3009b420a7592bb1485e7ba419d76	@realScamSniffer	https://twitter.com/realScamSniffer/status/1640311496461918209?s=20	56	Ice phishing	Fake_Phishing707
@@ -27,7 +27,7 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 03/29/23	0x2306D3C8C6f508bfD27C9534656F90054F918FF5	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1641042379800207360?s=20	1	End-user attack - Misc/Unknown	Funded_by_ChangeNow,_bought_3_NFTS_for_0
 03/29/23	0xcA357E19078356376A8A0235d8ac885f6c620354	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1641021372175466499?s=20	56	Protocol attack	
 03/29/23	0xbd07ab4aa6d10b371bda15bcd653567a75b3c849	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641012683549081600?s=20	56      Soft rug pull	Token_appears_to_be_a_honeypot
-03/29/23	0xB72a82be7c8a11c53e89a00b535E05E4736d12AC	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641082021522059264?s=20	1	Ice phishing	
+03/29/23	0xB72a82be7c8a11c53e89a00b535E05E4736d12AC	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641082021522059264?s=20	1	Ice phishing	-
 03/29/23	0x513C285CD76884acC377a63DC63A4e83D7D21fb5.	@SlowMist_Team	https://twitter.com/SlowMist_Team/status/1640614440294035456?s=20	56	Ice phishing	Gas_fee_thieves_in_normal_transactions
 03/30/23	0x0E0EA0DAed97f36149eab4291D75C9136121B087	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641271500832382976?s=20	1	Ice phishing	The_wallet_received_funds_from_Fake_Phishing38688.
 03/30/23	0x1661F1B207629e4F385DA89cFF535C8E5Eb23Ee3	@PeckShieldAlert	https://twitter.com/DeDotFiSecurity/status/1641407929046777858?s=20	1	Ice phishing	Poap.eth
