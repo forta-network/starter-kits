@@ -28,9 +28,8 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 03/29/23	0xcA357E19078356376A8A0235d8ac885f6c620354	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1641021372175466499?s=20	56	Protocol attack	
 03/29/23	0xbd07ab4aa6d10b371bda15bcd653567a75b3c849	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641012683549081600?s=20	56	Soft rug pull	Token_appears_to_be_a_honeypot
 03/29/23	0xB72a82be7c8a11c53e89a00b535E05E4736d12AC	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641082021522059264?s=20	1	Ice phishing	
-03/29/23	0x513C285CD76884acC377a63DC63A4e83D7D21fb5.	@SlowMist_Team	https://twitter.com/SlowMist_Team/status/1640614440294035456?s=20	56	Ice phishing	Gas_fee_thieves_in_"normal"_transactions
+03/29/23	0x513C285CD76884acC377a63DC63A4e83D7D21fb5.	@SlowMist_Team	https://twitter.com/SlowMist_Team/status/1640614440294035456?s=20	56	Ice phishing	Gas_fee_thieves_in_normal_transactions
 03/30/23	0x0E0EA0DAed97f36149eab4291D75C9136121B087	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641271500832382976?s=20	1	Ice phishing	The_wallet_received_funds_from_Fake_Phishing38688.
-
 03/30/23	0x1661F1B207629e4F385DA89cFF535C8E5Eb23Ee3	@PeckShieldAlert	https://twitter.com/DeDotFiSecurity/status/1641407929046777858?s=20	1	Ice phishing	Poap.eth
 04/02/23	0x7F0a80d6966A131A66b8CEb2046cd8F7799f0240	@CertiKAlert	https://twitter.com/CertiKAlert/status/1642431687266017280?s=200		Soft rug pull	We_are_seeing_a_price_#slippage_on_OBB_(OBB)
 04/03/23	0x3c98d617db017f51C6A73a13E80E1FE14cD1D8Eb	@samczsun	https://twitter.com/samczsun/status/1642848556590723075?s=46&t=JCd72px5h51m4fYSKXWoPw	1	End-user attack - Misc/Unknown	Bug_in_MEV_boost-relay
