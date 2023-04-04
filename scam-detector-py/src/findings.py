@@ -1,13 +1,15 @@
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
 from datetime import datetime
 import pandas as pd
+import logging
 
 class ScamDetectorFinding:
 
     @staticmethod
     def scam_finding_model(block_chain_indexer, scammer_cluster: str, score: float, alert_id: str, feature_vector: pd.DataFrame, alerts: list, chain_id: int) -> Finding:  # alerts are list of tuples (bot_id, alert_id, alert_hash)
-
-        feature_vector = {"feature_vector": feature_vector.to_json()}
+        logging.info(f"feature_vector: {feature_vector.loc[0].to_string(index=False)}")
+        logging.info(f"feature_vector: {feature_vector.to_json()}")
+        feature_vector = {"feature_vector": feature_vector.loc[0].to_string(index=False)}
 
         bot_id_alert_id = set()
         alert_ids = set()
@@ -55,7 +57,7 @@ class ScamDetectorFinding:
         if "SCAM-DETECTOR-MODEL-1" in alert_id:
             return Finding({
                 'name': 'Scam detector identified an EOA with past alerts mapping to attack behavior',
-                'description': f'{scammer_address} likely involved in an attack ({alert_id})',
+                'description': f'{scammer_cluster} likely involved in an attack ({alert_id})',
                 'alert_id': alert_id,
                 'type': FindingType.Exploit,
                 'severity': FindingSeverity.Critical,
@@ -65,7 +67,7 @@ class ScamDetectorFinding:
         else: 
             return Finding({
                 'name': 'Scam detector identified an EOA with past alerts mapping to attack behavior',
-                'description': f'{scammer_address} likely involved in an attack ({alert_id})',
+                'description': f'{scammer_cluster} likely involved in an attack ({alert_id})',
                 'alert_id': alert_id,
                 'type': FindingType.Exploit,
                 'severity': FindingSeverity.Low,

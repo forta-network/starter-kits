@@ -25,7 +25,7 @@ class TestScamFindings:
         assert "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS" in finding.labels[0].metadata['alert_ids'], "should have ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS"
         assert finding.labels[0].metadata['chain_id'] == 1, "should be 1"
 
-        assert finding.metadata['feature_vector'] == feature_vector.to_json(), "should be the same"
+        assert finding.metadata['feature_vector'] == feature_vector.loc[0].to_string(index=False), "should be the same"
 
         base_alerts = set()
         base_alerts.add(finding.metadata['base_alert_1'])
@@ -58,7 +58,7 @@ class TestScamFindings:
         assert "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS" in finding.labels[0].metadata['alert_ids'], "should have ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS"
         assert finding.labels[0].metadata['chain_id'] == 1, "should be 1"
 
-        assert finding.metadata['feature_vector'] == feature_vector.to_json(), "should be the same"
+        assert finding.metadata['feature_vector'] == feature_vector.loc[0].to_string(index=False), "should be the same"
 
         base_alerts = set()
         base_alerts.add(finding.metadata['base_alert_1'])
