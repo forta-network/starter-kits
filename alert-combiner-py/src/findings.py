@@ -1,5 +1,7 @@
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
 import pandas as pd
+import json
+import os
 import forta_agent
 
 
@@ -7,9 +9,18 @@ import forta_agent
 class AlertCombinerFinding:
 
     @staticmethod
+    def get_bot_name() -> str:
+        package = json.load(open("package.json"))
+        return package["name"]
+
+    @staticmethod
     def create_finding(block_chain_indexer, addresses: str, victim_address: str, victim_name, anomaly_score: float, severity: FindingSeverity, alert_id: str, 
         alert_event: forta_agent.alert_event.AlertEvent, alert_data: pd.DataFrame, victim_metadata: dict, anomaly_scores_by_stage: pd.DataFrame, chain_id: int) -> Finding:
         # alert_data -> 'stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses'
+
+        #only emit ATTACK-DETECTOR-4 and ATTACK-DETECTOR-5 alerts in test local or beta environments, but not production
+        if ((alert_id == "ATTACK-DETECTOR-4" or alert_id == "ATTACK-DETECTOR-5") and "beta" not in AlertCombinerFinding.get_bot_name() and ('NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'))):
+            return None
 
         anomaly_scores = {}
         for index, row in anomaly_scores_by_stage.iterrows():
