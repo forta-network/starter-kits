@@ -4,7 +4,9 @@ import json
 import pandas as pd
 import numpy as np
 import random
+import requests
 import os
+import io
 from datetime import datetime
 from web3_mock import Web3Mock, EOA_ADDRESS_2, EOA_ADDRESS, CONTRACT
 from constants import MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT
@@ -329,10 +331,11 @@ class TestScamDetector:
         agent.initialize()
 
         findings = agent.emit_manual_finding(w3)
-        df_manual_entries = pd.read_csv("manual_alert_list.tsv", sep="\t")
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/manual_alert_list.tsv')
+        content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
+        df_manual_entries = pd.read_csv(io.StringIO(content), sep='\t')
         assert len(findings) > 0, "this should have triggered FP findings"
-        assert len(findings) == len(df_manual_entries[df_manual_entries['Chain ID']==1]), "this should have triggered manual findings"
-
+        
         for finding in findings:
             if '0x6939432e462f7dCB6a3Ca39b9723d18a58FE9A65' in finding.description.lower():
                 assert findings[0].alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"

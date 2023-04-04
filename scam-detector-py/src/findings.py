@@ -7,9 +7,14 @@ class ScamDetectorFinding:
 
     @staticmethod
     def scam_finding_model(block_chain_indexer, scammer_cluster: str, score: float, alert_id: str, feature_vector: pd.DataFrame, alerts: list, chain_id: int) -> Finding:  # alerts are list of tuples (bot_id, alert_id, alert_hash)
-        logging.info(f"feature_vector: {feature_vector.loc[0].to_string(index=False)}")
-        logging.info(f"feature_vector: {feature_vector.to_json()}")
-        feature_vector = {"feature_vector": feature_vector.loc[0].to_string(index=False)}
+        feature_vector_str = ""
+        for i, row in feature_vector.iterrows():
+            for col in feature_vector.columns:
+                feature_vector_str += f"{row[col]},"
+        
+        logging.info(f"Feature vector: {feature_vector_str}")
+        
+        score_dict = {"score": str(score)}
 
         bot_id_alert_id = set()
         alert_ids = set()
@@ -25,7 +30,8 @@ class ScamDetectorFinding:
                     break
 
         example_base_alerts = {"base_alert_" + str(i): f"{bot_id_1},{alert_id_1},{alert_hash}" for i, (bot_id_1, alert_id_1, alert_hash) in enumerate(example_alerts.values(), 1)}
-        meta_data = {**feature_vector, **example_base_alerts}
+        meta_data = {**example_base_alerts, **score_dict}
+        meta_data["feature_vector"] = feature_vector_str
 
         labels = []
         for scammer_address in scammer_cluster.split(","):
@@ -33,7 +39,7 @@ class ScamDetectorFinding:
                 'entityType': EntityType.Address,
                 'label': "scammer-eoa",
                 'entity': scammer_address,
-                'confidence': score,
+                'confidence': str(score),
                 'metadata': {
                     'alert_ids': ','.join(str(x) for x in alert_ids),
                     'chain_id': chain_id
@@ -47,7 +53,7 @@ class ScamDetectorFinding:
                     'entityType': EntityType.Address,
                     'label': "scammer-contract",
                     'entity': contract,
-                    'confidence': score,
+                    'confidence': str(score),
                     'metadata': {
                         'alert_ids': ','.join(str(x) for x in alert_ids),
                         'chain_id': chain_id
@@ -78,6 +84,11 @@ class ScamDetectorFinding:
     @staticmethod
     def scam_finding_manual(block_chain_indexer, scammer_cluster: str, threat_category: str, reported_by: str, chain_id: int) -> Finding:
         labels = []
+
+        logging.info(f"Scam cluster: {scammer_cluster}")
+        logging.info(f"Threat category: {threat_category}")
+        logging.info(f"Reported by: {reported_by}")
+        logging.info(f"Chain ID: {chain_id}")
 
         alert_id_threat_category = threat_category.upper().replace(" ", "-")
 
@@ -111,7 +122,7 @@ class ScamDetectorFinding:
 
         return Finding({
             'name': 'Scam detector identified an EOA with past alerts mapping to attack behavior',
-            'description': f'{scammer_address} likely involved in an attack (SCAM-DETECTOR-MANUAL-{alert_id_threat_category})',
+            'description': f'{scammer_cluster} likely involved in an attack (SCAM-DETECTOR-MANUAL-{alert_id_threat_category})',
             'alert_id': "SCAM-DETECTOR-MANUAL-" + alert_id_threat_category,
             'type': FindingType.Exploit,
             'severity': FindingSeverity.Critical,
@@ -133,7 +144,7 @@ class ScamDetectorFinding:
 
         return Finding({
             'name': 'Scam detector identified an EOA that was incorrectly alerted on. Emitting false positive alert.',
-            'description': f'{benign_address} likely not involved in scam (SCAM-DETECTOR-FALSE-POSITIVE)',
+            'description': f'{cluster} likely not involved in scam (SCAM-DETECTOR-FALSE-POSITIVE)',
             'alert_id': 'SCAM-DETECTOR-FALSE-POSITIVE',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,

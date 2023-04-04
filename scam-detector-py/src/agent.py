@@ -65,7 +65,10 @@ def initialize():
     """
     global CHAIN_ID
     try:
-        CHAIN_ID = web3.eth.chain_id
+        CHAIN_ID = os.environ.get('FORTA_CHAIN_ID')
+        if CHAIN_ID is None:
+            CHAIN_ID = web3.eth.chain_id
+        logging.info(f"Set chain id to {CHAIN_ID}")
     except Exception as e:
         logging.error(f"Error getting chain id: {e}")
         raise e
@@ -500,7 +503,9 @@ def emit_new_fp_finding(w3) -> list:
 
 def emit_manual_finding(w3) -> list:
     global ALERTED_CLUSTERS_STRICT
+    global ENTITY_CLUSTERS
     global CHAIN_ID
+    global CLUSTER_QUEUE_SIZE
     findings = []
 
     if CHAIN_ID == -1:
@@ -508,10 +513,19 @@ def emit_manual_finding(w3) -> list:
         raise Exception("Chain ID not set")
 
     res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/manual_alert_list.tsv')
+    logging.info(f"made request to fetch manual alerts: {res.status_code}")
     content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
     df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
     for index, row in df_manual_findings.iterrows():
-        chain_id = int(row['Chain ID'])
+        logging.info("Reading manual finding")
+        chain_id = -1
+        try:
+            chain_id_float = row['Chain ID']
+            chain_id = int(chain_id_float)
+        except:
+            logging.warn("Failed to get chain ID from manual finding")
+            continue
+
         if chain_id != CHAIN_ID:
             continue
 
