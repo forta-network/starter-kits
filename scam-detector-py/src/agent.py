@@ -513,33 +513,37 @@ def emit_manual_finding(w3) -> list:
         raise Exception("Chain ID not set")
 
     res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/manual_alert_list.tsv')
-    logging.info(f"made request to fetch manual alerts: {res.status_code}")
+    logging.info(f"Manual finding: made request to fetch manual alerts: {res.status_code}")
     content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
     df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
     for index, row in df_manual_findings.iterrows():
-        logging.info("Reading manual finding")
         chain_id = -1
         try:
             chain_id_float = row['Chain ID']
             chain_id = int(chain_id_float)
         except:
-            logging.warn("Failed to get chain ID from manual finding")
+            logging.warning("Manual finding: Failed to get chain ID from manual finding")
             continue
 
         if chain_id != CHAIN_ID:
+            logging.info("Manual finding: Manual entry doesnt match chain ID.")
             continue
 
         address_lower = row['Address'].lower()
+        logging.info(f"Manual finding: Have manual entry for {address_lower}")
         cluster = address_lower
         if address_lower in ENTITY_CLUSTERS.keys():
             cluster = ENTITY_CLUSTERS[address_lower]
 
         if cluster not in ALERTED_CLUSTERS_STRICT:
-            logging.info("Emitting manual finding")
+            logging.info(f"Manual finding: Emitting manual finding for {cluster}")
             update_list(ALERTED_CLUSTERS_STRICT, CLUSTER_QUEUE_SIZE, cluster)
             findings.append(ScamDetectorFinding.scam_finding_manual(block_chain_indexer, cluster, row['Threat category'], row['Account'] + " " + row['Tweet'], chain_id))
             logging.info(f"Findings count {len(findings)}")
             persist_state()
+        else:
+            logging.info(f"Manual finding: Already alerted on {address_lower}")
+
 
     return findings
 

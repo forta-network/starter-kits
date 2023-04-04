@@ -4,7 +4,19 @@ import pandas as pd
 import logging
 
 class ScamDetectorFinding:
-
+    @staticmethod
+    def get_threat_description_url(alert_ids: set) -> list:
+        threat_detection_urls = []
+        url = "https://forta.org/attacks"
+        for alert_id in alert_ids:
+            if 'ICE-PHISHING' in alert_id:
+                threat_detection_urls.append(url + "#ice-phishing")
+            elif "SLEEPMINT" in alert_id:
+                threat_detection_urls.append("#sleep-minting")
+            else:
+                threat_detection_urls.append(url)
+        return threat_detection_urls
+        
     @staticmethod
     def scam_finding_model(block_chain_indexer, scammer_cluster: str, score: float, alert_id: str, feature_vector: pd.DataFrame, alerts: list, chain_id: int) -> Finding:  # alerts are list of tuples (bot_id, alert_id, alert_hash)
         feature_vector_str = ""
@@ -22,6 +34,8 @@ class ScamDetectorFinding:
             bot_id_alert_id.add((bot_id_1, alert_id_1))
             alert_ids.add(alert_id_1)
         
+        threat_detection_urls = ScamDetectorFinding.get_threat_description_url(alert_ids)
+
         example_alerts = dict()
         for (bot_id_1, alert_id_1) in bot_id_alert_id:
             for bot_id_2, alert_id_2, alert_hash in alerts:
@@ -42,7 +56,8 @@ class ScamDetectorFinding:
                 'confidence': str(score),
                 'metadata': {
                     'alert_ids': ','.join(str(x) for x in alert_ids),
-                    'chain_id': chain_id
+                    'chain_id': chain_id,
+                    'threat_detection_urls': ','.join(str(x) for x in threat_detection_urls),
                 }
     	    }))
 
@@ -56,7 +71,8 @@ class ScamDetectorFinding:
                     'confidence': str(score),
                     'metadata': {
                         'alert_ids': ','.join(str(x) for x in alert_ids),
-                        'chain_id': chain_id
+                        'chain_id': chain_id,
+                        'threat_detection_urls': ','.join(str(x) for x in threat_detection_urls),
                     }
     	        }))
 

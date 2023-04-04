@@ -125,7 +125,7 @@ class TestScamDetector:
     
     def test_get_etherscan_label_has_label(self):
         labels = agent.get_etherscan_label("0x12D66f87A04A9E220743712cE6d9bB1B5616B8Fc")
-        assert "tornado" in ",".join(labels), "should be sanctioned label"
+        assert "sanctioned" in ",".join(labels), "should be sanctioned label"
 
     def test_get_etherscan_label_no_label(self):
         labels = agent.get_etherscan_label("0xa0109274F53609f6Be97ec5f3052C659AB80f012")
@@ -309,6 +309,8 @@ class TestScamDetector:
         assert "NORMAL-TOKEN-TRANSFERS-TX" in all_findings[0].labels[0].metadata['alert_ids'], "should be all alert ids"
         assert "ICE-PHISHING-SUSPICIOUS-APPROVAL" in all_findings[0].labels[0].metadata['alert_ids'], "should be all alert ids"
         assert "ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS" in all_findings[0].labels[0].metadata['alert_ids'], "should be all alert ids"
+        assert "https://forta.org/attacks#ice-phishing" in all_findings[0].labels[0].metadata['threat_detection_urls'], "should be in threat detection urls"
+        assert "https://forta.org/attacks" in all_findings[0].labels[0].metadata['threat_detection_urls'], "should be in threat detection urls"
         
 
 
