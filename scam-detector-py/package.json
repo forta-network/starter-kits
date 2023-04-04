@@ -1,6 +1,6 @@
   {
   "name": "scam-detector-feed-v2-beta",
-  "version": "0.2.28",
+  "version": "0.2.30",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/scam-detector-py",
   "description": "Supervised stack classifier to predict whether an address is a scammer.",
   "chainIds": [

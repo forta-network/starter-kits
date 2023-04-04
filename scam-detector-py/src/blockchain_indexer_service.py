@@ -44,12 +44,12 @@ class BlockChainIndexer:
         elif chain_id == 42161:
             return "gfEcYla8Tk5qPAIpextm"
         elif chain_id == 10:
-            return "gfEcYla8Tk5qPAIpextm"
-        elif chain_id == 250:
-            return "https://api.ftmscan.com"
+            return "AJa2sxDZRy9yu3FsShx8"
+        elif chain_id == 43114:
+            return "fBlvzxq9Vni5QXTHVT6D"
 
         raise Exception("Chain ID not supported")
-
+    
     @staticmethod
     def get_allium_api_key():
         if "ALLIUM" in BlockChainIndexer.SECRETS_JSON['apiKeys']:
