@@ -92,6 +92,12 @@ The Attack Detector bot emits the following alerts:
   - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
   - Note: the detection bot will only alert once per cluster observed
 
+- ATTACK-DETECTOR-5
+  - Fires when any of the above alerts would have triggered, but was FP mitigated
+  - Severity is always set to "info" 
+  - Type is always set to "exploit" 
+  - Note: the detection bot will only alert once per cluster observed
+
 ## Labels
 
 The Attack Detector bot emits labels for each attacker address observed. The meta data contains the corresponding alertID. E.g.
