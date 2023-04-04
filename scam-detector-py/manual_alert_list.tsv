@@ -21,17 +21,17 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 03/27/23	0x18d0230037cbcc426d49687f5ae309aa5b9306f2	@realScamSniffer	https://twitter.com/realScamSniffer/status/1639260173746200580?s=20	1	Ice phishing	
 03/28/23	0xfe4B0EEb966f60052a68eaC9F90F5bDDDa878a85	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1640639471631892482?s=20	1	Protocol attack	Cashio_App_Exploiter_2_laundering_stolen_funds
 03/28/23	0x04C6459042719CC3DD7514622097C229572D89AC	@CertiKAlert	https://twitter.com/CertiKAlert/status/1640583064245133312?s=20	1	Ice phishing	Fake_Phishing138590
-03/28/23	0x4a5731d84fe9ebd67e367efa337dcedadebf2112	@CertiKAlert	https://twitter.com/CertiKAlert/status/1640552746049732608?s=20		Hard rug pull	Price_slippage_by_contract_developer_(not_original)_and_funded_by_account_Changenow
+03/28/23	0x4a5731d84fe9ebd67e367efa337dcedadebf2112	@CertiKAlert	https://twitter.com/CertiKAlert/status/1640552746049732608?s=20	56	Hard rug pull	Price_slippage_by_contract_developer_(not_original)_and_funded_by_account_Changenow
 03/28/23	0x975d9Bd9928F398c7E01F6ba236816Fa558cD94B	@AnalysisOnChain	https://twitter.com/AnalysisOnChain/status/1614919035161903104?s=20	56	End-user attack - Misc/Unknown	Tagged_as_ChangeNow,_involved_in_previous_scam._Contract_exploit
 03/28/23	0x20988390875d06b706285de690ebb1e624030703	no specific tweet.	See Forta alerts	56		Original_address_who_transferred_ownership_on_the_contract._It_does_that_repetedly
 03/29/23	0x2306D3C8C6f508bfD27C9534656F90054F918FF5	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1641042379800207360?s=20	1	End-user attack - Misc/Unknown	Funded_by_ChangeNow,_bought_3_NFTS_for_0
 03/29/23	0xcA357E19078356376A8A0235d8ac885f6c620354	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1641021372175466499?s=20	56	Protocol attack	
-03/29/23	0xbd07ab4aa6d10b371bda15bcd653567a75b3c849	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641012683549081600?s=20	56	Soft rug pull	Token_appears_to_be_a_honeypot
+03/29/23	0xbd07ab4aa6d10b371bda15bcd653567a75b3c849	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641012683549081600?s=20	56 Soft rug pull	Token_appears_to_be_a_honeypot
 03/29/23	0xB72a82be7c8a11c53e89a00b535E05E4736d12AC	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641082021522059264?s=20	1	Ice phishing	
 03/29/23	0x513C285CD76884acC377a63DC63A4e83D7D21fb5.	@SlowMist_Team	https://twitter.com/SlowMist_Team/status/1640614440294035456?s=20	56	Ice phishing	Gas_fee_thieves_in_normal_transactions
 03/30/23	0x0E0EA0DAed97f36149eab4291D75C9136121B087	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641271500832382976?s=20	1	Ice phishing	The_wallet_received_funds_from_Fake_Phishing38688.
 03/30/23	0x1661F1B207629e4F385DA89cFF535C8E5Eb23Ee3	@PeckShieldAlert	https://twitter.com/DeDotFiSecurity/status/1641407929046777858?s=20	1	Ice phishing	Poap.eth
-04/02/23	0x7F0a80d6966A131A66b8CEb2046cd8F7799f0240	@CertiKAlert	https://twitter.com/CertiKAlert/status/1642431687266017280?s=200		Soft rug pull	We_are_seeing_a_price_#slippage_on_OBB_(OBB)
+04/02/23	0x7F0a80d6966A131A66b8CEb2046cd8F7799f0240	@CertiKAlert	https://twitter.com/CertiKAlert/status/1642431687266017280?s=200 56 	Soft rug pull	We_are_seeing_a_price_#slippage_on_OBB_(OBB)
 04/03/23	0x3c98d617db017f51C6A73a13E80E1FE14cD1D8Eb	@samczsun	https://twitter.com/samczsun/status/1642848556590723075?s=46&t=JCd72px5h51m4fYSKXWoPw	1	End-user attack - Misc/Unknown	Bug_in_MEV_boost-relay
 04/04/23	0xB6Bd511a4B8c7924d71e2967Ce663fa97a5fdB26	@CertiKAlert	https://twitter.com/CertiKAlert/status/1643208661664145416?s=20	56	Soft rug pull	Token_appears_to_be_a_honeypot
 04/04/23	0xEB40342d0F7A5a0AACEFBb9A32C9D2e22184683d	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1643189082686738432?s=20	1	Address poisoning	
