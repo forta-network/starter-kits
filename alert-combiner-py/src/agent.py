@@ -12,15 +12,16 @@ from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 from forta_agent import FindingSeverity
+import json
 
-from src.findings import AlertCombinerFinding
-from src.constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
+from findings import AlertCombinerFinding
+from constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
                            FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE,
                            MIN_ALERTS_COUNT, ALERTS_DATA_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY, 
                            VICTIMS_KEY, VICTIM_QUEUE_MAX_SIZE, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS, DEFAULT_ANOMALY_SCORE, HIGHLY_PRECISE_BOTS,
                            ALERTED_CLUSTERS_FP_MITIGATED_KEY)
-from src.L2Cache import L2Cache
-from src.blockchain_indexer_service import BlockChainIndexer
+from L2Cache import L2Cache
+from blockchain_indexer_service import BlockChainIndexer
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 block_chain_indexer = BlockChainIndexer()
@@ -59,10 +60,14 @@ def initialize():
 
     global CHAIN_ID
     try:
-        CHAIN_ID = web3.eth.chain_id
+        CHAIN_ID = os.environ.get('FORTA_CHAIN_ID')
+        if CHAIN_ID is None:
+            CHAIN_ID = web3.eth.chain_id
+        logging.info(f"Set chain id to {CHAIN_ID}")
     except Exception as e:
         logging.error(f"Error getting chain id: {e}")
         raise e
+
 
     global ALERT_ID_STAGE_MAPPING
     ALERT_ID_STAGE_MAPPING = dict([((bot_id, alert_id), stage) for bot_id, alert_id, stage in BASE_BOTS])
@@ -163,10 +168,6 @@ def get_etherscan_label(address: str):
         logging.warning(f"Exception in get_etherscan_label {e}")
         return ""
 
-
-def handle_alert(alert_event):
-    print("handle_alert")
-    print(alert_event)
 
 def is_contract(w3, addresses) -> bool:
     """
