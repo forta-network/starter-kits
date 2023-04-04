@@ -63,6 +63,8 @@ def initialize():
         CHAIN_ID = os.environ.get('FORTA_CHAIN_ID')
         if CHAIN_ID is None:
             CHAIN_ID = web3.eth.chain_id
+        else:
+            CHAIN_ID = int(CHAIN_ID)
         logging.info(f"Set chain id to {CHAIN_ID}")
     except Exception as e:
         logging.error(f"Error getting chain id: {e}")
