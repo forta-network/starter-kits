@@ -38,7 +38,8 @@ class AlertCombinerFinding:
                 'confidence': 0.20,
                 'metadata': {
                     'alert_id': alert_id,
-                    'chain_id': chain_id
+                    'chain_id': chain_id,
+                    'threat_description_url': 'https://forta.org/attacks/'
                 }
             }))
 
@@ -51,7 +52,8 @@ class AlertCombinerFinding:
                     'confidence': 0.20,
                     'metadata': {
                         'alert_ids': alert_id,
-                        'chain_id': chain_id
+                        'chain_id': chain_id,
+                        'threat_description_url': 'https://forta.org/attacks/'
                     }
     	        }))
             

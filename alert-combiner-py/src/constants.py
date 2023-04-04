@@ -26,6 +26,7 @@ FP_MITIGATION_BOTS = [("0xabdeff7672e59d53c7702777652e318ada644698a9faf2e7f608ec
                       ("0xe04b3fa79bd6bc6168a211bcec5e9ac37d5dd67a41a1884aa6719f8952fbc274", "VICTIM-NOTIFICATION-1")
                       ]
 
+ALERTED_CLUSTERS_FP_MITIGATED_KEY = "alerted_clusters_fp_mitigated_key"
 FP_MITIGATION_CLUSTERS_KEY = "fp_mitigation_clusters_key"
 ENTITY_CLUSTERS_KEY = "entity_clusters"
 ALERTED_CLUSTERS_STRICT_KEY = "alerted_clusters_strict_key"

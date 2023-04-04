@@ -526,7 +526,9 @@ class TestAlertCombiner:
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
-        assert len(findings) == 0, "no alert should have been raised as this is FP mitigated"
+        assert len(findings) == 1, "ATTACK-DETECTOR-5 alert should have been raised as this is FP mitigated"
+        assert findings[0].alert_id == "ATTACK-DETECTOR-5", "ATTACK-DETECTOR-5 alert should have been raised as this is FP mitigated"
+        assert findings[0].severity == FindingSeverity.Info, "info severity alert should have been raised"
 
     def test_alert_cluster_alert(self):
         # three alerts in diff stages across two EOAs that are clustered
