@@ -86,10 +86,16 @@ The Attack Detector bot emits the following alerts:
 
 
 - ATTACK-DETECTOR-4
-  - Fired when 3 alerts are fired and anomaly score across the stages (per cluster) exceed the loose threshold 1 * 10-4)
+  - Fired when 3 alerts are fired and anomaly score across the stages (per cluster) exceed the loose threshold 1 * 10-4). This alert is only emitted in beta version of bot.
   - Severity is always set to "low" 
   - Type is always set to "exploit" 
   - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
+  - Note: the detection bot will only alert once per cluster observed
+
+- ATTACK-DETECTOR-5
+  - Fires when any of the above alerts would have triggered, but was FP mitigated. This alert is only emitted in beta version of bot.
+  - Severity is always set to "info" 
+  - Type is always set to "exploit" 
   - Note: the detection bot will only alert once per cluster observed
 
 ## Labels
