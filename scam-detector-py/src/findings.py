@@ -7,6 +7,27 @@ from datetime import datetime
 class AlertCombinerFinding:
 
     @staticmethod
+    def get_threat_description_url(alert_id: str) -> str:
+        url = "https://forta.org/attacks"
+        if alert_id == "SCAM-DETECTOR-ICE-PHISHING":
+            return url + "#ice-phishing"
+        elif alert_id == "SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER":
+            return url + "#fraudulent-seaport-order"
+        elif alert_id == "SCAM-DETECTOR-ADDRESS-POISONING":
+            return url + "#address-poisoning"
+        elif alert_id == "SCAM-DETECTOR-NATIVE-ICE-PHISHING":
+            return url + "#native-ice-phishing"
+        elif alert_id == "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING":
+            return url + "#native-ice-phishing"
+        elif alert_id == "SCAM-DETECTOR-WASH-TRADE":
+            return url + "#wash-trade"
+        elif alert_id == "SCAM-DETECTOR-SLEEP-MINTING":
+            return url + "#sleep-minting"
+        else:
+            return url
+
+
+    @staticmethod
     def alert_combiner(block_chain_indexer, scammer_addresses: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set, alert_id: str, hashes: set, chain_id: int) -> Finding:
         involved_addresses = list(involved_addresses)[0:20]
         hashes = list(hashes)[0:10]
@@ -21,7 +42,7 @@ class AlertCombinerFinding:
         meta_data = {**attacker_address_md, **start_date, **end_date, **involved_addresses, **involved_alert_ids, **involved_alert_hashes}
 
         labels = []
-        if alert_id in ["SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-SLEEP-MINTING']:
+        if alert_id in ["SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-SLEEP-MINTING']:
             labels = []
             for scammer_address in scammer_addresses.split(","):
                 labels.append(Label({
@@ -31,7 +52,8 @@ class AlertCombinerFinding:
                     'confidence': 0.8,
                     'metadata': {
                         'alert_id': alert_id,
-                        'chain_id': chain_id
+                        'chain_id': chain_id,
+                        'threat_description_url': AlertCombinerFinding.get_threat_description_url(alert_id)
                     }
                 }))
 
@@ -45,7 +67,8 @@ class AlertCombinerFinding:
                         'confidence': 0.8,
                         'metadata': {
                             'alert_ids': alert_id,
-                            'chain_id': chain_id
+                            'chain_id': chain_id,
+                            'threat_description_url': AlertCombinerFinding.get_threat_description_url(alert_id)
                         }
                     }))
 
