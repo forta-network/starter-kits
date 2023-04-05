@@ -1,5 +1,3 @@
-# Copyright 2022 The Forta Foundation
-
 ALERTS_LOOKBACK_WINDOW_IN_HOURS = 24
 MIN_ALERTS_COUNT = 3
 ANOMALY_SCORE_THRESHOLD_STRICT = 0.0000001
@@ -28,6 +26,7 @@ FP_MITIGATION_BOTS = [("0xabdeff7672e59d53c7702777652e318ada644698a9faf2e7f608ec
                       ("0xe04b3fa79bd6bc6168a211bcec5e9ac37d5dd67a41a1884aa6719f8952fbc274", "VICTIM-NOTIFICATION-1")
                       ]
 
+ALERTED_CLUSTERS_FP_MITIGATED_KEY = "alerted_clusters_fp_mitigated_key"
 FP_MITIGATION_CLUSTERS_KEY = "fp_mitigation_clusters_key"
 ENTITY_CLUSTERS_KEY = "entity_clusters"
 ALERTED_CLUSTERS_STRICT_KEY = "alerted_clusters_strict_key"
@@ -39,7 +38,8 @@ LUABASE_QUERY_FREQUENCY_IN_HOURS = 4
 
 # for the highly precise bots, we lower our threshold for alerting to 2 stages; anomaly score is ignored
 HIGHLY_PRECISE_BOTS = [("0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", "Preparation"),  # suspicious contract creation ML
-                       ("0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6", "AK-ATTACK-SIMULATION-0", "Preparation")  # attack simulation
+                       ("0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6", "AK-ATTACK-SIMULATION-0", "Preparation"),  # attack simulation
+                       ("0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2", "SUSPICIOUS-FLASHLOAN-CONTRACT-CREATION", "Preparation")  # suspicious-flashloan-contract-creation
                        ]
 
 VICTIM_IDENTIFICATION_BOT = "0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250"
