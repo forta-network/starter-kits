@@ -19,7 +19,8 @@ from web3 import Web3
 from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID,
                            DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD,
                            ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS,
-                           ALERTED_CLUSTERS_KEY, ALERTED_FP_ADDRESSES_KEY)
+                           ALERTED_CLUSTERS_KEY, ALERTED_FP_ADDRESSES_KEY,SIMILAR_CONTRACT_BOT,
+                           SIMILAR_CONTRACT_BOT_ALERT_ID, SIMILAR_CONTRACT_THRESHOLD)
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
 from src.blockchain_indexer_service import BlockChainIndexer
