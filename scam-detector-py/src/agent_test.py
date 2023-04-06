@@ -313,7 +313,40 @@ class TestScamDetector:
         assert "https://forta.org/attacks" in all_findings[0].labels[0].metadata['threat_detection_urls'], "should be in threat detection urls"
         
 
+    def test_similarity(self):
+        TestScamDetector.remove_persistent_state()
 
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        label = {"label": "scam",
+                 "confidence": 0.95,
+                 "entity": "0xcaa3aa957021c0ae52bb58858487e5801c188073",
+                 "entityType": EntityType.Address
+                 }
+
+        # 0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560", "NEW-SCAMMER-CONTRACT-CODE-HASH"
+        metadata = {"alert_hash":"0x1994b4b05951cc626b3f3d90d82a884b46afeefb3ae05b80b0959c3d0607693a","new_scammer_contract_address":"0xfa70143f50650fb10e47abe6cbf9ace558716294","new_scammer_eoa":"0xcaa3aa957021c0ae52bb58858487e5801c188073","scammer_contract_address":"0xc87bb952c0c045cb34a89815ca3a6fb743e6b6d8","scammer_eoa":"0xcaa3aa957021c0ae52bb58858487e5801c188074","similarity_hash":"fb486fe3fb0e1ee20751524d8b0ba52bedcdc757c4c80085450dafa219969344","similarity_score":"0.9795487117767334"}
+        alert_event = TestScamDetector.generate_alert(EOA_ADDRESS, "0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560", "NEW-SCAMMER-CONTRACT-CODE-HASH", datetime.now().timestamp(), metadata, [label], "0x1")
+
+        findings = agent.detect_scam(w3, alert_event)
+        assert len(findings) == 1, "should have one finding"
+        assert findings[0].alert_id == "SCAM-DETECTOR-SIMILAR-1", "should be SCAM-DETECTOR-SIMILAR-1"
+        assert findings[0].description == "0xcaa3aa957021c0ae52bb58858487e5801c188073 deployed a new contract with similar code to previously identified scammer 0xcaa3aa957021c0ae52bb58858487e5801c188074"
+        assert findings[0].metadata['new_scammer_contract_address'] == "0xfa70143f50650fb10e47abe6cbf9ace558716294"
+        assert findings[0].metadata['scammer_contract_address'] == "0xc87bb952c0c045cb34a89815ca3a6fb743e6b6d8"
+        assert findings[0].metadata['similarity_score'] == "0.9795487117767334"
+        
+        assert "SCAM-DETECTOR-SIMILAR-1" in findings[0].labels[0].metadata['alert_id']
+        assert findings[0].labels[0].entity == "0xcaa3aa957021c0ae52bb58858487e5801c188073"
+        assert findings[0].labels[0].label == "scammer-eoa"
+        assert "https://forta.org/attacks" in findings[0].labels[0].metadata['threat_detection_url'], "should be in threat detection urls"
+        
+        assert "SCAM-DETECTOR-SIMILAR-1" in findings[0].labels[1].metadata['alert_id']
+        assert findings[0].labels[1].entity == "0xfa70143f50650fb10e47abe6cbf9ace558716294"
+        assert findings[0].labels[1].label == "scammer-contract"
+        assert "https://forta.org/attacks" in findings[0].labels[1].metadata['threat_detection_url'], "should be in threat detection urls"
+        
     def test_emit_new_fp_finding(self):
         TestScamDetector.remove_persistent_state()
 

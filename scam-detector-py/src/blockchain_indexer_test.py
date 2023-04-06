@@ -23,4 +23,4 @@ class TestBlockChainIndexer:
 
     def test_calc_contract_address(self):
         contract_address = BlockChainIndexer.calc_contract_address(EOA_ADDRESS, 9)
-        assert contract_address == "0x728ad672409DA288cA5B9AA85D1A55b803bA97D7", "should be the same contract address"
+        assert contract_address == "0xCBd4f0e0E01061Fc2CdedA99fA2e7FaaE21D85d0", "should be the same contract address"

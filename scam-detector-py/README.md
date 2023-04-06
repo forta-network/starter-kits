@@ -35,6 +35,12 @@ The Scam Detector bot emits the following alerts:
   - Type is always set to scam
   - Meta data will contain examples of all the base bot alerts, the model score as well as the feature vector
 
+- SCAM-DETECTOR-SIMILAR-1
+  - Fires when new account deploys a contract that is similar to a previously alerted scammer 
+  - Severity is set to critical
+  - Type is always set to scam 
+  - Meta data will contain information about the base bot
+
 - SCAM-DETECTOR-MODEL-MANUAL-X
   - Fired for entries of the manual list maintained by the Forta community. X is replaced with the specific threat category. 
   - Severity is set to critical

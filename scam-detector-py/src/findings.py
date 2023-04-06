@@ -97,21 +97,61 @@ class ScamDetectorFinding:
                 'labels': labels
             })
         
+
+    @staticmethod
+    def scam_finding_similar(block_chain_indexer, new_scammer_address_lower:str, new_scammer_contract_address:str, scammer_address:str, scammer_contract_address:str, similarity_score: float, alert_id: str, chain_id: int) -> Finding:
+        metadata = {"similarity_score": str(similarity_score),
+                    "new_scammer_contract_address": new_scammer_contract_address,
+                    "scammer_contract_address": scammer_contract_address
+                    }
+        
+        labels = []
+        labels.append(Label({
+            'entityType': EntityType.Address,
+            'label': "scammer-eoa",
+            'entity': new_scammer_address_lower,
+            'confidence': str(similarity_score),
+            'metadata': {
+                'alert_id': alert_id,
+                'threat_detection_url': "https://forta.org/attacks",
+                'chain_id': chain_id
+            }
+        }))
+        labels.append(Label({
+            'entityType': EntityType.Address,
+            'label': "scammer-contract",
+            'entity': new_scammer_contract_address,
+            'confidence': str(similarity_score),
+            'metadata': {
+                'alert_id': alert_id,
+                'threat_detection_url': "https://forta.org/attacks",
+                'chain_id': chain_id
+            }
+        }))
+
+           
+
+        return Finding({
+            'name': 'Scam detector identified an EOA with past alerts mapping to attack behavior',
+            'description': f"{new_scammer_address_lower} deployed a new contract with similar code to previously identified scammer {scammer_address}",
+            'alert_id': alert_id,
+            'type': FindingType.Exploit,
+            'severity': FindingSeverity.Critical,
+            'metadata': metadata,
+            'labels': labels
+        })
+
+
     @staticmethod
     def scam_finding_manual(block_chain_indexer, scammer_cluster: str, threat_category: str, reported_by: str, chain_id: int) -> Finding:
         labels = []
-
-        logging.info(f"Scam cluster: {scammer_cluster}")
-        logging.info(f"Threat category: {threat_category}")
-        logging.info(f"Reported by: {reported_by}")
-        logging.info(f"Chain ID: {chain_id}")
 
         alert_id_threat_category = threat_category.upper().replace(" ", "-")
 
         for scammer_address in scammer_cluster.split(","):
             labels.append(Label({
                 'entityType': EntityType.Address,
-                'label': "scammer",
+                'label': "scammer-eoa",
                 'entity': scammer_address,
                 'confidence': 1,
                 'metadata': {
@@ -126,7 +166,7 @@ class ScamDetectorFinding:
             for contract in contracts:
                 labels.append(Label({
                     'entityType': EntityType.Address,
-                    'label': "scammer",
+                    'label': "scammer-contract",
                     'entity': contract,
                     'confidence': 1,
                     'metadata': {

@@ -97,7 +97,7 @@ class TestScamFindings:
         assert finding.labels[0].metadata['alert_ids'] == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
         assert finding.labels[0].metadata['chain_id'] == 1, "should be 1"
         assert finding.labels[0].metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
-        assert finding.labels[0].label == "scammer", "should be scammer"
+        assert finding.labels[0].label == "scammer-eoa", "should be scammer-eoa"
     
     def test_alert_FP(self):
         finding = ScamDetectorFinding.alert_FP(EOA_ADDRESS)

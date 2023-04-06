@@ -20,7 +20,7 @@ from web3 import Web3
 
 from src.L2Cache import L2Cache
 from src.constants import (ENTITY_CLUSTER_BOTS, FP_MITIGATION_BOTS, ALERT_LOOKBACK_WINDOW_IN_DAYS,
-                         ENTITY_CLUSTERS_MAX_QUEUE_SIZE,
+                         ENTITY_CLUSTERS_MAX_QUEUE_SIZE,CONTRACT_SIMILARITY_BOTS, CONTRACT_SIMILARITY_BOT_THRESHOLDS,
                          ENTITY_CLUSTERS_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_FP_CLUSTERS_KEY,
                          MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT, MODEL_FEATURES, MODEL_NAME, CLUSTER_QUEUE_SIZE)
 from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
@@ -114,6 +114,9 @@ def initialize():
             subscription_json.append({"botId": tokens[0], "alertId": tokens[1], "chainId": CHAIN_ID})
 
     for bot, alertId in ENTITY_CLUSTER_BOTS:
+        subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
+
+    for bot, alertId in CONTRACT_SIMILARITY_BOTS:
         subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
 
     alert_config = {"alertConfig": {"subscriptions": subscription_json}}
@@ -370,6 +373,30 @@ def is_fp(cluster: str) -> bool:
     
     return False
 
+# todo - multiply scores
+def emit_contract_similarity_finding(alert_event: forta_agent.alert_event.AlertEvent) -> list:
+    global ALERTED_CLUSTERS_STRICT
+
+    findings = []
+    scammer_addresses_lower = get_scammer_addresses(alert_event)
+    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got contract similarity bot alert; got {len(scammer_addresses_lower)} scammer addresses.")
+    for scammer_address_lower in scammer_addresses_lower:
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - processing contract similarity bot address {scammer_address_lower}")
+        similarity_score = float(alert_event.alert.metadata['similarity_score'])
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - {scammer_address_lower} similarity score {similarity_score}")
+        if similarity_score > CONTRACT_SIMILARITY_BOT_THRESHOLDS[0]:
+            logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - similarity score {similarity_score} is above threshold {CONTRACT_SIMILARITY_BOT_THRESHOLDS[0]}")
+            if not is_fp(scammer_address_lower):
+                if scammer_address_lower not in ALERTED_CLUSTERS_STRICT:
+                    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} not in FP mitigation clusters")
+                    findings.append(ScamDetectorFinding.scam_finding_similar(block_chain_indexer, scammer_address_lower, alert_event.alert.metadata['new_scammer_contract_address'],  alert_event.alert.metadata['scammer_eoa'], alert_event.alert.metadata['scammer_contract_address'], similarity_score, "SCAM-DETECTOR-SIMILAR-1", CHAIN_ID))
+                    update_list(ALERTED_CLUSTERS_STRICT, CLUSTER_QUEUE_SIZE, scammer_address_lower)
+                else:
+                    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} already alerted")
+            else:
+                logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} in FP.")
+        return findings
+
 
 def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
     
@@ -409,7 +436,9 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
 
                     # TODO - read all entries from dynamoDB and update entries for cluster
 
-
+            if in_list(alert_event, CONTRACT_SIMILARITY_BOTS):
+                logging.info(f"alert {alert_event.alert_hash} is contract similarity alert")
+                return emit_contract_similarity_finding(alert_event)
 
             # for basebots, store in dynamo; then query dynamo for the cluster (this will pull all alerts from multiple shards), build feature vector and then call the model for inference
             if in_list(alert_event, BASE_BOTS):
@@ -450,7 +479,6 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                             logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
                             findings.append(ScamDetectorFinding.scam_finding_model(block_chain_indexer, cluster, score, "SCAM-DETECTOR-MODEL-1", feature_vector, alerts, chain_id))
                             update_list(ALERTED_CLUSTERS_STRICT, CLUSTER_QUEUE_SIZE, cluster)
-                            logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
                         else:
                             logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} in FP.")
                     elif score > MODEL_ALERT_THRESHOLD_LOOSE and cluster not in ALERTED_CLUSTERS_LOOSE:
@@ -460,7 +488,6 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                             logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
                             findings.append(ScamDetectorFinding.scam_finding_model(block_chain_indexer, cluster, score, "SCAM-DETECTOR-MODEL-2", feature_vector, alerts, chain_id))
                             update_list(ALERTED_CLUSTERS_LOOSE, CLUSTER_QUEUE_SIZE, cluster)
-                            logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
                         else:
                             logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} in FP.")
 
