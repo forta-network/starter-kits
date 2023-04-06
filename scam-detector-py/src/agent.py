@@ -373,7 +373,26 @@ def is_fp(cluster: str) -> bool:
     
     return False
 
-# todo - multiply scores
+def get_confidence_score(scammer_eoa: str, source_ids: list) -> float:
+    confidence_score = 0.0
+    label_api = "https://api.forta.network/labels/state?sourceIds=" + ",".join(source_ids)
+    try:
+        res = requests.get(label_api)  
+        if res.status_code == 200:
+            labels = res.json()
+            if len(labels) > 0:
+                for i in range(len(labels)):
+                    logging.info(f"retreived label for {scammer_eoa}: {labels['events'][i]}")
+                    if 'scam' in labels['events'][i]['label']['label'].lower() or 'attack' in labels['events'][i]['label']['label'].lower():
+                        confidence = labels['events'][i]['label']['confidence']
+                        if confidence > confidence_score:
+                            confidence_score = confidence
+    except Exception as e:
+        logging.warning(f"Exception in get_confidence_score {e}")
+    
+    return confidence_score
+
+
 def emit_contract_similarity_finding(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     global ALERTED_CLUSTERS_STRICT
 
@@ -382,15 +401,23 @@ def emit_contract_similarity_finding(alert_event: forta_agent.alert_event.AlertE
     logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got contract similarity bot alert; got {len(scammer_addresses_lower)} scammer addresses.")
     for scammer_address_lower in scammer_addresses_lower:
         logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - processing contract similarity bot address {scammer_address_lower}")
+        
         similarity_score = float(alert_event.alert.metadata['similarity_score'])
         logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - {scammer_address_lower} similarity score {similarity_score}")
         if similarity_score > CONTRACT_SIMILARITY_BOT_THRESHOLDS[0]:
             logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - similarity score {similarity_score} is above threshold {CONTRACT_SIMILARITY_BOT_THRESHOLDS[0]}")
             if not is_fp(scammer_address_lower):
                 if scammer_address_lower not in ALERTED_CLUSTERS_STRICT:
-                    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} not in FP mitigation clusters")
-                    findings.append(ScamDetectorFinding.scam_finding_similar(block_chain_indexer, scammer_address_lower, alert_event.alert.metadata['new_scammer_contract_address'],  alert_event.alert.metadata['scammer_eoa'], alert_event.alert.metadata['scammer_contract_address'], similarity_score, "SCAM-DETECTOR-SIMILAR-1", CHAIN_ID))
-                    update_list(ALERTED_CLUSTERS_STRICT, CLUSTER_QUEUE_SIZE, scammer_address_lower)
+                    # get old scammer address confidence score from labels
+                    confidence_score = get_confidence_score(alert_event.alert.metadata['scammer_eoa'], ['0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8','0xb27524b92bf27e6aa499a3a7239232ad425219b400d3c844269f4a657a4adf03','0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'])  # scam detector bots
+                    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} confidence score {confidence_score}")
+                    new_confidence_score = confidence_score * similarity_score
+                    if new_confidence_score > MODEL_ALERT_THRESHOLD_STRICT:
+                        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} not in FP mitigation clusters and score {new_confidence_score} is above threshold {MODEL_ALERT_THRESHOLD_STRICT}")
+                        findings.append(ScamDetectorFinding.scam_finding_similar(block_chain_indexer, scammer_address_lower, alert_event.alert.metadata['new_scammer_contract_address'],  alert_event.alert.metadata['scammer_eoa'], alert_event.alert.metadata['scammer_contract_address'], similarity_score, new_confidence_score, "SCAM-DETECTOR-SIMILAR-1", CHAIN_ID))
+                        update_list(ALERTED_CLUSTERS_STRICT, CLUSTER_QUEUE_SIZE, scammer_address_lower)
+                    else:
+                        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} not in FP mitigation clusters and score {new_confidence_score} is below threshold {MODEL_ALERT_THRESHOLD_STRICT}")
                 else:
                     logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} already alerted")
             else:

@@ -326,20 +326,23 @@ class TestScamDetector:
                  }
 
         # 0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560", "NEW-SCAMMER-CONTRACT-CODE-HASH"
-        metadata = {"alert_hash":"0x1994b4b05951cc626b3f3d90d82a884b46afeefb3ae05b80b0959c3d0607693a","new_scammer_contract_address":"0xfa70143f50650fb10e47abe6cbf9ace558716294","new_scammer_eoa":"0xcaa3aa957021c0ae52bb58858487e5801c188073","scammer_contract_address":"0xc87bb952c0c045cb34a89815ca3a6fb743e6b6d8","scammer_eoa":"0xcaa3aa957021c0ae52bb58858487e5801c188074","similarity_hash":"fb486fe3fb0e1ee20751524d8b0ba52bedcdc757c4c80085450dafa219969344","similarity_score":"0.9795487117767334"}
+        metadata = {"alert_hash":"0x1994b4b05951cc626b3f3d90d82a884b46afeefb3ae05b80b0959c3d0607693a","new_scammer_contract_address":"0xfa70143f50650fb10e47abe6cbf9ace558716294","new_scammer_eoa":"0xcaa3aa957021c0ae52bb58858487e5801c188073","scammer_contract_address":"0xc87bb952c0c045cb34a89815ca3a6fb743e6b6d8","scammer_eoa":"0xff30b32c7e7da16cc7cd100a54ecd77b103d1a1c","similarity_hash":"fb486fe3fb0e1ee20751524d8b0ba52bedcdc757c4c80085450dafa219969344","similarity_score":"0.9795487117767334"}
         alert_event = TestScamDetector.generate_alert(EOA_ADDRESS, "0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560", "NEW-SCAMMER-CONTRACT-CODE-HASH", datetime.now().timestamp(), metadata, [label], "0x1")
+
+        # confidence of 0xff30b32c7e7da16cc7cd100a54ecd77b103d1a1c is 0.8
 
         findings = agent.detect_scam(w3, alert_event)
         assert len(findings) == 1, "should have one finding"
         assert findings[0].alert_id == "SCAM-DETECTOR-SIMILAR-1", "should be SCAM-DETECTOR-SIMILAR-1"
-        assert findings[0].description == "0xcaa3aa957021c0ae52bb58858487e5801c188073 deployed a new contract with similar code to previously identified scammer 0xcaa3aa957021c0ae52bb58858487e5801c188074"
+        assert findings[0].description == f"0xcaa3aa957021c0ae52bb58858487e5801c188073 deployed a new contract with similar code to previously identified scammer 0xff30b32c7e7da16cc7cd100a54ecd77b103d1a1c (confidence_score: {str(0.8*0.9795487117767334)})"
         assert findings[0].metadata['new_scammer_contract_address'] == "0xfa70143f50650fb10e47abe6cbf9ace558716294"
         assert findings[0].metadata['scammer_contract_address'] == "0xc87bb952c0c045cb34a89815ca3a6fb743e6b6d8"
-        assert findings[0].metadata['similarity_score'] == "0.9795487117767334"
+        assert findings[0].metadata['similarity_score'] == str(0.9795487117767334)
         
         assert "SCAM-DETECTOR-SIMILAR-1" in findings[0].labels[0].metadata['alert_id']
         assert findings[0].labels[0].entity == "0xcaa3aa957021c0ae52bb58858487e5801c188073"
         assert findings[0].labels[0].label == "scammer-eoa"
+        assert findings[0].labels[0].confidence == str(0.8*0.9795487117767334)
         assert "https://forta.org/attacks" in findings[0].labels[0].metadata['threat_detection_url'], "should be in threat detection urls"
         
         assert "SCAM-DETECTOR-SIMILAR-1" in findings[0].labels[1].metadata['alert_id']

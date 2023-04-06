@@ -81,7 +81,7 @@ class ScamDetectorFinding:
                 'name': 'Scam detector identified an EOA with past alerts mapping to attack behavior',
                 'description': f'{scammer_cluster} likely involved in an attack ({alert_id})',
                 'alert_id': alert_id,
-                'type': FindingType.Exploit,
+                'type': FindingType.Scam,
                 'severity': FindingSeverity.Critical,
                 'metadata': meta_data,
                 'labels': labels
@@ -91,7 +91,7 @@ class ScamDetectorFinding:
                 'name': 'Scam detector identified an EOA with past alerts mapping to attack behavior',
                 'description': f'{scammer_cluster} likely involved in an attack ({alert_id})',
                 'alert_id': alert_id,
-                'type': FindingType.Exploit,
+                'type': FindingType.Scam,
                 'severity': FindingSeverity.Low,
                 'metadata': meta_data,
                 'labels': labels
@@ -99,7 +99,7 @@ class ScamDetectorFinding:
         
 
     @staticmethod
-    def scam_finding_similar(block_chain_indexer, new_scammer_address_lower:str, new_scammer_contract_address:str, scammer_address:str, scammer_contract_address:str, similarity_score: float, alert_id: str, chain_id: int) -> Finding:
+    def scam_finding_similar(block_chain_indexer, new_scammer_address_lower:str, new_scammer_contract_address:str, scammer_address:str, scammer_contract_address:str, similarity_score: float, confidence_score:float, alert_id: str, chain_id: int) -> Finding:
         metadata = {"similarity_score": str(similarity_score),
                     "new_scammer_contract_address": new_scammer_contract_address,
                     "scammer_contract_address": scammer_contract_address
@@ -110,7 +110,7 @@ class ScamDetectorFinding:
             'entityType': EntityType.Address,
             'label': "scammer-eoa",
             'entity': new_scammer_address_lower,
-            'confidence': str(similarity_score),
+            'confidence': str(confidence_score),
             'metadata': {
                 'alert_id': alert_id,
                 'threat_detection_url': "https://forta.org/attacks",
@@ -121,7 +121,7 @@ class ScamDetectorFinding:
             'entityType': EntityType.Address,
             'label': "scammer-contract",
             'entity': new_scammer_contract_address,
-            'confidence': str(similarity_score),
+            'confidence': str(confidence_score),
             'metadata': {
                 'alert_id': alert_id,
                 'threat_detection_url': "https://forta.org/attacks",
@@ -133,9 +133,9 @@ class ScamDetectorFinding:
 
         return Finding({
             'name': 'Scam detector identified an EOA with past alerts mapping to attack behavior',
-            'description': f"{new_scammer_address_lower} deployed a new contract with similar code to previously identified scammer {scammer_address}",
+            'description': f"{new_scammer_address_lower} deployed a new contract with similar code to previously identified scammer {scammer_address} (confidence_score: {confidence_score})",
             'alert_id': alert_id,
-            'type': FindingType.Exploit,
+            'type': FindingType.Scam,
             'severity': FindingSeverity.Critical,
             'metadata': metadata,
             'labels': labels
@@ -180,7 +180,7 @@ class ScamDetectorFinding:
             'name': 'Scam detector identified an EOA with past alerts mapping to attack behavior',
             'description': f'{scammer_cluster} likely involved in an attack (SCAM-DETECTOR-MANUAL-{alert_id_threat_category})',
             'alert_id': "SCAM-DETECTOR-MANUAL-" + alert_id_threat_category,
-            'type': FindingType.Exploit,
+            'type': FindingType.Scam,
             'severity': FindingSeverity.Critical,
             'metadata': {"reported_by": reported_by},
             'labels': labels
