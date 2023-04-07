@@ -20,7 +20,7 @@ class AlertCombinerFinding:
         elif alert_id == "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING":
             return url + "#native-ice-phishing"
         elif alert_id == "SCAM-DETECTOR-WASH-TRADE":
-            return url + "#wash-trade"
+            return url + "#wash-trading"
         elif alert_id == "SCAM-DETECTOR-SLEEP-MINTING":
             return url + "#sleep-minting"
         else:
@@ -76,7 +76,7 @@ class AlertCombinerFinding:
             'name': 'Scam detector identified an EOA with past alerts mapping to scam behavior',
             'description': f'{scammer_addresses} likely involved in an scam ({alert_id})',
             'alert_id': alert_id,
-            'type': FindingType.Exploit,
+            'type': FindingType.Scam,
             'severity': FindingSeverity.Critical,
             'metadata': meta_data,
             'labels': labels
