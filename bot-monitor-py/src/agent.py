@@ -4,16 +4,17 @@ import sys
 import os
 from datetime import datetime, timedelta
 
-from constants import MONITORED_BOTS
-from models import AlertRateModel
+from src.constants import MONITORED_BOTS
+from src.models import AlertRateModel
 
 import forta_agent
 from forta_agent import get_json_rpc_url, Finding, FindingType, FindingSeverity
 from web3 import Web3
 
 CHAIN_ID = -1
-START_TIME = datetime.datetime.now()
+START_TIME = datetime.now()
 MODELS = {}
+FINDINGS_CACHE = []
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -26,7 +27,7 @@ root.addHandler(handler)
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
-def initialize(self):
+def initialize():
     global CHAIN_ID
     try:
         CHAIN_ID = os.environ.get('FORTA_CHAIN_ID')
@@ -39,10 +40,14 @@ def initialize(self):
         logging.error(f"Error getting chain id: {e}")
         raise e
     
+    global MODELS
     global MONITORED_BOTS
     subscription_json = []
-    for bot, alertId in MONITORED_BOTS:
-        subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
+    for bot_id, alert_id in MONITORED_BOTS:
+        subscription_json.append({"botId": bot_id, "alertId": alert_id, "chainId": CHAIN_ID})
+        MODELS[bot_id] = {}
+        MODELS[bot_id][alert_id] = AlertRateModel()
+        MODELS[bot_id][alert_id].update(START_TIME - timedelta(hours=1))
 
     alert_config = {"alertConfig": {"subscriptions": subscription_json}}
     logging.info(f"Initializing monitoring bot. Subscribed to bots successfully: {alert_config}")
@@ -50,42 +55,42 @@ def initialize(self):
     return alert_config
 
 
-def handle_alert(self, alert_event: forta_agent.alert_event.AlertEvent) -> list:
+def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     global START_TIME
     global CHAIN_ID
     global MODELS
-    
+    global FINDINGS_CACHE
+
+    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got alert at {alert_event.alert.created_at}")
+
     findings = []
-    current_time = datetime.datetime.now()
-    
+    current_time = datetime.strptime(alert_event.alert.created_at[0:13], "%Y-%m-%dT%H")
+    model = MODELS[alert_event.bot_id][alert_event.alert_id]
+    model.update(current_time)
+
     # Check for cold start
     if (current_time - START_TIME).days < 1:
         return findings
-    
-    bot_id = alert_event.bot_id
-    if bot_id not in self.models:
-        MODELS[bot_id] = {}
-    
-    alert_id = alert_event.alert_id
-    if alert_id not in MODELS[bot_id]:
-        MODELS[bot_id][alert_id] = AlertRateModel()
-    
-    model = MODELS[bot_id][alert_id]
-    
-    # update the model
-    model.update(alert_event.alert.created_at)
 
-    current_hour = datetime.now().replace(minute=0, second=0, microsecond=0) 
-    last_hour = current_hour - timedelta(hours=1)
+    last_hour = current_time - timedelta(hours=1)
     
     # Check if the alert rate is outside the normal range
-    if model.is_outside_normal_range(last_hour):
+    findings_cache_key = f"{alert_event.bot_id}, {alert_event.alert_id}, {CHAIN_ID}, {last_hour}"
+    lower_bound, upper_bound, actual_value = model.get_normal_range(last_hour, START_TIME)
+    if (actual_value < lower_bound or actual_value>upper_bound) and findings_cache_key not in FINDINGS_CACHE:
         findings.append(Finding({
                 'name': 'Monitor bot identified abnormal alert range.',
-                'description': f'{bot_id} {alert_id} {CHAIN_ID} alert rate outside of normal range.',
+                'description': f'{alert_event.bot_id}, {alert_event.alert_id}, {CHAIN_ID} alert rate outside of normal range at {last_hour}.',
                 'alert_id': "ALERT-RATE-ANOMALY",
                 'type': FindingType.Info,
-                'severity': FindingSeverity.Info
+                'severity': FindingSeverity.Info,
+                'metadata': {
+                    'lower_bound': lower_bound,
+                    'upper_bound': upper_bound,
+                    'actual_value': actual_value,
+                    'time_series_data': model.get_time_series_data(last_hour, START_TIME)
+                }
             }))
+        FINDINGS_CACHE.append(findings_cache_key)
     
     return findings
