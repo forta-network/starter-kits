@@ -2,6 +2,7 @@ import logging
 import datetime
 import sys
 import os
+import traceback
 from datetime import datetime, timedelta
 
 from src.constants import MONITORED_BOTS
@@ -61,36 +62,43 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     global MODELS
     global FINDINGS_CACHE
 
-    logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got alert at {alert_event.alert.created_at}")
-
     findings = []
-    current_time = datetime.strptime(alert_event.alert.created_at[0:13], "%Y-%m-%dT%H")
-    model = MODELS[alert_event.bot_id][alert_event.alert_id]
-    model.update(current_time)
+    try:
+        logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got alert at {alert_event.alert.created_at}")
 
-    # Check for cold start
-    if (current_time - START_TIME).days < 1:
-        return findings
+        
+        current_time = datetime.strptime(alert_event.alert.created_at[0:13], "%Y-%m-%dT%H")
+        model = MODELS[alert_event.bot_id][alert_event.alert_id]
+        model.update(current_time)
 
-    last_hour = current_time - timedelta(hours=1)
-    
-    # Check if the alert rate is outside the normal range
-    findings_cache_key = f"{alert_event.bot_id}, {alert_event.alert_id}, {CHAIN_ID}, {last_hour}"
-    lower_bound, upper_bound, actual_value = model.get_normal_range(last_hour, START_TIME)
-    if (actual_value < lower_bound or actual_value>upper_bound) and findings_cache_key not in FINDINGS_CACHE:
-        findings.append(Finding({
-                'name': 'Monitor bot identified abnormal alert range.',
-                'description': f'{alert_event.bot_id}, {alert_event.alert_id}, {CHAIN_ID} alert rate outside of normal range at {last_hour}.',
-                'alert_id': "ALERT-RATE-ANOMALY",
-                'type': FindingType.Info,
-                'severity': FindingSeverity.Info,
-                'metadata': {
-                    'lower_bound': lower_bound,
-                    'upper_bound': upper_bound,
-                    'actual_value': actual_value,
-                    'time_series_data': model.get_time_series_data(last_hour, START_TIME)
-                }
-            }))
-        FINDINGS_CACHE.append(findings_cache_key)
-    
+        # Check for cold start
+        if (current_time - START_TIME).days < 1:
+            return findings
+
+        last_hour = current_time - timedelta(hours=1)
+        
+        # Check if the alert rate is outside the normal range
+        findings_cache_key = f"{alert_event.bot_id}, {alert_event.alert_id}, {CHAIN_ID}, {last_hour}"
+        lower_bound, upper_bound, actual_value = model.get_normal_range(last_hour, START_TIME)
+        if (actual_value < lower_bound or actual_value>upper_bound) and findings_cache_key not in FINDINGS_CACHE:
+            findings.append(Finding({
+                    'name': 'Monitor bot identified abnormal alert range.',
+                    'description': f'{alert_event.bot_id}, {alert_event.alert_id}, {CHAIN_ID} alert rate outside of normal range at {last_hour}.',
+                    'alert_id': "ALERT-RATE-ANOMALY",
+                    'type': FindingType.Info,
+                    'severity': FindingSeverity.Info,
+                    'metadata': {
+                        'lower_bound': lower_bound,
+                        'upper_bound': upper_bound,
+                        'actual_value': actual_value,
+                        'time_series_data': model.get_time_series_data(last_hour, START_TIME)
+                    }
+                }))
+            FINDINGS_CACHE.append(findings_cache_key)
+    except Exception as e:
+        logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e} - {traceback.format_exc()}")
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+            logging.info(f"alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
+            raise e
+        
     return findings
