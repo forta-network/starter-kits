@@ -264,8 +264,16 @@ def get_address_poisoning_addresses(metadata: dict) -> set:
         addresses.add(metadata["phishingEoa"].lower())
     if "phishingContract" in metadata:
         addresses.add(metadata["phishingContract"].lower())
+    if "phishing_eoa" in metadata:
+        addresses.add(metadata["phishing_eoa"].lower())
+    if "phishing_contract" in metadata:
+        addresses.add(metadata["phishing_contract"].lower())
     if "attackerAddresses" in metadata:
         attacker_addresses = metadata["attackerAddresses"]
+        for attacker_address in attacker_addresses.split(","):
+            addresses.add(attacker_address.lower())
+    if "attacker_addresses" in metadata:
+        attacker_addresses = metadata["attacker_addresses"]
         for attacker_address in attacker_addresses.split(","):
             addresses.add(attacker_address.lower())
     logging.info(f"Found {len(addresses)} addresses in address poisoning metadata")
