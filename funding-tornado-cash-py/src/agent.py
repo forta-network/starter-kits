@@ -53,10 +53,10 @@ def detect_funding(w3, transaction_event: forta_agent.transaction_event.Transact
 
     findings = []
 
-    transaction_count = w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), block_identifier=transaction_event.block_number)
-
-    if (transaction_event.transaction.value > 0 and transaction_count == 0):
-        DENOMINATOR_COUNT += 1
+    if (transaction_event.transaction.value > 0):
+        transaction_count = w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), block_identifier=transaction_event.block_number)
+        if(transaction_count == 0):
+            DENOMINATOR_COUNT += 1
 
     for log in transaction_event.logs:
         if (log.address.lower() in TORNADO_CASH_ADDRESSES[CHAIN_ID] and TORNADO_CASH_WITHDRAW_TOPIC in log.topics):
