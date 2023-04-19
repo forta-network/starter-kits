@@ -305,6 +305,8 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
     global FP_MITIGATION_ADDRESSES
     global CHAIN_ID
 
+    logging.info(f"detect_attack called for block {block_event.block.number}. MUTEX is {MUTEX}")
+
     if CHAIN_ID == -1:
         logging.error("Chain ID not set")
         return
@@ -671,6 +673,7 @@ def provide_handle_block(w3, forta_explorer):
         except Exception as e:
             logging.error(f"Error in handle_block: {e} - {traceback.format_exc()}")
         
+        logging.info(f"Returning {len(findings)} findings.")
         return findings
 
     return handle_block
