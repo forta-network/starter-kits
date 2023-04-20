@@ -13,7 +13,7 @@ class AlertCombinerFinding:
             return url + "#ice-phishing"
         elif alert_id == "SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER":
             return url + "#fraudulent-seaport-order"
-        elif alert_id == "SCAM-DETECTOR-ADDRESS-POISONING":
+        elif alert_id == "SCAM-DETECTOR-ADDRESS-POISONING" or alert_id == "SCAM-DETECTOR-ADDRESS-POISONER":
             return url + "#address-poisoning"
         elif alert_id == "SCAM-DETECTOR-NATIVE-ICE-PHISHING":
             return url + "#native-ice-phishing"
@@ -42,7 +42,7 @@ class AlertCombinerFinding:
         meta_data = {**attacker_address_md, **start_date, **end_date, **involved_addresses, **involved_alert_ids, **involved_alert_hashes}
 
         labels = []
-        if alert_id in ["SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-SLEEP-MINTING']:
+        if alert_id in ["SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-SLEEP-MINTING']:
             labels = []
             for scammer_address in scammer_addresses.split(","):
                 labels.append(Label({
