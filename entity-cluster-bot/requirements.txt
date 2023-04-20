@@ -5,3 +5,4 @@ requests>=2.27.1
 hexbytes>=0.2.2
 networkx>=2.8.4
 python-dotenv>=0.16.0
+bot-alert-rate>=0.0.4
