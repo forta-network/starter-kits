@@ -591,6 +591,10 @@ def emit_manual_finding(w3) -> list:
         if address_lower in ENTITY_CLUSTERS.keys():
             cluster = ENTITY_CLUSTERS[address_lower]
 
+        if is_contract(w3, cluster):
+            logging.info(f"Manual finding: Address {cluster} is a contract")
+            continue
+
         if cluster not in ALERTED_CLUSTERS_STRICT:
             logging.info(f"Manual finding: Emitting manual finding for {cluster}")
             update_list(ALERTED_CLUSTERS_STRICT, CLUSTER_QUEUE_SIZE, cluster)

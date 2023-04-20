@@ -87,6 +87,7 @@ class BlockChainIndexer:
         return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
+    # Note, this doesnt work well with contracts; caller needs to check whether address is an EOA or not
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
     def get_contracts(address, chain_id) -> set:

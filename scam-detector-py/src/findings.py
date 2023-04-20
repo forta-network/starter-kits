@@ -1,4 +1,5 @@
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
+import agent
 from datetime import datetime
 import pandas as pd
 import logging
@@ -160,7 +161,6 @@ class ScamDetectorFinding:
                     'chain_id': chain_id
                 }
             }))
-
             # get all deployed contracts by EOA and add label for those using etherscan or allium
             contracts = block_chain_indexer.get_contracts(scammer_cluster, chain_id)
             for contract in contracts:
