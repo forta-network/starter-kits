@@ -1,6 +1,6 @@
 {
   "name": "monitor-bot",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Forta Agent Python starter project",
   "repository": "https://github.com/forta-network/forta-bot-sdk/tree/master/starter-project",
   "chainIds": [

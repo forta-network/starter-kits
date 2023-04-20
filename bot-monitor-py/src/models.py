@@ -10,7 +10,7 @@ class AlertRateModel:
         
     def update(self, timestamp: datetime) -> None:
         # Truncate the timestamp to an hourly level
-        timestamp = timestamp.replace(minute=0, second=0, microsecond=0)
+        timestamp = timestamp.replace(minute=0, second=0, microsecond=0, tzinfo=None)
 
         # Check if the timestamp already exists in the data
         row = self.data.loc[self.data['ds'] == timestamp]
@@ -34,12 +34,14 @@ class AlertRateModel:
 
     # fit the model based on data up to the last hour and assess whether the last hour is within the expected range of the model   
     def get_normal_range(self, last_hour: datetime, start_hour: datetime):
-        if last_hour != self.last_update_hour:
-            train_data = self.data[(self.data['ds'] < last_hour) & (self.data['ds'] > start_hour)]
+        last_hour_no_tx = last_hour.replace(tzinfo=None)
+        start_hour_no_tx = start_hour.replace(tzinfo=None)
+        if last_hour_no_tx != self.last_update_hour:
+            train_data = self.data[(self.data['ds'] < last_hour_no_tx) & (self.data['ds'] > start_hour_no_tx)]
             self.model.fit(train_data)
 
             # Create a dataframe with the last hour
-            future = pd.DataFrame({'ds': [last_hour]})
+            future = pd.DataFrame({'ds': [last_hour_no_tx]})
 
             # Predict for the last hour
             forecast = self.model.predict(future)
@@ -47,14 +49,16 @@ class AlertRateModel:
             # Check if the last hour is within the expected range of the model
             self.lower_bound = forecast['yhat_lower'].iloc[0]
             self.upper_bound = forecast['yhat_upper'].iloc[0]
-            self.last_hour_value = self.data.loc[self.data['ds'] == last_hour, 'y'].iloc[0]
+            self.last_hour_value = self.data.loc[self.data['ds'] == last_hour_no_tx, 'y'].iloc[0]
 
-            self.last_update_hour = last_hour
+            self.last_update_hour = last_hour_no_tx
             
 
         return (self.lower_bound, self.upper_bound, self.last_hour_value)
 
     def get_time_series_data(self, last_hour: datetime, start_hour: datetime):
-        time_series = self.data[(self.data['ds'] < last_hour) & (self.data['ds'] > start_hour)]['y'][-48:]
+        last_hour_no_tx = last_hour.replace(tzinfo=None)
+        start_hour_no_tx = start_hour.replace(tzinfo=None)
+        time_series = self.data[(self.data['ds'] < last_hour_no_tx) & (self.data['ds'] > start_hour_no_tx)]['y'][-48:]
         str_series = time_series.astype(str)
         return ','.join(str_series)
