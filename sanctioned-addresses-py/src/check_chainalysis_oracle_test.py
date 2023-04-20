@@ -1,11 +1,15 @@
 from forta_agent import FindingSeverity, FindingType, create_transaction_event
 from .check_chainalysis_oracle import provide_handle_transaction
 
-handle_transaction = provide_handle_transaction()
+mock_chain_id = 1
+
+handle_transaction = provide_handle_transaction(mock_chain_id)
+
 
 class TestChainalysissanctionedAddressBot:
     def test_returns_empty_findings_if_no_sanctioned_address(self):
-        tx_event = create_transaction_event({'addresses': {'0x9c1aec4fa72b7c3ff135999b2087868ec85d9ee2': True}})
+        tx_event = create_transaction_event(
+            {'addresses': {'0x9c1aec4fa72b7c3ff135999b2087868ec85d9ee2': True}})
 
         findings = handle_transaction(tx_event)
 
@@ -15,7 +19,8 @@ class TestChainalysissanctionedAddressBot:
         sanctioned_address = '0x19aa5fe80d33a56d56c78e82ea5e50e5d80b4dff'
         wallet_tag = ''
         expected_description = f'Transaction involving a sanctioned address: {sanctioned_address}'
-        tx_event = create_transaction_event({'addresses': {f'{sanctioned_address}': True}})
+        tx_event = create_transaction_event(
+            {'addresses': {f'{sanctioned_address}': True}})
 
         findings = handle_transaction(tx_event)
 
