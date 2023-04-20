@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 import sys
+from os import environ
 
 from expiring_dict import ExpiringDict
 from functools import lru_cache
@@ -10,7 +11,8 @@ import requests
 from web3 import Web3
 
 from src.findings import MaliciousAccountFundingFinding
-
+from src.keys import ZETTABLOCK_KEY
+from src.keys import BOT_ID
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
@@ -19,7 +21,8 @@ root.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.INFO)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
@@ -29,8 +32,13 @@ CHAIN_SOURCE_IDS_MAPPING = {
     137: ["polygon-tags"],  # Polygon
     250: ["fantom-tags"],  # Fantom
 }
-GLOBAL_TOTAL_TX_COUNTER = ExpiringDict(ttl=86_400)
-BOT_ID = "0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46"
+
+
+def initialize():
+    global CHAIN_ID
+    CHAIN_ID = web3.eth.chain_id
+
+    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
 
 
 @lru_cache(maxsize=1_000_000)
@@ -50,11 +58,6 @@ def is_malicious_account(chain_id: int, address: str) -> str:
     return wallet_tag
 
 
-def update_tx_counter(date_hour: str):
-    # Total number of transactions in the last 24 hrs
-    global GLOBAL_TOTAL_TX_COUNTER
-    GLOBAL_TOTAL_TX_COUNTER[date_hour] = GLOBAL_TOTAL_TX_COUNTER.get(date_hour, 0) + 1
-
 
 def alert_count(chain_id) -> int:
     alert_stats_url = (
@@ -70,23 +73,13 @@ def alert_count(chain_id) -> int:
     return alert_count
 
 
-def calculate_anomaly_score(chain_id: int) -> float:
-    total_alerts = alert_count(chain_id)
-    total_tx_count = sum(GLOBAL_TOTAL_TX_COUNTER.values())
-    return total_alerts / total_tx_count
-
-
 def detect_funding(
     w3, transaction_event: forta_agent.transaction_event.TransactionEvent
 ) -> list:
     findings = []
 
-    date_time = datetime.now()
-    date_hour = date_time.strftime("%d/%m/%Y %H:00:00")
-    update_tx_counter(date_hour)
     from_ = transaction_event.transaction.from_.lower()
     malicious_account = is_malicious_account(w3.eth.chain_id, from_)
-    anomaly_score = calculate_anomaly_score(w3.eth.chain_id)
 
     if transaction_event.transaction.value > 0 and malicious_account is not None:
         findings.append(
@@ -95,7 +88,7 @@ def detect_funding(
                 transaction_event.transaction.to,
                 from_,
                 malicious_account,
-                anomaly_score,
+                CHAIN_ID
             )
         )
 

@@ -10,6 +10,8 @@ w3 = Web3Mock()
 
 class TestKnownMaliciousAccountFunding:
     def test_funding(self):
+        agent.initialize()
+
         tx_event = create_transaction_event(
             {
                 "transaction": {
@@ -30,6 +32,8 @@ class TestKnownMaliciousAccountFunding:
         assert findings[0].severity == FindingSeverity.High
 
     def test_funding_novalue(self):
+        agent.initialize()
+
         tx_event = create_transaction_event(
             {
                 "transaction": {
