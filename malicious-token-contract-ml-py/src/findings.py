@@ -1,5 +1,7 @@
 from forta_agent import Finding, FindingType, FindingSeverity
+from bot_alert_rate import calculate_alert_rate, ScanCountType
 
+from src.keys import BOT_ID
 
 class TokenContractFindings:
     def __init__(
@@ -21,10 +23,15 @@ class TokenContractFindings:
 
     def malicious_contract_creation(
         self,
-        anomaly_score: float,
+        chain_id: int,
         labels: list,
     ) -> Finding:
-        self.metadata["anomaly_score"] = anomaly_score
+        self.metadata["anomaly_score"] = calculate_alert_rate(
+            chain_id,
+            BOT_ID,
+            "SUSPICIOUS-TOKEN-CONTRACT-CREATION",
+            ScanCountType.TRANSFER_COUNT,
+        ),
         self.label = labels
         return Finding(
             {
@@ -40,9 +47,16 @@ class TokenContractFindings:
 
     def safe_contract_creation(
         self,
+        chain_id: int,
         labels: list,
     ) -> Finding:
         self.label = labels
+        self.metadata["anomaly_score"] = calculate_alert_rate(
+            chain_id,
+            BOT_ID,
+            "SAFE-TOKEN-CONTRACT-CREATION",
+            ScanCountType.TRANSFER_COUNT,
+        ),
         return Finding(
             {
                 "name": "Safe Token Contract Creation",
@@ -55,7 +69,13 @@ class TokenContractFindings:
             }
         )
 
-    def non_malicious_contract_creation(self) -> Finding:
+    def non_malicious_contract_creation(self, chain_id: int) -> Finding:
+        self.metadata["anomaly_score"] = calculate_alert_rate(
+            chain_id,
+            BOT_ID,
+            "NON-MALICIOUS-TOKEN-CONTRACT-CREATION",
+            ScanCountType.TRANSFER_COUNT,
+        ),
         return Finding(
             {
                 "name": "Non-malicious Token Contract Creation",
