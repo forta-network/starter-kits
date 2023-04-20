@@ -1,10 +1,28 @@
 {
   "name": "funding-tornado-cash",
-  "version": "0.0.7",
+  "version": "0.0.10",
   "description": "A bot that clusters entities",
   "chainIds": [
     1, 56, 137, 42161, 10
   ],
+  "chainSettings": {
+    "1": {
+      "shards": 2,
+      "target": 3
+    },
+    "137": {
+      "shards": 4,
+      "target": 3
+    },
+    "56": {
+      "shards": 3,
+      "target": 3
+    },
+    "default": {
+      "shards": 1,
+      "target": 3
+    }
+  },
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
     "start": "npm run start:dev",

@@ -39,7 +39,8 @@ LUABASE_QUERY_FREQUENCY_IN_HOURS = 4
 # for the highly precise bots, we lower our threshold for alerting to 2 stages; anomaly score is ignored
 HIGHLY_PRECISE_BOTS = [("0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", "Preparation"),  # suspicious contract creation ML
                        ("0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6", "AK-ATTACK-SIMULATION-0", "Preparation"),  # attack simulation
-                       ("0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2", "SUSPICIOUS-FLASHLOAN-CONTRACT-CREATION", "Preparation")  # suspicious-flashloan-contract-creation
+                       ("0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2", "SUSPICIOUS-FLASHLOAN-CONTRACT-CREATION", "Preparation"),  # suspicious-flashloan-contract-creation
+                       ("0xb31f0db68c5231bad9c00877a3141da353970adcc14e1efe5b14c4d2d93c787f", "AK-ATTACK-SIMULATION-0", "Preparation")  # attack simulation targeted
                        ]
 
 VICTIM_IDENTIFICATION_BOT = "0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250"
@@ -141,6 +142,7 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad", "SUSPICIOUS-TOKEN-CONTRACT", "Preparation"),  # Malicious Token Contract ML Bot
              ("0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac", "LARGE-PROFIT", "Exploitation"),  # Large Profit Bot
              ("0x43d22eb5e1e3a2a98420f152825f215e6a756f32d73882ff31d8163652242832", "ROLE-CHANGE", "Preparation"),  # role change
-             ("0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2", "SUSPICIOUS-FLASHLOAN-PRICE-MANIPULATOR", "Preparation")  # Suspicious flashloand contract creation
-
+             ("0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2", "SUSPICIOUS-FLASHLOAN-PRICE-MANIPULATOR", "Preparation"),  # Suspicious flashloand contract creation
+             ("0xb31f0db68c5231bad9c00877a3141da353970adcc14e1efe5b14c4d2d93c787f", "AK-ATTACK-SIMULATION-0", "Preparation"),  # attack simulation targeted
+             ("0xabc0bb6fe5e0d0b981dec4aa2337ce91676358c6e8bf1fec06cc558f58c3694e", "UNUSUAL-NATIVE-SWAPS", "MoneyLaundering")  # unusual native swaps
              ]

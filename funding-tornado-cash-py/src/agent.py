@@ -39,13 +39,14 @@ def initialize():
 def detect_funding(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     global CHAIN_ID
 
+
     logging.info(
         f"Analyzing transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
 
     findings = []
 
     for log in transaction_event.logs:
-        if (log.address.lower() in TORNADO_CASH_ADDRESSES[w3.eth.chain_id] and TORNADO_CASH_WITHDRAW_TOPIC in log.topics):
+        if (log.address.lower() in TORNADO_CASH_ADDRESSES[CHAIN_ID] and TORNADO_CASH_WITHDRAW_TOPIC in log.topics):
 
             #  0x000000000000000000000000a1b4355ae6b39bb403be1003b7d0330c811747db1bc589946f7bfca3950776b499ff5d952768ad0b644c71c5c4a209c04ec2b2a2000000000000000000000000000000000000000000000000003ce4ceb6836660
             to_address = Web3.toChecksumAddress(log.data[26:66])
@@ -64,7 +65,6 @@ def detect_funding(w3, transaction_event: forta_agent.transaction_event.Transact
                     f"Identified existing account {to_address} on chain {w3.eth.chain_id}. Wont emit finding.")
 
         if (log.address.lower() in TORNADO_CASH_ADDRESSES_HIGH[w3.eth.chain_id] and TORNADO_CASH_WITHDRAW_TOPIC in log.topics):
-
             #  0x000000000000000000000000a1b4355ae6b39bb403be1003b7d0330c811747db1bc589946f7bfca3950776b499ff5d952768ad0b644c71c5c4a209c04ec2b2a2000000000000000000000000000000000000000000000000003ce4ceb6836660
             to_address = Web3.toChecksumAddress(log.data[26:66])
             transaction_count = w3.eth.get_transaction_count(to_address) if CHAIN_ID == 56 else w3.eth.get_transaction_count(

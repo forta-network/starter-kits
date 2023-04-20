@@ -264,8 +264,16 @@ def get_address_poisoning_addresses(metadata: dict) -> set:
         addresses.add(metadata["phishingEoa"].lower())
     if "phishingContract" in metadata:
         addresses.add(metadata["phishingContract"].lower())
+    if "phishing_eoa" in metadata:
+        addresses.add(metadata["phishing_eoa"].lower())
+    if "phishing_contract" in metadata:
+        addresses.add(metadata["phishing_contract"].lower())
     if "attackerAddresses" in metadata:
         attacker_addresses = metadata["attackerAddresses"]
+        for attacker_address in attacker_addresses.split(","):
+            addresses.add(attacker_address.lower())
+    if "attacker_addresses" in metadata:
+        attacker_addresses = metadata["attacker_addresses"]
         for attacker_address in attacker_addresses.split(","):
             addresses.add(attacker_address.lower())
     logging.info(f"Found {len(addresses)} addresses in address poisoning metadata")
@@ -296,6 +304,8 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
     global FINDINGS_CACHE
     global FP_MITIGATION_ADDRESSES
     global CHAIN_ID
+
+    logging.info(f"detect_attack called for block {block_event.block.number}. MUTEX is {MUTEX}")
 
     if CHAIN_ID == -1:
         logging.error("Chain ID not set")
@@ -640,25 +650,30 @@ def provide_handle_block(w3, forta_explorer):
             return []
 
         findings = []
-        for finding in FINDINGS_CACHE[0:10]:  # 10 findings per block due to size limitation
-            findings.append(finding)
-        FINDINGS_CACHE = FINDINGS_CACHE[10:]
 
-        if datetime.now().minute == 0:  # every hour
-            emit_new_fp_finding(w3)
+        try:
+            for finding in FINDINGS_CACHE[0:5]:  # 10 findings per block due to size limitation
+                findings.append(finding)
+            FINDINGS_CACHE = FINDINGS_CACHE[5:]
 
-            logging.info(f"Persisting state at block number {block_event.block_number}.")
-            persist_state()
+            if datetime.now().minute == 0:  # every hour
+                emit_new_fp_finding(w3)
 
-        #detect_attack(w3, forta_explorer, block_event)
-        if not MUTEX:
-            thread = threading.Thread(target=detect_attack, args=(w3, forta_explorer, block_event))
-            thread.start()
+                logging.info(f"Persisting state at block number {block_event.block_number}.")
+                persist_state()
 
-        # uncomment for local testing of tx/block ranges (ok for npm run start); otherwise the process will exit
-        #while (thread.is_alive()):
-        #    pass
+            #detect_attack(w3, forta_explorer, block_event)
+            if not MUTEX:
+                thread = threading.Thread(target=detect_attack, args=(w3, forta_explorer, block_event))
+                thread.start()
+
+            # uncomment for local testing of tx/block ranges (ok for npm run start); otherwise the process will exit
+            #while (thread.is_alive()):
+            #    pass
+        except Exception as e:
+            logging.error(f"Error in handle_block: {e} - {traceback.format_exc()}")
         
+        logging.info(f"Returning {len(findings)} findings.")
         return findings
 
     return handle_block
