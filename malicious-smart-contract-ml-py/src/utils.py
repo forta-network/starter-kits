@@ -100,9 +100,3 @@ def alert_count(chain_id: int, alert_id: str) -> int:
         logger.error(f"Error obtaining alert counts: {err}")
 
     return alert_id_counts, alert_counts
-
-
-def get_anomaly_score(chain_id: int, alert_id: str) -> float:
-    total_alert_ids, total_alerts = alert_count(chain_id, alert_id)
-
-    return min(total_alert_ids / total_alerts, 1.0)
