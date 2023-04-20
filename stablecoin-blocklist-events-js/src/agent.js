@@ -1,19 +1,29 @@
 const {
-  Finding, FindingSeverity, FindingType, ethers,
-} = require('forta-agent');
+  Finding,
+  FindingSeverity,
+  FindingType,
+  ethers,
+  getEthersProvider,
+} = require("forta-agent");
+
+const calculateAlertRate = require("bot-alert-rate").default;
+const { ScanCountType } = require("bot-alert-rate");
 
 const {
   getAbi,
   extractEventArgs,
   parseExpression,
   checkLogAgainstExpression,
-} = require('./utils');
+} = require("./utils");
 
 // load any bot configuration parameters
-const config = require('../bot-config.json');
+const config = require("../bot-config.json");
+
+const { ZETTABLOCK_API_KEY, BOT_ID } = require("./keys");
 
 // set up a variable to hold initialization data used in the handler
 const initializeData = {};
+let chainId;
 
 // get the Array of events for a given contract
 function getEvents(contractEventConfig, currentContract, contractEvents, contracts) {
@@ -41,12 +51,14 @@ function getEvents(contractEventConfig, currentContract, contractEvents, contrac
       }
 
       // find the abi for the contract the proxy is pointing to and get the event signatures
-      const [proxiedContract] = contracts.filter((contract) => proxyName === contract.name);
-      Object.keys(proxyEvents).forEach((eventName) => {
+      const [proxiedContract] = contracts.filter(contract => proxyName === contract.name);
+      Object.keys(proxyEvents).forEach(eventName => {
         const eventObject = {
           name: eventName,
           // eslint-disable-next-line max-len
-          signature: proxiedContract.iface.getEvent(eventName).format(ethers.utils.FormatTypes.full),
+          signature: proxiedContract.iface
+            .getEvent(eventName)
+            .format(ethers.utils.FormatTypes.full),
           type: proxyEvents[eventName].type,
           severity: proxyEvents[eventName].severity,
         };
@@ -62,10 +74,12 @@ function getEvents(contractEventConfig, currentContract, contractEvents, contrac
     }
   }
 
-  eventNames.forEach((eventName) => {
+  eventNames.forEach(eventName => {
     const eventObject = {
       name: eventName,
-      signature: currentContract.iface.getEvent(eventName).format(ethers.utils.FormatTypes.full),
+      signature: currentContract.iface
+        .getEvent(eventName)
+        .format(ethers.utils.FormatTypes.full),
       type: events[eventName].type,
       severity: events[eventName].severity,
     };
@@ -82,7 +96,7 @@ function getEvents(contractEventConfig, currentContract, contractEvents, contrac
 }
 
 // helper function to create alerts
-function createAlert(
+async function createAlert(
   eventName,
   contractName,
   contractAddress,
@@ -92,7 +106,7 @@ function createAlert(
   protocolName,
   protocolAbbreviation,
   developerAbbreviation,
-  expression,
+  expression
 ) {
   const eventArgs = extractEventArgs(args);
   const finding = Finding.fromObject({
@@ -103,6 +117,12 @@ function createAlert(
     severity: FindingSeverity[eventSeverity],
     protocol: protocolName,
     metadata: {
+      anomalyScore: await calculateAlertRate(
+        chainId,
+        BOT_ID,
+        `${developerAbbreviation}-${protocolAbbreviation}-BLACKLIST-EVENT`,
+        ScanCountType.TransferCount
+      ),
       contractName,
       contractAddress,
       eventName,
@@ -119,6 +139,9 @@ function createAlert(
 
 function provideInitialize(data) {
   return async function initialize() {
+    process.env["ZETTABLOCK_API_KEY"] = ZETTABLOCK_API_KEY;
+    chainId = (await getEthersProvider().getNetwork()).chainId;
+
     /* eslint-disable no-param-reassign */
     // assign configurable fields
     data.contractEvents = config.contracts;
@@ -148,9 +171,14 @@ function provideInitialize(data) {
       return contract;
     });
 
-    data.contracts.forEach((contract) => {
+    data.contracts.forEach(contract => {
       const entry = data.contractEvents[contract.name];
-      const { eventInfo } = getEvents(entry, contract, data.contractEvents, data.contracts);
+      const { eventInfo } = getEvents(
+        entry,
+        contract,
+        data.contractEvents,
+        data.contracts
+      );
       contract.eventInfo = eventInfo;
     });
 
@@ -160,57 +188,57 @@ function provideInitialize(data) {
 
 function provideHandleTransaction(data) {
   return async function handleTransaction(txEvent) {
-    const {
-      contracts, protocolName, protocolAbbreviation, developerAbbreviation,
-    } = data;
-    if (!contracts) throw new Error('handleTransaction called before initialization');
+    const { contracts, protocolName, protocolAbbreviation, developerAbbreviation } = data;
+    if (!contracts) throw new Error("handleTransaction called before initialization");
 
     const findings = [];
 
     // iterate over each contract name to get the address and events
-    contracts.forEach((contract) => {
-      // for each contract look up the events of interest
-      const { eventInfo } = contract;
+    await Promise.all(
+      contracts.map(async contract => {
+        // for each contract look up the events of interest
+        const { eventInfo } = contract;
 
-      // iterate over all events in a give contract's eventInfo field
-      eventInfo.forEach((event) => {
-        const {
-          name,
-          signature,
-          expression,
-          expressionObject,
-          type,
-          severity,
-        } = event;
+        // iterate over all events in a give contract's eventInfo field
+        await Promise.all(
+          eventInfo.map(async event => {
+            const { name, signature, expression, expressionObject, type, severity } =
+              event;
 
-        // filter down to only the events we want to alert on
-        const parsedLogs = txEvent.filterLog(signature, contract.address);
+            // filter down to only the events we want to alert on
+            const parsedLogs = txEvent.filterLog(signature, contract.address);
 
-        // iterate over each item in parsedLogs and evaluate expressions (if any) given in the
-        // configuration file for each Event log, respectively
-        parsedLogs.forEach((parsedLog) => {
-          // if there is an expression to check, verify the condition before creating an alert
-          if (expression !== undefined) {
-            if (!checkLogAgainstExpression(expressionObject, parsedLog)) {
-              return;
-            }
-          }
+            // iterate over each item in parsedLogs and evaluate expressions (if any) given in the
+            // configuration file for each Event log, respectively
+            await Promise.all(
+              parsedLogs.map(async parsedLog => {
+                // if there is an expression to check, verify the condition before creating an alert
+                if (expression !== undefined) {
+                  if (!checkLogAgainstExpression(expressionObject, parsedLog)) {
+                    return;
+                  }
+                }
 
-          findings.push(createAlert(
-            name,
-            contract.name,
-            contract.address,
-            type,
-            severity,
-            parsedLog.args,
-            protocolName,
-            protocolAbbreviation,
-            developerAbbreviation,
-            expression,
-          ));
-        });
-      });
-    });
+                findings.push(
+                  await createAlert(
+                    name,
+                    contract.name,
+                    contract.address,
+                    type,
+                    severity,
+                    parsedLog.args,
+                    protocolName,
+                    protocolAbbreviation,
+                    developerAbbreviation,
+                    expression
+                  )
+                );
+              })
+            );
+          })
+        );
+      })
+    );
 
     return findings;
   };
