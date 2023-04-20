@@ -14,6 +14,8 @@ from web3 import Web3
 
 from src.findings import NegativeReputationFinding
 from src.constants import (BASE_BOTS, CACHE_VERSION)
+from src.keys import ZETTABLOCK_KEY
+from os import environ
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
@@ -47,6 +49,8 @@ def initialize():
         logging.error(f"Error getting chain id: {e}")
         raise e
 
+    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+
     subscription_json = []
     for botId, alertId, source in BASE_BOTS:
         subscription_json.append({"botId": botId, "alertId": alertId, "chainId": CHAIN_ID})
@@ -69,10 +73,10 @@ def process_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         source = BOT_ID_TO_SOURCE_MAPPING[alert_event.bot_id]
         if source == "Forta Foundation":
             attacker_addresses_lower = parse_indictors_forta_foundation(alert_event.alert.description)
-            findings.append(NegativeReputationFinding.create_finding(attacker_addresses_lower, alert_event, source))
+            findings.append(NegativeReputationFinding.create_finding(attacker_addresses_lower, alert_event, source, CHAIN_ID))
         else:
             attacker_addresses_lower = parse_indictors_scamsniffer(alert_event.alert.description)
-            findings.append(NegativeReputationFinding.create_finding(attacker_addresses_lower, alert_event, source))
+            findings.append(NegativeReputationFinding.create_finding(attacker_addresses_lower, alert_event, source, CHAIN_ID))
     else:
         logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
 
@@ -93,7 +97,7 @@ def parse_indictors_forta_foundation(description: str) -> set:
 def parse_indictors_scamsniffer(description: str) -> list:
     #  Suscipious Seaport Order detected, from: 0xff30b32c7e7da16cc7cd100a54ecd77b103d1a1c, recepients: 0xfF30b32c7E7da16CC7cD100A54ecd77b103D1A1C
     attacker_addresses = set()
-    
+
     start = len("Suscipious Seaport Order detected, from: ")
     attacker_address_lower1 = description[start:42+start].lower()
     attacker_addresses.add(attacker_address_lower1)
