@@ -43,9 +43,12 @@ class TestAlertCombiner:
         assert label == 'uniswap', "this should be a uniswap address"
 
     def test_get_addresses_address_poisoning_metadata(self):
-        metadata = {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
-        addresses = agent.get_address_poisoning_addresses(metadata)
-        assert len(addresses) == 4, "should have extracted 4 addresses"
+        metadata = {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955,0x55d398326f99059ff775485246999027b3197956","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
+        addresses = agent.get_address_poisoning_addresses_poisoner(metadata)
+        assert len(addresses) == 2, "should have extracted 2 addresses"
+
+        addresses = agent.get_address_poisoning_addresses_poisoning(metadata)
+        assert len(addresses) == 3, "should have extracted 3 addresses"
 
     def test_get_addresses_wash_trading_metadata(self):
         metadata = {"buyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","sellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}
@@ -135,7 +138,7 @@ class TestAlertCombiner:
 
         assert len(agent.FINDINGS_CACHE) == 3, "this should have triggered a finding for all three EOAs"
         finding = agent.FINDINGS_CACHE[0]
-        assert finding.alert_id == "SCAM-DETECTOR-ADDRESS-POISONING", "should be address poisoning finding"
+        assert "SCAM-DETECTOR-ADDRESS-POISON" in finding.alert_id, "should be address poison finding"
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 
