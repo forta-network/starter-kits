@@ -257,7 +257,7 @@ def get_wash_trading_addresses(metadata: dict) -> set:
     return addresses
 
 
-def get_address_poisoning_addresses(metadata: dict) -> set:
+def get_address_poisoning_addresses_poisoner(metadata: dict) -> set:
     print(f"address poisoning metadata: {metadata}")
     addresses = set()
     if "phishingEoa" in metadata:
@@ -268,6 +268,12 @@ def get_address_poisoning_addresses(metadata: dict) -> set:
         addresses.add(metadata["phishing_eoa"].lower())
     if "phishing_contract" in metadata:
         addresses.add(metadata["phishing_contract"].lower())
+    logging.info(f"Found {len(addresses)} addresses in address poisoner metadata")
+    return addresses
+
+def get_address_poisoning_addresses_poisoning(metadata: dict) -> set:
+    print(f"address poisoning metadata: {metadata}")
+    addresses = set()
     if "attackerAddresses" in metadata:
         attacker_addresses = metadata["attackerAddresses"]
         for attacker_address in attacker_addresses.split(","):
@@ -349,10 +355,16 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         attack_detector["metadata"].apply(lambda x: attack_detector_addresses.add(get_seaport_order_attacker_address(x)))
         logging.info(f"Got {len(attack_detector_addresses)} attack detector addresses")
 
-        address_poisoning_addresses = set()
-        address_poisoning = df_forta_alerts[(df_forta_alerts["alertId"] == "ADDRESS-POISONING") | (df_forta_alerts["alertId"] == "ADDRESS-POISONING-LOW-VALUE") | (df_forta_alerts["alertId"] == "ADDRESS-POISONING-FAKE-TOKEN")]
-        address_poisoning["metadata"].apply(lambda x: address_poisoning_addresses.update(get_address_poisoning_addresses(x)))
-        logging.info(f"Got {len(address_poisoning_addresses)} address poisoning addresses")
+        address_poisoning_addresses_poisoner = set()
+        address_poisoning_poisoner = df_forta_alerts[(df_forta_alerts["alertId"] == "ADDRESS-POISONING") | (df_forta_alerts["alertId"] == "ADDRESS-POISONING-LOW-VALUE") | (df_forta_alerts["alertId"] == "ADDRESS-POISONING-FAKE-TOKEN")]
+        address_poisoning_poisoner["metadata"].apply(lambda x: address_poisoning_addresses_poisoner.update(get_address_poisoning_addresses_poisoner(x)))
+        logging.info(f"Got {len(address_poisoning_addresses_poisoner)} address poisoner addresses")
+
+        address_poisoning_addresses_poisoning = set()
+        address_poisoning_poisoning = df_forta_alerts[(df_forta_alerts["alertId"] == "ADDRESS-POISONING") | (df_forta_alerts["alertId"] == "ADDRESS-POISONING-LOW-VALUE") | (df_forta_alerts["alertId"] == "ADDRESS-POISONING-FAKE-TOKEN")]
+        address_poisoning_poisoning["metadata"].apply(lambda x: address_poisoning_addresses_poisoning.update(get_address_poisoning_addresses_poisoning(x)))
+        logging.info(f"Got {len(address_poisoning_addresses_poisoning)} address poisoning addresses")
+
 
         seaport_order_addresses = set()
         seaport_orders = df_forta_alerts[(df_forta_alerts["alertId"] == "SEAPORT-PHISHING-TRANSFER")]
@@ -373,8 +385,10 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         ice_phishing_clusters = swap_addresses_with_clusters(list(ice_phishing_addresses), df_address_clusters_exploded)
         addresses.update(attack_detector_addresses)
         attack_detector_clusters = swap_addresses_with_clusters(list(attack_detector_addresses), df_address_clusters_exploded)
-        addresses.update(address_poisoning_addresses)
-        address_poisoning_clusters = swap_addresses_with_clusters(list(address_poisoning_addresses), df_address_clusters_exploded)
+        addresses.update(address_poisoning_addresses_poisoning)
+        address_poisoning_clusters_poisoning = swap_addresses_with_clusters(list(address_poisoning_addresses_poisoning), df_address_clusters_exploded)
+        addresses.update(address_poisoning_addresses_poisoner)
+        address_poisoning_clusters_poisoner = swap_addresses_with_clusters(list(address_poisoning_addresses_poisoner), df_address_clusters_exploded)
         addresses.update(native_ice_phishing_se_addresses)
         native_ice_phishing_se_clusters = swap_addresses_with_clusters(list(native_ice_phishing_se_addresses), df_address_clusters_exploded)
         addresses.update(native_ice_phishing_addresses)
@@ -474,7 +488,9 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-WASH-TRADE', hashes, CHAIN_ID))
                             elif potential_attacker_cluster_lower in attack_detector_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-1', hashes, CHAIN_ID))
-                            elif potential_attacker_cluster_lower in address_poisoning_clusters:
+                            elif potential_attacker_cluster_lower in address_poisoning_clusters_poisoner:
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-ADDRESS-POISONER', hashes, CHAIN_ID))
+                            elif potential_attacker_cluster_lower in address_poisoning_clusters_poisoning:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-ADDRESS-POISONING', hashes, CHAIN_ID))
                             elif potential_attacker_cluster_lower in ice_phishing_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-ICE-PHISHING', hashes, CHAIN_ID))

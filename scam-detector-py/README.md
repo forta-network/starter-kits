@@ -42,8 +42,8 @@ The Scam Detector bot emits the following alerts:
 - SCAM-DETECTOR-NATIVE-ICE-PHISHING
   - Fired when alert combination is observed that points to an native ice phishing without social engineering component
 
-- SCAM-DETECTOR-ADDRESS-POISONING
-  - Fired when alert combination is observed that points to address poisoning attack
+- SCAM-DETECTOR-ADDRESS-POISONING or SCAM-DETECTOR-ADDRESS-POISONER
+  - Fired when alert combination is observed that points to address poisoning attack 
 
 - SCAM-DETECTOR-1
 - Fired when alert combination is observed that points to attack on chain that spans the 4 stages of an attack (funding, preparaiton, exploitation, and money laundering) Many of the alerts here point to rug pulls and rake tokens.
