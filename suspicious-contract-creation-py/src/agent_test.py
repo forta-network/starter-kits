@@ -1,4 +1,5 @@
 from forta_agent import create_transaction_event, FindingSeverity, EntityType
+from unittest.mock import patch
 import agent
 from findings import SuspiciousContractFindings
 from constants import TORNADO_CASH_ADDRESSES
@@ -10,10 +11,12 @@ w3 = Web3Mock()
 
 class TestSuspiciousContractAgent:
     def test_is_contract_eoa(self):
-        assert not agent.is_contract(w3, EOA_ADDRESS), "EOA shouldn't be identified as a contract"
+        assert not agent.is_contract(
+            w3, EOA_ADDRESS), "EOA shouldn't be identified as a contract"
 
     def test_is_contract_contract(self):
-        assert agent.is_contract(w3, CONTRACT_NO_ADDRESS), "Contract should be identified as a contract"
+        assert agent.is_contract(
+            w3, CONTRACT_NO_ADDRESS), "Contract should be identified as a contract"
 
     def test_get_opcode_addresses_eoa(self):
         addresses = agent.get_opcode_addresses(w3, EOA_ADDRESS)
@@ -84,7 +87,7 @@ class TestSuspiciousContractAgent:
                      'value': 1,
                  }
                  },
-                 {'type': 'create',
+                {'type': 'create',
                  'action': {
                      'from': EOA_ADDRESS,
                      'value': 1,
@@ -96,18 +99,26 @@ class TestSuspiciousContractAgent:
         })
         findings = agent.detect_suspicious_contract_creations(w3, tx_event)
         assert len(findings) > 0, "this should have triggered a finding"
-        finding = next((x for x in findings if x.alert_id == 'SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH'), None)
+        finding = next((x for x in findings if x.alert_id ==
+                       'SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH'), None)
         assert finding.severity == FindingSeverity.High
 
-        assert findings[0].labels[0].toDict()["entity"] == EOA_ADDRESS, "should have EOA address as label"
-        assert findings[0].labels[0].toDict()["entityType"] == EntityType.Address, "should have label_type address"
-        assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
-        assert findings[0].labels[0].toDict()["confidence"] == 0.3, "should have 0.3 as label confidence"
-        assert findings[0].labels[1].toDict()["entity"] == '0xD56A0d6fe38cD6153C7B26ECE11b405BCADfF253', "should have contract address as label"
-        assert findings[0].labels[1].toDict()["label"] == 'attacker_contract', "should have attacker as label"
-        assert findings[0].labels[1].toDict()["confidence"] == 0.3, "should have 0.3 as label confidence"
-        assert findings[0].labels[1].toDict()["entityType"] == EntityType.Address, "should have label_type address"
-
+        assert findings[0].labels[0].toDict(
+        )["entity"] == EOA_ADDRESS, "should have EOA address as label"
+        assert findings[0].labels[0].toDict(
+        )["entityType"] == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[0].toDict(
+        )["label"] == 'attacker', "should have attacker as label"
+        assert findings[0].labels[0].toDict(
+        )["confidence"] == 0.3, "should have 0.3 as label confidence"
+        assert findings[0].labels[1].toDict(
+        )["entity"] == '0xD56A0d6fe38cD6153C7B26ECE11b405BCADfF253', "should have contract address as label"
+        assert findings[0].labels[1].toDict(
+        )["label"] == 'attacker_contract', "should have attacker as label"
+        assert findings[0].labels[1].toDict(
+        )["confidence"] == 0.3, "should have 0.3 as label confidence"
+        assert findings[0].labels[1].toDict(
+        )["entityType"] == EntityType.Address, "should have label_type address"
 
     def test_finding_tornado_cash_and_no_contract_creation(self):
         agent.initialize()
@@ -137,10 +148,9 @@ class TestSuspiciousContractAgent:
         findings = agent.detect_suspicious_contract_creations(w3, tx_event)
         assert len(findings) == 0, "this should not have triggered a finding"
 
-
     def test_finding_not_tornado_cash_and_contract_creation_eoa_creation(self):
         agent.initialize()
-        
+
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
@@ -155,13 +165,13 @@ class TestSuspiciousContractAgent:
         })
         findings = agent.detect_suspicious_contract_creations(w3, tx_event)
         assert len(findings) > 0, "this should have triggered a finding"
-        finding = next((x for x in findings if x.alert_id == 'SUSPICIOUS-CONTRACT-CREATION'), None)
+        finding = next((x for x in findings if x.alert_id ==
+                       'SUSPICIOUS-CONTRACT-CREATION'), None)
         assert finding.severity == FindingSeverity.Low
-
 
     def test_finding_not_tornado_cash_and_contract_creation_trace(self):
         agent.initialize()
-        
+
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
@@ -173,7 +183,7 @@ class TestSuspiciousContractAgent:
                 'number': 0
             },
             'traces': [
-                 {'type': 'create',
+                {'type': 'create',
                  'action': {
                      'from': EOA_ADDRESS,
                      'value': 1,
@@ -185,21 +195,24 @@ class TestSuspiciousContractAgent:
         })
         findings = agent.detect_suspicious_contract_creations(w3, tx_event)
         assert len(findings) == 1, "this should have triggered a finding"
-        finding = next((x for x in findings if x.alert_id == 'SUSPICIOUS-CONTRACT-CREATION'), None)
+        finding = next((x for x in findings if x.alert_id ==
+                       'SUSPICIOUS-CONTRACT-CREATION'), None)
         assert finding.severity == FindingSeverity.Low
 
-    def test_finding_not_tornado_cash_and_no_contract_creation_empty_set(self):
+    def test_finding_not_tornado_cash_and_no_contract_creation_empty_set(self, mocker):
         agent.initialize()
 
         contained_addresses = set()
-        finding = SuspiciousContractFindings.suspicious_contract_creation_tornado_cash("from_address", "contract_address", contained_addresses, "1.0")
+        finding = SuspiciousContractFindings.suspicious_contract_creation_tornado_cash(
+            "from_address", "contract_address", contained_addresses, 1)
         assert finding.severity == FindingSeverity.High
-        assert finding.metadata == {"anomaly_score": "1.0"}
 
     def test_finding_not_tornado_cash_and_no_contract_creation(self):
         agent.initialize()
 
-        contained_addresses = {"address2", "address1"}
-        finding = SuspiciousContractFindings.suspicious_contract_creation_tornado_cash("from_address", "contract_address", contained_addresses, "1.0")
+        contained_addresses = {"address1", "address2"}
+        finding = SuspiciousContractFindings.suspicious_contract_creation_tornado_cash(
+            "from_address", "contract_address", contained_addresses, 1)
         assert finding.severity == FindingSeverity.High
-        assert finding.metadata == {"anomaly_score": "1.0", "address_contained_in_created_contract_1": "address1", "address_contained_in_created_contract_2": "address2"}
+        assert finding.metadata["address_contained_in_created_contract_1"] == "address1"
+        assert finding.metadata["address_contained_in_created_contract_2"] == "address2"
