@@ -1,5 +1,6 @@
 import logging
 import sys
+from os import environ
 
 import forta_agent
 from forta_agent import get_json_rpc_url
@@ -8,6 +9,7 @@ from web3 import Web3
 
 from src.constants import TRANSFER_TOPIC, MIN_TRANSFER_COUNT, MIN_TOKEN_COUNT, MIN_CONTRACT_COUNT
 from src.findings import MEVAccountFinding
+from src.keys import ZETTABLOCK_KEY
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
@@ -16,7 +18,8 @@ root.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
@@ -31,6 +34,8 @@ def initialize():
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
+    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+
 
 def is_contract(w3, address) -> bool:
     """
@@ -44,7 +49,7 @@ def is_contract(w3, address) -> bool:
 
 
 def detect_mev(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
-    global CHAIN_ID 
+    global CHAIN_ID
 
     findings = []
 
@@ -62,10 +67,12 @@ def detect_mev(w3, transaction_event: forta_agent.transaction_event.TransactionE
             if is_contract(w3, address2):
                 contracts.add(address2.lower())
 
-    logging.info(f"tx {transaction_event.hash} transfer_count: {transfer_count} unique_token_count: {len(tokens)} unique_contract_address_count: {len(contracts)}")
+    logging.info(
+        f"tx {transaction_event.hash} transfer_count: {transfer_count} unique_token_count: {len(tokens)} unique_contract_address_count: {len(contracts)}")
 
     if transfer_count >= MIN_TRANSFER_COUNT and len(tokens) >= MIN_TOKEN_COUNT and len(contracts) >= MIN_CONTRACT_COUNT:
-        findings.append(MEVAccountFinding.MEVAccount(transaction_event.from_, transfer_count, len(tokens), len(contracts), CHAIN_ID))
+        findings.append(MEVAccountFinding.MEVAccount(
+            transaction_event.from_, transfer_count, len(tokens), len(contracts), CHAIN_ID))
 
     return findings
 
