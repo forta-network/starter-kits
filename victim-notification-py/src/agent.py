@@ -1,5 +1,6 @@
 import logging
 import sys
+from os import environ
 
 import forta_agent
 from forta_agent import get_json_rpc_url
@@ -7,6 +8,7 @@ from web3 import Web3
 
 from src.constants import VICTIM_NOTIFIER_LIST
 from src.findings import VictimNotificationFinding
+from src.keys import ZETTABLOCK_KEY
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
@@ -15,7 +17,8 @@ root.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
@@ -30,6 +33,8 @@ def initialize():
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
+    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+
 
 def detect_victim_notification(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     global CHAIN_ID
@@ -39,7 +44,8 @@ def detect_victim_notification(w3, transaction_event: forta_agent.transaction_ev
         return findings
 
     if transaction_event.from_.lower() in VICTIM_NOTIFIER_LIST and transaction_event.transaction.data != '0x':
-        findings.append(VictimNotificationFinding.Victim(transaction_event.to, transaction_event.from_, CHAIN_ID))
+        findings.append(VictimNotificationFinding.Victim(
+            transaction_event.to, transaction_event.from_, CHAIN_ID))
 
     return findings
 
