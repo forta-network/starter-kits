@@ -4,6 +4,7 @@ import sys
 import forta_agent
 from forta_agent import get_json_rpc_url
 from web3 import Web3
+from os import environ
 
 from src.constants import (BLOCK_RANGE, TORNADO_CASH_ACCOUNTS_QUEUE_SIZE,
                            TORNADO_CASH_ADDRESSES, TORNADO_CASH_DEPOSIT_SIZE,
@@ -13,10 +14,12 @@ from src.constants import (BLOCK_RANGE, TORNADO_CASH_ACCOUNTS_QUEUE_SIZE,
                            TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_ETH,
                            TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_MATIC)
 from src.findings import MoneyLaunderingTornadoCashFindings
+from src.keys import ZETTABLOCK_KEY
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
-ACCOUNT_TO_TORNADO_CASH_BLOCKS = {}  # dict of accounts to dicts of blocks to counts; e.g. # account 1, block 101, 1
+# dict of accounts to dicts of blocks to counts; e.g. # account 1, block 101, 1
+ACCOUNT_TO_TORNADO_CASH_BLOCKS = {}
 ACCOUNT_QUEUE = []
 
 
@@ -25,12 +28,11 @@ root.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
-ALERT_COUNT = 0  # stats to emit anomaly score
-DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
 def initialize():
     """
@@ -42,20 +44,19 @@ def initialize():
 
     global ACCOUNT_QUEUE
     ACCOUNT_QUEUE = []
-    
-    global ALERT_COUNT
-    ALERT_COUNT = 0
 
-    global DENOMINATOR_COUNT
-    DENOMINATOR_COUNT = 0
+    global CHAIN_ID
+    CHAIN_ID = web3.eth.chain_id
+
+    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+
 
 def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     global ACCOUNT_TO_TORNADO_CASH_BLOCKS
     global ACCOUNT_QUEUE
-    global ALERT_COUNT
-    global DENOMINATOR_COUNT
 
-    logging.info(f"Analyzing transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
+    logging.info(
+        f"Analyzing transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
 
     findings = []
     account = Web3.toChecksumAddress(transaction_event.from_)
@@ -63,15 +64,13 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
     if transaction_event.to is None:
         return findings
 
-    if (transaction_event.transaction.value is not None and transaction_event.transaction.value > 0):
-        DENOMINATOR_COUNT += 1
-
     for log in transaction_event.logs:
         if (transaction_event.transaction.value is not None and transaction_event.transaction.value > 0 and
            Web3.toChecksumAddress(log.address) == TORNADO_CASH_ADDRESSES[w3.eth.chain_id] and TORNADO_CASH_DEPOSIT_TOPIC in log.topics):
 
             ACCOUNT_QUEUE.append(account)
-            logging.info(f"Identified account {account} on chain {w3.eth.chain_id}")
+            logging.info(
+                f"Identified account {account} on chain {w3.eth.chain_id}")
 
             block_to_tx_count = {}
             if account not in ACCOUNT_TO_TORNADO_CASH_BLOCKS:
@@ -91,13 +90,14 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
 
             while max(block_to_tx_count.keys()) - min(block_to_tx_count.keys()) > BLOCK_RANGE[w3.eth.chain_id]:
                 #  remove the oldest blocks
-                oldest_block = min(block_to_tx_count, key=block_to_tx_count.get)
+                oldest_block = min(block_to_tx_count,
+                                   key=block_to_tx_count.get)
                 block_to_tx_count.pop(oldest_block, None)
 
     if account in ACCOUNT_QUEUE:
         total_txs = sum(ACCOUNT_TO_TORNADO_CASH_BLOCKS[account].values())
         logging.info(f"Account {account} total txs {total_txs}")
-            
+
         tx_threshold = TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_ETH
         deposit_size = TORNADO_CASH_DEPOSIT_SIZE
         if w3.eth.chain_id == 137:
@@ -107,13 +107,11 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
             tx_threshold = TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_BSC
 
         if total_txs >= tx_threshold:
-            ALERT_COUNT += 1
-
-            anomaly_score = (ALERT_COUNT * 1.0) / DENOMINATOR_COUNT
-            findings.append(MoneyLaunderingTornadoCashFindings.possible_money_laundering_tornado_cash(account, total_txs * deposit_size, anomaly_score))
+            findings.append(MoneyLaunderingTornadoCashFindings.possible_money_laundering_tornado_cash(
+                account, total_txs * deposit_size, CHAIN_ID))
 
     logging.info(f"Return {transaction_event.transaction.hash}")
-            
+
     return findings
 
 
