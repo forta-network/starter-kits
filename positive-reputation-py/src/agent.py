@@ -1,5 +1,6 @@
 import logging
 import sys
+from os import environ
 
 import forta_agent
 from forta_agent import get_json_rpc_url
@@ -10,6 +11,7 @@ from datetime import datetime, timedelta
 from src.constants import MIN_NONCE, MIN_AGE_IN_DAYS, ADDRESS_CACHE_SIZE, FIRST_TXS_CACHE_SIZE
 from src.findings import PositiveReputationFindings
 from src.blockexplorer import BlockExplorer
+from src.keys import ZETTABLOCK_KEY
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 blockexplorer = BlockExplorer(web3.eth.chain_id)
@@ -41,6 +43,8 @@ def initialize():
 
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
+
+    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
 
 
 def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
