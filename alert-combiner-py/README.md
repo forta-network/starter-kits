@@ -213,6 +213,8 @@ The following bots are considered by the Attack Detector bot and mapped to the s
 | 0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac | Large Profit Bot | LARGE-PROFIT | Exploitation |
 | 0x43d22eb5e1e3a2a98420f152825f215e6a756f32d73882ff31d8163652242832 | Role change bot | ROLE-CHANGE | Preparation |
 | 0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2 | Suspicious flashloand contract creation | SUSPICIOUS-FLASHLOAN-PRICE-MANIPULATOR | Preparation |
+| 0xabc0bb6fe5e0d0b981dec4aa2337ce91676358c6e8bf1fec06cc558f58c3694e | unusual native swaps | UNUSUAL-NATIVE-SWAPS | MoneyLaundering |
+| 0x8b0976a3a59f09c6c4a0f66ffc8d8dcc028e6087b071ec2a82bb83ec5a99f181 | ABNORMAL-FUNCTION-CALL-DETECTED-1 | Exploitation |
 
 
 The following bots are used to mitigate FPs:
