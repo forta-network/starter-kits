@@ -38,6 +38,7 @@ class AlertRateModel:
         start_hour_no_tx = start_hour.replace(tzinfo=None)
         if last_hour_no_tx != self.last_update_hour:
             train_data = self.data[(self.data['ds'] < last_hour_no_tx) & (self.data['ds'] > start_hour_no_tx)]
+            self.model = Prophet(interval_width=0.90)
             self.model.fit(train_data)
 
             # Create a dataframe with the last hour
