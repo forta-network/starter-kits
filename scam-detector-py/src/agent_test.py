@@ -241,7 +241,7 @@ class TestScamDetector:
 
         label = {"label": "Scammer",
                  "confidence": 0.25,
-                 "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99B3820",
+                 "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99B3821",
                  "entityType": EntityType.Address
                  }
 
@@ -280,7 +280,7 @@ class TestScamDetector:
 
         label = {"label": "Scammer",
                  "confidence": 0.25,
-                 "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99B3820",
+                 "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99B3821",
                  "entityType": EntityType.Address
                  }
         

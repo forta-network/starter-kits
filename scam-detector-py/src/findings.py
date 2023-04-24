@@ -1,5 +1,4 @@
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
-import agent
 from datetime import datetime
 import pandas as pd
 import logging

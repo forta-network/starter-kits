@@ -8,6 +8,7 @@ import time
 import pandas as pd
 import numpy as np
 import io
+import math
 import traceback
 import joblib
 from hexbytes import HexBytes
@@ -585,7 +586,7 @@ def emit_manual_finding(w3) -> list:
             logging.info("Manual finding: Manual entry doesnt match chain ID.")
             continue
 
-        address_lower = row['Address'].lower()
+        address_lower = row['Address'].lower().strip()
         logging.info(f"Manual finding: Have manual entry for {address_lower}")
         cluster = address_lower
         if address_lower in ENTITY_CLUSTERS.keys():
@@ -598,7 +599,8 @@ def emit_manual_finding(w3) -> list:
         if cluster not in ALERTED_CLUSTERS_STRICT:
             logging.info(f"Manual finding: Emitting manual finding for {cluster}")
             update_list(ALERTED_CLUSTERS_STRICT, CLUSTER_QUEUE_SIZE, cluster)
-            findings.append(ScamDetectorFinding.scam_finding_manual(block_chain_indexer, cluster, row['Threat category'], row['Account'] + " " + row['Tweet'], chain_id))
+            tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
+            findings.append(ScamDetectorFinding.scam_finding_manual(block_chain_indexer, cluster, row['Threat category'], row['Account'] + " " + tweet, chain_id))
             logging.info(f"Findings count {len(findings)}")
             persist_state()
         else:
