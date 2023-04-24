@@ -112,15 +112,25 @@ def initialize():
     subscription_json = []
     for bot, alertId, stage in BASE_BOTS:
         subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
-
+        if CHAIN_ID in [10, 42161]:
+            subscription_json.append({"botId": bot, "alertId": alertId, "chainId": 1})
+   
     for bot, alertId in FP_MITIGATION_BOTS:
         subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
+        if CHAIN_ID in [10, 42161]:
+            subscription_json.append({"botId": bot, "alertId": alertId, "chainId": 1})
 
     subscription_json.append({"botId": ENTITY_CLUSTER_BOT, "alertId": ENTITY_CLUSTER_BOT_ALERT_ID, "chainId": CHAIN_ID})
 
     subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0], "chainId": CHAIN_ID})
 
     subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1], "chainId": CHAIN_ID})
+
+    if CHAIN_ID in [10, 42161]:
+        subscription_json.append({"botId": ENTITY_CLUSTER_BOT, "alertId": ENTITY_CLUSTER_BOT_ALERT_ID, "chainId": 1})
+        subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0], "chainId": CHAIN_ID})
+        subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1], "chainId": CHAIN_ID})
+
 
     return {"alertConfig": {"subscriptions": subscription_json}}
 
@@ -284,7 +294,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
         start = time.time()
 
         chain_id = int(alert_event.alert.source.block.chain_id) if alert_event.alert.source.block.chain_id is not None else int(alert_event.chain_id)
-        if chain_id == CHAIN_ID:
+        if chain_id == CHAIN_ID or (CHAIN_ID in [10, 42161] and chain_id == 1):
             logging.info(f"alert {alert_event.alert_hash} received for proper chain {chain_id}")
 
             #  assess whether we generate a finding
@@ -361,11 +371,16 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                         logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} {stage}: {cluster} anomaly score of {alert_anomaly_score}")
 
                         if ALERT_DATA.get(cluster) is None:
-                            ALERT_DATA[cluster] = pd.DataFrame(columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])
-
+                            if CHAIN_ID in [10, 42161]:
+                                ALERT_DATA[cluster] = pd.DataFrame(columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'chain_id', 'addresses', 'transaction_hash'])
+                            else:
+                                ALERT_DATA[cluster] = pd.DataFrame(columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])
                         alert_data = ALERT_DATA[cluster]
                         stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
-                        alert_data = pd.concat([alert_data, pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])], ignore_index=True, axis=0)
+                        if CHAIN_ID in [10, 42161]: 
+                            alert_data = pd.concat([alert_data, pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, chain_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'chain_id', 'addresses', 'transaction_hash'])], ignore_index=True, axis=0)
+                        else:
+                           alert_data = pd.concat([alert_data, pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])], ignore_index=True, axis=0)
                         logging.info(f"alert {alert_event.alert_hash} - alert data size for cluster {cluster} now: {len(alert_data)}")
 
                         # add new alert and purge old alerts
@@ -393,6 +408,9 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
 
                             if anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE or len(anomaly_scores) == 4 or (contains_highly_precise_bot and len(anomaly_scores)>1):
                                 logging.info(f"alert {alert_event.alert_hash} - Overall anomaly score for {cluster} is below threshold, 4 stages, or highly precise bot with 2 stages have been observed. Unless FP mitigation kicks in, will raise finding.")
+                                if CHAIN_ID in [10, 42161] and alert_data[alert_data['chain_id'] == CHAIN_ID].empty:
+                                    logging.info(f"No alert on chain {CHAIN_ID} for {cluster}. Wont raise finding")
+                                    continue
 
                                 fp_mitigated = False
                                 if(is_contract(w3, cluster)):
