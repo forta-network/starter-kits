@@ -436,3 +436,52 @@ class TestAlertCombiner:
         agent.detect_attack(w3, forta_explorer, block_event)
 
         assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
+
+    def test_detect_alert_similar_contract(self):
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
+        agent.initialize()
+
+        forta_explorer = FortaExplorerMock()
+
+        #   createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'
+        df_forta = pd.DataFrame([
+            ["2022-04-30T23:55:17.284158264Z", "Entity identified", "ethereum",
+             "INFO", {"transactionHash": "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02618", "block": {"number": 14688607, "chainId": 1}, "bot": {"id": "0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560"}},
+             "INFO", {"alertHash":"0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016","newScammerContractAddress":"0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2","newScammerEoa":"0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0","scammerContractAddress":"0xe22536ac6f6a20dbb283e7f61a880993eab63313","scammerEoa":"0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e","similarityHash":"68e6432db785f93986a9d49b19077067f8b694612f2bc1e8ef5cd38af2c8727e","similarityScore":"0.9347575306892395"}, "NEW-SCAMMER-CONTRACT-CODE-HASH", "0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0 created contract 0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2. It is similar to scam contract 0xe22536ac6f6a20dbb283e7f61a880993eab63313 created by 0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e.", ["0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0","0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2", "0xe22536ac6f6a20dbb283e7f61a880993eab63313", "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e"], [], "0x12abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"],
+        ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+
+        forta_explorer.set_df(df_forta)
+        block_event = create_block_event({
+            'block': {
+                'timestamp': 1651314415,
+            }
+        })
+
+        agent.detect_attack(w3, forta_explorer, block_event)
+
+        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding"
+        assert agent.FINDINGS_CACHE[0].alert_id == "SCAM-DETECTOR-SIMILAR-CONTRACT"
+        assert agent.FINDINGS_CACHE[0].metadata['attacker_address'] == "0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0", "metadata should not be empty"
+        assert agent.FINDINGS_CACHE[0].metadata['attacker_contract_address'] == "0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2", "metadata should not be empty"
+        assert agent.FINDINGS_CACHE[0].metadata['existing_attacker_address'] == "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e", "metadata should not be empty"
+        assert agent.FINDINGS_CACHE[0].metadata['existing_attacker_contract_address'] == "0xe22536ac6f6a20dbb283e7f61a880993eab63313", "metadata should not be empty"
+        assert agent.FINDINGS_CACHE[0].metadata['similarity_score'] == "0.9347575306892395", "metadata should not be empty"
+        assert agent.FINDINGS_CACHE[0].metadata['involved_alert_id_0'] == "SCAM-DETECTOR-ADDRESS-POISONER", "metadata should not be empty"
+        assert agent.FINDINGS_CACHE[0].metadata['involved_alert_hashes_0'] == "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016", "metadata should not be empty"
+
+        assert agent.FINDINGS_CACHE[0].labels is not None, "labels should not be empty"
+        label = agent.FINDINGS_CACHE[0].labels[0]
+        assert label.entity == "0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0", "entity should be attacker address"
+        assert label.label == "scammer-eoa", "entity should labeled as scam"
+        assert label.confidence == 0.7, "entity should labeled with 0.7 confidence"
+        assert label.metadata['alert_id'] == "SCAM-DETECTOR-SIMILAR-CONTRACT", "entity should labeled as similar contract"
+        assert label.metadata['chain_id'] == 1, "entity should labeled for chain_id 1"
+
+        label = agent.FINDINGS_CACHE[0].labels[1]
+        assert label.entity == "0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2", "entity should be attacker address"
+        assert label.label == "scammer-contract", "entity should labeled as scam"
+        assert label.confidence == 0.7, "entity should labeled with 0.7 confidence"
+        assert label.metadata['alert_id'] == "SCAM-DETECTOR-SIMILAR-CONTRACT", "entity should labeled as similar contract"
+        assert label.metadata['chain_id'] == 1, "entity should labeled for chain_id 1"
+
