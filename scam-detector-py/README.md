@@ -45,6 +45,9 @@ The Scam Detector bot emits the following alerts:
 - SCAM-DETECTOR-ADDRESS-POISONING or SCAM-DETECTOR-ADDRESS-POISONER
   - Fired when alert combination is observed that points to address poisoning attack 
 
+- SCAM-DETECTOR-SIMILAR-CONTRACT
+  - Fired when a similar contract to a previously identified scammer contract has been identified
+
 - SCAM-DETECTOR-1
 - Fired when alert combination is observed that points to attack on chain that spans the 4 stages of an attack (funding, preparaiton, exploitation, and money laundering) Many of the alerts here point to rug pulls and rake tokens.
 
@@ -53,6 +56,7 @@ The properties for the alerts above are identical:
 - Type is always set to "exploit" 
 - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
   - attacker_address: string
+  - attacker_contract_address: string (if applicable)
   - start_date: date str (%Y-%m-%d)
   - end_date: date str (%Y-%m-%d)
   - involved_addresses_x: string
@@ -70,7 +74,20 @@ In addition, this bot also emits an alert in case a false positive has been obse
 The Scam Detector bot emits labels for each scammer address observed. The meta data contains the corresponding alertID. E.g.
 ```
     'entityType': EntityType.Address,
-    'label': "scam",
+    'label': "scammer-eoa",
+    'entity': address,
+    'confidence': 0.8,
+    'remove': "false",
+    'metadata': {
+      'alert_id': alert_id,
+      'chain_id': chain_id
+    }
+```
+
+and any contract deployed by the scammer eoa:
+```
+    'entityType': EntityType.Address,
+    'label': "scammer-contract",
     'entity': address,
     'confidence': 0.8,
     'remove': "false",

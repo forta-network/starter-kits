@@ -19,8 +19,7 @@ from web3 import Web3
 from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID,
                            DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD,
                            ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS,
-                           ALERTED_CLUSTERS_KEY, ALERTED_FP_ADDRESSES_KEY,SIMILAR_CONTRACT_BOT,
-                           SIMILAR_CONTRACT_BOT_ALERT_ID, SIMILAR_CONTRACT_THRESHOLD)
+                           ALERTED_CLUSTERS_KEY, ALERTED_FP_ADDRESSES_KEY, SIMILAR_CONTRACT_THRESHOLD)
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
 from src.blockchain_indexer_service import BlockChainIndexer
@@ -331,6 +330,46 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         end_date = datetime.utcfromtimestamp(block_event.block.timestamp)
         start_date = end_date - timedelta(days=DATE_LOOKBACK_WINDOW_IN_DAYS)
         df_forta_alerts = get_forta_alerts(start_date=start_date, end_date=end_date, df_address_clusters=df_address_clusters_exploded, forta_explorer=forta_explorer, chain_id=CHAIN_ID)
+
+        # contract similiarity alerts
+        contract_similarity_alerts = df_forta_alerts[(df_forta_alerts["alertId"] == "NEW-SCAMMER-CONTRACT-CODE-HASH")]
+        logging.info(f"Got {len(contract_similarity_alerts)} contract similarity alerts")
+        for index, row in contract_similarity_alerts.iterrows():
+            logging.info(f"Got similar contract alert: {row['hash']}")
+            logging.info(row['metadata'])
+            attacker_address_lower = row['metadata']['newScammerEoa'].lower()
+            similarity_score = float(row['metadata']['similarityScore'])
+            logging.info(f"{attacker_address_lower} was reported as a deployer of a similar scammer contract with similarity score {similarity_score}.")
+            if similarity_score > SIMILAR_CONTRACT_THRESHOLD:
+                tx_count = 0
+                try:
+                    tx_count = get_max_transaction_count(w3, attacker_address_lower)
+                except Exception as e:
+                    logging.error(f"Exception in assessing get_transaction_count for cluster {attacker_address_lower}: {e}")
+                    continue
+            
+                if tx_count > TX_COUNT_FILTER_THRESHOLD:
+                    logging.info(f"Address {attacker_address_lower} transacton count: {tx_count}")
+                    continue
+
+                if attacker_address_lower in FP_MITIGATION_ADDRESSES:
+                    logging.info(f"Address {attacker_address_lower} in FP mitigation list")
+                    continue
+
+                etherscan_label = get_etherscan_label(attacker_address_lower).lower()
+                if not ('attack' in etherscan_label
+                        or 'phish' in etherscan_label
+                        or 'hack' in etherscan_label
+                        or 'heist' in etherscan_label
+                        or 'scam' in etherscan_label
+                        or 'fraud' in etherscan_label
+                        or etherscan_label == ''):
+                    logging.info(f"Address {attacker_address_lower} has etherscan label {etherscan_label}")
+                    continue
+
+                logging.info(f"Cluster {attacker_address_lower} is scammer. Raising alert.")
+                update_alerted_clusters(w3, attacker_address_lower)
+                FINDINGS_CACHE.append(AlertCombinerFinding.alert_similar_contract(block_chain_indexer, row, CHAIN_ID))
 
         # alert combiner 3 alert - ice phishing
         logging.info("Scam detector - ice phishing/ fraudulent seaport orders")
