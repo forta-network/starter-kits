@@ -7,8 +7,6 @@ ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS = 7
 ENTITY_CLUSTER_BOT = "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9"
 ENTITY_CLUSTER_BOT_ALERT_ID = "ENTITY-CLUSTER" 
 
-SIMILAR_CONTRACT_BOT = "0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560"
-SIMILAR_CONTRACT_BOT_ALERT_ID = "NEW-SCAMMER-CONTRACT-CODE-HASH"
 SIMILAR_CONTRACT_THRESHOLD = 0.9
 
 FINDINGS_CACHE_KEY = "findings_cache_key"
@@ -50,5 +48,6 @@ BASE_BOTS = [("0xd9584a587a469f3cdd8a03ffccb14114bc78485657e28739b8036aee7782df5
            ("0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502", "ADDRESS-POISONING-FAKE-TOKEN", "Preparation"),  # Malicious Token ML Model
            ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-1", "Exploitation"),  # Native ice phishing with a social eng component (aka a function parameter)
            ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-4", "Exploitation"),  # Native ice phishing without a social eng component
-           ("0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732", "NFT-WASH-TRADE", "Preparation")  # wash trading bot
+           ("0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732", "NFT-WASH-TRADE", "Preparation"),  # wash trading bot
+             ("0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560", "NEW-SCAMMER-CONTRACT-CODE-HASH", "Preparation")  # contract similarity bot
         ]
