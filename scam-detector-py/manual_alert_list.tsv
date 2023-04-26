@@ -171,3 +171,62 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 04/24/23	0x3cb228f3f3a0db42e0d774aecb983121acb44ba9	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1648245567087316992?s=20	42161	Hard rug pull	Deployer removed liquidity
 04/24/23	0x7Bb3E4261043e022A50725293cB26aC3Abe9BAE5	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1650374223075115009?s=20	56	Protocol attack	
 04/24/23	0x4E406DaDf46665002504279a317681Ff70D63eC5	@CertiKAlert	https://twitter.com/CertiKAlert/status/1650094502827130881?s=20	56	Ice phishing	
+04/26/23	0xAC150DFd7991622d9F89D505504c572c8EB2282B	@BeosinAlert	https://twitter.com/BeosinAlert/status/1650796317122383873?s=20	56	Hard rug pull	
+04/26/23	0xB72200739D557cE12B41876772E1e434Af896644	@dedotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1651209770190209024?s=20	1	Protocol attack	Merlin #DEX on #zksync was exploited
+04/26/23	0x2744D62a1e9Ab975F4d77FE52E16206464EA79b7	@dedotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1651209770190209024?s=20	1	Protocol attack	Merlin #DEX on #zksync was exploited
+04/26/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651208253647519747?s=20	1	Ice phishing	
+04/26/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651208253647519747?s=20	56	Ice phishing	
+04/26/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651208253647519747?s=20	137	Ice phishing	
+04/26/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651208253647519747?s=20	42161	Ice phishing	
+04/26/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651208253647519747?s=20	10	Ice phishing	
+04/26/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651208253647519747?s=20	43114	Ice phishing	
+04/26/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651208253647519747?s=20	250	Ice phishing	
+04/26/23	0x9D8a3F49888D23594A2EFcd2f3C5Fa8145541A51	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651144835598893058?s=20	1	Ice phishing	
+04/26/23	0x9D8a3F49888D23594A2EFcd2f3C5Fa8145541A51	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651144835598893058?s=20	56	Ice phishing	
+04/26/23	0x9D8a3F49888D23594A2EFcd2f3C5Fa8145541A51	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651144835598893058?s=20	137	Ice phishing	
+04/26/23	0x9D8a3F49888D23594A2EFcd2f3C5Fa8145541A51	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651144835598893058?s=20	42161	Ice phishing	
+04/26/23	0x9D8a3F49888D23594A2EFcd2f3C5Fa8145541A51	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651144835598893058?s=20	10	Ice phishing	
+04/26/23	0x9D8a3F49888D23594A2EFcd2f3C5Fa8145541A51	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651144835598893058?s=20	43114	Ice phishing	
+04/26/23	0x9D8a3F49888D23594A2EFcd2f3C5Fa8145541A51	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651144835598893058?s=20	250	Ice phishing	
+04/26/23	0xb595D978ed71f1e9c491114aB6b09aDc158d7645	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651112623147216898?s=20	1	Ice phishing	
+04/26/23	0x65bb455e9a94622e0856ac55cb8597d108c6fa71	Blocksec		1	Ice phishing	
+04/26/23	0x4d7f5daa27a7fc62702f2367a5cde810543ff51a	Blocksec		1	Ice phishing	
+04/26/23	0x84f45f2e356b536341a9b06374255b23b2a40cda	Blocksec		1	Ice phishing	
+04/26/23	0x1bd0de55c1db4c759262ceba2ebe87fceeaab12d	Blocksec		1	Ice phishing	
+04/26/23	0xa1441a344b524c0553a0bebf1f2c603fb22a4a00	Blocksec		1	Ice phishing	
+04/26/23	0x99e181ffe2726f894e733ecdf75356129c1ca0e5	Blocksec		1	Ice phishing	
+04/26/23	0x0ef41ec161526e315d838bd02bc8651f1343a26a	Blocksec		1	Ice phishing	
+04/26/23	0x157c88c1f0c07d8e2dc4b21b6370147cb34b3a97	Blocksec		1	Ice phishing	
+04/26/23	0xdc167248ea35a2b63ed7df71ff98c3e197bfad7e	Blocksec		1	Ice phishing	
+04/26/23	0xdc167248ea35a2b63ed7df71ff98c3e197bfad7e	Blocksec		56	Ice phishing	
+04/26/23	0x57b47e4d3a822548eb25c18d7ff9acba25ceaa17	Blocksec		1	Ice phishing	
+04/26/23	0x463a3db8f179c127b7e98d4e5af9425c2bc941e3	Blocksec		1	Ice phishing	
+04/26/23	0xa5a813d4da83c299272a715719abc2c08118a93d	Blocksec		56	Ice phishing	
+04/26/23	0xa5a813d4da83c299272a715719abc2c08118a93d	Blocksec		1	Ice phishing	
+04/26/23	0x628bc4ac4c1cc57735337f5cf464db93fa14aa65	Blocksec		1	Ice phishing	
+04/26/23	0x46d131229cceeefd4fbdc4343a429e0f1580afd5	Blocksec		1	Ice phishing	
+04/26/23	0x46d131229cceeefd4fbdc4343a429e0f1580afd5	Blocksec		56	Ice phishing	
+04/26/23	0x46d131229cceeefd4fbdc4343a429e0f1580afd5	Blocksec		137	Ice phishing	
+04/26/23	0x8d050ca2357932b006901c9f6a3492e09335ffe2	Blocksec		1	Ice phishing	
+04/26/23	0xd230bdb5b53b5b82161fab45d1cd9c6649b1bfb0	Blocksec		1	Ice phishing	
+04/26/23	0x50452fb147ce4152403b53276438f7ae2137c0ac	Blocksec		1	Ice phishing	
+04/26/23	0xa3fdf93843fa411e9cb9411bd841689ff1dcdbbb	Blocksec		1	Ice phishing	
+04/26/23	0xa3fdf93843fa411e9cb9411bd841689ff1dcdbbb	Blocksec		56	Ice phishing	
+04/26/23	0xa3fdf93843fa411e9cb9411bd841689ff1dcdbbb	Blocksec		137	Ice phishing	
+04/26/23	0xca358198c9435a226f964ae11118019262c7a99f	Blocksec		1	Ice phishing	
+04/26/23	0x0828d8cfa77c10513480a50ce53e926f1562ee09	Blocksec		1	Ice phishing	
+04/26/23	0x2180f0e515d2ce922925aab2f44fdfd585c20d7e	Blocksec		1	Ice phishing	
+04/26/23	0x4c7497facd4c661b5decc119d3f89a0ae81a2eaf	Blocksec		137	Ice phishing	
+04/26/23	0x4c7497facd4c661b5decc119d3f89a0ae81a2eaf	Blocksec		1	Ice phishing	
+04/26/23	0xf32d5173c9bf90ebbbffb6690d72e82532992536	Blocksec		1	Ice phishing	
+04/26/23	0x0890695e246708a2ef290e2c4d449671cb6282a4	Blocksec		1	Ice phishing	
+04/26/23	0xd9dc668070ceeb17f79e0886e83278b856e05574	Blocksec		1	Ice phishing	
+04/26/23	0xd9dc668070ceeb17f79e0886e83278b856e05574	Blocksec		56	Ice phishing	
+04/26/23	0xfbcfc7d7e584e890ff7d592ddf7b0e295f38b455	Blocksec		1	Ice phishing	
+04/26/23	0x5a3ea59cea41e9c3975fe408e6eeaf1b3c2271a1	Blocksec		1	Ice phishing	
+04/26/23	0xcef6b20652c019e69dd9dbd875113ec812f45325	Blocksec		1	Ice phishing	
+04/26/23	0xcde2588aa220bd6e46f1788b1cf3e2bd7d2c6833	Blocksec		1	Ice phishing	
+04/26/23	0xbcb3784ae7902f49604a3af99367af0c25c2bcad	Blocksec		1	Ice phishing	
+04/26/23	0x399fd6630756103deadaa6eefcd5cc08acb597b0	Blocksec		1	Ice phishing	
+04/26/23	0x2603274dd8d851d0015427fbca30cdee77171c05	Blocksec		1	Ice phishing	
+04/26/23	0x309e83187abcc2cf4dcc22efde5d3596a6ea3b68	Blocksec		56	Ice phishing	
