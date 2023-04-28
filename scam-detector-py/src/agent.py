@@ -19,7 +19,8 @@ from web3 import Web3
 from src.constants import (ADDRESS_QUEUE_SIZE, BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID,
                            DATE_LOOKBACK_WINDOW_IN_DAYS, TX_COUNT_FILTER_THRESHOLD,
                            ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS,
-                           ALERTED_CLUSTERS_KEY, ALERTED_FP_ADDRESSES_KEY, SIMILAR_CONTRACT_THRESHOLD)
+                           ALERTED_CLUSTERS_KEY, ALERTED_FP_ADDRESSES_KEY, SIMILAR_CONTRACT_THRESHOLD,
+                           FINDINGS_CACHE_KEY)
 from src.findings import AlertCombinerFinding
 from src.forta_explorer import FortaExplorer
 from src.blockchain_indexer_service import BlockChainIndexer
@@ -90,8 +91,10 @@ def initialize():
         FP_MITIGATION_ADDRESSES.add(row['address'].lower())
 
     global FINDINGS_CACHE
-    FINDINGS_CACHE = []
-
+    findings_cache = load(FINDINGS_CACHE_KEY)
+    FINDINGS_CACHE = [] if findings_cache is None else findings_cache
+    logging.info(f"Loaded {len(FINDINGS_CACHE)} findings_cache from cache")
+    
     global MUTEX
     MUTEX = False
 
@@ -515,8 +518,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                                 continue
 
                             logging.info(f"Cluster {potential_attacker_cluster_lower} is scammer. Raising alert.")
-                            update_alerted_clusters(w3, potential_attacker_cluster_lower)
-
+                            
                             if potential_attacker_cluster_lower in seaport_order_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER', hashes, CHAIN_ID))
                             elif potential_attacker_cluster_lower in native_ice_phishing_clusters:
@@ -538,6 +540,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             if potential_attacker_cluster_lower in sleep_minting_clusters and 'SLEEPMINT-3' in alert_ids:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-SLEEP-MINTING', hashes, CHAIN_ID))
 
+                            update_alerted_clusters(w3, potential_attacker_cluster_lower)
                             logging.info(f"Findings count {len(FINDINGS_CACHE)}")
                             persist_state()
                     else:
@@ -668,6 +671,10 @@ def persist_state():
         logging.info(f"Persist {ALERTED_FP_ADDRESSES} alerted fp addresses from cache")
     persist(ALERTED_FP_ADDRESSES, ALERTED_FP_ADDRESSES_KEY)
 
+    global FINDINGS_CACHE
+    logging.info(f"Persisting findings_cache of length {len(FINDINGS_CACHE)}.")
+    persist(FINDINGS_CACHE, FINDINGS_CACHE_KEY)
+
     logging.info("Persisted bot state.")
 
 
@@ -707,9 +714,9 @@ def provide_handle_block(w3, forta_explorer):
         findings = []
 
         try:
-            for finding in FINDINGS_CACHE[0:5]:  # 10 findings per block due to size limitation
+            for finding in FINDINGS_CACHE[0:10]:  # 10 findings per block due to size limitation
                 findings.append(finding)
-            FINDINGS_CACHE = FINDINGS_CACHE[5:]
+            FINDINGS_CACHE = FINDINGS_CACHE[10:]
 
             if datetime.now().minute == 0:  # every hour
                 emit_new_fp_finding(w3)
@@ -724,7 +731,7 @@ def provide_handle_block(w3, forta_explorer):
 
             # uncomment for local testing of tx/block ranges (ok for npm run start); otherwise the process will exit
             #while (thread.is_alive()):
-            #    pass
+            #   pass
         except Exception as e:
             logging.error(f"Error in handle_block: {e} - {traceback.format_exc()}")
         

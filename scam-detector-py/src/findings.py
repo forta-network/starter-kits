@@ -47,7 +47,7 @@ class AlertCombinerFinding:
 
         alert_id = "SCAM-DETECTOR-SIMILAR-CONTRACT"
 
-        label_api = "https://api.forta.network/labels/events?sourceIds=0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23&entities="
+        label_api = "https://api.forta.network/labels/state?sourceIds=0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23&entities="
         res = requests.get(label_api + existing_scammer_contract_address.lower())
         original_alert_id = ""
         if res.status_code == 200:
