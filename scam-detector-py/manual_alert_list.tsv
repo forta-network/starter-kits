@@ -230,3 +230,26 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 04/26/23	0x399fd6630756103deadaa6eefcd5cc08acb597b0	Blocksec		1	Ice phishing	
 04/26/23	0x2603274dd8d851d0015427fbca30cdee77171c05	Blocksec		1	Ice phishing	
 04/26/23	0x309e83187abcc2cf4dcc22efde5d3596a6ea3b68	Blocksec		56	Ice phishing	
+04/27/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651566614746402818?s=20	1	Ice phishing	phishing_site_hxxps://layerzerolab.app/_advertised_by_@LayerZer0_Lab,_which_is_imitating_@LayerZero_Labs
+04/27/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651566614746402818?s=20	56	Ice phishing	phishing_site_hxxps://layerzerolab.app/_advertised_by_@LayerZer0_Lab,_which_is_imitating_@LayerZero_Labs
+04/27/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651566614746402818?s=20	137	Ice phishing	phishing_site_hxxps://layerzerolab.app/_advertised_by_@LayerZer0_Lab,_which_is_imitating_@LayerZero_Labs
+04/27/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651566614746402818?s=20	42161	Ice phishing	phishing_site_hxxps://layerzerolab.app/_advertised_by_@LayerZer0_Lab,_which_is_imitating_@LayerZero_Labs
+04/27/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651566614746402818?s=20	10	Ice phishing	phishing_site_hxxps://layerzerolab.app/_advertised_by_@LayerZer0_Lab,_which_is_imitating_@LayerZero_Labs
+04/27/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651566614746402818?s=20	43114	Ice phishing	phishing_site_hxxps://layerzerolab.app/_advertised_by_@LayerZer0_Lab,_which_is_imitating_@LayerZero_Labs
+04/27/23	0x015e246DA529E44AAD91704Bf41AFE6424C840c7	@AegisWeb3	https://twitter.com/AegisWeb3/status/1651566614746402818?s=20	250	Ice phishing	phishing_site_hxxps://layerzerolab.app/_advertised_by_@LayerZer0_Lab,_which_is_imitating_@LayerZero_Labs
+04/28/23	0x702Ef63881B5241ffB412199547bcd0c6910A970	@AegisWeb3	https://twitter.com/BeosinAlert/status/1651969839437852673?s=20	1	Protocol attack	
+04/28/23	0x702Ef63881B5241ffB412199547bcd0c6910A970	@AegisWeb3	https://twitter.com/BeosinAlert/status/1651969839437852673?s=20	137	Protocol attack	
+04/28/23	0x0667fc9067d13554094d6015cf78905d44514b4e	Blocksec		137	Ice phishing	
+04/28/23	0x0667fc9067d13554094d6015cf78905d44514b4e	Blocksec		43114	Ice phishing	
+04/28/23	0x0667fc9067d13554094d6015cf78905d44514b4e	Blocksec		56	Ice phishing	
+04/28/23	0xf60403ef0983e91bc1e30eef1f8ddc474aa343dd	Blocksec		42161	Ice phishing	
+04/28/23	0xf60403ef0983e91bc1e30eef1f8ddc474aa343dd	Blocksec		56	Ice phishing	
+04/28/23	0x6beb766909ac33f0719dae300c0afa3e287f3fdd	Blocksec		56	Ice phishing	
+04/28/23	0xf5656bc78042464ef1cf5040aa3ae8ac7d670f90	Blocksec		56	Ice phishing	
+04/28/23	0x8a871efa31f5eedf02381ea665618af75c0deffa	Blocksec		1	Ice phishing	
+04/28/23	0x6beb766909ac33f0719dae300c0afa3e287f3fdd	Blocksec		1	Ice phishing	
+04/28/23	0x3e3381a48d0d0c5e2d16f67da8ea936debf49f5d	Blocksec		1	Ice phishing	
+04/28/23	0xf60403ef0983e91bc1e30eef1f8ddc474aa343dd	Blocksec		1	Ice phishing	
+04/28/23	0x73a7a20c8aea4e71b3f976359dea08dcb1dad2ad	Blocksec		1	Ice phishing	
+04/28/23	0x759e0f2f2c7293f83e3b596be4acfa6868b8f817	Blocksec		1	Ice phishing	
+04/28/23	0x0667fc9067d13554094d6015cf78905d44514b4e	Blocksec		1	Ice phishing	
