@@ -66,6 +66,8 @@ class TestAlertCombiner:
             os.remove("alerted_clusters_key")
         if os.path.exists("alerted_fp_addresses_key"):
             os.remove("alerted_fp_addresses_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
 
         agent.initialize()
 
@@ -83,6 +85,8 @@ class TestAlertCombiner:
         # delete cache file
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
 
         agent.initialize()
 
@@ -115,6 +119,8 @@ class TestAlertCombiner:
         # delete cache file
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
 
         agent.initialize()
 
@@ -148,6 +154,8 @@ class TestAlertCombiner:
         # delete cache file
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
 
         agent.initialize()
 
@@ -181,6 +189,8 @@ class TestAlertCombiner:
         # delete cache file
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
 
         agent.initialize()
 
@@ -212,6 +222,8 @@ class TestAlertCombiner:
         # delete cache file
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
 
         agent.initialize()
 
@@ -251,6 +263,8 @@ class TestAlertCombiner:
     def test_detect_alert_pos_finding_combiner_3_metadata(self):
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
 
         agent.initialize()
 
@@ -280,6 +294,8 @@ class TestAlertCombiner:
     def test_detect_alert_pos_finding_combiner_3_tx_to(self):
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()
@@ -308,6 +324,8 @@ class TestAlertCombiner:
     def test_detect_alert_no_finding_large_tx_count(self):
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()
@@ -338,6 +356,8 @@ class TestAlertCombiner:
     def test_detect_alert_pos_no_repeat_finding(self):
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
         
         agent.initialize()
 
@@ -372,6 +392,8 @@ class TestAlertCombiner:
     def test_detect_alert_pos_nofinding(self):
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()
@@ -407,6 +429,8 @@ class TestAlertCombiner:
     def test_detect_alert_pos_finding_combiner_with_cluster(self):
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()
@@ -440,6 +464,8 @@ class TestAlertCombiner:
     def test_detect_alert_similar_contract(self):
         if os.path.exists("alerted_clusters_key"):
             os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
         agent.initialize()
 
         forta_explorer = FortaExplorerMock()

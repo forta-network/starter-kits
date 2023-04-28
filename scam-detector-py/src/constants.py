@@ -1,7 +1,7 @@
 DATE_LOOKBACK_WINDOW_IN_DAYS = 1
 ADDRESS_QUEUE_SIZE = 10000
 
-TX_COUNT_FILTER_THRESHOLD = 500  # ignore EOAs with tx count larger than this threshold to mitigate FPs
+TX_COUNT_FILTER_THRESHOLD = 2000  # ignore EOAs with tx count larger than this threshold to mitigate FPs
 
 ENTITY_CLUSTER_BOT_DATE_LOOKBACK_WINDOW_IN_DAYS = 7
 ENTITY_CLUSTER_BOT = "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9"
