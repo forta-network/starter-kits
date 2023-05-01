@@ -362,6 +362,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                 etherscan_label = get_etherscan_label(attacker_address_lower).lower()
                 if not ('attack' in etherscan_label
                         or 'phish' in etherscan_label
+                        or '.eth' in etherscan_label
                         or 'hack' in etherscan_label
                         or 'heist' in etherscan_label
                         or 'scam' in etherscan_label
