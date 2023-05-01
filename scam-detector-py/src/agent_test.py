@@ -110,7 +110,42 @@ class TestAlertCombiner:
 
         assert len(agent.FINDINGS_CACHE) == 2, "this should have triggered a finding for all two EOAs"
         finding = agent.FINDINGS_CACHE[0]
-        assert finding.alert_id == "SCAM-DETECTOR-WASH-TRADE", "should be address poisoning finding"
+        assert finding.alert_id == "SCAM-DETECTOR-WASH-TRADE", "should be wash trading finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+
+
+
+    def test_detect_hard_rug_pull(self):
+        # delete cache file
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
+
+        agent.initialize()
+
+        forta_explorer = FortaExplorerMock()
+
+        df_forta = pd.DataFrame([
+            ["2022-04-30T23:55:17.284158264Z", "Possible Address Poisoning", "ethereum",
+             "SUSPICIOUS", {"transactionHash": "0xcb56309c68912594a316be9420b429fd0f385cbc226dd81261dbe934e7912e56", "block": {"number": 26435976, "chainId": 1}, "bot": {"id": "0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15"}},
+             "MEDIUM", {"attacker_deployer_address":"0x8181bad152a10e7c750af35e44140512552a5cd9","rugpull_techniques":"HIDDENTRANSFERREVERTS, HONEYPOT","token_contract_address":"0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9"}, 
+             "HARD-RUG-PULL-1", "0x8181bad152a10e7c750af35e44140512552a5cd9 deployed a token contract 0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9 that may result in a hard rug pull.", ["0x8181bad152a10e7c750af35e44140512552a5cd9".lower(),"0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9".lower()], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"]
+           ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+
+        forta_explorer.set_df(df_forta)
+        block_event = create_block_event({
+            'block': {
+                'timestamp': 1651314415,
+            }
+        })
+
+        agent.detect_attack(w3, forta_explorer, block_event)
+
+        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding for delpoyer EOA"
+        finding = agent.FINDINGS_CACHE[0]
+        assert finding.alert_id == "SCAM-DETECTOR-HARD-RUG-PULL", "should be hard rug pull finding"
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 

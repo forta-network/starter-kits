@@ -248,8 +248,17 @@ def get_sleep_minting_addresses(description: str) -> str:
     return description[loc:loc+42]
 
 
-def get_wash_trading_addresses(metadata: dict) -> set:
+def get_hard_rug_pull_deployer(metadata: dict) -> set:
     
+    addresses = set()
+    if "attacker_deployer_address" in metadata:
+        addresses.add(metadata["attacker_deployer_address"].lower())
+    if "attackerDeployerAddress" in metadata:
+        addresses.add(metadata["attackerDeployerAddress"].lower())
+    logging.info(f"Found {len(addresses)} addresses in hard rug pull metadata")
+    return addresses
+
+def get_wash_trading_addresses(metadata: dict) -> set:
     addresses = set()
     if "buyerWallet" in metadata:
         addresses.add(metadata["buyerWallet"].lower())
@@ -392,6 +401,11 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         wash_trading["metadata"].apply(lambda x: wash_trading_addresses.update(get_wash_trading_addresses(x)))
         logging.info(f"Got {len(wash_trading_addresses)} wash trading addresses")
 
+        hard_rug_pull_deployer_addresses = set()
+        hard_rug_pull_deployer = df_forta_alerts[(df_forta_alerts["alertId"] == "HARD-RUG-PULL-1")]
+        hard_rug_pull_deployer["metadata"].apply(lambda x: hard_rug_pull_deployer_addresses.update(get_hard_rug_pull_deployer(x)))
+        logging.info(f"Got {len(hard_rug_pull_deployer_addresses)} hard rug pull deployer addresses")
+
         attack_detector_addresses = set()
         attack_detector = df_forta_alerts[(df_forta_alerts["alertId"] == "ATTACK-DETECTOR-1")]
         attack_detector["metadata"].apply(lambda x: attack_detector_addresses.add(get_seaport_order_attacker_address(x)))
@@ -437,6 +451,8 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
         native_ice_phishing_clusters = swap_addresses_with_clusters(list(native_ice_phishing_addresses), df_address_clusters_exploded)
         addresses.update(wash_trading_addresses)
         wash_trading_clusters = swap_addresses_with_clusters(list(wash_trading_addresses), df_address_clusters_exploded)
+        addresses.update(hard_rug_pull_deployer_addresses)
+        hard_rug_pull_deployer_clusters = swap_addresses_with_clusters(list(hard_rug_pull_deployer_addresses), df_address_clusters_exploded)
 
         # these are not processed as main attacker address candidates, but need to be combined with other alerts
         sleep_minting_addresses = set()
@@ -490,7 +506,8 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             or ('ADDRESS-POISONING' in alert_ids or 'ADDRESS-POISONING-LOW-VALUE' in alert_ids or 'ADDRESS-POISONING-FAKE-TOKEN' in alert_ids)
                             or ('NIP-1' in alert_ids or 'NIP-4' in alert_ids)
                             or ('ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS' in alert_ids)
-                            or ('NFT-WASH-TRADE' in alert_ids)):
+                            or ('NFT-WASH-TRADE' in alert_ids)
+                            or ('HARD-RUG-PULL-1' in alert_ids)):
                             tx_count = 0
                             try:
                                 tx_count = get_max_transaction_count(w3, potential_attacker_cluster_lower)
@@ -535,6 +552,8 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-ADDRESS-POISONING', hashes, CHAIN_ID))
                             elif potential_attacker_cluster_lower in ice_phishing_clusters:
                                 FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-ICE-PHISHING', hashes, CHAIN_ID))
+                            elif potential_attacker_cluster_lower in hard_rug_pull_deployer_clusters:
+                                FINDINGS_CACHE.append(AlertCombinerFinding.alert_combiner(block_chain_indexer, potential_attacker_cluster_lower, start_date, end_date, involved_clusters, involved_alert_ids, 'SCAM-DETECTOR-HARD-RUG-PULL', hashes, CHAIN_ID))
 
                             # if we identify a threat and sleep minting is observed as well, we emit an additional sleep minting alert
                             if potential_attacker_cluster_lower in sleep_minting_clusters and 'SLEEPMINT-3' in alert_ids:
@@ -563,7 +582,7 @@ def get_ice_phishing_attacker_address(description: str) -> str:
 def contains_attacker_addresses_ice_phishing(w3, alert: pd.Series, potential_attacker_address: str) -> bool:
     global ICE_PHISHING_MAPPINGS_DF
     # iterate over ice phishing mappings and assess whether the potential attacker address is involved according to the mapping
-    if "ICE-PHISHING" in alert["alertId"] or "ADDRESS-POISONING" in alert["alertId"] or "SEAPORT-PHISHING-TRANSFER" in alert["alertId"] or "ATTACK-DETECTOR-1" in alert["alertId"] or "NIP-1" in alert["alertId"] or "NIP-4" in alert["alertId"] or "NFT-WASH-TRADE" in alert["alertId"]:
+    if "ICE-PHISHING" in alert["alertId"] or "ADDRESS-POISONING" in alert["alertId"] or "SEAPORT-PHISHING-TRANSFER" in alert["alertId"] or "ATTACK-DETECTOR-1" in alert["alertId"] or "NIP-1" in alert["alertId"] or "NIP-4" in alert["alertId"] or "NFT-WASH-TRADE" in alert["alertId"] or "HARD-RUG-PULL-1" in alert["alertId"]:
         return True
 
     for index, row in ICE_PHISHING_MAPPINGS_DF.iterrows():
