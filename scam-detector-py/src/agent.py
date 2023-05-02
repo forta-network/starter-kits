@@ -371,6 +371,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                 etherscan_label = get_etherscan_label(attacker_address_lower).lower()
                 if not ('attack' in etherscan_label
                         or 'phish' in etherscan_label
+                        or '.eth' in etherscan_label
                         or 'hack' in etherscan_label
                         or 'heist' in etherscan_label
                         or 'scam' in etherscan_label
@@ -564,7 +565,7 @@ def detect_attack(w3, forta_explorer: FortaExplorer, block_event: forta_agent.bl
                             persist_state()
                     else:
                         logging.info(f"Cluster {potential_attacker_cluster_lower} already alerted on.")
-            except Exception as e:
+            except BaseException as e:
                 logging.warning(f"Error processing address combiner alert 1 {potential_attacker_cluster_lower}: {e} - {traceback.format_exc()}")
                 #logging.warn(f"Error processing address combiner alert 3 {potential_attacker_cluster_lower}")
                 continue

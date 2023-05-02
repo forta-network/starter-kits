@@ -6,13 +6,13 @@ import forta_agent
 
 DATABASE = "https://research.forta.network/database/bot/"
 VERSION = "V2"
-
+L2_VERSION = "V2.1"
 
 class L2Cache:
 
     @staticmethod
     def write(obj: object, chain_id: int, key: str):
-        key = f"{VERSION}-{key}"
+        key = f"{L2_VERSION}-{key}" if chain_id in (10, 42161) else f"{VERSION}-{key}"
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
             try:
                 logging.info(f"Persisting {key} using API")
@@ -30,7 +30,7 @@ class L2Cache:
 
     @staticmethod
     def load(chain_id: int, key: str) -> object:
-        key = f"{VERSION}-{key}"
+        key = f"{L2_VERSION}-{key}" if chain_id in (10, 42161) else f"{VERSION}-{key}"
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
             try:
                 logging.info(f"Loading {key}_{chain_id}  using API")
