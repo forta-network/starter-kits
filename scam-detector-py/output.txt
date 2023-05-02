@@ -1,0 +1,986 @@
+
+> scam-detector-feed@0.0.101 block
+> forta-agent run --block 27799145
+
+initializing agent...
+2023-05-01 15:42:41,372 - root - INFO - Set chain id to 56
+2023-05-01 15:42:41,372 - root - INFO - Loading alerted_clusters_key locally
+2023-05-01 15:42:41,377 - root - INFO - Loaded 2892 alerted clusters from cache
+2023-05-01 15:42:41,377 - root - INFO - Loading alerted_fp_addresses_key locally
+2023-05-01 15:42:41,378 - root - INFO - Loaded 0 alerted FP addresses from cache
+2023-05-01 15:42:41,378 - root - INFO - Loaded [] alerted FP addresses from cache
+2023-05-01 15:42:41,382 - root - INFO - Loading findings_cache_key locally
+2023-05-01 15:42:41,409 - root - INFO - Loaded 2865 findings_cache from cache
+fetching block 27799145...
+2023-05-01 15:42:41,510 - root - INFO - detect_attack called for block 27799145. MUTEX is False
+2023-05-01 15:42:42,316 - root - INFO - Fetched 298 for entity clusters
+2023-05-01 15:42:42,327 - root - INFO - Fetched clusters 742
+2023-05-01 15:42:42,327 - root - INFO - Analyzing alerts from 2023-04-29 11:20:08 to 2023-04-30 11:20:08, chain_id: 56
+2023-05-01 15:42:42,789 - root - INFO - Fetched 4 for bot 0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732, alert_id NFT-WASH-TRADE, chain_id 56
+2023-05-01 15:42:42,804 - root - INFO - Added cluster identifiers to alerts
+2023-05-01 15:42:42,805 - root - INFO - Got 0 contract similarity alerts
+2023-05-01 15:42:42,805 - root - INFO - Scam detector - ice phishing/ fraudulent seaport orders
+2023-05-01 15:42:42,805 - root - INFO - Got 0 native ice phishing addresses
+2023-05-01 15:42:42,805 - root - INFO - Got 0 native ice phishing addresses (social eng)
+2023-05-01 15:42:42,806 - root - INFO - Found 2 addresses in wash trading metadata
+2023-05-01 15:42:42,806 - root - INFO - Found 2 addresses in wash trading metadata
+2023-05-01 15:42:42,806 - root - INFO - Found 2 addresses in wash trading metadata
+2023-05-01 15:42:42,806 - root - INFO - Found 2 addresses in wash trading metadata
+2023-05-01 15:42:42,806 - root - INFO - Got 5 wash trading addresses
+2023-05-01 15:42:42,806 - root - INFO - Got 0 attack detector addresses
+2023-05-01 15:42:42,807 - root - INFO - Got 0 address poisoner addresses
+2023-05-01 15:42:42,807 - root - INFO - Got 0 address poisoning addresses
+2023-05-01 15:42:42,808 - root - INFO - Got 0 fraudulent seaport order addresses
+2023-05-01 15:42:42,808 - root - INFO - Got 0 ice phishing addresses
+2023-05-01 15:42:42,847 - root - INFO - Got 0 sleep minting addresses
+2023-05-01 15:42:42,857 - root - INFO - Mapped addresses to 5 clusters.
+2023-05-01 15:42:42,860 - root - INFO - Found alert NFT-WASH-TRADE in stage Preparation for cluster 0x7fe3207f67c66a1c9dbbd5b874b65dbd0ecbf2cd
+2023-05-01 15:42:42,860 - root - INFO - Cluster 0x7fe3207f67c66a1c9dbbd5b874b65dbd0ecbf2cd stages: {'NFT-WASH-TRADE'}
+2023-05-01 15:42:43,422 - root - INFO - Cluster 0x7fe3207f67c66a1c9dbbd5b874b65dbd0ecbf2cd has etherscan label name|176.bnb
+2023-05-01 15:42:43,424 - root - INFO - Found alert NFT-WASH-TRADE in stage Preparation for cluster 0x36944e04ca3505e1f8a11bf07997ce8fe2b3bc66
+2023-05-01 15:42:43,424 - root - INFO - Cluster 0x36944e04ca3505e1f8a11bf07997ce8fe2b3bc66 stages: {'NFT-WASH-TRADE'}
+2023-05-01 15:42:43,928 - root - WARNING - Exception in get_etherscan_label list index out of range
+2023-05-01 15:42:43,928 - root - INFO - Cluster 0x36944e04ca3505e1f8a11bf07997ce8fe2b3bc66 is scammer. Raising alert.
+2023-05-01 15:42:46,339 - root - INFO - Added 0x36944e04ca3505e1f8a11bf07997ce8fe2b3bc66 to alerted clusters.
+2023-05-01 15:42:46,339 - root - INFO - ALERTED_CLUSTERS size 2893.
+2023-05-01 15:42:46,339 - root - INFO - Findings count 2856
+2023-05-01 15:42:46,339 - root - INFO - Persisting alert clusters of length 2893.
+2023-05-01 15:42:46,339 - root - INFO - Persisting alerted_clusters_key locally
+2023-05-01 15:42:46,366 - root - INFO - Persisting alerted fp addresses of length 0.
+2023-05-01 15:42:46,373 - root - INFO - Persist [] alerted fp addresses from cache
+2023-05-01 15:42:46,373 - root - INFO - Persisting alerted_fp_addresses_key locally
+2023-05-01 15:42:46,392 - root - INFO - Persisting findings_cache of length 2856.
+2023-05-01 15:42:46,398 - root - INFO - Persisting findings_cache_key locally
+2023-05-01 15:42:46,482 - root - INFO - Persisted bot state.
+2023-05-01 15:42:46,483 - root - INFO - Found alert NFT-WASH-TRADE in stage Preparation for cluster 0xc9e5f2ccc4621299323def4a9385f5011ef68b60
+2023-05-01 15:42:46,484 - root - INFO - Cluster 0xc9e5f2ccc4621299323def4a9385f5011ef68b60 stages: {'NFT-WASH-TRADE'}
+2023-05-01 15:42:47,076 - root - WARNING - Exception in get_etherscan_label list index out of range
+2023-05-01 15:42:47,082 - root - INFO - Cluster 0xc9e5f2ccc4621299323def4a9385f5011ef68b60 is scammer. Raising alert.
+2023-05-01 15:42:48,716 - root - INFO - Added 0xc9e5f2ccc4621299323def4a9385f5011ef68b60 to alerted clusters.
+2023-05-01 15:42:48,717 - root - INFO - ALERTED_CLUSTERS size 2894.
+2023-05-01 15:42:48,723 - root - INFO - Findings count 2857
+2023-05-01 15:42:48,723 - root - INFO - Persisting alert clusters of length 2894.
+2023-05-01 15:42:48,730 - root - INFO - Persisting alerted_clusters_key locally
+2023-05-01 15:42:48,762 - root - INFO - Persisting alerted fp addresses of length 0.
+2023-05-01 15:42:48,768 - root - INFO - Persist [] alerted fp addresses from cache
+2023-05-01 15:42:48,768 - root - INFO - Persisting alerted_fp_addresses_key locally
+2023-05-01 15:42:48,787 - root - INFO - Persisting findings_cache of length 2857.
+2023-05-01 15:42:48,793 - root - INFO - Persisting findings_cache_key locally
+2023-05-01 15:42:48,983 - root - INFO - Persisted bot state.
+2023-05-01 15:42:48,991 - root - INFO - Found alert NFT-WASH-TRADE in stage Preparation for cluster 0x339c54c10bac8231eb11c49089ff456207243dfe
+2023-05-01 15:42:48,991 - root - INFO - Cluster 0x339c54c10bac8231eb11c49089ff456207243dfe stages: {'NFT-WASH-TRADE'}
+2023-05-01 15:42:49,499 - root - WARNING - Exception in get_etherscan_label list index out of range
+2023-05-01 15:42:49,499 - root - INFO - Cluster 0x339c54c10bac8231eb11c49089ff456207243dfe is scammer. Raising alert.
+2023-05-01 15:42:51,156 - root - INFO - Added 0x339c54c10bac8231eb11c49089ff456207243dfe to alerted clusters.
+2023-05-01 15:42:51,156 - root - INFO - ALERTED_CLUSTERS size 2895.
+2023-05-01 15:42:51,157 - root - INFO - Findings count 2858
+2023-05-01 15:42:51,157 - root - INFO - Persisting alert clusters of length 2895.
+2023-05-01 15:42:51,157 - root - INFO - Persisting alerted_clusters_key locally
+2023-05-01 15:42:51,183 - root - INFO - Persisting alerted fp addresses of length 0.
+2023-05-01 15:42:51,183 - root - INFO - Persist [] alerted fp addresses from cache
+2023-05-01 15:42:51,183 - root - INFO - Persisting alerted_fp_addresses_key locally
+2023-05-01 15:42:51,207 - root - INFO - Persisting findings_cache of length 2858.
+2023-05-01 15:42:51,207 - root - INFO - Persisting findings_cache_key locally
+2023-05-01 15:42:51,344 - root - INFO - Persisted bot state.
+2023-05-01 15:42:51,352 - root - INFO - Found alert NFT-WASH-TRADE in stage Preparation for cluster 0x0566d6905eae6876c30b1f9b11fa412e6c39b3be
+2023-05-01 15:42:51,352 - root - INFO - Cluster 0x0566d6905eae6876c30b1f9b11fa412e6c39b3be stages: {'NFT-WASH-TRADE'}
+2023-05-01 15:42:51,953 - root - WARNING - Exception in get_etherscan_label list index out of range
+2023-05-01 15:42:51,953 - root - INFO - Cluster 0x0566d6905eae6876c30b1f9b11fa412e6c39b3be is scammer. Raising alert.
+2023-05-01 15:42:53,483 - root - INFO - Added 0x0566d6905eae6876c30b1f9b11fa412e6c39b3be to alerted clusters.
+2023-05-01 15:42:53,484 - root - INFO - ALERTED_CLUSTERS size 2896.
+2023-05-01 15:42:53,484 - root - INFO - Findings count 2859
+2023-05-01 15:42:53,484 - root - INFO - Persisting alert clusters of length 2896.
+2023-05-01 15:42:53,484 - root - INFO - Persisting alerted_clusters_key locally
+2023-05-01 15:42:53,529 - root - INFO - Persisting alerted fp addresses of length 0.
+2023-05-01 15:42:53,529 - root - INFO - Persist [] alerted fp addresses from cache
+2023-05-01 15:42:53,535 - root - INFO - Persisting alerted_fp_addresses_key locally
+2023-05-01 15:42:53,553 - root - INFO - Persisting findings_cache of length 2859.
+2023-05-01 15:42:53,559 - root - INFO - Persisting findings_cache_key locally
+2023-05-01 15:42:53,823 - root - INFO - Persisted bot state.
+2023-05-01 15:42:53,824 - root - INFO - Returning 10 findings.
+10 findings for block 0x0e692875542b7ae08874422356a8e9060373c5c1459b2d782bf814e2c7238a1b {
+  "name": "Scam detector identified an EOA with past alerts mapping to scam behavior",
+  "description": "0xcb92fadfd9ccb1b4603bd5264abf825b14b7547c likely involved in a scam (SCAM-DETECTOR-SIMILAR-CONTRACT)",
+  "alertId": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+  "protocol": "ethereum",
+  "severity": "Critical",
+  "type": "Scam",
+  "metadata": {
+    "attacker_address": "0xcb92fadfd9ccb1b4603bd5264abf825b14b7547c",
+    "attacker_contract_address": "0x8018cb2c12e3f0a3d3d23b8396ec3accbb26cfc1",
+    "existing_attacker_address": "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e",
+    "existing_attacker_contract_address": "0xe22536ac6f6a20dbb283e7f61a880993eab63313",
+    "similarity_score": "0.9347575306892395",
+    "involved_alert_id_0": "SCAM-DETECTOR-ADDRESS-POISONER",
+    "involved_alert_hashes_0": "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
+  },
+  "addresses": [],
+  "labels": [
+    {
+      "entityType": "Address",
+      "entity": "0xcb92fadfd9ccb1b4603bd5264abf825b14b7547c",
+      "label": "scammer-eoa",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x8018cb2c12e3f0a3d3d23b8396ec3accbb26cfc1",
+      "label": "scammer-contract",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x57c6100cdd8eb1ce893d8a82d40735b1c48e0bf3",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0xcb92fadfd9ccb1b4603bd5264abf825b14b7547c",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x8018cb2c12e3f0a3d3d23b8396ec3accbb26cfc1",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0xcb92fadfd9ccb1b4603bd5264abf825b14b7547c",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    }
+  ]
+},{
+  "name": "Scam detector identified an EOA with past alerts mapping to scam behavior",
+  "description": "0x63120b4bde132b251c2da98e8b1de4ed125c6414 likely involved in a scam (SCAM-DETECTOR-SIMILAR-CONTRACT)",
+  "alertId": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+  "protocol": "ethereum",
+  "severity": "Critical",
+  "type": "Scam",
+  "metadata": {
+    "attacker_address": "0x63120b4bde132b251c2da98e8b1de4ed125c6414",
+    "attacker_contract_address": "0x54a97fa79bb4f04685d124450ffe7c5caf7deadc",
+    "existing_attacker_address": "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e",
+    "existing_attacker_contract_address": "0xe22536ac6f6a20dbb283e7f61a880993eab63313",
+    "similarity_score": "0.9347575306892395",
+    "involved_alert_id_0": "SCAM-DETECTOR-ADDRESS-POISONER",
+    "involved_alert_hashes_0": "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
+  },
+  "addresses": [],
+  "labels": [
+    {
+      "entityType": "Address",
+      "entity": "0x63120b4bde132b251c2da98e8b1de4ed125c6414",
+      "label": "scammer-eoa",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x54a97fa79bb4f04685d124450ffe7c5caf7deadc",
+      "label": "scammer-contract",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x87b134fcc9bfe62fb0c89c0cefaefe0232689ee9",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x63120b4bde132b251c2da98e8b1de4ed125c6414",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x28699d324271e9ce09eadd733da0321fea0d2fcd",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x63120b4bde132b251c2da98e8b1de4ed125c6414",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x7783df6f1e3aa8c9a01cdf02cc4e0a67ee31bae1",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x63120b4bde132b251c2da98e8b1de4ed125c6414",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x15dbcb5ef23ca7462f40f2143bbe1e000371ebee",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x63120b4bde132b251c2da98e8b1de4ed125c6414",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x591fcd9b95208019b1723aad2318c88fb419c624",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x63120b4bde132b251c2da98e8b1de4ed125c6414",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x54a97fa79bb4f04685d124450ffe7c5caf7deadc",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x63120b4bde132b251c2da98e8b1de4ed125c6414",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x1c29932b39dc9112aa9d87ef67f65c1f690a0e9e",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x63120b4bde132b251c2da98e8b1de4ed125c6414",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x00ec52a6bb9c36f7aa5a9e7135193adf552ed9e2",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x63120b4bde132b251c2da98e8b1de4ed125c6414",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    }
+  ]
+},{
+  "name": "Scam detector identified an EOA with past alerts mapping to scam behavior",
+  "description": "0xe298e96a5140aa9d677d480fa66ffcaaa9bab3b5 likely involved in a scam (SCAM-DETECTOR-SIMILAR-CONTRACT)",
+  "alertId": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+  "protocol": "ethereum",
+  "severity": "Critical",
+  "type": "Scam",
+  "metadata": {
+    "attacker_address": "0xe298e96a5140aa9d677d480fa66ffcaaa9bab3b5",
+    "attacker_contract_address": "0x949402ae14d429f2c12584ebda02d5d7ceaaf798",
+    "existing_attacker_address": "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e",
+    "existing_attacker_contract_address": "0xe22536ac6f6a20dbb283e7f61a880993eab63313",
+    "similarity_score": "0.9347575306892395",
+    "involved_alert_id_0": "SCAM-DETECTOR-ADDRESS-POISONER",
+    "involved_alert_hashes_0": "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
+  },
+  "addresses": [],
+  "labels": [
+    {
+      "entityType": "Address",
+      "entity": "0xe298e96a5140aa9d677d480fa66ffcaaa9bab3b5",
+      "label": "scammer-eoa",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x949402ae14d429f2c12584ebda02d5d7ceaaf798",
+      "label": "scammer-contract",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x949402ae14d429f2c12584ebda02d5d7ceaaf798",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0xe298e96a5140aa9d677d480fa66ffcaaa9bab3b5",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    }
+  ]
+},{
+  "name": "Scam detector identified an EOA with past alerts mapping to scam behavior",
+  "description": "0x9ce95559c8f4aef96f5ed38baba94602b98307ae likely involved in a scam (SCAM-DETECTOR-SIMILAR-CONTRACT)",
+  "alertId": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+  "protocol": "ethereum",
+  "severity": "Critical",
+  "type": "Scam",
+  "metadata": {
+    "attacker_address": "0x9ce95559c8f4aef96f5ed38baba94602b98307ae",
+    "attacker_contract_address": "0x4f5e0479e603d00fa1ba9f3913da4915b4605040",
+    "existing_attacker_address": "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e",
+    "existing_attacker_contract_address": "0xe22536ac6f6a20dbb283e7f61a880993eab63313",
+    "similarity_score": "0.9348318576812744",
+    "involved_alert_id_0": "SCAM-DETECTOR-ADDRESS-POISONER",
+    "involved_alert_hashes_0": "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
+  },
+  "addresses": [],
+  "labels": [
+    {
+      "entityType": "Address",
+      "entity": "0x9ce95559c8f4aef96f5ed38baba94602b98307ae",
+      "label": "scammer-eoa",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x4f5e0479e603d00fa1ba9f3913da4915b4605040",
+      "label": "scammer-contract",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x4f5e0479e603d00fa1ba9f3913da4915b4605040",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x9ce95559c8f4aef96f5ed38baba94602b98307ae",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    }
+  ]
+},{
+  "name": "Scam detector identified an EOA with past alerts mapping to scam behavior",
+  "description": "0x3c2beab98b9996dc12dca62b73dcdea7defd801f likely involved in a scam (SCAM-DETECTOR-SIMILAR-CONTRACT)",
+  "alertId": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+  "protocol": "ethereum",
+  "severity": "Critical",
+  "type": "Scam",
+  "metadata": {
+    "attacker_address": "0x3c2beab98b9996dc12dca62b73dcdea7defd801f",
+    "attacker_contract_address": "0xfac4ef115b108a6d775e31fd378402510c02304c",
+    "existing_attacker_address": "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e",
+    "existing_attacker_contract_address": "0xe22536ac6f6a20dbb283e7f61a880993eab63313",
+    "similarity_score": "0.9349277019500732",
+    "involved_alert_id_0": "SCAM-DETECTOR-ADDRESS-POISONER",
+    "involved_alert_hashes_0": "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
+  },
+  "addresses": [],
+  "labels": [
+    {
+      "entityType": "Address",
+      "entity": "0x3c2beab98b9996dc12dca62b73dcdea7defd801f",
+      "label": "scammer-eoa",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0xfac4ef115b108a6d775e31fd378402510c02304c",
+      "label": "scammer-contract",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0xfac4ef115b108a6d775e31fd378402510c02304c",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x3c2beab98b9996dc12dca62b73dcdea7defd801f",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0xfa521585ddf9006efee8f02f87c5601097e2a8c3",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x3c2beab98b9996dc12dca62b73dcdea7defd801f",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x4f76455e04ab24f0fdd875969d600d11748ef24c",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x3c2beab98b9996dc12dca62b73dcdea7defd801f",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x786ff507d86b9641e4f7da2f02da1f2bb4db32e9",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x3c2beab98b9996dc12dca62b73dcdea7defd801f",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x2274ea63d05d1cd1ed7a8df198c10741216713c5",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x3c2beab98b9996dc12dca62b73dcdea7defd801f",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    }
+  ]
+},{
+  "name": "Scam detector identified an EOA with past alerts mapping to scam behavior",
+  "description": "0xbc9e6dc6f556aaa0e3334fb45d8cc7de72473ee8 likely involved in a scam (SCAM-DETECTOR-SIMILAR-CONTRACT)",
+  "alertId": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+  "protocol": "ethereum",
+  "severity": "Critical",
+  "type": "Scam",
+  "metadata": {
+    "attacker_address": "0xbc9e6dc6f556aaa0e3334fb45d8cc7de72473ee8",
+    "attacker_contract_address": "0x53d939e63c0e28b74cf3025ab81cdde1419a5c10",
+    "existing_attacker_address": "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e",
+    "existing_attacker_contract_address": "0xe22536ac6f6a20dbb283e7f61a880993eab63313",
+    "similarity_score": "0.934837818145752",
+    "involved_alert_id_0": "SCAM-DETECTOR-ADDRESS-POISONER",
+    "involved_alert_hashes_0": "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
+  },
+  "addresses": [],
+  "labels": [
+    {
+      "entityType": "Address",
+      "entity": "0xbc9e6dc6f556aaa0e3334fb45d8cc7de72473ee8",
+      "label": "scammer-eoa",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x53d939e63c0e28b74cf3025ab81cdde1419a5c10",
+      "label": "scammer-contract",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x53d939e63c0e28b74cf3025ab81cdde1419a5c10",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0xbc9e6dc6f556aaa0e3334fb45d8cc7de72473ee8",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x379ac60ff3239220ea6cb7f9a9914223b122f7c5",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0xbc9e6dc6f556aaa0e3334fb45d8cc7de72473ee8",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0xbbf0da47c12171c93644f3775522718a4e2c1c96",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0xbc9e6dc6f556aaa0e3334fb45d8cc7de72473ee8",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    }
+  ]
+},{
+  "name": "Scam detector identified an EOA with past alerts mapping to scam behavior",
+  "description": "0x4d18f8f2ae19f1e166c97793cceeb70680a2b6d2 likely involved in a scam (SCAM-DETECTOR-SIMILAR-CONTRACT)",
+  "alertId": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+  "protocol": "ethereum",
+  "severity": "Critical",
+  "type": "Scam",
+  "metadata": {
+    "attacker_address": "0x4d18f8f2ae19f1e166c97793cceeb70680a2b6d2",
+    "attacker_contract_address": "0xce3cef23591de7524c0a39eb681a5e4b2ce61f31",
+    "existing_attacker_address": "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e",
+    "existing_attacker_contract_address": "0xe22536ac6f6a20dbb283e7f61a880993eab63313",
+    "similarity_score": "0.9347575306892395",
+    "involved_alert_id_0": "SCAM-DETECTOR-ADDRESS-POISONER",
+    "involved_alert_hashes_0": "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
+  },
+  "addresses": [],
+  "labels": [
+    {
+      "entityType": "Address",
+      "entity": "0x4d18f8f2ae19f1e166c97793cceeb70680a2b6d2",
+      "label": "scammer-eoa",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0xce3cef23591de7524c0a39eb681a5e4b2ce61f31",
+      "label": "scammer-contract",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0xce3cef23591de7524c0a39eb681a5e4b2ce61f31",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x4d18f8f2ae19f1e166c97793cceeb70680a2b6d2",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0xa0d1408c5f2d0231b33593a8aa9429268f89871b",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x4d18f8f2ae19f1e166c97793cceeb70680a2b6d2",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0xe2c98b88bf29bd572b82142917f197e930ae6170",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x4d18f8f2ae19f1e166c97793cceeb70680a2b6d2",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    }
+  ]
+},{
+  "name": "Scam detector identified an EOA with past alerts mapping to scam behavior",
+  "description": "0x4044b2ecdc077f0eac92d6fcc394ee6fe5e1afee likely involved in a scam (SCAM-DETECTOR-SIMILAR-CONTRACT)",
+  "alertId": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+  "protocol": "ethereum",
+  "severity": "Critical",
+  "type": "Scam",
+  "metadata": {
+    "attacker_address": "0x4044b2ecdc077f0eac92d6fcc394ee6fe5e1afee",
+    "attacker_contract_address": "0x89b3f348f83e725448df74d2a6f95babe54b7e60",
+    "existing_attacker_address": "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e",
+    "existing_attacker_contract_address": "0xe22536ac6f6a20dbb283e7f61a880993eab63313",
+    "similarity_score": "0.9349277019500732",
+    "involved_alert_id_0": "SCAM-DETECTOR-ADDRESS-POISONER",
+    "involved_alert_hashes_0": "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
+  },
+  "addresses": [],
+  "labels": [
+    {
+      "entityType": "Address",
+      "entity": "0x4044b2ecdc077f0eac92d6fcc394ee6fe5e1afee",
+      "label": "scammer-eoa",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x89b3f348f83e725448df74d2a6f95babe54b7e60",
+      "label": "scammer-contract",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x091e780b844219a36eb7e6ef958d98985cf428f4",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x4044b2ecdc077f0eac92d6fcc394ee6fe5e1afee",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x89b3f348f83e725448df74d2a6f95babe54b7e60",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x4044b2ecdc077f0eac92d6fcc394ee6fe5e1afee",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    }
+  ]
+},{
+  "name": "Scam detector identified an EOA with past alerts mapping to scam behavior",
+  "description": "0x5926510948b47c57d09134069767c4dc0c4a3c9a likely involved in a scam (SCAM-DETECTOR-SIMILAR-CONTRACT)",
+  "alertId": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+  "protocol": "ethereum",
+  "severity": "Critical",
+  "type": "Scam",
+  "metadata": {
+    "attacker_address": "0x5926510948b47c57d09134069767c4dc0c4a3c9a",
+    "attacker_contract_address": "0xe4c224d63459ebfd0c37c8fe69219dd4e225a347",
+    "existing_attacker_address": "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e",
+    "existing_attacker_contract_address": "0xe22536ac6f6a20dbb283e7f61a880993eab63313",
+    "similarity_score": "0.934837818145752",
+    "involved_alert_id_0": "SCAM-DETECTOR-ADDRESS-POISONER",
+    "involved_alert_hashes_0": "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
+  },
+  "addresses": [],
+  "labels": [
+    {
+      "entityType": "Address",
+      "entity": "0x5926510948b47c57d09134069767c4dc0c4a3c9a",
+      "label": "scammer-eoa",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0xe4c224d63459ebfd0c37c8fe69219dd4e225a347",
+      "label": "scammer-contract",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0xe4c224d63459ebfd0c37c8fe69219dd4e225a347",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x5926510948b47c57d09134069767c4dc0c4a3c9a",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    }
+  ]
+},{
+  "name": "Scam detector identified an EOA with past alerts mapping to scam behavior",
+  "description": "0x7bcfb903b06e74751ad9ba657f7d5389c40726fb likely involved in a scam (SCAM-DETECTOR-SIMILAR-CONTRACT)",
+  "alertId": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+  "protocol": "ethereum",
+  "severity": "Critical",
+  "type": "Scam",
+  "metadata": {
+    "attacker_address": "0x7bcfb903b06e74751ad9ba657f7d5389c40726fb",
+    "attacker_contract_address": "0x48ab43ad9cd8bd49325d10ee89e0205d5d73caab",
+    "existing_attacker_address": "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e",
+    "existing_attacker_contract_address": "0xe22536ac6f6a20dbb283e7f61a880993eab63313",
+    "similarity_score": "0.9348318576812744",
+    "involved_alert_id_0": "SCAM-DETECTOR-ADDRESS-POISONER",
+    "involved_alert_hashes_0": "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
+  },
+  "addresses": [],
+  "labels": [
+    {
+      "entityType": "Address",
+      "entity": "0x7bcfb903b06e74751ad9ba657f7d5389c40726fb",
+      "label": "scammer-eoa",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x48ab43ad9cd8bd49325d10ee89e0205d5d73caab",
+      "label": "scammer-contract",
+      "confidence": 0.7,
+      "remove": false,
+      "metadata": {
+        "alert_id": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x766913716c5db2d90c0401093e084b6bad202d66",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x7bcfb903b06e74751ad9ba657f7d5389c40726fb",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x48ab43ad9cd8bd49325d10ee89e0205d5d73caab",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x7bcfb903b06e74751ad9ba657f7d5389c40726fb",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    },
+    {
+      "entityType": "Address",
+      "entity": "0x079e6bbca96aa3a8afa3ca35489fc39277e4ed79",
+      "label": "scammer-contract",
+      "confidence": 0.6,
+      "remove": false,
+      "metadata": {
+        "alert_ids": "SCAM-DETECTOR-SIMILAR-CONTRACT",
+        "chain_id": 1,
+        "similar_contract_alert_ids": "SCAM-DETECTOR-ADDRESS-POISONER",
+        "deployer": "0x7bcfb903b06e74751ad9ba657f7d5389c40726fb",
+        "deployer_info": "Deployer involved in SCAM-DETECTOR-SIMILAR-CONTRACT scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+        "threat_description_url": "https://forta.org/attacks"
+      }
+    }
+  ]
+}

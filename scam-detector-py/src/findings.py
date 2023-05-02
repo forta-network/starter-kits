@@ -52,7 +52,7 @@ class AlertCombinerFinding:
         original_alert_id = ""
         if res.status_code == 200:
             labels = res.json()
-            if len(labels) > 0:
+            if 'events' in labels.keys() and len(labels['events']) > 0:
                 label_metadata = labels['events'][0]['label']['metadata']
                 original_alert_id = label_metadata[0][len("alert_ids="):]
         
