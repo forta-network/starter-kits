@@ -45,6 +45,12 @@ The Scam Detector bot emits the following alerts:
 - SCAM-DETECTOR-HARD-RUG-PULL
   - Fired when a contract with hard rug pull techniques is identified
 
+- SCAM-DETECTOR-SOFT-RUG-PULL
+  - Fired when a contract with soft rug pull techniques is identified
+
+- SCAM-DETECTOR-RAKE-TOKEN
+  - Fired when a contract with a rake is identified
+
 - SCAM-DETECTOR-ADDRESS-POISONING or SCAM-DETECTOR-ADDRESS-POISONER
   - Fired when alert combination is observed that points to address poisoning attack 
 

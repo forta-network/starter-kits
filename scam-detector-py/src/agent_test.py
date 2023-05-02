@@ -150,6 +150,82 @@ class TestAlertCombiner:
         assert finding.labels is not None, "labels should not be empty"
 
 
+    def test_detect_rake_token(self):
+        # delete cache file
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
+
+        agent.initialize()
+
+        forta_explorer = FortaExplorerMock()
+
+        df_forta = pd.DataFrame([
+            ["2022-04-30T23:55:17.284158264Z", "Possible Address Poisoning", "ethereum",
+             "SUSPICIOUS", {"transactionHash": "0xcb56309c68912594a316be9420b429fd0f385cbc226dd81261dbe934e7912e56", "block": {"number": 26435976, "chainId": 1}, "bot": {"id": "0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11"}},
+             "MEDIUM", {"actualValueReceived":"1.188051244910305019265053e+24","anomalyScore":"0.2226202661207779","attackerRakeTokenDeployer":"0xa0f80e637919e7aad4090408a63e0c8eb07dfa03","feeRecipient":"0x440aeca896009f006eea3df4ba3a236ee8d57d36","from":"0x6c07456233f0e0fd03137d814aacf225f528068d","pairAddress":"0x2b25f23c31a490583ff55fb63cea459c098cc0e8","rakeTokenAddress":"0x440aeca896009f006eea3df4ba3a236ee8d57d36","rakeTokenDeployTxHash":"0xec938601346b2ecac1bd82f7ce025037c09a3d817d00d723efa6fc5507bca5c2","rakedFee":"2.09656102042995003399715e+23","rakedFeePercentage":"15.00","totalAmountTransferred":"1.397707346953300022664768e+24"}, 
+             "RAKE-TOKEN-CONTRACT-1", "swapExactETHForTokensSupportingFeeOnTransferTokens function detected on Uniswap Router to take additional swap fee.", ["0xa0f80e637919e7aad4090408a63e0c8eb07dfa03".lower(),"0x440aeca896009f006eea3df4ba3a236ee8d57d36".lower(), "0x6c07456233f0e0fd03137d814aacf225f528068d","0x2b25f23c31a490583ff55fb63cea459c098cc0e8","0x440aeca896009f006eea3df4ba3a236ee8d57d36"], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"]
+           ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+
+        forta_explorer.set_df(df_forta)
+        block_event = create_block_event({
+            'block': {
+                'timestamp': 1651314415,
+            }
+        })
+
+        agent.detect_attack(w3, forta_explorer, block_event)
+
+        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding for delpoyer EOA"
+        finding = agent.FINDINGS_CACHE[0]
+        assert finding.alert_id == "SCAM-DETECTOR-RAKE-TOKEN", "should be hard rug pull finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+        assert finding.labels[0].entity == '0xa0f80e637919e7aad4090408a63e0c8eb07dfa03'
+        assert finding.labels[0].label == 'scammer-eoa'
+        assert finding.labels[1].entity == '0x440aeca896009f006eea3df4ba3a236ee8d57d36'
+        assert finding.labels[1].label == 'scammer-contract'
+
+    def test_detect_soft_rug_pull(self):
+        # delete cache file
+        if os.path.exists("alerted_clusters_key"):
+            os.remove("alerted_clusters_key")
+        if os.path.exists("findings_cache_key"):
+            os.remove("findings_cache_key")
+
+        agent.initialize()
+
+        forta_explorer = FortaExplorerMock()
+
+        df_forta = pd.DataFrame([
+            ["2022-04-30T23:55:17.284158264Z", "Possible Address Poisoning", "ethereum",
+             "SUSPICIOUS", {"transactionHash": "0xcb56309c68912594a316be9420b429fd0f385cbc226dd81261dbe934e7912e56", "block": {"number": 26435976, "chainId": 1}, "bot": {"id": "0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4"}},
+             "MEDIUM", {"alert_hash":"0xd99ed20f397dbe53721e9a3424d0b87bcffb8df09fc2a9fea5748f81f3c7d324 && 0x0de8a4f6e1efff58a43cb20a81dd491e23b5eea32412a7b679129eb7b0638ea1","alert_id":"SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION","bot_id":"0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1","contractAddress":"\"0x27382445B936C1f362CbBC32E3d3fa5947220030\"","deployer":"\"0xa3fe18ced8d32ca601e3b4794856c85f6f56a176\"","token":"\"0xdd17532733f084ee4aa2de4a14993ef363843216\"","txHashes":"\"0x136af8104791a904614df3728a4bacf3bb79854db362e70f65e64a787ca23efa\""}, 
+             "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION", "Likely Soft rug pull has been detected", ["0xa3fe18ced8d32ca601e3b4794856c85f6f56a176".lower(),"0x27382445B936C1f362CbBC32E3d3fa5947220030".lower(), "0xdd17532733f084ee4aa2de4a14993ef363843216".lower()], [], "0x32abd26df70f12b4d2527a092b8f42a467dd6356fcff57a0d9241ac1c6244e10"]
+           ], columns=['createdAt', 'name', 'protocol', 'findingType', 'source', 'severity', 'metadata', 'alertId', 'description', 'addresses', 'contracts', 'hash'])
+
+        forta_explorer.set_df(df_forta)
+        block_event = create_block_event({
+            'block': {
+                'timestamp': 1651314415,
+            }
+        })
+
+        agent.detect_attack(w3, forta_explorer, block_event)
+
+        assert len(agent.FINDINGS_CACHE) == 1, "this should have triggered a finding for delpoyer EOA"
+        finding = agent.FINDINGS_CACHE[0]
+        assert finding.alert_id == "SCAM-DETECTOR-SOFT-RUG-PULL", "should be hard rug pull finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+        assert finding.labels[0].entity == '0xa3fe18ced8d32ca601e3b4794856c85f6f56a176'
+        assert finding.labels[0].label == 'scammer-eoa'
+        assert finding.labels[1].entity == '0xdd17532733f084ee4aa2de4a14993ef363843216'
+        assert finding.labels[1].label == 'scammer-contract'
+        
+
+
     def test_detect_address_poisoning(self):
         # delete cache file
         if os.path.exists("alerted_clusters_key"):
