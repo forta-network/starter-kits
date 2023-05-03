@@ -4,8 +4,10 @@ from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
 from datetime import datetime
 import requests
 
+from utils import Utils
 
-class AlertCombinerFinding:
+
+class ScamDetectorFinding:
 
     @staticmethod
     def get_threat_description_url(alert_id: str) -> str:
@@ -44,12 +46,12 @@ class AlertCombinerFinding:
         #  "similarity_hash":"68e6432db785f93986a9d49b19077067f8b694612f2bc1e8ef5cd38af2c8727e",
         #  "similarity_score":"0.9347575306892395"}
 
-        alert_hash = row["metadata"]["alertHash"]
-        existing_scammer_contract_address = row["metadata"]["scammerContractAddress"]
-        existing_scammer_address = row["metadata"]["scammerEoa"]
-        scammer_contract_address = row["metadata"]["newScammerContractAddress"]
-        scammer_address = row["metadata"]["newScammerEoa"]
-        similarity_score = row["metadata"]["similarityScore"]
+        alert_hash = row["metadata"]["alertHash"] if "alertHash" in row["metadata"] else row["metadata"]["alert_hash"]
+        existing_scammer_contract_address = row["metadata"]["scammerContractAddress"] if "scammerContractAddress" in row["metadata"] else row["metadata"]["scammer_contract_address"]
+        existing_scammer_address = row["metadata"]["scammerEoa"] if "scammerEoa" in row["metadata"] else row["metadata"]["scammer_eoa"]
+        scammer_contract_address = row["metadata"]["newScammerContractAddress"] if "newScammerContractAddress" in row["metadata"] else row["metadata"]["new_scammer_contract_address"]
+        scammer_address = row["metadata"]["newScammerEoa"] if "newScammerEoa" in row["metadata"] else row["metadata"]["new_scammer_eoa"]
+        similarity_score = row["metadata"]["similarityScore"] if "similarityScore" in row["metadata"] else row["metadata"]["similarity_score"]
 
         alert_id = "SCAM-DETECTOR-SIMILAR-CONTRACT"
 
@@ -69,10 +71,10 @@ class AlertCombinerFinding:
             'entity': scammer_address,
             'confidence': 0.7,
             'metadata': {
-                'alert_id': alert_id,
+                'alert_ids': alert_id,
                 'chain_id': chain_id,
                 'similar_contract_alert_ids': original_alert_id,
-                'threat_description_url': AlertCombinerFinding.get_threat_description_url(alert_id)
+                'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
             }
         }))
 
@@ -82,10 +84,12 @@ class AlertCombinerFinding:
             'entity': scammer_contract_address,
             'confidence': 0.7,
             'metadata': {
-                'alert_id': alert_id,
+                'alert_ids': alert_id,
                 'chain_id': chain_id,
+                'deployer': scammer_address,
+                'deployer_info': f"Deployer involved in {alert_id} scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
                 'similar_contract_alert_ids': original_alert_id,
-                'threat_description_url': AlertCombinerFinding.get_threat_description_url(alert_id)
+                'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
             }
         }))
 
@@ -103,18 +107,18 @@ class AlertCombinerFinding:
                     'similar_contract_alert_ids': original_alert_id,
                     'deployer': scammer_address,
                     'deployer_info': f"Deployer involved in {alert_id} scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
-                    'threat_description_url': AlertCombinerFinding.get_threat_description_url(alert_id)
+                    'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
                 }
             }))
 
         metadata = {}
-        metadata['attacker_address'] = scammer_address
-        metadata['attacker_contract_address'] = scammer_contract_address
-        metadata['existing_attacker_address'] = existing_scammer_address
-        metadata['existing_attacker_contract_address'] = existing_scammer_contract_address
+        metadata['scammer_address'] = scammer_address
+        metadata['scammer_contract_address'] = scammer_contract_address
+        metadata['existing_scammer_address'] = existing_scammer_address
+        metadata['existing_scammer_contract_address'] = existing_scammer_contract_address
         metadata['similarity_score'] = similarity_score
-        metadata['involved_alert_id_0'] = original_alert_id
-        metadata['involved_alert_hashes_0'] = alert_hash
+        metadata['involved_alert_id_1'] = original_alert_id
+        metadata['involved_alert_hashes_1'] = alert_hash
 
         return Finding({
             'name': 'Scam detector identified an EOA with past alerts mapping to scam behavior',
@@ -127,11 +131,10 @@ class AlertCombinerFinding:
         })
 
     @staticmethod
-    def alert_combiner(block_chain_indexer, scammer_addresses: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set, alert_id: str, hashes: set, chain_id: int) -> Finding:
+    def scam_finding(block_chain_indexer, scammer_addresses: str, start_date: datetime, end_date: datetime, involved_addresses: set, involved_alerts: set, alert_id: str, hashes: set, chain_id: int) -> Finding:
         involved_addresses = list(involved_addresses)[0:10]
         hashes = list(hashes)[0:10]
 
-        attacker_address_md = {"attacker_address": scammer_addresses}
         attacker_address_md = {"scammer_addresses": scammer_addresses}
         start_date = {"start_date": start_date.strftime("%Y-%m-%d")}
         end_date = {"end_date": end_date.strftime("%Y-%m-%d")}
@@ -150,9 +153,9 @@ class AlertCombinerFinding:
                     'entity': scammer_address,
                     'confidence': 0.8,
                     'metadata': {
-                        'alert_id': alert_id,
+                        'alert_ids': alert_id,
                         'chain_id': chain_id,
-                        'threat_description_url': AlertCombinerFinding.get_threat_description_url(alert_id)
+                        'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
                     }
                 }))
 
@@ -169,7 +172,7 @@ class AlertCombinerFinding:
                             'chain_id': chain_id,
                             'deployer': scammer_address,
                             'deployer_info': f"Deployer involved in {alert_id} scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
-                            'threat_description_url': AlertCombinerFinding.get_threat_description_url(alert_id)
+                            'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
                         }
                     }))
 
@@ -183,22 +186,24 @@ class AlertCombinerFinding:
             'labels': labels
         })
 
-
     @staticmethod
-    def alert_FP(address: str) -> Finding:
+    def alert_FP(w3, addresses: str) -> Finding:
+
         labels = []
-        labels = [Label({
-                'entityType': EntityType.Address,
-                'label': "scammer-eoa",
-                'entity': address,
-                'confidence': 0.99,
-                'remove': "true"
-    	    })]
+        for address in addresses.split(","):
+            label = "scammer-contract" if Utils.is_contract(w3, address) else "scammer-eoa"
+            labels.append(Label({
+                    'entityType': EntityType.Address,
+                    'label': label,
+                    'entity': address,
+                    'confidence': 0.99,
+                    'remove': "true"
+                }))
 
         return Finding({
-            'name': 'Scam detector identified an EOA that was incorrectly alerted on. Emitting false positive alert.',
-            'description': f'{address} likely not involved in a scam (SCAM-DETECTOR-ICE-PHISHING-FALSE-POSITIVE)',
-            'alert_id': 'SCAM-DETECTOR-ICE-PHISHING-FALSE-POSITIVE',
+            'name': 'Scam detector identified an address that was incorrectly alerted on. Emitting false positive alert.',
+            'description': f'{address} likely not involved in a scam (SCAM-DETECTOR-FALSE-POSITIVE)',
+            'alert_id': 'SCAM-DETECTOR-FALSE-POSITIVE',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'metadata': {},

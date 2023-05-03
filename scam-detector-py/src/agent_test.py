@@ -4,62 +4,13 @@ import pandas as pd
 from forta_agent import create_block_event
 
 import agent
-from forta_explorer_mock import FortaExplorerMock
-from web3_mock import CONTRACT, EOA_ADDRESS, Web3Mock, EOA_ADDRESS_LARGE_TX
+from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX
 
 w3 = Web3Mock()
 
 
 class TestAlertCombiner:
-    def test_is_contract_eoa(self):
-        assert not agent.is_contract(w3, EOA_ADDRESS), "EOA shouldn't be identified as a contract"
-
-    def test_is_contract_contract(self):
-        assert agent.is_contract(w3, CONTRACT), "Contract should be identified as a contract"
-
-    def test_is_contract_contract_eoa(self):
-        assert not agent.is_contract(w3, f"{CONTRACT},{EOA_ADDRESS}"), "EOA & Contract shouldnt be identified as a contract"
-
-    def test_is_contract_contracts(self):
-        assert agent.is_contract(w3, f"{CONTRACT},{CONTRACT}"), "Contracts should be identified as a contract"
-
-    def test_is_contract_null(self):
-        assert not agent.is_contract(w3, '0x0000000000a00000000000000000000000000000'), "EOA shouldn't be identified as a contract"
-
-    def test_is_address_valid(self):
-        assert agent.is_address(w3, '0x7328BBc3EaCfBe152f569f2C09f96f915F2C8D73'), "this should be a valid address"
-
-    def test_is_address_aaa(self):
-        assert not agent.is_address(w3, '0x7328BBaaaaaaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
-
-    def test_is_addresses_aaa(self):
-        assert not agent.is_address(w3, f'0x7328BBaaaaaaaaa52f569f2C09f96f915F2C8D73,{EOA_ADDRESS}'), "this shouldnt be a valid address"
-
-    def test_is_address_aAa(self):
-        assert not agent.is_address(w3, '0x7328BBaaaaAaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
-
-    def test_etherscan_label(self):
-        label = agent.get_etherscan_label("0xffc0022959f58aa166ce58e6a38f711c95062b99")
-        assert label == 'uniswap', "this should be a uniswap address"
-
-    def test_get_addresses_address_poisoning_metadata(self):
-        metadata = {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955,0x55d398326f99059ff775485246999027b3197956","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
-        addresses = agent.get_address_poisoning_addresses_poisoner(metadata)
-        assert len(addresses) == 2, "should have extracted 2 addresses"
-
-        addresses = agent.get_address_poisoning_addresses_poisoning(metadata)
-        assert len(addresses) == 3, "should have extracted 3 addresses"
-
-    def test_get_addresses_wash_trading_metadata(self):
-        metadata = {"buyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","sellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}
-        addresses = agent.get_wash_trading_addresses(metadata)
-        assert len(addresses) == 2, "should have extracted 2 addresses"
-
-    def test_get_fromAddr_seaport_order_metadata(self):
-        metadata = {"collectionFloor":"0.047","contractAddress":"0xe75512aa3bec8f00434bbd6ad8b0a3fbff100ad6","contractName":"MG Land","currency":"ETH","fromAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ece","hash":"0x768eefcc8fdba3946749048bd8582fff41501cfe874fba2c9f0383ae2dfdd1cb","itemPrice":"0","market":"Opensea 🌊","quantity":"1","toAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ecf","tokenIds":"4297","totalPrice":"0"}
-        toAddr = agent.get_seaport_order_attacker_address(metadata)
-        assert toAddr == "0xc81476ae9f2748725a36b326a1831200ed4f3ecf", "this should be the attacker address"
-
+    
     def test_fp_mitigation_proper_chain_id(self):
         # delete cache file
         if os.path.exists("alerted_clusters_key"):
