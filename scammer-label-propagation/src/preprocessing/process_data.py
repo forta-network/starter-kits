@@ -61,6 +61,40 @@ def calculate_edge_properties(edge, node_feature) -> list:
             from_n_p_in_erc20, from_max_p_in_erc20, from_avg_p_in_erc20, from_total_p_in_erc20]
 
 
+def format_empty_values(data_in: dict) -> dict:
+    """
+    In cases where there are no transactions from some type in one of the tables, this function gives the 
+    dataframes the correct colum format
+    :param data_in: dictionary with the dataframes
+    :return: dictionary with the dataframes with the correct column format
+    """
+    if data_in['all_eth_transactions'].shape[0] == 0:
+        data_in['all_eth_transactions'] = pd.DataFrame(
+            columns=['from_address', 'to_address', 'n_transactions_together', 'max_value_together_eth',
+                     'avg_value_together_eth', 'total_value_together'])
+    if data_in['all_erc20_transactions'].shape[0] == 0:
+        data_in['all_erc20_transactions'] = pd.DataFrame(
+            columns=['from_address', 'to_address', 'n_transactions_together_erc20', 'max_usd_together_erc20',
+                     'avg_usd_together_erc20', 'total_usd_together_erc20'])
+    if data_in['eth_in'].shape[0] == 0:
+        data_in['eth_in'] = pd.DataFrame(
+            columns=['address', 'n_transactions_in_eth', 'max_value_in_eth', 'avg_value_in_eth',
+                     'total_value_in_eth'])
+    if data_in['eth_out'].shape[0] == 0:
+        data_in['eth_out'] = pd.DataFrame(
+            columns=['address', 'n_transactions_out_eth', 'max_value_out_eth', 'avg_value_out_eth',
+                     'total_value_out_eth'])
+    if data_in['erc20_in'].shape[0] == 0:
+        data_in['erc20_in'] = pd.DataFrame(
+            columns=['address', 'n_transactions_in_erc20', 'max_usd_in_erc20', 'avg_usd_in_erc20',
+                     'total_usd_in_erc20'])
+    if data_in['erc20_out'].shape[0] == 0:
+        data_in['erc20_out'] = pd.DataFrame(
+            columns=['address', 'n_transactions_out_erc20', 'max_usd_out_erc20', 'avg_usd_out_erc20',
+                     'total_usd_out_erc20'])
+    return data_in
+
+
 def prepare_data(data_in: dict) -> tuple:
     """
     Prepare the data for the graph neural network. This includes:
@@ -73,6 +107,8 @@ def prepare_data(data_in: dict) -> tuple:
     :return: list of all the nodes, list of all the edges, list of all the properties of the edges,
     list of all the properties of the nodes
     """
+    # Format empty values
+    data_in = format_empty_values(data_in)
     # Write all the transactions together
     transactions_overview = pd.merge(
         data_in['all_eth_transactions'], data_in['all_erc20_transactions'],
