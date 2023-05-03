@@ -25,3 +25,5 @@ N_WORKERS = 8
 CHAIN_ID = 1
 # Minimum amount of neighbors to consider an address
 MIN_NEIGHBORS = 10
+# Maximum number of findings that can be sent in one handle call
+MAX_FINDINGS = 40
