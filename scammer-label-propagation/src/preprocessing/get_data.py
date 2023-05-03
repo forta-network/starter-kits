@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
-from src.constants import attacker_bots, victim_bots, SIMULTANEOUS_ADDRESSES
+from src.constants import attacker_bots, victim_bots, SIMULTANEOUS_ADDRESSES, MIN_NEIGHBORS
 from src.storage import get_secrets
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,6 @@ def get_all_related_addresses(central_node) -> str:
     """
     logger.info(f'{central_node}\tQuerying all related addresses')
     API_key = get_secrets()['jsonRpc']['ALLIUM']
-    # API_key = get_secrets()['allium']['API_key']
     api_url = f'https://api.allium.so/api/v1/explorer/queries/Q71VcKtUFjBtloXNZtpD/run'
     max_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     response = requests.post(
@@ -28,6 +27,8 @@ def get_all_related_addresses(central_node) -> str:
         json={"address":central_node,"tt":max_datetime},
         headers={"X-API-Key": API_key},
     )
+    if len(response.json()['data']) < MIN_NEIGHBORS:
+        raise ValueError(f'{central_node}:\tNot enough neighbors, skipping')
     list_of_addresses = str(tuple(pd.DataFrame(response.json()['data'])['address'].tolist()))
     return list_of_addresses
 
