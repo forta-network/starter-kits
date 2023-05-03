@@ -3,7 +3,8 @@ import requests
 import forta_agent
 from web3 import Web3
 from forta_agent import get_json_rpc_url, Finding
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
+# from concurrent.futures import ProcessPoolExecutor
 
 from src.main import run_all
 from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, CHAIN_ID
@@ -39,7 +40,7 @@ def run_all_extended(central_node):
         
 def initialize():
     global executor
-    executor = ProcessPoolExecutor(max_workers=N_WORKERS)
+    executor = ThreadPoolExecutor(max_workers=N_WORKERS)
     global addresses_analyzed
     addresses_analyzed = []
     global global_futures
