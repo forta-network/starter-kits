@@ -1,5 +1,5 @@
 {
-  "name": "forta-agent-starter",
+  "name": "scammer-label-propagation",
   "version": "0.0.1",
   "description": "Forta Agent Python starter project",
   "repository": "https://github.com/forta-network/forta-bot-sdk/tree/master/starter-project",
@@ -27,7 +27,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.27"
+    "forta-agent": "^0.1.28"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"
