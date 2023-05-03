@@ -62,9 +62,9 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
     total_retries = 0
     max_retries = 10
     data = {}
-    logger.info(f'{central_node}:\tDownloading the data')
+    logger.debug(f'{central_node}:\tDownloading the data')
     for key in queries.keys():
-        logger.info(f'{central_node}:\t{key}')
+        logger.debug(f'{central_node}:\t{key}')
         api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
         response = requests.post(
             api_url,
@@ -83,7 +83,7 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
             )
             run_status = response.json()
             if run_status == 'failed':
-                logger.info(f"{central_node}:\t{key} query failed. Re-querying. {response.json()}")
+                logger.debug(f"{central_node}:\t{key} query failed. Re-querying. {response.json()}")
                 api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
                 response = requests.post(
                     api_url,
@@ -101,10 +101,10 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
                     data[key] = pd.DataFrame(response.json()['data'])
                     keys_to_pop.append(key)
                     # active_queries.pop(key)
-                    logger.info(f"{central_node}:\t{key} Finished")
+                    logger.debug(f"{central_node}:\t{key} Finished")
                 except Exception as e:
-                    logger.info(e)
-                    logger.info(f"{central_node}:\t{key} failed after successfully running the query. Re-querying")
+                    logger.error(e)
+                    logger.debug(f"{central_node}:\t{key} failed after successfully running the query. Re-querying")
                     api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
                     response = requests.post(
                         api_url,
@@ -116,6 +116,7 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
         for key in keys_to_pop:
             active_queries.pop(key)
         time.sleep(waiting_time)
+    logger.info(f'{central_node}:\tFinished downloading the data')
     return data
 
 
@@ -199,7 +200,7 @@ def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
                     response = requests.request("POST", forta_api, json=payload, headers=headers)
                     all_labels += response.json()['data']['labels']['labels']
                 except Exception as e:
-                        logger.info(f'Retrying for {i+1} time')
+                        logger.debug(f'Retrying for {i+1} time')
                 else:
                     break
             next_page_exists = response.json()['data']['labels']['pageInfo']['hasNextPage']
@@ -222,7 +223,7 @@ def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
                     response = requests.request("POST", forta_api, json=payload, headers=headers)
                     all_labels += response.json()['data']['labels']['labels']
                 except Exception as e:
-                        logger.info(f'Retrying for {i+1} time')
+                        logger.debug(f'Retrying for {i+1} time')
                 else:
                     break
             next_page_exists = response.json()['data']['labels']['pageInfo']['hasNextPage']
@@ -261,11 +262,9 @@ def get_automatic_labels(all_nodes_dict, transactions_overview, central_node, la
     # Attackers
     attackers_list = labels_df.loc[labels_df['attacker']>=attacker_confidence, 'address'].unique().tolist()
     if len(attackers_list) == 0:
-        logger.info(f'{central_node}:\tWith current attacker level {attacker_confidence} there are not enough attackers. Go to next address')
-        raise ValueError
+        raise ValueError(f'{central_node}:\tWith current attacker level {attacker_confidence} there are not enough attackers. Go to next address')
     if central_node not in attackers_list:
-        logger.info(f'{central_node}:\thas less attacker confidence than {attacker_confidence}. Go to next address')
-        raise ValueError
+        raise ValueError(f'{central_node}:\thas less attacker confidence than {attacker_confidence}. Go to next address')
     num_attackers = len(attackers_list)
     for attacker in attackers_list:
         automatic_labels[attacker] = 'attacker'
@@ -284,7 +283,7 @@ def get_automatic_labels(all_nodes_dict, transactions_overview, central_node, la
         if len(potential_victims) > n_victims:
             final_victims = np.random.choice(potential_victims, n_victims, replace=False).tolist()
         else:
-            logger.info(f'{central_node}:\t there are not enough unlabeled for adding extra victims')
+            logger.debug(f'{central_node}:\t there are not enough unlabeled for adding extra victims')
             final_victims = potential_victims
         final_victims += victims_list
     else:

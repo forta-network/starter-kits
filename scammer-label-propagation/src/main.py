@@ -26,7 +26,6 @@ def run_all(central_node):
     :param central_node: str with the node to build the graph around and analyze
     :return: pd.DataFrame with the new attackers and the probabilities
     """
-    # print(f'Started executing {central_node}')
     central_node = central_node.lower()
     logger.info(f"{central_node}:\tStart processing")
 
@@ -39,7 +38,6 @@ def run_all(central_node):
     np.random.seed(1993)
     all_results = []
     for _ in range(N_FOLDS):
-        # print(_)
         labels_torch, automatic_labels = get_automatic_labels(
             all_nodes_dict, transactions_overview, central_node, labels_df,
             attacker_confidence=ATTACKER_CONFIDENCE, victim_sampling=VICTIM_SAMPLING)
@@ -70,9 +68,10 @@ def run_all(central_node):
             if attacker_code == HexBytes('0x'):
                 attackers_not_contracts.append(address)
         except ValueError as e:
-            logger.info("web3 client didn't work, we need to solve that.")
+            logger.debug("web3 client didn't work, we need to solve that.")
     
     filtered_attackers_df = filtered_attackers_df.loc[attackers_not_contracts]
     # filtered_attackers_df.to_csv(f'results/{central_node}.csv')  # write down for debugging
     logger.debug(filtered_attackers_df)
+    logger.info(f"{central_node}:\tFinished processing")
     return filtered_attackers_df
