@@ -6,7 +6,7 @@ from forta_agent import get_json_rpc_url, Finding
 from concurrent.futures import ThreadPoolExecutor
 
 from src.main import run_all
-from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, CHAIN_ID
+from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, CHAIN_ID, MAX_FINDINGS
 
 logging.basicConfig(filename=f"logs.log", level=logging.DEBUG, 
                     format='%(levelname)s:%(asctime)s:%(name)s:%(lineno)d:%(message)s')
@@ -48,6 +48,9 @@ def initialize():
     addresses_analyzed = []
     global global_futures
     global_futures = {}
+    global global_alerts
+    global_alerts = []
+
     subscription_json = []
     for bot in attacker_bots:
         subscription_json.append({"botId": bot, "chainId": CHAIN_ID})
@@ -96,25 +99,29 @@ def provide_handle_block(w3):
     def handle_block(block_event) -> list:
         logger.debug("handle_block inner called")
         global global_futures
+        global global_alerts
 
         completed_futures = []
-        alerts = []
         running_futures = 0
+        pending_futures = 0
         for address, future in global_futures.items():
             if future.running():
                 running_futures += 1
             elif future.done():
-                print(future.done())
                 try:
-                    alerts += future.result()
+                    global_alerts += future.result()
                     completed_futures.append(address)
-                    logger.debug(future.result())
                 except Exception as e:
                     logger.error(f"Exception {e} occurred while collecting results from address {address}")
-        logger.debug(f"Running futures: {running_futures}")
+            else:
+                pending_futures += 1
+        logger.debug(f"Running futures: {running_futures}:\tPending futures: {pending_futures}")
         for address in completed_futures:
             global_futures.pop(address)
-
+        # We return the first MAX_FINDINGS findings, and remove them from the list. Otherwise
+        # we cache them in global alerts and will return them in the next block
+        alerts = global_alerts[:MAX_FINDINGS]
+        global_alerts = global_alerts[MAX_FINDINGS:]
         return alerts
 
     return handle_block
