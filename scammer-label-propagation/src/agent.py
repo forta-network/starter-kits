@@ -4,18 +4,21 @@ import forta_agent
 from web3 import Web3
 from forta_agent import get_json_rpc_url, Finding
 from concurrent.futures import ThreadPoolExecutor
-# from concurrent.futures import ProcessPoolExecutor
 
 from src.main import run_all
 from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, CHAIN_ID
 
 logging.basicConfig(filename=f"logs.log", level=logging.DEBUG, 
-                    format='%(levelname)s:%(asctime)s:%(name)s:%(message)s')
+                    format='%(levelname)s:%(asctime)s:%(name)s:%(lineno)d:%(message)s')
 logger = logging.getLogger(__name__)
 
 
 def run_all_extended(central_node):
-    attackers_df = run_all(central_node)
+    try:
+        attackers_df = run_all(central_node)
+    except Exception as e:
+        logger.error(f"{central_node}:\tError running run_all in a thread: {e}")
+        return []
     # Now we put things into a list of findings
     all_findings_list = []
     finding_dict = {
@@ -58,24 +61,21 @@ def provide_handle_alert(w3):
     
 
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
-        try:
-            logger.debug("handle_alert inner called")
-            global executor
-            global addresses_analyzed
-            global global_futures
+        logger.debug("handle_alert inner called")
+        global executor
+        global addresses_analyzed
+        global global_futures
 
-            list_of_addresses = []
-            for label in alert_event.alert.labels:
-                if label.confidence >= ATTACKER_CONFIDENCE and label.entity_type == forta_agent.EntityType.Address:
-                    list_of_addresses.append(label.entity)
-            list_of_addresses = list(set(list_of_addresses))
-            for address in list_of_addresses:
-                if address not in addresses_analyzed:
-                    logger.debug(f"Adding address {address} to the pool")
-                    global_futures[address] = executor.submit(run_all_extended, address)
-                    addresses_analyzed.append(address)
-        except Exception as e:
-            logger.error(f"Error in handle_alert: {e}")
+        list_of_addresses = []
+        for label in alert_event.alert.labels:
+            if label.confidence >= ATTACKER_CONFIDENCE and label.entity_type == forta_agent.EntityType.Address:
+                list_of_addresses.append(label.entity)
+        list_of_addresses = list(set(list_of_addresses))
+        for address in list_of_addresses:
+            if address not in addresses_analyzed:
+                logger.debug(f"Adding address {address} to the pool")
+                global_futures[address] = executor.submit(run_all_extended, address)
+                addresses_analyzed.append(address)
         return []
 
     return handle_alert
@@ -94,29 +94,27 @@ def provide_handle_block(w3):
     logger.debug("provide_handle_block called")
 
     def handle_block(block_event) -> list:
-        try:
-            logger.debug("handle_block inner called")
-            global global_futures
+        logger.debug("handle_block inner called")
+        global global_futures
 
-            completed_futures = []
-            alerts = []
-            running_futures = 0
-            for address, future in global_futures.items():
-                if future.running():
-                    running_futures += 1
-                elif future.done():
-                    print(future.done())
-                    try:
-                        alerts += future.result()
-                        completed_futures.append(address)
-                        logger.debug(future.result())
-                    except requests.exceptions.ReadTimeout:
-                        print('There was a timeout')
-            logger.debug(f"Running futures: {running_futures}")
-            for address in completed_futures:
-                global_futures.pop(address)
-        except Exception as e:
-            logger.error(f"Exception in handle_block: {e}")
+        completed_futures = []
+        alerts = []
+        running_futures = 0
+        for address, future in global_futures.items():
+            if future.running():
+                running_futures += 1
+            elif future.done():
+                print(future.done())
+                try:
+                    alerts += future.result()
+                    completed_futures.append(address)
+                    logger.debug(future.result())
+                except Exception as e:
+                    logger.error(f"Exception {e} occurred while collecting results from address {address}")
+        logger.debug(f"Running futures: {running_futures}")
+        for address in completed_futures:
+            global_futures.pop(address)
+
         return alerts
 
     return handle_block
