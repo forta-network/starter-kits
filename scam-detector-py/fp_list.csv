@@ -32,3 +32,4 @@ address,chain_id,comment
 0x5bbd726c0455ade17dea775ef32a5373b38a9a9b,137,
 0x7293c4fc440f91bb551302b8c28a443161e3aa84,56, Sending dust
 0x667d6e3b2a4c36792d6521d778215cbbf033028f,1, Hacker "stealing" several times
+0xf36ac1a7c1bed1e5615af9a6fe35cfc2f5036043,137, "Steling" always from the same wallet and a super low amount in USDC
