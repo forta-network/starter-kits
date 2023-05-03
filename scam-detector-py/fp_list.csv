@@ -31,3 +31,4 @@ address,chain_id,comment
 0x42e650c55cd827d353e51e60632eff381861b3ce,137, Tranfers from the same wallet in three different moments
 0x5bbd726c0455ade17dea775ef32a5373b38a9a9b,137,
 0x7293c4fc440f91bb551302b8c28a443161e3aa84,56, Sending dust
+0x667d6e3b2a4c36792d6521d778215cbbf033028f,1, Hacker "stealing" several times
