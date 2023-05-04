@@ -7,7 +7,7 @@ import io
 import pandas as pd
 import json
 
-from constants import TX_COUNT_FILTER_THRESHOLD
+from src.constants import TX_COUNT_FILTER_THRESHOLD
 
 etherscan_label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
 
@@ -58,7 +58,7 @@ class Utils:
         if cluster is None:
             return ""
 
-        labels_str = []    
+        labels_str = []   
         try:
             res = requests.get(etherscan_label_api + cluster.lower())  # already comma separated
             if res.status_code == 200:
@@ -66,8 +66,10 @@ class Utils:
                 if len(labels) > 0 and labels['events'] is not None:
                     logging.info(f"retreived label for {cluster}: {labels['events'][0]}")
                     labels_str.append(labels['events'][0]['label']['label'])
+            else:
+                logging.warning(f"Status code get_etherscan_label {res.status_code} {res.text}. Returning no label.")    
         except Exception as e:
-            logging.warning(f"Exception in get_etherscan_label {e}")
+            logging.warning(f"Exception in get_etherscan_label {e}. Returning no label.")
         
         return labels_str
 
@@ -144,6 +146,13 @@ class Utils:
             total_shards = package["chainSettings"]["default"]["shards"]
         logging.debug(f"total shards: {total_shards}")
         return total_shards
+    
+    @staticmethod
+    def get_bot_version() -> str:
+        logging.debug("getting bot version from package.json")
+        package = json.load(open("package.json"))
+        logging.debug("loaded package.json")
+        return package["version"]
         
     @staticmethod
     def get_shard(CHAIN_ID: int, timestamp: int) -> int:
