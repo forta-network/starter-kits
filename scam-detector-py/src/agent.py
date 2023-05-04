@@ -344,7 +344,7 @@ def emit_combination_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
             alert_id = "SCAM-DETECTOR-ICE-PHISHING"
             unique_alertIds = set(alert[1] for alert in alert_list)
-            unique_alertHashes = set(alert[1] for alert in alert_list)
+            unique_alertHashes = set(alert[2] for alert in alert_list)
             created_at_datetime = datetime.strptime(alert_event.alert.created_at[0:19], "%Y-%m-%dT%H:%M:%S")
             findings.append(ScamDetectorFinding.scam_finding(block_chain_indexer, scammer_address_lower, created_at_datetime, created_at_datetime, alert_event.alert.addresses, unique_alertIds, alert_id, unique_alertHashes, CHAIN_ID))
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} added to findings. Findings size: {len(findings)}")
@@ -442,7 +442,7 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
                 logging.error(f"{BOT_VERSION}: CHAIN_ID not set")
                 raise Exception("CHAIN_ID not set")
 
-        chain_id = int(alert_event.alert.source.block.chain_id) if alert_event.alert.source.block.chain_id is not None else int(alert_event.chain_id)
+        chain_id = int(alert_event.chain_id) if (alert_event.alert.source.block.chain_id is None or alert_event.alert.source.block.chain_id == 0) else int(alert_event.alert.source.block.chain_id)
         if chain_id == CHAIN_ID:
             # got alert from the right chain
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - received alert for proper chain {CHAIN_ID}")

@@ -91,3 +91,9 @@ class TestBaseBotParser:
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
         assert "0xe75512aa3bec8f00434bbd6ad8b0a3fbff100ad6" in addresses, "this should be the attacker address"
 
+    def test_get_known_scammer(self):
+        descrption = "Scam address 0xFB4d3EB37bDe8FA4B52c60AAbE55B3Cd9908EC73 got approval for 0x402E727AB6B0a8dcE41E74C4Bf385cEd14B6E80c's assets"
+        alert_event = TestBaseBotParser.generate_alert("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-SCAM-APPROVAL", descrption)
+        addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
+        assert "0xFB4d3EB37bDe8FA4B52c60AAbE55B3Cd9908EC73".lower() in addresses, "this should be the attacker address"
+

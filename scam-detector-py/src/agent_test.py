@@ -405,6 +405,8 @@ class TestScamDetector:
         assert len(findings) == 1, "this should have triggered a finding"
         finding = findings[0]
         assert finding.metadata is not None, "metadata should not be empty"
+        assert any(alert_event.alert_hash in str(value) for key, value in finding.metadata.items()), "metadata should contain alert hashes"
+        assert any('TORNADO' in str(value) for key, value in finding.metadata.items()), "metadata should contain alert its"
         assert finding.labels is not None, "labels should not be empty"
         label = finding.labels[0]
         assert label.entity == "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4", "entity should be attacker address"

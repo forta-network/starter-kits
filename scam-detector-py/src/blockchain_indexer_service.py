@@ -93,9 +93,11 @@ class BlockChainIndexer:
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
     def get_contracts(address, chain_id) -> set:
+        logging.info(f"get_contracts for {address} on {chain_id} called.")
         contracts = set()
 
         #etherscan for all chains except bsc and fantom
+        logging.info(f"get_contracts from etherscan for {address} on {chain_id}.")
         df_etherscan = pd.DataFrame(columns=['nonce', 'to', 'isError'])
         transaction_for_address = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={address}&startblock={BlockChainIndexer.FIRST_BLOCK_NUMBER}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
         
@@ -121,6 +123,7 @@ class BlockChainIndexer:
                     contracts.add(BlockChainIndexer.calc_contract_address(address, int(row["nonce"])).lower())
 
         if chain_id != 56 and chain_id != 250:
+            logging.info(f"get_contracts from allium for {address} on {chain_id}.")
             response = requests.post(f"https://api.allium.so/api/v1/explorer/queries/{BlockChainIndexer.get_allium_query(chain_id)}/run",
                 json={"address_lower":address},
                 headers={"X-API-Key": BlockChainIndexer.get_allium_api_key()},
@@ -133,4 +136,5 @@ class BlockChainIndexer:
             else:
                 logging.warning(f"Error getting contract on allium for {address}, {chain_id} {response.status_code} {response.content}")
 
+        logging.info(f"get_contracts from etherscan for {address} on {chain_id}; returning {len(contracts)}.")
         return contracts
