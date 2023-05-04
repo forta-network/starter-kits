@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from src.main import run_all
 from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, CHAIN_ID, MAX_FINDINGS
 
-logging.basicConfig(filename=f"logs.log", level=logging.DEBUG, 
+logging.basicConfig(filename=f"logs.log", level=logging.INFO, 
                     format='%(levelname)s:%(asctime)s:%(name)s:%(lineno)d:%(message)s')
 logger = logging.getLogger(__name__)
 
@@ -28,16 +28,20 @@ def run_all_extended(central_node):
             'severity': forta_agent.FindingSeverity.Medium,
             'type': forta_agent.FindingType.Suspicious
         }
-    for row_idx in range(attackers_df.shape[0]):
-        attacker_info = attackers_df.iloc[row_idx]
-        label_dict = {
-            'entity': attacker_info.name,
-            'label': 'scammer-label-propagation',
-            'confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
-            'entity_type': forta_agent.EntityType.Address
-        }
-        finding_dict['labels'] = [forta_agent.Label(label_dict)]
-        all_findings_list.append(Finding(finding_dict))
+    if attackers_df.shape[0] > MAX_FINDINGS:
+        logger.error(f"{central_node}:\tToo many attackers found: {attackers_df.shape[0]}. Labels may be compromised")
+    else:
+        for row_idx in range(attackers_df.shape[0]):
+            attacker_info = attackers_df.iloc[row_idx]
+            logger.info(f'{central_node}:\tNew attacker info: {attacker_info}')
+            label_dict = {
+                'entity': attacker_info.name,
+                'label': 'scammer-label-propagation',
+                'confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
+                'entity_type': forta_agent.EntityType.Address
+            }
+            finding_dict['labels'] = [forta_agent.Label(label_dict)]
+            all_findings_list.append(Finding(finding_dict))
     return all_findings_list
         
         
@@ -115,7 +119,7 @@ def provide_handle_block(w3):
                     logger.error(f"Exception {e} occurred while collecting results from address {address}")
             else:
                 pending_futures += 1
-        logger.debug(f"Running futures: {running_futures}:\tPending futures: {pending_futures}")
+        logger.info(f"Running futures: {running_futures}:\tPending futures: {pending_futures}")
         for address in completed_futures:
             global_futures.pop(address)
         # We return the first MAX_FINDINGS findings, and remove them from the list. Otherwise
