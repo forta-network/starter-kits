@@ -9,7 +9,7 @@ from web3 import Web3
 import pandas as pd
 import logging
 
-from storage import get_secrets
+from src.storage import get_secrets
 
 class BlockChainIndexer:
 
@@ -52,7 +52,9 @@ class BlockChainIndexer:
     
     @staticmethod
     def get_allium_api_key():
-        if "ALLIUM" in BlockChainIndexer.SECRETS_JSON['apiKeys']:
+        if "ALLIUM" in BlockChainIndexer.SECRETS_JSON['jsonRpc']:
+            return BlockChainIndexer.SECRETS_JSON['jsonRpc']['ALLIUM']
+        elif "ALLIUM" in BlockChainIndexer.SECRETS_JSON['apiKeys']:
             return BlockChainIndexer.SECRETS_JSON['apiKeys']['ALLIUM']
         else:
             return ""

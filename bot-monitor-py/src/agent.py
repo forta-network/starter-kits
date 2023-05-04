@@ -102,7 +102,7 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
                     }
                 }))
             FINDINGS_CACHE.append(findings_cache_key)
-    except Exception as e:
+    except BaseException as e:
         logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e} - {traceback.format_exc()}")
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
             logging.info(f"alert {alert_event.alert_hash} - Raising exception to expose error to scannode")

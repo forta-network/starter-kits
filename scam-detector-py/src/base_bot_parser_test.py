@@ -23,17 +23,24 @@ class TestBaseBotParser:
                 }
         
         return create_alert_event(alert)
+    
+    def test_get_cex_funded_address_metadata(self):
+        description = "CEX Funding from FixFloat of 630000000000000 wei to 0xb3793e89bcde894a18c3f642f1c83ea0c0d08072"
+        metadata = {"CEX_name":"FixFloat","anomaly_score":"0.00010274608069707849","to":"0xb3793e89bcde894a18c3f642f1c83ea0c0d08072","value":"630000000000000"}
+        alert_event = TestBaseBotParser.generate_alert("0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb", "CEX-FUNDING-1", description=description, metadata=metadata)
+        addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
+        assert "0xb3793e89bcde894a18c3f642f1c83ea0c0d08072" in addresses, "this should be the attacker address"
+
 
     def test_get_addresses_address_poisoning_metadata(self):
         metadata = {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955,0x55d398326f99059ff775485246999027b3197956","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
         alert_event = TestBaseBotParser.generate_alert("0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502", "ADDRESS-POISONING", "description", metadata)
 
-        
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
         poisoning_addresses_count = 0
         poisoner_addresses_count = 0
-        for address, address_info in addresses.items():
-            if address_info == "poisoner":
+        for address, metadata in addresses.items():
+            if metadata['address_information'] == "poisoner":
                 poisoner_addresses_count += 1
             else:
                 poisoning_addresses_count += 1
@@ -56,7 +63,7 @@ class TestBaseBotParser:
 
     def test_get_sleep_minting_addresses(self):
         description = "An NFT Transfer was initiated by 0x09b34e69363d37379e1c5e27fc793fdb5aca893d to transfer an NFT owned by 0xeb9fcf2fb7c0d95edc5beb9b142e8c024d885fb2. It had been previously minted by the 0x09b34e69363d37379e1c5e27fc793fdb5aca893d to 0xeb9fcf2fb7c0d95edc5beb9b142e8c024d885fb2. The NFT contract address is 0xd57474e76c9ebecc01b65a1494f0a1211df7bcd8"
-        alert_event = TestBaseBotParser.generate_alert("0x46ce98e921e2766a922840a56e89f24409001052c284e0bd6cbaa4fecd95e9b6", "SLEEPMINT-3", description)
+        alert_event = TestBaseBotParser.generate_alert("0x33faef3222e700774af27d0b71076bfa26b8e7c841deb5fb10872a78d1883dba", "SLEEPMINT-3", description)
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
         assert "0x09b34e69363d37379e1c5e27fc793fdb5aca893d" in addresses, "this should be the attacker address"
 

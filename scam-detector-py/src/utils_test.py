@@ -54,7 +54,11 @@ class TestUtils:
         assert Utils.is_fp(w3, "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"), "this should be a false positive"
 
     def test_get_total_shards(self):
-        assert Utils.get_total_shards(w3) == 1, "this should be 1"
+        assert Utils.get_total_shards(w3) == 8, "this should be 8"
 
     def test_get_shard(self):
-        assert Utils.get_shard(1, datetime.now().timestamp()) == 0, "this should be 1"
+        
+        assert Utils.get_shard(1, datetime(2023, 1, 1).timestamp()) == 0, "this should be 0"
+
+    def test_get_bot_version(self):
+        assert "." in Utils.get_bot_version()

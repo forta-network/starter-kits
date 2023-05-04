@@ -66,15 +66,14 @@ class TestScamFindings:
         
     def test_scam_similar_contract(self):
         chain_id = 1
-        row = {}
-        row["metadata"] = {"alert_hash":"0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016",
+        metadata = {"alert_hash":"0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016",
                            "new_scammer_contract_address":"0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2",
                            "new_scammer_eoa":"0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0",
                            "scammer_contract_address":"0xe22536ac6f6a20dbb283e7f61a880993eab63313",
                            "scammer_eoa":"0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e",
                            "similarity_hash":"68e6432db785f93986a9d49b19077067f8b694612f2bc1e8ef5cd38af2c8727e",
                            "similarity_score":"0.9347575306892395"}
-        finding = ScamDetectorFinding.alert_similar_contract(block_chain_indexer, row, chain_id)
+        finding = ScamDetectorFinding.alert_similar_contract(block_chain_indexer, metadata, chain_id)
 
         alert_id = "SCAM-DETECTOR-SIMILAR-CONTRACT"
         assert finding.alert_id == alert_id
@@ -91,7 +90,7 @@ class TestScamFindings:
         assert finding.metadata['existing_scammer_contract_address'] == "0xe22536ac6f6a20dbb283e7f61a880993eab63313"
         assert finding.metadata['similarity_score'] == "0.9347575306892395"
         assert finding.metadata['involved_alert_id_1'] == "SCAM-DETECTOR-ADDRESS-POISONER"
-        assert finding.metadata['involved_alert_hashes_1'] == "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
+        assert finding.metadata['involved_alert_hash_1'] == "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
 
         assert len(finding.labels) == 2
 

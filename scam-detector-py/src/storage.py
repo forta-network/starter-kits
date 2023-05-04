@@ -26,7 +26,7 @@ def _load_json(key: str) -> object:
         if res.status_code == 200:
             return res.json()
         else:
-            raise f"error loading {key}"
+            raise Exception(f"error loading json from owner db: {res.status_code}, {res.text}")
 
 
 def get_secrets():
