@@ -1,9 +1,11 @@
 from datetime import datetime
-
+from forta_agent import get_json_rpc_url
+from web3 import Web3
 from utils import Utils
 from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX
 
 w3 = Web3Mock()
+real_w3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 class TestUtils:
     def test_is_contract_eoa(self):
@@ -62,3 +64,6 @@ class TestUtils:
 
     def test_get_bot_version(self):
         assert "." in Utils.get_bot_version()
+
+    def test_is_fp_investigation1(self):
+        assert not Utils.is_fp(real_w3, "0x61fF13F129a96d2d229D37A0531979852945433a".lower()), "this should not be a false positive"
