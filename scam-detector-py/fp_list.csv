@@ -33,3 +33,8 @@ address,chain_id,comment
 0x7293c4fc440f91bb551302b8c28a443161e3aa84,56, Sending dust
 0x667d6e3b2a4c36792d6521d778215cbbf033028f,1, Hacker "stealing" several times
 0xf36ac1a7c1bed1e5615af9a6fe35cfc2f5036043,137, "Steling" always from the same wallet and a super low amount in USDC
+0x873ce34970cff81c77eb07217a8058c1861700bd,1,As soon as receiving the ETH, the "targets" are being drained. There's a pattern that shouldn't be happening
+0x95d896fb6ef54a601887b4ce5c4e3fd1e0226c6d,1,Interacted too many times with the "hacker"
+0xe5ad66f494bb6d80ae79ce9265cebaa5c64848cc,1,"hackers" are stolen by only a slighty portion of the whole eth that they posses
+0xbd4d15053be2aeb70d544c6b8a7056f8a5c0250d,1,All targets seems like airdrop hunters, a same pattern happening (interation with ZKsync and starknet)
+
