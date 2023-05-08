@@ -87,7 +87,7 @@ def provide_handle_alert(w3):
                 logger.debug(f"Adding address {address} to the pool")
                 global_futures[address] = executor.submit(run_all_extended, address)
                 addresses_analyzed.append(address)
-        logger.info(f"Alert {alert_event.alert.alert_id} took {time.time() - t} seconds to process. It had {len(list_of_addresses)} addresses")
+        logger.info(f"Alert {alert_event.alert.alert_id} took {time.time() - t:.10f} seconds to process. It had {len(list_of_addresses)} addresses")
         return []
 
     return handle_alert
@@ -131,7 +131,7 @@ def provide_handle_block(w3):
         # we cache them in global alerts and will return them in the next block
         alerts = global_alerts[:MAX_FINDINGS]
         global_alerts = global_alerts[MAX_FINDINGS:]
-        logger.info(f"Block {block_event.block_number}:\tRF:{running_futures};PF:{pending_futures};\t {time.time() - t}s;\t{len(alerts)} findings")
+        logger.info(f"Block {block_event.block_number}:\tRF:{running_futures};PF:{pending_futures};\t {time.time() - t:.10f} s;\t{len(alerts)} findings")
         return alerts
 
     return handle_block
