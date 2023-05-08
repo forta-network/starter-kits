@@ -65,5 +65,9 @@ class TestUtils:
     def test_get_bot_version(self):
         assert "." in Utils.get_bot_version()
 
+    def test_is_beta(self):
+        assert Utils.is_beta() is not None
+
+
     def test_is_fp_investigation1(self):
         assert not Utils.is_fp(real_w3, "0x61fF13F129a96d2d229D37A0531979852945433a".lower()), "this should not be a false positive"

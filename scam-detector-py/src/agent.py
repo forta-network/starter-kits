@@ -11,7 +11,7 @@ import traceback
 
 
 import forta_agent
-from forta_agent import get_json_rpc_url, EntityType
+from forta_agent import get_json_rpc_url,  Finding, FindingType, FindingSeverity
 from web3 import Web3
 
 from src.constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_CLUSTERS_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
@@ -27,6 +27,7 @@ from src.utils import Utils
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 block_chain_indexer = BlockChainIndexer()
 
+INITIALIZED = False
 CHAIN_ID = -1
 BOT_VERSION = Utils.get_bot_version()
 
@@ -55,6 +56,8 @@ def initialize():
     this function initializes the state variables that are tracked across tx and blocks
     it is called from test to reset state between tests
     """
+    global INITIALIZED
+
     reinitialize()
 
     global ALERTED_CLUSTERS
@@ -84,6 +87,7 @@ def initialize():
     alert_config = {"alertConfig": {"subscriptions": subscription_json}}
     logging.info(f"{BOT_VERSION}: Initializing scam detector bot. Subscribed to bots successfully: {alert_config}")
     logging.info(f"{BOT_VERSION}: Initialized scam detector bot.")
+    INITIALIZED = True
     return alert_config
 
 
@@ -570,11 +574,25 @@ def load(chain_id: int, key: str) -> object:
 
 def provide_handle_alert(w3):
     logging.debug("provide_handle_alert called")
-
+   
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logging.debug("handle_alert inner called")
+        global INITIALIZED
+        if not INITIALIZED:
+            raise Exception("Not initialized")
+
         global FINDINGS_CACHE_ALERT
         findings = []
+        if Utils.is_beta():
+            findings.append(Finding({
+                'name': 'Debug Alert',
+                'description': f'{alert_event.alert_hash},{alert_event.bot_id},{alert_event.alert.alert_id},observed)',
+                'alert_id': "DEBUG-1",
+                'type': FindingType.Info,
+                'severity': FindingSeverity.Info,
+                'metadata': {},
+                'labels': []
+            }))
 
         logging.info(f"{BOT_VERSION}: Handle alert called. Findings cache for alerts size: {len(FINDINGS_CACHE_ALERT)}")
         scam_findings = detect_scam(w3, alert_event)
@@ -603,6 +621,9 @@ def provide_handle_block(w3):
 
     def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
         logging.debug("handle_block with w3 called")
+        global INITIALIZED
+        if not INITIALIZED:
+            raise Exception("Not initialized")
         global FINDINGS_CACHE_BLOCK
         findings = []
         if datetime.now().minute == 0:  # every hour

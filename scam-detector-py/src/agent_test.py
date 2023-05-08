@@ -39,6 +39,7 @@ class TestScamDetector:
 
     def test_initialize(self):
         agent.initialize()
+        assert agent.INITIALIZED
 
     def test_perf_passthrough_alert(self):
         global w3
