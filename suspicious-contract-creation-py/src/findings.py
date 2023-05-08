@@ -23,7 +23,7 @@ class SuspiciousContractFindings:
             chain_id,
             BOT_ID,
             'SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH',
-            ScanCountType.TRANSFER_COUNT,
+            ScanCountType.CONTRACT_CREATION_COUNT,
         ), **addresses}
 
         return Finding({
@@ -54,7 +54,7 @@ class SuspiciousContractFindings:
             chain_id,
             BOT_ID,
             'SUSPICIOUS-CONTRACT-CREATION',
-            ScanCountType.TRANSFER_COUNT,
+            ScanCountType.CONTRACT_CREATION_COUNT,
         ), **addresses}
 
         return Finding({

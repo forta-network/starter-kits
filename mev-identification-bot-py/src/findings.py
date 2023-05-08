@@ -31,7 +31,7 @@ class MEVAccountFinding:
                         chain_id,
                         BOT_ID,
                         'MEV-ACCOUNT',
-                        ScanCountType.TRANSFER_COUNT,
+                        ScanCountType.TX_WITH_INPUT_DATA_COUNT,
             ), 'transfer_event_count': transfer_event_count, 'unique_token_count': unique_token_count, 'unique_contract_address_count': unique_contract_address_count},
             'labels': labels
         })

@@ -121,7 +121,7 @@ async function createAlert(
         chainId,
         BOT_ID,
         `${developerAbbreviation}-${protocolAbbreviation}-BLACKLIST-EVENT`,
-        ScanCountType.TransferCount
+        ScanCountType.TxCount
       ),
       contractName,
       contractAddress,

@@ -54,7 +54,7 @@ def detect_suspicious_native_transfers(w3, transaction_event: forta_agent.transa
                         CHAIN_ID,
                         BOT_ID,
                         'LARGE-TRANSFER-OUT',
-                        ScanCountType.TRANSFER_COUNT,
+                        ScanCountType.LARGE_VALUE_TRANSFER_COUNT,
                     ),
                     'to': to,
                     'from': from_,
