@@ -1,10 +1,13 @@
 from forta_agent import Finding, FindingType, FindingSeverity, EntityType
+from bot_alert_rate import calculate_alert_rate, ScanCountType
+
+from src.keys import BOT_ID
 
 
 class MaliciousAccountFundingFinding:
     @staticmethod
     def funding(
-        tx_hash, to_address: str, from_address: str, from_tag: str, anomaly_score: float
+        tx_hash, to_address: str, from_address: str, from_tag: str, chain_id: int
     ) -> Finding:
         labels = [
             {
@@ -25,7 +28,12 @@ class MaliciousAccountFundingFinding:
                 "metadata": {
                     "from_address": from_address,
                     "from_tag": from_tag,
-                    "anomaly_score": anomaly_score,
+                    "anomaly_score": calculate_alert_rate(
+                        chain_id,
+                        BOT_ID,
+                        "MALICIOUS-ACCOUNT-FUNDING",
+                        ScanCountType.TRANSFER_COUNT,
+                    ),
                 },
                 "labels": labels,
             }

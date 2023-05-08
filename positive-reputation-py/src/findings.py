@@ -1,4 +1,7 @@
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
+from bot_alert_rate import calculate_alert_rate, ScanCountType
+
+from src.keys import BOT_ID
 
 
 class PositiveReputationFindings:
@@ -23,6 +26,7 @@ class PositiveReputationFindings:
             'alert_id': 'POSITIVE-REPUTATION-1',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
-            'labels': labels
+            'labels': labels,
+            'metadata': {"anomaly_score": calculate_alert_rate(chain_id, BOT_ID, "POSITIVE-REPUTATION-1", ScanCountType.TX_COUNT)}
         })
         return finding

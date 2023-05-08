@@ -3,6 +3,7 @@ from forta_agent import get_json_rpc_url, EntityType
 from joblib import load
 from evmdasm import EvmBytecode
 from web3 import Web3
+from os import environ
 
 from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
@@ -13,11 +14,12 @@ from src.findings import ContractFindings
 from src.logger import logger
 from src.utils import (
     calc_contract_address,
-    get_anomaly_score,
     get_features,
     get_storage_addresses,
     is_contract,
 )
+
+from src.keys import ZETTABLOCK_KEY
 
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -32,6 +34,11 @@ def initialize():
     logger.info("Start loading model")
     ML_MODEL = load("malicious_non_token_model_02_07_23_exp2.joblib")
     logger.info("Complete loading model")
+
+    global CHAIN_ID
+    CHAIN_ID = web3.eth.chain_id
+
+    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
 
 
 def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
@@ -171,12 +178,10 @@ def detect_malicious_contract(
                             },
                         ]
                     )
-                    anomaly_score = get_anomaly_score(
-                        w3.eth.chain_id, "SUSPICIOUS-CONTRACT-CREATION"
-                    )
+
                     findings.append(
                         finding.malicious_contract_creation(
-                            anomaly_score,
+                            CHAIN_ID,
                             labels,
                         )
                     )
@@ -199,11 +204,12 @@ def detect_malicious_contract(
                     )
                     findings.append(
                         finding.safe_contract_creation(
+                            CHAIN_ID,
                             labels,
                         )
                     )
                 else:
-                    findings.append(finding.non_malicious_contract_creation())
+                    findings.append(finding.non_malicious_contract_creation(CHAIN_ID))
 
     return findings
 
