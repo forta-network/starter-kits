@@ -1,4 +1,8 @@
 from forta_agent import Finding, FindingType, FindingSeverity
+from bot_alert_rate import calculate_alert_rate, ScanCountType
+
+from src.keys import BOT_ID
+
 
 class SanctionedAddressFinding:
     def __init__(self):
@@ -14,8 +18,9 @@ class SanctionedAddressFinding:
             'metadata': self.metadata,
         })
 
+
 class SanctionedAddressTx(SanctionedAddressFinding):
-    def __init__(self, address):
+    def __init__(self, address, chain_id):
         super().__init__()
         self.address = address
         self.alert_id = 'CHAINALYSIS-SANCTIONED-ADDR-TX'
@@ -23,12 +28,17 @@ class SanctionedAddressTx(SanctionedAddressFinding):
         self.name = 'Sanctioned Address'
         self.severity = FindingSeverity.High
         self.type = FindingType.Suspicious
-        self.metadata = dict(sanctioned_address=self.address,
-                             data_source=self.data_source)
+        self.metadata = dict(anomaly_score=calculate_alert_rate(
+            chain_id,
+            BOT_ID,
+            self.alert_id,
+            ScanCountType.TX_COUNT,
+        ), sanctioned_address=self.address,
+            data_source=self.data_source)
 
 
 class SanctionedAddressesEvent(SanctionedAddressFinding):
-    def __init__(self, addresses):
+    def __init__(self, addresses, chain_id):
         super().__init__()
         self.addresses = addresses
         self.alert_id = 'CHAINALYSIS-SANCTIONED-ADDR-EVENT'
@@ -36,12 +46,17 @@ class SanctionedAddressesEvent(SanctionedAddressFinding):
         self.name = 'Sanctioned Addresses Event'
         self.severity = FindingSeverity.Medium
         self.type = FindingType.Info
-        self.metadata = dict(addresses=self.addresses,
-                             data_source=self.data_source)
+        self.metadata = dict(anomaly_score=calculate_alert_rate(
+            chain_id,
+            BOT_ID,
+            self.alert_id,
+            ScanCountType.TX_COUNT,
+        ), addresses=self.addresses,
+            data_source=self.data_source)
 
 
 class UnsanctionedAddressesEvent(SanctionedAddressFinding):
-    def __init__(self, addresses):
+    def __init__(self, addresses, chain_id):
         super().__init__()
         self.addresses = addresses
         self.alert_id = 'CHAINALYSIS-UNSANCTIONED-ADDR-EVENT'
@@ -49,5 +64,10 @@ class UnsanctionedAddressesEvent(SanctionedAddressFinding):
         self.name = 'Unsanctioned Addresses Event'
         self.severity = FindingSeverity.Low
         self.type = FindingType.Info
-        self.metadata = dict(addresses=self.addresses,
-                             data_source=self.data_source)
+        self.metadata = dict(anomaly_score=calculate_alert_rate(
+            chain_id,
+            BOT_ID,
+            self.alert_id,
+            ScanCountType.TX_COUNT,
+        ), addresses=self.addresses,
+            data_source=self.data_source)

@@ -9,9 +9,14 @@ import requests
 from forta_agent import Finding, FindingSeverity, FindingType, get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
+from bot_alert_rate import calculate_alert_rate, ScanCountType
 import pickle
 import os
 
+from src.keys import ZETTABLOCK_KEY
+from os import environ
+
+from src.keys import BOT_ID
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -54,6 +59,11 @@ def initialize():
     global GRAPH
     graph = load(GRAPH_KEY)
     GRAPH = nx.DiGraph() if graph is None else nx.DiGraph(graph)
+
+    global CHAIN_ID
+    CHAIN_ID = web3.eth.chain_id
+
+    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
 
 
 
@@ -141,7 +151,7 @@ def add_directed_edge(w3, from_, to):
     if Web3.toChecksumAddress(from_) in GRAPH.nodes and Web3.toChecksumAddress(to) in GRAPH.nodes:
         GRAPH.add_edges_from([(Web3.toChecksumAddress(from_), Web3.toChecksumAddress(to))])
         logging.info(f"Added edge from address {from_} to {to}.")
-        
+
 
 def calc_contract_address(w3, address, nonce) -> str:
     """
@@ -166,7 +176,7 @@ def is_contract(w3, address) -> bool:
 
 def cluster_entities(w3, transaction_event) -> list:
     findings = []
-    
+
     add_address(w3, transaction_event.transaction.from_)
     add_address(w3, transaction_event.transaction.to)
 
@@ -244,7 +254,7 @@ def filter_edge(n1, n2):
 def create_finding(from_) -> Finding:
     filtered_graph = nx.subgraph_view(GRAPH, filter_edge=filter_edge)
     undirected_graph = filtered_graph.to_undirected()
-    
+
     #  find all connected components
     connected_components = list(nx.connected_components(undirected_graph))
 
@@ -265,6 +275,12 @@ def create_finding(from_) -> Finding:
                         "type": FindingType.Info,
                         "severity": FindingSeverity.Info,
                         "metadata": {
+                            "anomaly_score": calculate_alert_rate(
+                                CHAIN_ID,
+                                BOT_ID,
+                                "ENTITY-CLUSTER",
+                                ScanCountType.TRANSFER_COUNT,
+                            ),
                             "entity_addresses": list(component)
                         }
                     }

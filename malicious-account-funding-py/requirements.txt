@@ -2,3 +2,4 @@ forta_agent>=0.1.11
 setuptools>=61.3.1
 requests>=2.27.1
 expiring-dict>=1.1.0
+bot-alert-rate>=0.0.4

@@ -1,4 +1,5 @@
 from forta_agent import FindingSeverity, create_transaction_event, EntityType
+from unittest.mock import patch
 
 import agent
 from constants import TORNADO_CASH_ADDRESSES
@@ -8,8 +9,8 @@ w3 = Web3Mock()
 
 
 class TestSuspiciousContractAgent:
-
-    def test_detect_money_laundering_at_threshold_within_blockrange(self):
+    @patch("src.findings.calculate_alert_rate", return_value=0.33)
+    def test_detect_money_laundering_at_threshold_within_blockrange(self, mocker):
         agent.initialize()
 
         tx_event = create_transaction_event({
@@ -74,16 +75,21 @@ class TestSuspiciousContractAgent:
         })
         findings = agent.detect_money_laundering(w3, tx_event)
         assert len(findings) == 1, "this should have triggered a finding"
-        finding = next((x for x in findings if x.alert_id == 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH'), None)
+        finding = next((x for x in findings if x.alert_id ==
+                       'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH'), None)
         assert finding.severity == FindingSeverity.High
-        assert finding.metadata == {"anomaly_score": 0.3333333333333333, "total_funds_transferred": "300"}
+        assert finding.metadata == {
+            "anomaly_score": 0.33, "total_funds_transferred": "300"}
 
-        assert finding.metadata["anomaly_score"] == 0.3333333333333333, "should have anomaly score of 1/3"
-        assert finding.labels[0].toDict()["entity"] == EOA_ADDRESS, "should have EOA address as label"
-        assert finding.labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
-        assert finding.labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
-        assert finding.labels[0].toDict()["confidence"] == 0.5, "should have 0.3 as label confidence"
-
+        assert finding.metadata["anomaly_score"] == 0.33, "should have anomaly score of 1/3"
+        assert finding.labels[0].toDict(
+        )["entity"] == EOA_ADDRESS, "should have EOA address as label"
+        assert finding.labels[0].toDict(
+        )["entity_type"] == EntityType.Address, "should have label_type address"
+        assert finding.labels[0].toDict(
+        )["label"] == 'attacker', "should have attacker as label"
+        assert finding.labels[0].toDict(
+        )["confidence"] == 0.5, "should have 0.3 as label confidence"
 
     def test_detect_money_laundering_at_threshold_outside_blockrange(self):
         agent.initialize()
@@ -149,7 +155,8 @@ class TestSuspiciousContractAgent:
                 'logs': []}
         })
         findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(findings) == 0, "this should not have triggered a finding as third transaction happened outside block range"
+        assert len(
+            findings) == 0, "this should not have triggered a finding as third transaction happened outside block range"
 
     def test_detect_money_laundering_below_threshold(self):
         agent.initialize()

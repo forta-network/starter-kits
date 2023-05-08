@@ -7,6 +7,7 @@ from web3 import Web3
 import rlp
 from constants import CONTRACT_QUEUE_SIZE
 from web3_mock import CONTRACT, EOA_ADDRESS, Web3Mock
+from unittest.mock import patch
 
 w3 = Web3Mock()
 
@@ -15,7 +16,7 @@ class TestSocialEngContractAgent:
 
     def test_contract_queue_limit(self):
         agent.initialize()
-        
+
         for i in range(CONTRACT_QUEUE_SIZE + 1):
 
             random_contract_address = TestSocialEngContractAgent.calc_contract_address(w3, EOA_ADDRESS, i)
@@ -95,14 +96,14 @@ class TestSocialEngContractAgent:
         })
 
         agent.detect_social_eng_contract_creations(w3, contract_interaction_tx_event)
-    
+
 
         assert(len(agent.CONTRACTS_QUEUE) == 0)
 
-
-    def test_soc_eng_creation_finding(self):
+    @patch("src.findings.calculate_alert_rate", return_value=1.0)
+    def test_soc_eng_creation_finding(self, mocker):
         agent.initialize()
-        
+
         contract_interaction_tx_event = create_transaction_event({
 
             'transaction': {
@@ -160,7 +161,7 @@ class TestSocialEngContractAgent:
 
     def test_soc_eng_creation_no_finding_identical_contract(self):
         agent.initialize()
-        
+
         contract_interaction_tx_event = create_transaction_event({
 
             'transaction': {

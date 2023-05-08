@@ -4,18 +4,18 @@ from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from pyevmasm import disassemble_hex
 from web3 import Web3
+from os import environ
 
 from src.constants import (CONTRACT_SLOT_ANALYSIS_DEPTH,
                            TORNADO_CASH_ADDRESSES,
                            TORNADO_CASH_FUNDED_ACCOUNTS_QUEUE_SIZE)
 from src.findings import SuspiciousContractFindings
+from src.keys import ZETTABLOCK_KEY
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 TORNADO_CASH_FUNDED_ACCOUNTS = []
-ALERT_COUNT_LOW = 0  # stats to emit anomaly score
-ALERT_COUNT_HIGH = 0  # stats to emit anomaly score
-DENOMINATOR_COUNT = 0  # stats to emit anomaly score
+
 
 def initialize():
     """
@@ -25,14 +25,10 @@ def initialize():
     global TORNADO_CASH_FUNDED_ACCOUNTS
     TORNADO_CASH_FUNDED_ACCOUNTS = []
 
-    global ALERT_COUNT_LOW
-    ALERT_COUNT_LOW = 0
+    global CHAIN_ID
+    CHAIN_ID = web3.eth.chain_id
 
-    global ALERT_COUNT_HIGH
-    ALERT_COUNT_HIGH = 0
-
-    global DENOMINATOR_COUNT
-    DENOMINATOR_COUNT = 0
+    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
 
 
 def is_contract(w3, address) -> bool:
@@ -59,7 +55,7 @@ def get_storage_addresses(w3, address) -> set:
         mem = w3.eth.get_storage_at(Web3.toChecksumAddress(address), i)
         if mem != HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000'):
             # looking at both areas of the storage slot as - depending on packing - the address could be at the beginning or the end.
-            if is_contract(w3, mem[0:20]): 
+            if is_contract(w3, mem[0:20]):
                 address_set.add(Web3.toChecksumAddress(mem[0:20].hex()))
             if is_contract(w3, mem[12:]):
                 address_set.add(Web3.toChecksumAddress(mem[12:].hex()))
@@ -89,9 +85,6 @@ def get_opcode_addresses(w3, address) -> set:
 
 def detect_suspicious_contract_creations(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     global TORNADO_CASH_FUNDED_ACCOUNTS
-    global ALERT_COUNT_LOW
-    global ALERT_COUNT_HIGH
-    global DENOMINATOR_COUNT
 
     findings = []
 
@@ -103,50 +96,51 @@ def detect_suspicious_contract_creations(w3, transaction_event: forta_agent.tran
         created_contract_address = calc_contract_address(
             w3, transaction_event.from_, nonce
         )
-        DENOMINATOR_COUNT += 1
+
         storage_addresses = get_storage_addresses(w3, created_contract_address)
         opcode_addresses = get_opcode_addresses(w3, created_contract_address)
 
         created_contract_addresses.append(created_contract_address.lower())
 
         if Web3.toChecksumAddress(transaction_event.from_) in TORNADO_CASH_FUNDED_ACCOUNTS:
-            TORNADO_CASH_FUNDED_ACCOUNTS.append(Web3.toChecksumAddress(created_contract_address))  # needed in case the contract creates another contract
-            ALERT_COUNT_HIGH += 1
+            # needed in case the contract creates another contract
+            TORNADO_CASH_FUNDED_ACCOUNTS.append(
+                Web3.toChecksumAddress(created_contract_address))
 
-            anomaly_score = (ALERT_COUNT_HIGH * 1.0) / DENOMINATOR_COUNT
-            findings.append(SuspiciousContractFindings.suspicious_contract_creation_tornado_cash(transaction_event.from_, created_contract_address, set.union(storage_addresses, opcode_addresses), anomaly_score))
+            findings.append(SuspiciousContractFindings.suspicious_contract_creation_tornado_cash(
+                transaction_event.from_, created_contract_address, set.union(storage_addresses, opcode_addresses), CHAIN_ID))
         else:
-            ALERT_COUNT_LOW += 1
-
-            anomaly_score = (ALERT_COUNT_LOW * 1.0) / DENOMINATOR_COUNT
-            findings.append(SuspiciousContractFindings.suspicious_contract_creation(transaction_event.from_, created_contract_address, set.union(storage_addresses, opcode_addresses), anomaly_score))
-
+            findings.append(SuspiciousContractFindings.suspicious_contract_creation(
+                transaction_event.from_, created_contract_address, set.union(storage_addresses, opcode_addresses), CHAIN_ID))
 
     for trace in transaction_event.traces:
         if trace.type == 'create':
             if (transaction_event.from_ == trace.action.from_ or trace.action.from_ in created_contract_addresses):
-                DENOMINATOR_COUNT += 1
 
-                nonce = transaction_event.transaction.nonce if transaction_event.from_ == trace.action.from_ else 1  # for contracts creating other contracts, the nonce would be 1
-                created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
+                # for contracts creating other contracts, the nonce would be 1
+                nonce = transaction_event.transaction.nonce if transaction_event.from_ == trace.action.from_ else 1
+                created_contract_address = calc_contract_address(
+                    w3, trace.action.from_, nonce)
 
                 # obtain all the addresses contained in the created contract and propagate to the findings
-                storage_addresses = get_storage_addresses(w3, created_contract_address)
-                opcode_addresses = get_opcode_addresses(w3, created_contract_address)
+                storage_addresses = get_storage_addresses(
+                    w3, created_contract_address)
+                opcode_addresses = get_opcode_addresses(
+                    w3, created_contract_address)
 
-                created_contract_addresses.append(created_contract_address.lower())
+                created_contract_addresses.append(
+                    created_contract_address.lower())
 
                 if Web3.toChecksumAddress(trace.action.from_) in TORNADO_CASH_FUNDED_ACCOUNTS:
-                    TORNADO_CASH_FUNDED_ACCOUNTS.append(Web3.toChecksumAddress(created_contract_address))  # needed in case the contract creates another contract
-                    ALERT_COUNT_HIGH += 1
+                    # needed in case the contract creates another contract
+                    TORNADO_CASH_FUNDED_ACCOUNTS.append(
+                        Web3.toChecksumAddress(created_contract_address))
 
-                    anomaly_score = (ALERT_COUNT_HIGH * 1.0) / DENOMINATOR_COUNT
-                    findings.append(SuspiciousContractFindings.suspicious_contract_creation_tornado_cash(trace.action.from_, created_contract_address, set.union(storage_addresses, opcode_addresses), anomaly_score))
+                    findings.append(SuspiciousContractFindings.suspicious_contract_creation_tornado_cash(
+                        trace.action.from_, created_contract_address, set.union(storage_addresses, opcode_addresses), CHAIN_ID))
                 else:
-                    ALERT_COUNT_LOW += 1
-
-                    anomaly_score = (ALERT_COUNT_LOW * 1.0) / DENOMINATOR_COUNT
-                    findings.append(SuspiciousContractFindings.suspicious_contract_creation(trace.action.from_, created_contract_address, set.union(storage_addresses, opcode_addresses), anomaly_score))
+                    findings.append(SuspiciousContractFindings.suspicious_contract_creation(
+                        trace.action.from_, created_contract_address, set.union(storage_addresses, opcode_addresses), CHAIN_ID))
 
     return findings
 
@@ -171,7 +165,8 @@ def update_tornado_cash_funded_accounts(w3, transaction_event: forta_agent.trans
 
     for trace in transaction_event.traces:
         if trace.action.value is not None and trace.action.value > 0 and Web3.toChecksumAddress(trace.action.from_) in TORNADO_CASH_ADDRESSES:
-            TORNADO_CASH_FUNDED_ACCOUNTS.append(Web3.toChecksumAddress(trace.action.to))
+            TORNADO_CASH_FUNDED_ACCOUNTS.append(
+                Web3.toChecksumAddress(trace.action.to))
             if len(TORNADO_CASH_FUNDED_ACCOUNTS) > TORNADO_CASH_FUNDED_ACCOUNTS_QUEUE_SIZE:
                 TORNADO_CASH_FUNDED_ACCOUNTS.pop(0)
 

@@ -1,4 +1,7 @@
 from forta_agent import Finding, FindingType, FindingSeverity, EntityType, Label
+from bot_alert_rate import calculate_alert_rate, ScanCountType
+
+from src.keys import BOT_ID
 
 
 class MEVAccountFinding:
@@ -24,7 +27,12 @@ class MEVAccountFinding:
             'alert_id': 'MEV-ACCOUNT',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
-            'metadata': {'transfer_event_count': transfer_event_count, 'unique_token_count': unique_token_count, 'unique_contract_address_count': unique_contract_address_count},
+            'metadata': {'anomaly_score': calculate_alert_rate(
+                        chain_id,
+                        BOT_ID,
+                        'MEV-ACCOUNT',
+                        ScanCountType.TX_WITH_INPUT_DATA_COUNT,
+            ), 'transfer_event_count': transfer_event_count, 'unique_token_count': unique_token_count, 'unique_contract_address_count': unique_contract_address_count},
             'labels': labels
         })
         return finding
