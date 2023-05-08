@@ -22,11 +22,19 @@ def get_all_related_addresses(central_node) -> str:
     API_key = get_secrets()['jsonRpc']['ALLIUM']
     api_url = f'https://api.allium.so/api/v1/explorer/queries/Q71VcKtUFjBtloXNZtpD/run'
     max_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    response = requests.post(
-        api_url,
-        json={"address":central_node,"tt":max_datetime},
-        headers={"X-API-Key": API_key},
-    )
+    for i in range(3):
+        try:
+            response = requests.post(
+                api_url,
+                json={"address":central_node,"tt":max_datetime},
+                headers={"X-API-Key": API_key},
+            )
+        except Exception as e:
+            logger.debug(f'Retrying for {i+1} time')
+        else:
+            break
+    if 'data' not in response.json().keys():
+        raise ValueError(f'{central_node}:\tMore than 3 errors querying list of neighbors, skipping')
     if len(response.json()['data']) < MIN_NEIGHBORS:
         raise ValueError(f'{central_node}:\tNot enough neighbors, skipping')
     list_of_addresses = str(tuple(pd.DataFrame(response.json()['data'])['address'].tolist()))
@@ -230,6 +238,8 @@ def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
             end_cursor = response.json()['data']['labels']['pageInfo']['endCursor']
             query_variables['labelsInput']['after'] = end_cursor
     all_labels_df = pd.DataFrame([response['label'] for response in all_labels])
+    if all_labels_df.shape[0] == 0:
+        raise ValueError(f'{central_node}:\tNo labels found, skipping')
     labels_df = prepare_labels(all_labels_df)
     return labels_df
 
