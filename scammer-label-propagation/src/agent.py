@@ -1,5 +1,5 @@
 import logging
-import requests
+import time
 import forta_agent
 from web3 import Web3
 from forta_agent import get_json_rpc_url, Finding
@@ -69,11 +69,15 @@ def provide_handle_alert(w3):
 
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logger.debug("handle_alert inner called")
+        t = time.time()
         global executor
         global addresses_analyzed
         global global_futures
 
         list_of_addresses = []
+        if alert_event.alert.alert_id == 'SCAM-DETECTOR-ADDRESS-POISONING':
+            logger.info(f"Address poisoning alert detected. Not supported in this version")
+            return []
         for label in alert_event.alert.labels:
             if label.confidence >= ATTACKER_CONFIDENCE and label.entity_type == forta_agent.EntityType.Address:
                 list_of_addresses.append(label.entity)
@@ -83,6 +87,7 @@ def provide_handle_alert(w3):
                 logger.debug(f"Adding address {address} to the pool")
                 global_futures[address] = executor.submit(run_all_extended, address)
                 addresses_analyzed.append(address)
+        logger.info(f"Alert {alert_event.alert.alert_id} took {time.time() - t} seconds to process. It had {len(list_of_addresses)} addresses")
         return []
 
     return handle_alert
@@ -102,6 +107,7 @@ def provide_handle_block(w3):
 
     def handle_block(block_event) -> list:
         logger.debug("handle_block inner called")
+        t = time.time()
         global global_futures
         global global_alerts
 
@@ -119,13 +125,13 @@ def provide_handle_block(w3):
                     logger.error(f"Exception {e} occurred while collecting results from address {address}")
             else:
                 pending_futures += 1
-        logger.info(f"Running futures: {running_futures}:\tPending futures: {pending_futures}")
         for address in completed_futures:
             global_futures.pop(address)
         # We return the first MAX_FINDINGS findings, and remove them from the list. Otherwise
         # we cache them in global alerts and will return them in the next block
         alerts = global_alerts[:MAX_FINDINGS]
         global_alerts = global_alerts[MAX_FINDINGS:]
+        logger.info(f"Block {block_event.block_number}:\tRF:{running_futures};PF:{pending_futures};\t {time.time() - t}s;\t{len(alerts)} findings")
         return alerts
 
     return handle_block
