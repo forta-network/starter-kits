@@ -15,6 +15,9 @@ etherscan_label_api = "https://api.forta.network/labels/state?sourceIds=ethersca
 class Utils:
     FP_MITIGATION_ADDRESSES = set()
     CONTRACT_CACHE = dict()
+    BOT_VERSION = None
+    TOTAL_SHARDS = None
+    IS_BETA = None
 
     @staticmethod
     def is_contract(w3, addresses) -> bool:
@@ -134,25 +137,38 @@ class Utils:
 
     @staticmethod
     def get_total_shards(CHAIN_ID: int) -> int:
-        logging.debug("getting total shards")
-        package = json.load(open("package.json"))
-        logging.debug("loaded package.json")
-        logging.debug(f"getting shard count for chain id {CHAIN_ID}")
-        if str(CHAIN_ID) in package["chainSettings"]:   
-            logging.debug(f"have specific shard count value for chain id {CHAIN_ID}")
-            total_shards = package["chainSettings"][str(CHAIN_ID)]["shards"]
-        else:
-            logging.debug("have specific shard count value for default")
-            total_shards = package["chainSettings"]["default"]["shards"]
-        logging.debug(f"total shards: {total_shards}")
-        return total_shards
-    
+        if Utils.TOTAL_SHARDS is None:
+            logging.debug("getting total shards")
+            package = json.load(open("package.json"))
+            logging.debug("loaded package.json")
+            logging.debug(f"getting shard count for chain id {CHAIN_ID}")
+            if str(CHAIN_ID) in package["chainSettings"]:   
+                logging.debug(f"have specific shard count value for chain id {CHAIN_ID}")
+                total_shards = package["chainSettings"][str(CHAIN_ID)]["shards"]
+            else:
+                logging.debug("have specific shard count value for default")
+                total_shards = package["chainSettings"]["default"]["shards"]
+            logging.debug(f"total shards: {total_shards}")
+            Utils.TOTAL_SHARDS = total_shards
+        return Utils.TOTAL_SHARDS
+
     @staticmethod
     def get_bot_version() -> str:
-        logging.debug("getting bot version from package.json")
-        package = json.load(open("package.json"))
-        logging.debug("loaded package.json")
-        return package["version"]
+        if Utils.BOT_VERSION is None:
+            logging.debug("getting bot version from package.json")
+            package = json.load(open("package.json"))
+            logging.debug("loaded package.json")
+            Utils.BOT_VERSION = package["version"]
+        return Utils.BOT_VERSION
+    
+    @staticmethod
+    def is_beta() -> str:
+        if Utils.IS_BETA is None:
+            logging.debug("getting bot version from package.json")
+            package = json.load(open("package.json"))
+            logging.debug("loaded package.json")
+            Utils.IS_BETA = 'beta' in package["name"]
+        return Utils.IS_BETA
         
     @staticmethod
     def get_shard(CHAIN_ID: int, timestamp: int) -> int:

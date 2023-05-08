@@ -74,7 +74,8 @@ class ScamDetectorFinding:
                 'alert_ids': alert_id,
                 'chain_id': chain_id,
                 'similar_contract_alert_ids': original_alert_id,
-                'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
+                'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
+                'bot_version': Utils.get_bot_version()
             }
         }))
 

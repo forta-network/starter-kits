@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 import forta_agent
-from forta_agent import get_json_rpc_url, EntityType
+from forta_agent import get_json_rpc_url, EntityType, Finding, FindingType, FindingSeverity, Label, EntityType
 from web3 import Web3
 
 from src.constants import (BASE_BOTS)
@@ -70,7 +70,16 @@ def initialize():
 def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state_flag = False) -> list:
     global BOT_VERSION
     logging.info(f"{BOT_VERSION} alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} received")
-    return []
+    finding = Finding({
+            'name': 'Shard test bot',
+            'description': f'{alert_event.alert_hash},{alert_event.bot_id},{alert_event.alert.alert_id},observed)',
+            'alert_id': "SHARD-TEST-1",
+            'type': FindingType.Info,
+            'severity': FindingSeverity.Info,
+            'metadata': {},
+            'labels': []
+        })
+    return [finding]
 
 
 
