@@ -34,7 +34,7 @@ class VictimNotificationFinding:
             chain_id,
             BOT_ID,
             'VICTIM-NOTIFICATION-1',
-            ScanCountType.TRANSFER_COUNT,
+            ScanCountType.TX_WITH_INPUT_DATA_COUNT,
         )}
 
         finding = Finding({

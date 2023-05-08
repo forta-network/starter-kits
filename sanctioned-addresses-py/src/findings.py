@@ -32,7 +32,7 @@ class SanctionedAddressTx(SanctionedAddressFinding):
             chain_id,
             BOT_ID,
             self.alert_id,
-            ScanCountType.TRANSFER_COUNT,
+            ScanCountType.TX_COUNT,
         ), sanctioned_address=self.address,
             data_source=self.data_source)
 
@@ -50,7 +50,7 @@ class SanctionedAddressesEvent(SanctionedAddressFinding):
             chain_id,
             BOT_ID,
             self.alert_id,
-            ScanCountType.TRANSFER_COUNT,
+            ScanCountType.TX_COUNT,
         ), addresses=self.addresses,
             data_source=self.data_source)
 
@@ -68,6 +68,6 @@ class UnsanctionedAddressesEvent(SanctionedAddressFinding):
             chain_id,
             BOT_ID,
             self.alert_id,
-            ScanCountType.TRANSFER_COUNT,
+            ScanCountType.TX_COUNT,
         ), addresses=self.addresses,
             data_source=self.data_source)

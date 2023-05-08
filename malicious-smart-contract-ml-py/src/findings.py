@@ -40,7 +40,7 @@ class ContractFindings:
             chain_id,
             BOT_ID,
             "SUSPICIOUS-CONTRACT-CREATION",
-            ScanCountType.TRANSFER_COUNT,
+            ScanCountType.CONTRACT_CREATION_COUNT,
         ),
         self.label = labels
         return Finding(
@@ -65,7 +65,7 @@ class ContractFindings:
             chain_id,
             BOT_ID,
             "SAFE-CONTRACT-CREATION",
-            ScanCountType.TRANSFER_COUNT,
+            ScanCountType.CONTRACT_CREATION_COUNT,
         ),
         return Finding(
             {
@@ -84,7 +84,7 @@ class ContractFindings:
             chain_id,
             BOT_ID,
             "NON-MALICIOUS-CONTRACT-CREATION",
-            ScanCountType.TRANSFER_COUNT,
+            ScanCountType.CONTRACT_CREATION_COUNT,
         ),
         return Finding(
             {

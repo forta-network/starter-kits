@@ -24,7 +24,7 @@ class UnverifiedCodeContractFindings:
             chain_id,
             BOT_ID,
             'UNVERIFIED-CODE-CONTRACT-CREATION',
-            ScanCountType.TRANSFER_COUNT,
+            ScanCountType.CONTRACT_CREATION_COUNT,
         ), **addresses}
 
         return Finding({

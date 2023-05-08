@@ -27,6 +27,6 @@ class PositiveReputationFindings:
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'labels': labels,
-            'metadata': {"anomaly_score": calculate_alert_rate(chain_id, BOT_ID, "POSITIVE-REPUTATION-1", ScanCountType.TRANSFER_COUNT)}
+            'metadata': {"anomaly_score": calculate_alert_rate(chain_id, BOT_ID, "POSITIVE-REPUTATION-1", ScanCountType.TX_COUNT)}
         })
         return finding

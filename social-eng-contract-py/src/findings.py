@@ -31,7 +31,7 @@ class SocialEngContractFindings:
                 chain_id,
                 BOT_ID,
                 "SOCIAL-ENG-CONTRACT-CREATION",
-                ScanCountType.TRANSFER_COUNT,
+                ScanCountType.CONTRACT_CREATION_COUNT,
             ), "impersonated_contract": impersonated_contract},
             'labels': labels
         })
