@@ -69,6 +69,7 @@ def provide_handle_alert(w3):
 
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logger.debug("handle_alert inner called")
+        logger.debug(f"AlertId:{alert_event.alert_id};\tName:{alert_event.name};\tAlertHash:{alert_event.hash}")
         t = time.time()
         global executor
         global addresses_analyzed
@@ -76,7 +77,7 @@ def provide_handle_alert(w3):
 
         list_of_addresses = []
         if alert_event.alert.alert_id == 'SCAM-DETECTOR-ADDRESS-POISONING':
-            logger.info(f"Address poisoning alert detected. Not supported in this version")
+            logger.info(f"Address poisoning. Addresses: {';'.join([label.entity for label in alert_event.alert.labels])}")
             return []
         for label in alert_event.alert.labels:
             if label.confidence >= ATTACKER_CONFIDENCE and label.entity_type == forta_agent.EntityType.Address:
@@ -87,7 +88,7 @@ def provide_handle_alert(w3):
                 logger.debug(f"Adding address {address} to the pool")
                 global_futures[address] = executor.submit(run_all_extended, address)
                 addresses_analyzed.append(address)
-        logger.info(f"Alert {alert_event.alert.alert_id} took {time.time() - t:.10f} seconds to process. It had {len(list_of_addresses)} addresses")
+        logger.info(f"Alert {alert_event.alert.alert_id}:\t{time.time() - t:.10f} s. {len(list_of_addresses)} addresses: {';'.join(list_of_addresses)}")
         return []
 
     return handle_alert

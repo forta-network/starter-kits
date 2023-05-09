@@ -73,5 +73,5 @@ def run_all(central_node):
     filtered_attackers_df = filtered_attackers_df.loc[attackers_not_contracts]
     # filtered_attackers_df.to_csv(f'results/{central_node}.csv')  # write down for debugging
     logger.debug(filtered_attackers_df)
-    logger.info(f"{central_node}:\tFinished processing")
+    logger.info(f"{central_node}:\tFinished processing: {filtered_attackers_df.shape[0]} attackers found")
     return filtered_attackers_df
