@@ -1,6 +1,6 @@
 from hexbytes import HexBytes
 
-EOA_ADDRESS = '0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4'  # small tx count
+EOA_ADDRESS_SMALL_TX = '0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4'  # small tx count
 EOA_ADDRESS_LARGE_TX = '0xdec08cb92a506B88411da9Ba290f3694BE223c26'  # large tx count
 CONTRACT = '0x2320A28f52334d62622cc2EaFa15DE55F9987eD9'
 
@@ -17,10 +17,10 @@ class EthMock:
         self.contract = ContractMock()
 
     def get_transaction_count(self, address):
-        if address == EOA_ADDRESS:
-            return 499
+        if address == EOA_ADDRESS_SMALL_TX:
+            return 1999
         elif address == EOA_ADDRESS_LARGE_TX:
-            return 501
+            return 2001
         return 0
 
     def chain_id(self):
@@ -33,7 +33,7 @@ class EthMock:
             return {'to': '0x21e13f16838e2fe78056f5fd50251ffd6e7098b4'}
 
     def get_code(self, address):
-        if address == EOA_ADDRESS:
+        if address == EOA_ADDRESS_SMALL_TX:
             return HexBytes('0x')
         elif address == CONTRACT:
             return HexBytes('0x0000000000000000000000000000000000000000000000000000000000000005')
