@@ -1,8 +1,8 @@
   {
   "name": "shard-test-bot",
-  "version": "0.0.6",
+  "version": "0.0.9",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/scam-detector-py",
-  "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
+  "description": "sharding testing bot",
   "chainIds": [
     1
   ],
@@ -32,7 +32,7 @@
 
   },
   "dependencies": {
-    "forta-agent": "^0.1.28"
+    "forta-agent": "^0.1.29"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"
