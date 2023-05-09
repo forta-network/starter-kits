@@ -1,11 +1,17 @@
   {
   "name": "scam-detector-feed",
-  "version": "0.0.102",
+  "version": "0.1.18",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/scam-detector-py",
   "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
   ],
+  "chainSettings": {
+    "default": {
+      "shards": 8,
+      "target": 6
+    }
+  },
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
     "start": "npm run start:dev",
@@ -20,10 +26,13 @@
     "disable": "forta-agent disable",
     "enable": "forta-agent enable",
     "keyfile": "forta-agent keyfile",
-    "test": "python3 -m pytest"
+    "test": "python3 -m pytest",
+    "alert": "forta-agent run --alert",
+    "sequence": "forta-agent run --sequence"
+
   },
   "dependencies": {
-    "forta-agent": "^0.1.27"
+    "forta-agent": "^0.1.29"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

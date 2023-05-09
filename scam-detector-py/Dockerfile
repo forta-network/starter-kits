@@ -21,7 +21,7 @@ LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
 COPY ./fp_list.csv ./
 COPY ./LICENSE ./
-COPY ./ice_phishing_mappings.csv ./
+COPY ./basebot_parsing_config.csv ./
 COPY ./src ./src
 COPY package*.json ./
 RUN npm ci --production
