@@ -24,7 +24,20 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
-
+def parse_datetime_with_high_precision(time_str):
+    # Split the string at the decimal point of the seconds
+    time_str_split = time_str.split(".")
+    
+    # Truncate or round the fractional part to 6 digits
+    fractional_seconds = round(float("0." + time_str_split[1][:-1]), 6)
+    
+    # Parse the truncated string into a datetime object
+    dt = datetime.strptime(time_str_split[0], "%Y-%m-%dT%H:%M:%S")
+    
+    # Add the truncated microseconds
+    dt = dt.replace(microsecond=int(fractional_seconds * 1e6))
+    
+    return dt
 
 def get_bot_version() -> str:
     logging.debug("getting bot version from package.json")
@@ -69,10 +82,16 @@ def initialize():
 # clear cache flag for perf testing
 def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state_flag = False) -> list:
     global BOT_VERSION
-    logging.info(f"{BOT_VERSION} alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} received")
+    logging.info(alert_event.alert.created_at)
+    dt = parse_datetime_with_high_precision(alert_event.alert.created_at)
+    unix_timestamp = (dt - datetime(1970, 1, 1)).total_seconds()
+    unix_timestamp_sec = int(unix_timestamp)
+    shard = unix_timestamp_sec % 8
+
+    logging.info(f"{BOT_VERSION} alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} {unix_timestamp} {shard} received")
     finding = Finding({
             'name': 'Shard test bot',
-            'description': f'{alert_event.alert_hash},{alert_event.bot_id},{alert_event.alert.alert_id},observed)',
+            'description': f'{shard},{unix_timestamp},{alert_event.alert_hash},{alert_event.bot_id},{alert_event.alert.alert_id},observed)',
             'alert_id': "SHARD-TEST-1",
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,

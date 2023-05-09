@@ -95,22 +95,25 @@ class ScamDetectorFinding:
         }))
 
         # get all deployed contracts by EOA and add label for those using etherscan or allium
-        contracts = block_chain_indexer.get_contracts(scammer_address, chain_id)
-        for contract in contracts:
-            labels.append(Label({
-                'entityType': EntityType.Address,
-                'label': "scammer-contract",
-                'entity': contract,
-                'confidence': 0.6,
-                'metadata': {
-                    'alert_ids': alert_id,
-                    'chain_id': chain_id,
-                    'similar_contract_alert_ids': original_alert_id,
-                    'deployer': scammer_address,
-                    'deployer_info': f"Deployer involved in {alert_id} scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
-                    'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
-                }
-            }))
+        try:
+            contracts = block_chain_indexer.get_contracts(scammer_address, chain_id)
+            for contract in contracts:
+                labels.append(Label({
+                    'entityType': EntityType.Address,
+                    'label': "scammer-contract",
+                    'entity': contract,
+                    'confidence': 0.6,
+                    'metadata': {
+                        'alert_ids': alert_id,
+                        'chain_id': chain_id,
+                        'similar_contract_alert_ids': original_alert_id,
+                        'deployer': scammer_address,
+                        'deployer_info': f"Deployer involved in {alert_id} scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+                        'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
+                    }
+                }))
+        except Exception as e:
+            logging.warning(f"Error getting contracts for scammer address {scammer_address}: {e}")
 
         metadata = {}
         metadata['scammer_address'] = scammer_address
@@ -164,23 +167,26 @@ class ScamDetectorFinding:
                 if 'POISONING' not in alert_id:
                     # get all deployed contracts by EOA and add label for those using etherscan or allium
                     logging.info(f"Getting contracts for scammer address {scammer_address}")
-                    contracts = block_chain_indexer.get_contracts(scammer_address, chain_id)
-                    logging.info(f"Got {len(contracts)} contracts for scammer address {scammer_address}")
-                    for contract in contracts:
-                        labels.append(Label({
-                            'entityType': EntityType.Address,
-                            'label': "scammer-contract",
-                            'entity': contract,
-                            'confidence': 0.7,
-                            'metadata': {
-                                'alert_ids': alert_id,
-                                'chain_id': chain_id,
-                                'deployer': scammer_address,
-                                'deployer_info': f"Deployer involved in {alert_id} scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
-                                'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
-                            }
-                        }))
-
+                    try:
+                        contracts = block_chain_indexer.get_contracts(scammer_address, chain_id)
+                        logging.info(f"Got {len(contracts)} contracts for scammer address {scammer_address}")
+                        for contract in contracts:
+                            labels.append(Label({
+                                'entityType': EntityType.Address,
+                                'label': "scammer-contract",
+                                'entity': contract,
+                                'confidence': 0.7,
+                                'metadata': {
+                                    'alert_ids': alert_id,
+                                    'chain_id': chain_id,
+                                    'deployer': scammer_address,
+                                    'deployer_info': f"Deployer involved in {alert_id} scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+                                    'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
+                                }
+                            }))
+                    except Exception as e:
+                        logging.warning(f"Error getting contracts for scammer address {scammer_address}: {e}")
+                        
         return Finding({
             'name': 'Scam detector identified an EOA with past alerts mapping to scam behavior',
             'description': f'{scammer_addresses} likely involved in a scam ({alert_id})',

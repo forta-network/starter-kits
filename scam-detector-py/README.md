@@ -138,6 +138,14 @@ When a false positive is observed, the scam detector will remove the previously 
 | 0xdba64bc69511d102162914ef52441275e651f817e297276966be16aeffe013b0 | Umbra bot | UMBRA-RECEIVE | Combination |
 | 0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e | ChangeNow Funding | FUNDING-CHANGENOW-NEW-ACCOUNT | Combination |
 | 0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad | Malicious Token ML | SUSPICIOUS-TOKEN-CONTRACT-CREATION | Combination |
+| 0xac82fb2a572c7c0d41dc19d24790db17148d1e00505596ebe421daf91c837799 | Attack Detector V3 | ATTACK-DETECTOR-1 | PassThrough |
+| 0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502 | Address Poisoning Bot | ADDRESS-POISONING | PassThrough |
+| 0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502 | Address Poisoning Bot | ADDRESS-POISONING-LOW-VALUE | PassThrough |
+| 0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502 | Address Poisoning Bot | ADDRESS-POISONING-FAKE-TOKEN | PassThrough |
+| 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0 | Native Ice Phishing Bot | NIP-1 | PassThrough |
+| 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0 | Native Ice Phishing Bot | NIP-4 | PassThrough |
+| 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0 | Native Ice Phishing Bot | NIP-5 | PassThrough |
+| 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0 | Native Ice Phishing Bot | NIP-6 | PassThrough |
 | 0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732 | Wash trading bot | NFT-WASH-TRADE | PassThrough | 
 | 0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560 | contract similarity bot | NEW-SCAMMER-CONTRACT-CODE-HASH | PassThrough |
 | 0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15 | hard rug pull bot | HARD-RUG-PULL-1 | PassThrough |
