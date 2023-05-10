@@ -88,15 +88,26 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
     unix_timestamp_sec = int(unix_timestamp)
     shard = unix_timestamp_sec % 8
 
-    logging.info(f"{BOT_VERSION} alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} {unix_timestamp} {shard} received")
+    
+    logging.info(f"{BOT_VERSION} alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} {unix_timestamp} {shard} {len(alert_event.alert.labels)} received")
+    labels = []
+    # labels.append(Label({
+    #                 'entityType': EntityType.Transaction,
+    #                 'label': "test-label",
+    #                 'entity': alert_event.transaction_hash,
+    #                 'confidence': 0.8,
+    #                 'metadata': {
+    #                     'alert_ids': alert_event.alert.alert_id
+    #                 }   
+    #                 }))
     finding = Finding({
             'name': 'Shard test bot',
             'description': f'{shard},{unix_timestamp},{alert_event.alert_hash},{alert_event.bot_id},{alert_event.alert.alert_id},observed)',
-            'alert_id': "SHARD-TEST-1",
+            'alert_id': "SHARD-TEST-2",
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'metadata': {},
-            'labels': []
+            'labels': labels
         })
     return [finding]
 
