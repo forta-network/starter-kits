@@ -369,17 +369,17 @@ class TestScamDetector:
     def test_detect_fraudulent_seaport_orders(self):
         agent.initialize()
 
-        bot_id = "0xd9584a587a469f3cdd8a03ffccb14114bc78485657e28739b8036aee7782df5c"
-        alert_id = "SEAPORT-PHISHING-TRANSFER"
+        bot_id = "0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac"
+        alert_id = "nft-possible-phishing-transfer"
         description = "3 SewerPass id/s: 19445,25417,5996 sold on Opensea 🌊 for 0.01 ETH with a floor price of 2.5 ETH"
-        metadata = {"collectionFloor":"2.5","contractAddress":"0x764aeebcf425d56800ef2c84f2578689415a2daa","contractName":"SewerPass","currency":"ETH","fromAddr":"0x86031ba0a2fe6be8d55abfc7d51ddc4f91ba9f78","hash":"0xec6442b20f003ea9a38b8b51f7feef75f8e68618cd6d511d7ae44012786768ea","itemPrice":"0.0033333333333333335","market":"Opensea 🌊","quantity":"3","toAddr":"0x86031ba0a2fe6be8d55abfc7d51ddc4f91ba9f79","tokenIds":"19445,25417,5996","totalPrice":"0.01"}
+        metadata = {"interactedMarket": "opensea","transactionHash": "0x4fff109d9a6c030fce4de9426229a113524903f0babd6de11ee6c046d07226ff","toAddr": "0xBF96d79074b269F75c20BD9fa6DAed0773209EE7","fromAddr": "0x08395C15C21DC3534B1C3b1D4FA5264E5Bd7020C","initiator": "0xaefc35de05da370f121998b0e2e95698841de9b1","totalPrice": "0.001","avgItemPrice": "0.0002","contractAddress": "0xae99a698156ee8f8d07cbe7f271c31eeaac07087","floorPrice": "0.58","timestamp": "1671432035","floorPriceDiff": "-99.97%"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
         findings = agent.detect_scam(w3, alert_event, True)
 
-        assert len(findings) == 1, "this should have triggered a finding"
+        assert len(findings) == 2, "this should have triggered a finding"
         finding = findings[0]
-        assert finding.alert_id == "SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER", "should be seaport order finding"
+        assert finding.alert_id == "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER", "should be nft order finding"
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 
@@ -412,7 +412,7 @@ class TestScamDetector:
         label = finding.labels[0]
         assert label.entity == "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4", "entity should be attacker address"
         assert label.label == "scammer-eoa", "entity should labeled as scam"
-        assert label.confidence == 0.8, "entity should labeled with 0.8 confidence"
+        assert label.confidence == 0.62, "entity should labeled with 0.62 confidence"
         assert label.metadata['alert_ids'] == "SCAM-DETECTOR-ICE-PHISHING", "entity should labeled as ice phishing"
         assert label.metadata['chain_id'] == 1, "entity should labeled for chain_id 1"
 
@@ -575,14 +575,14 @@ class TestScamDetector:
         label = findings[0].labels[0]
         assert label.entity == "0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0", "entity should be attacker address"
         assert label.label == "scammer-eoa", "entity should labeled as scam"
-        assert label.confidence == 0.7, "entity should labeled with 0.7 confidence"
+        assert label.confidence == 0.4, "entity should labeled with 0.7 confidence"
         assert label.metadata['alert_ids'] == "SCAM-DETECTOR-SIMILAR-CONTRACT", "entity should labeled as similar contract"
         assert label.metadata['chain_id'] == 1, "entity should labeled for chain_id 1"
 
         label = findings[0].labels[1]
         assert label.entity == "0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2", "entity should be attacker address"
         assert label.label == "scammer-contract", "entity should labeled as scam"
-        assert label.confidence == 0.7, "entity should labeled with 0.7 confidence"
+        assert label.confidence == 0.4, "entity should labeled with 0.7 confidence"
         assert label.metadata['alert_ids'] == "SCAM-DETECTOR-SIMILAR-CONTRACT", "entity should labeled as similar contract"
         assert label.metadata['chain_id'] == 1, "entity should labeled for chain_id 1"
 

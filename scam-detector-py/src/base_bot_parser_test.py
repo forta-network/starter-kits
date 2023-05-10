@@ -55,11 +55,12 @@ class TestBaseBotParser:
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
         assert len(addresses) == 2, "should have extracted 2 addresses"
 
-    def test_get_fromAddr_seaport_order_metadata(self):
-        metadata = {"collectionFloor":"0.047","contractAddress":"0xe75512aa3bec8f00434bbd6ad8b0a3fbff100ad6","contractName":"MG Land","currency":"ETH","fromAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ece","hash":"0x768eefcc8fdba3946749048bd8582fff41501cfe874fba2c9f0383ae2dfdd1cb","itemPrice":"0","market":"Opensea 🌊","quantity":"1","toAddr":"0xc81476ae9f2748725a36b326a1831200ed4f3ecf","tokenIds":"4297","totalPrice":"0"}
-        alert_event = TestBaseBotParser.generate_alert("0xd9584a587a469f3cdd8a03ffccb14114bc78485657e28739b8036aee7782df5c", "SEAPORT-PHISHING-TRANSFER", "description", metadata)
+    def test_get_fromAddr_nft_order_metadata(self):
+        metadata = {"interactedMarket": "opensea","transactionHash": "0x4fff109d9a6c030fce4de9426229a113524903f0babd6de11ee6c046d07226ff","toAddr": "0xBF96d79074b269F75c20BD9fa6DAed0773209EE7","fromAddr": "0x08395C15C21DC3534B1C3b1D4FA5264E5Bd7020C","initiator": "0xaefc35de05da370f121998b0e2e95698841de9b1","totalPrice": "0.001","avgItemPrice": "0.0002","contractAddress": "0xae99a698156ee8f8d07cbe7f271c31eeaac07087","floorPrice": "0.58","timestamp": "1671432035","floorPriceDiff": "-99.97%"}
+        alert_event = TestBaseBotParser.generate_alert("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "nft-possible-phishing-transfer", "description", metadata)
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
-        assert "0xc81476ae9f2748725a36b326a1831200ed4f3ecf" in addresses.keys(), "this should be the attacker address"
+        assert "0xBF96d79074b269F75c20BD9fa6DAed0773209EE7".lower() in addresses.keys(), "this should be the attacker address"
+        assert "0xaefc35de05da370f121998b0e2e95698841de9b1" in addresses.keys(), "this should also be attacker address"
 
     def test_get_sleep_minting_addresses(self):
         description = "An NFT Transfer was initiated by 0x09b34e69363d37379e1c5e27fc793fdb5aca893d to transfer an NFT owned by 0xeb9fcf2fb7c0d95edc5beb9b142e8c024d885fb2. It had been previously minted by the 0x09b34e69363d37379e1c5e27fc793fdb5aca893d to 0xeb9fcf2fb7c0d95edc5beb9b142e8c024d885fb2. The NFT contract address is 0xd57474e76c9ebecc01b65a1494f0a1211df7bcd8"

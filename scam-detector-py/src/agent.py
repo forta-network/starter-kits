@@ -504,14 +504,14 @@ def emit_new_fp_finding(w3) -> list:
     findings = []
 
     try:
-        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/fp_list.tsv')
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
         content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.tsv', 'r').read()
-        df_fp = pd.read_csv(io.StringIO(content), sep='\t')
+        df_fp = pd.read_csv(io.StringIO(content), sep=',')
         for index, row in df_fp.iterrows():
             chain_id = int(row['chain_id'])
             if chain_id != CHAIN_ID:
                 continue
-            cluster = row['cluster'].lower()
+            cluster = row['address'].lower()
             if cluster not in ALERTED_FP_CLUSTERS:
                 logging.info(f"{BOT_VERSION}: Emitting FP mitigation finding")
                 update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, cluster)
