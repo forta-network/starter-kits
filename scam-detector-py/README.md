@@ -33,8 +33,8 @@ The Scam Detector bot emits the following alerts:
 - SCAM-DETECTOR-WASH-TRADE
   - Fired when a NFT wash trade has been observed
 
-- SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER
-  - Fired when alert combination is observed that points to an fraudulent seaport order
+- SCAM-DETECTOR-FRAUDULENT-NFT-ORDER
+  - Fired when alert combination is observed that points to an fraudulent NFT order
 
 - SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING
   - Fired when alert combination is observed that points to an native ice phishing involving social engineering techniques (e.g. SecurityUpdate() function sig in the input data field)
