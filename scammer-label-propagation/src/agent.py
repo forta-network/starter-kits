@@ -6,11 +6,13 @@ from forta_agent import get_json_rpc_url, Finding
 from concurrent.futures import ThreadPoolExecutor
 
 from src.main import run_all
-from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, CHAIN_ID, MAX_FINDINGS
+from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, MAX_FINDINGS
 
 logging.basicConfig(filename=f"logs.log", level=logging.INFO, 
                     format='%(levelname)s:%(asctime)s:%(name)s:%(lineno)d:%(message)s')
 logger = logging.getLogger(__name__)
+
+web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 
 def run_all_extended(central_node, alert_event):
@@ -62,8 +64,9 @@ def initialize():
     global_alerts = []
 
     subscription_json = []
+    chain_id = web3.eth.chain_id
     for bot in attacker_bots:
-        subscription_json.append({"botId": bot, "chainId": CHAIN_ID})
+        subscription_json.append({"botId": bot, "chainId": chain_id})
     alert_config = {"alertConfig": {"subscriptions": subscription_json}}
     logger.info(f"Initializing scammer label propagation bot. Subscribed to bots successfully: {alert_config}")
     return alert_config
@@ -99,7 +102,6 @@ def provide_handle_alert(w3):
 
     return handle_alert
 
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 real_handle_alert = provide_handle_alert(web3)
 
