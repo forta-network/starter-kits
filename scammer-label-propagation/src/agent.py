@@ -17,7 +17,7 @@ web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 def run_all_extended(central_node, alert_event):
     try:
-        attackers_df = run_all(central_node)
+        attackers_df, graph_statistics = run_all(central_node)
     except Exception as e:
         logger.error(f"{central_node}:\tError running run_all in a thread: {e}")
         return []
@@ -46,6 +46,7 @@ def run_all_extended(central_node, alert_event):
                     'central_node_alert_id': alert_event.alert.alert_id,
                     'central_node_alert_name': alert_event.alert.name,
                     'central_node_alert_hash': alert_event.alert.hash,
+                    'graph_statistics': graph_statistics,
                 }
             }
             finding_dict['labels'] = [forta_agent.Label(label_dict)]
@@ -78,7 +79,7 @@ def provide_handle_alert(w3):
 
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logger.debug("handle_alert inner called")
-        logger.debug(f"AlertId:{alert_event.alert_id};\tName:{alert_event.name};\tAlertHash:{alert_event.hash}")
+        logger.debug(f"AlertId:{alert_event.alert_id};\tName:{alert_event.name};\tAlertHash:{alert_event.hash};\tBotId{alert_event.bot_id}")
         t = time.time()
         global executor
         global addresses_analyzed
