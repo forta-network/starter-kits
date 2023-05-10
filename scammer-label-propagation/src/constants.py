@@ -21,8 +21,6 @@ victim_bots = [
 SIMULTANEOUS_ADDRESSES = 30
 # Maximum number of simultaneous processes
 N_WORKERS = 8
-# CHAIN ID, for now just works for eth
-CHAIN_ID = 1
 # Minimum amount of neighbors to consider an address
 MIN_NEIGHBORS = 10
 # Maximum number of findings that can be sent in one handle call
