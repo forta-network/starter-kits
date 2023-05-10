@@ -13,7 +13,7 @@ logging.basicConfig(filename=f"logs.log", level=logging.INFO,
 logger = logging.getLogger(__name__)
 
 
-def run_all_extended(central_node, alert_id):
+def run_all_extended(central_node, alert_event):
     try:
         attackers_df = run_all(central_node)
     except Exception as e:
@@ -41,7 +41,9 @@ def run_all_extended(central_node, alert_id):
                 'entity_type': forta_agent.EntityType.Address,
                 'metadata': {
                     'central_node': central_node,
-                    'central_node_alert_id': alert_id,
+                    'central_node_alert_id': alert_event.alert.alert_id,
+                    'central_node_alert_name': alert_event.alert.name,
+                    'central_node_alert_hash': alert_event.alert.hash,
                 }
             }
             finding_dict['labels'] = [forta_agent.Label(label_dict)]
@@ -90,7 +92,7 @@ def provide_handle_alert(w3):
         for address in list_of_addresses:
             if address not in addresses_analyzed:
                 logger.debug(f"Adding address {address} to the pool")
-                global_futures[address] = executor.submit(run_all_extended, address, alert_event.alert.alert_id)
+                global_futures[address] = executor.submit(run_all_extended, address, alert_event)
                 addresses_analyzed.append(address)
         logger.info(f"Alert {alert_event.alert.alert_id}:\t{time.time() - t:.10f} s. {len(list_of_addresses)} addresses: {';'.join(list_of_addresses)}")
         return []
