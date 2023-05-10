@@ -9,11 +9,11 @@ address,chain_id,comment
 0x6F5aC65CA70F2a44d73c8f711Cb2bDf425D9F304,56,BitKeep: Swap Router v1
 0xa30669c9ddb1cbf1594a923f7eccac8ce0eee7fa,1,Not a TP (the potenital hacker was not approved but somehow invoked the transfer from function)
 0x8d5064fd1b1e74405050ba297239bc2aff28ef1b,1,This is clearly an FP. "Targets" are being drained several times by the same EOA. Also all targets are funded by crypto.com
-0x2356821b1a40d5d5e53352c5112f89b273a83aed,1,Likely FP. "targets" are being funded, then there's a short gap where they are stealed. Also funds are always sent to two different addresses
+0x2356821b1a40d5d5e53352c5112f89b273a83aed,1,Likely FP. "targets" are being funded then there's a short gap where they are stealed. Also funds are always sent to two different addresses
 0x576165c5c51A8E2571E798867405A939b8Dc9C5b,1,Likely FP. All targets are funded by Binance. As soon as funded "stealed"
 0x8ed0533fe6622d1c08b32e9075b0f0d2e090ff80,1,Likely FP. All targets are funded by Binance. As soon as funded "stealed"
-0x7ace242f32208d836a2245df957c08547059bf45,137,Scammer "stealed" several times by the same "hacker". Also between steals, it exists funding so it doesn have much sense.
-0x7ace242f32208d836a2245df957c08547059bf45,56,Scammer "stealed" several times by the same "hacker". Also between steals, it exists funding so it doesn have much sense.
+0x7ace242f32208d836a2245df957c08547059bf45,137,Scammer "stealed" several times by the same "hacker". Also between steals it exists funding so it doesn have much sense.
+0x7ace242f32208d836a2245df957c08547059bf45,56,Scammer "stealed" several times by the same "hacker". Also between steals it exists funding so it doesn have much sense.
 0x70cd4b20e81410767676f76c4446435caee0c80b,1, earni.fi is a site where people can claim their airdroips. earnifi.eth is their verified ENS
 0x96c9f810a9c91c81bfa401dd9f24b06307e06fec,1, "targets" have the same kind of activity (low amount of txs and around 340 days ago)
 0x052b2fd0006375aedf5ebb9db3f42de037b83249,1, "targets" interacting too many times with the potential hacker 
@@ -21,21 +21,21 @@ address,chain_id,comment
 0x5f22a973cf87f5535e434d293018c6bbe77e7731,1, "targets" as soon as funded then stealed.
 0x0005f82d812aa31da5185565a8d691ab15142678,1, "targets" as soon as funded then stealed.
 0x1025905b15a5e2e27fec11318306a2f51b71f3d4,1, "targets" as soon as funded then stealed.
-0x663862776c7879116d8afc5e559548c6723eecfd,1, "Targets" are not fully drained. Also "targets" are sending to the hacker, they execute more ETH tx to other adddresses 
+0x663862776c7879116d8afc5e559548c6723eecfd,1, "Targets" are not fully drained. Also "targets" are sending to the hacker they execute more ETH tx to other adddresses 
 0x7b704077d855c5da55729adffec78cd79ff0ced4,1, Doesn't seem like a TP
 0x7e3e08d573dd0844dc2e623bdbd4ec87c54629f6,1, targets are transferring more than once to the hacker
-0x9febd061f5955ecce02857f9f02210f1c937bcf8,1, Liklely FP - All targets funded by binance or OKX, then interacted with ZKsynkEra - Seems more like an airdrop hunter
-0xb7f571d6a5850d58f90527407f535d5aecd780a1,1, Doesn't seem that the hacker is fully draining all the ETH, but a low amount compared with all the eth these wallets have
-0x9aa9854658714b6aad07b3690cd3ed8d9ffd3f85,1, Doesn't seem that the hacker is fully draining all the ETH, but a low amount compared with all the eth these wallets have. Also in some cases the "target" interacted more than once with the "hacker"
+0x9febd061f5955ecce02857f9f02210f1c937bcf8,1, Liklely FP - All targets funded by binance or OKX then interacted with ZKsynkEra - Seems more like an airdrop hunter
+0xb7f571d6a5850d58f90527407f535d5aecd780a1,1, Doesn't seem that the hacker is fully draining all the ETH but a low amount compared with all the eth these wallets have
+0x9aa9854658714b6aad07b3690cd3ed8d9ffd3f85,1, Doesn't seem that the hacker is fully draining all the ETH but a low amount compared with all the eth these wallets have. Also in some cases the "target" interacted more than once with the "hacker"
 0xecea96a55a12082eb71af6dfce7681195a1b7902,137, All the "targets" are sending the same amount 
 0x42e650c55cd827d353e51e60632eff381861b3ce,137, Tranfers from the same wallet in three different moments
 0x5bbd726c0455ade17dea775ef32a5373b38a9a9b,137,
 0x7293c4fc440f91bb551302b8c28a443161e3aa84,56, Sending dust
 0x667d6e3b2a4c36792d6521d778215cbbf033028f,1, Hacker "stealing" several times
 0xf36ac1a7c1bed1e5615af9a6fe35cfc2f5036043,137, "Steling" always from the same wallet and a super low amount in USDC
-0x873ce34970cff81c77eb07217a8058c1861700bd,1,As soon as receiving the ETH, the "targets" are being drained. There's a pattern that shouldn't be happening
+0x873ce34970cff81c77eb07217a8058c1861700bd,1,As soon as receiving the ETH the "targets" are being drained. There's a pattern that shouldn't be happening
 0x95d896fb6ef54a601887b4ce5c4e3fd1e0226c6d,1,Interacted too many times with the "hacker"
 0xe5ad66f494bb6d80ae79ce9265cebaa5c64848cc,1,"hackers" are stolen by only a slighty portion of the whole eth that they posses
-0xbd4d15053be2aeb70d544c6b8a7056f8a5c0250d,1,All targets seems like airdrop hunters, a same pattern happening (interation with ZKsync and starknet)
-0x66c7ad805d0d7f76038f2949574a93961032286b,1,"targets" are sending transfers to different EOAs, I would not consider this as a TP
+0xbd4d15053be2aeb70d544c6b8a7056f8a5c0250d,1,All targets seems like airdrop hunters a same pattern happening (interation with ZKsync and starknet)
+0x66c7ad805d0d7f76038f2949574a93961032286b,1,"targets" are sending transfers to different EOAs I would not consider this as a TP
 

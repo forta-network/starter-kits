@@ -15,8 +15,8 @@ class ScamDetectorFinding:
         url = "https://forta.org/attacks"
         if alert_id == "SCAM-DETECTOR-ICE-PHISHING":
             return url + "#ice-phishing"
-        elif alert_id == "SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER":
-            return url + "#fraudulent-seaport-order"
+        elif alert_id == "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER":
+            return url + "#fraudulent-nft-order"
         elif alert_id == "SCAM-DETECTOR-ADDRESS-POISONING" or alert_id == "SCAM-DETECTOR-ADDRESS-POISONER":
             return url + "#address-poisoning"
         elif alert_id == "SCAM-DETECTOR-NATIVE-ICE-PHISHING":
@@ -151,7 +151,7 @@ class ScamDetectorFinding:
 
         labels = []
         confidence = CONFIDENCE_MAPPINGS[alert_id]
-        if alert_id in ["SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING']:
+        if alert_id in ["SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-NFT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING']:
             for scammer_address in scammer_addresses.split(","):
                 labels.append(Label({
                     'entityType': EntityType.Address,

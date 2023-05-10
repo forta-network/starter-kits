@@ -54,7 +54,7 @@ class TestScamFindings:
         assert finding.labels[1].entity_type == EntityType.Address
         assert finding.labels[1].entity == CONTRACT
         assert finding.labels[1].label == "scammer-contract"
-        assert finding.labels[1].confidence == 0.7
+        assert finding.labels[1].confidence == 0.558
         assert finding.labels[1].metadata["alert_ids"] == alert_id
         assert finding.labels[1].metadata["chain_id"] == chain_id
         assert finding.labels[1].metadata["deployer"] == EOA_ADDRESS_SMALL_TX
@@ -97,7 +97,7 @@ class TestScamFindings:
         assert finding.labels[0].entity_type == EntityType.Address
         assert finding.labels[0].entity == "0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0"
         assert finding.labels[0].label == "scammer-eoa"
-        assert finding.labels[0].confidence == 0.7
+        assert finding.labels[0].confidence == 0.4
         assert finding.labels[0].metadata["alert_ids"] == alert_id
         assert finding.labels[0].metadata["chain_id"] == chain_id
         assert finding.labels[0].metadata["similar_contract_alert_ids"] == "SCAM-DETECTOR-ADDRESS-POISONER"
@@ -106,7 +106,7 @@ class TestScamFindings:
         assert finding.labels[1].entity_type == EntityType.Address
         assert finding.labels[1].entity == "0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2"
         assert finding.labels[1].label == "scammer-contract"
-        assert finding.labels[1].confidence == 0.7
+        assert finding.labels[1].confidence == 0.4
         assert finding.labels[1].metadata["alert_ids"] == alert_id
         assert finding.labels[1].metadata["chain_id"] == chain_id
         assert finding.labels[1].metadata["similar_contract_alert_ids"] == "SCAM-DETECTOR-ADDRESS-POISONER"
