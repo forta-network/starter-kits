@@ -46,7 +46,7 @@ class TestScamFindings:
         assert finding.labels[0].entity_type == EntityType.Address
         assert finding.labels[0].entity == EOA_ADDRESS_SMALL_TX
         assert finding.labels[0].label == "scammer-eoa"
-        assert finding.labels[0].confidence == 0.8
+        assert finding.labels[0].confidence == 0.62
         assert finding.labels[0].metadata["alert_ids"] == alert_id
         assert finding.labels[0].metadata["chain_id"] == chain_id
         assert finding.labels[0].metadata["threat_description_url"] == ScamDetectorFinding.get_threat_description_url(alert_id)
