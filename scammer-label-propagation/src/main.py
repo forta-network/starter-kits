@@ -74,4 +74,11 @@ def run_all(central_node):
     # filtered_attackers_df.to_csv(f'results/{central_node}.csv')  # write down for debugging
     logger.debug(filtered_attackers_df)
     logger.info(f"{central_node}:\tFinished processing: {filtered_attackers_df.shape[0]} attackers found")
-    return filtered_attackers_df
+    graph_statistics = {
+        'n_nodes': len(all_nodes_dict),
+        'n_labeled_attackers': len(original_attackers),
+        'n_predicted_attackers': filtered_attackers_df.shape[0],
+        'n_labeled_victims_extended': len([label for label in automatic_labels.values() if label == 'victim']),
+        'n_addresses_with_any_label': labels_df.shape[0],
+    }
+    return filtered_attackers_df, graph_statistics

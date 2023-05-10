@@ -36,6 +36,7 @@ Describe each of the type of alerts fired by this agent
       - 'central_node_alert_id' is set to the alert id that triggered the central node
       - 'central_node_alert_name' is set to the name of the alert that triggered the central node
       - 'central_node_alert_hash' is set to the alert hash of the alert that triggered the central node
+      - 'graph_statistics' holds n_nodes, n_labeled_attackers, n_labeled_victims, n_predicted_attackers
 
 
 ## Test Data
