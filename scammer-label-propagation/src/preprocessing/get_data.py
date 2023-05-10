@@ -201,7 +201,9 @@ def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
                 }
             }
         next_page_exists = True
-        while next_page_exists:
+        # We allow at most n_addresses pages to not overcharge the system, in case there is a contract
+        current_page = 0
+        while next_page_exists and current_page < SIMULTANEOUS_ADDRESSES:
             for i in range(3):
                 try:
                     payload = dict(query=query, variables=query_variables)
@@ -213,6 +215,7 @@ def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
                     break
             next_page_exists = response.json()['data']['labels']['pageInfo']['hasNextPage']
             query_variables['labelsInput']['after'] = response.json()['data']['labels']['pageInfo']['endCursor']
+            current_page += 1
         # Now query victims
         query_variables = {
             "labelsInput": {
@@ -224,7 +227,9 @@ def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
                 }
             }
         next_page_exists = True
-        while next_page_exists:
+        # We allow at most n_addresses pages to not overcharge the system, in case there is a contract
+        current_page = 0
+        while next_page_exists and current_page < SIMULTANEOUS_ADDRESSES:
             for i in range(3):
                 try:
                     payload = dict(query=query, variables=query_variables)
@@ -237,6 +242,7 @@ def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
             next_page_exists = response.json()['data']['labels']['pageInfo']['hasNextPage']
             end_cursor = response.json()['data']['labels']['pageInfo']['endCursor']
             query_variables['labelsInput']['after'] = end_cursor
+            current_page += 1
     all_labels_df = pd.DataFrame([response['label'] for response in all_labels])
     if all_labels_df.shape[0] == 0:
         raise ValueError(f'{central_node}:\tNo labels found, skipping')
