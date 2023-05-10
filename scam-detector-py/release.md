@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## v0.1.21
+- tune confidence based on April precision numbers
+- switched from fraudulent seaport order to the [scammer nft trader bot](https://explorer.forta.network/bot/0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac), which covers additional on-chain market places (blur, looksrare and seaport). Renamed alertId SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER to SCAM-DETECTOR-FRAUDULENT-NFT-ORDER as a result.
+
 ## v0.1.20
 - incorporated [hard rug pull](https://explorer.forta.network/bot/0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15
 ), [soft rug pull](https://explorer.forta.network/bot/0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1

@@ -5,7 +5,8 @@ from datetime import datetime
 import requests
 import logging
 
-from src.utils import Utils
+from utils import Utils
+from constants import CONFIDENCE_MAPPINGS
 
 class ScamDetectorFinding:
 
@@ -65,11 +66,12 @@ class ScamDetectorFinding:
                 original_alert_id = label_metadata[0][len("alert_ids="):]
         
         labels = []
+        confidence = CONFIDENCE_MAPPINGS[alert_id]
         labels.append(Label({
             'entityType': EntityType.Address,
             'label': "scammer-eoa",
             'entity': scammer_address,
-            'confidence': 0.7,
+            'confidence': confidence,
             'metadata': {
                 'alert_ids': alert_id,
                 'chain_id': chain_id,
@@ -83,7 +85,7 @@ class ScamDetectorFinding:
             'entityType': EntityType.Address,
             'label': "scammer-contract",
             'entity': scammer_contract_address,
-            'confidence': 0.7,
+            'confidence': confidence,
             'metadata': {
                 'alert_ids': alert_id,
                 'chain_id': chain_id,
@@ -102,7 +104,7 @@ class ScamDetectorFinding:
                     'entityType': EntityType.Address,
                     'label': "scammer-contract",
                     'entity': contract,
-                    'confidence': 0.6,
+                    'confidence': confidence * 0.8,
                     'metadata': {
                         'alert_ids': alert_id,
                         'chain_id': chain_id,
@@ -148,13 +150,14 @@ class ScamDetectorFinding:
         meta_data = {**attacker_address_md_dict, **start_date_dict, **end_date_dict, **involved_addresses_dict, **involved_alert_ids_dict, **involved_alert_hashes_dict}
 
         labels = []
+        confidence = CONFIDENCE_MAPPINGS[alert_id]
         if alert_id in ["SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING']:
             for scammer_address in scammer_addresses.split(","):
                 labels.append(Label({
                     'entityType': EntityType.Address,
                     'label': "scammer-eoa",
                     'entity': scammer_address,
-                    'confidence': 0.8,
+                    'confidence': confidence,
                     'metadata': {
                         'alert_ids': alert_id,
                         'chain_id': chain_id,
@@ -174,7 +177,7 @@ class ScamDetectorFinding:
                                 'entityType': EntityType.Address,
                                 'label': "scammer-contract",
                                 'entity': contract,
-                                'confidence': 0.7,
+                                'confidence': confidence*0.9,
                                 'metadata': {
                                     'alert_ids': alert_id,
                                     'chain_id': chain_id,

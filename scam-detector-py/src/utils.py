@@ -7,7 +7,7 @@ import io
 import pandas as pd
 import json
 
-from src.constants import TX_COUNT_FILTER_THRESHOLD
+from constants import TX_COUNT_FILTER_THRESHOLD
 
 etherscan_label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
 
