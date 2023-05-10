@@ -18,6 +18,7 @@ def get_all_related_addresses(central_node) -> str:
     :param central_node: str Address that will be the center of the graph
     :return: str All addresses that are first order neighbours of the central node comma separated in a string
     """
+    # The SQL query for this can be found in file src/preprocessing/queries.sql
     logger.info(f'{central_node}\tQuerying all related addresses')
     API_key = get_secrets()['jsonRpc']['ALLIUM']
     api_url = f'https://api.allium.so/api/v1/explorer/queries/Q71VcKtUFjBtloXNZtpD/run'
@@ -57,7 +58,8 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
     waiting_time = 30
     API_key = get_secrets()['jsonRpc']['ALLIUM']
     max_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    list_of_addresses = get_all_related_addresses(central_node)  
+    list_of_addresses = get_all_related_addresses(central_node)
+    # The SQL query for this can be found in file src/preprocessing/queries.sql
     queries = {
         'all_eth_transactions': 'yteFwmN3zZbQLoc9bY9g',
         'all_erc20_transactions': 'YgEXG57MAP1VMZMxTXDe',
