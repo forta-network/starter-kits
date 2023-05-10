@@ -47,7 +47,11 @@ def initialize():
     environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
 
 
-def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
+
+def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent.transaction_event.TransactionEvent, reinitialize=False) -> list:
+    if reinitialize:
+        initialize()
+
     logging.info(f"Analyzing transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
 
     global CHAIN_ID
@@ -63,7 +67,11 @@ def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent
             else:
                 logging.info(f"Checking first tx of address with blockexplorer {transaction_event.transaction.from_}")
                 first_tx = blockexplorer.get_first_tx(transaction_event.transaction.from_)
+                if first_tx is None:
+                    logging.warn(f"Unable to obtain first tx for address {transaction_event.transaction.from_}")
+                    return findings
                 update_first_tx_cache(transaction_event.transaction.from_, first_tx)
+
 
             if first_tx < datetime.now() - timedelta(days=MIN_AGE_IN_DAYS):
                 update_address_cache(transaction_event.transaction.from_.lower())

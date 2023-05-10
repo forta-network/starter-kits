@@ -1,11 +1,29 @@
 {
   "name": "positive-reputation-bot",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/positive-reputation-py",
   "description": "Positive Reputation Bot",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
   ],
+  "chainSettings": {
+    "1": {
+      "shards": 11,
+      "target": 2
+    },
+    "137": {
+      "shards": 21,
+      "target": 2
+    },
+    "56": {
+      "shards": 21,
+      "target": 2
+    },
+    "default": {
+      "shards": 6,
+      "target": 2
+    }
+  },
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
     "start": "npm run start:dev",
