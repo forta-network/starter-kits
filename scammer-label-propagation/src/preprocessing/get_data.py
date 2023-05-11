@@ -20,7 +20,7 @@ def get_all_related_addresses(central_node) -> str:
     """
     # The SQL query for this can be found in file src/preprocessing/queries.sql
     logger.info(f'{central_node}\tQuerying all related addresses')
-    API_key = get_secrets()['jsonRpc']['ALLIUM']
+    API_key = get_secrets()['apiKeys']['ALLIUM']
     api_url = f'https://api.allium.so/api/v1/explorer/queries/Q71VcKtUFjBtloXNZtpD/run'
     max_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     for i in range(3):
@@ -58,7 +58,7 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
     :return: dict Dictionary with the 6 categories of transactions
     """
     waiting_time = 30
-    API_key = get_secrets()['jsonRpc']['ALLIUM']
+    API_key = get_secrets()['apiKeys']['ALLIUM']
     max_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     list_of_addresses = get_all_related_addresses(central_node)
     # The SQL query for this can be found in file src/preprocessing/queries.sql
