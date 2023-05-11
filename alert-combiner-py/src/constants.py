@@ -10,6 +10,7 @@ ALERTED_CLUSTERS_MAX_QUEUE_SIZE = 10000
 ENTITY_CLUSTERS_MAX_QUEUE_SIZE = 50000
 FP_CLUSTERS_QUEUE_MAX_SIZE = 100000
 VICTIM_QUEUE_MAX_SIZE = 100000
+END_USER_ATTACK_CLUSTERS_QUEUE_MAX_SIZE=100000
 
 DEFAULT_ANOMALY_SCORE = 0.001  # used if anomaly score is less or eq than 0
 
@@ -42,6 +43,14 @@ HIGHLY_PRECISE_BOTS = [("0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cb
                        ("0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2", "SUSPICIOUS-FLASHLOAN-CONTRACT-CREATION", "Preparation"),  # suspicious-flashloan-contract-creation
                        ("0xb31f0db68c5231bad9c00877a3141da353970adcc14e1efe5b14c4d2d93c787f", "AK-ATTACK-SIMULATION-0", "Preparation")  # attack simulation targeted
                        ]
+
+# will filter EOAs associated with alerts from end user attack bots (will emit those as ATTACK-DETECTOR-6 alertId (beta only))
+END_USER_ATTACK_BOTS = ["0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15",  # soft rug pull
+                        "0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4",  # hard rug pull
+                        "0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11",  # rake token
+                        ]
+END_USER_ATTACK_CLUSTERS_KEY="end_user_attack_clusters_key"
+
 
 VICTIM_IDENTIFICATION_BOT = "0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250"
 VICTIM_IDENTIFICATION_BOT_ALERT_IDS = ["VICTIM-IDENTIFIER-PREPARATION-STAGE", "VICTIM-IDENTIFIER-EXPLOITATION-STAGE"]
@@ -145,6 +154,6 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2", "SUSPICIOUS-FLASHLOAN-PRICE-MANIPULATOR", "Preparation"),  # Suspicious flashloand contract creation
              ("0xb31f0db68c5231bad9c00877a3141da353970adcc14e1efe5b14c4d2d93c787f", "AK-ATTACK-SIMULATION-0", "Preparation"),  # attack simulation targeted
              ("0xabc0bb6fe5e0d0b981dec4aa2337ce91676358c6e8bf1fec06cc558f58c3694e", "UNUSUAL-NATIVE-SWAPS", "MoneyLaundering"),  # unusual native swaps
-             #("0x644b77e0d77d68d3841a55843dcdd61840ad3ca09f7e1ab2d2f5191c35f4a998", "ABNORMAL-FUNCTION-CALL-DETECTED-1", "Exploitation"),  # abnormal function call
-             #("0x644b77e0d77d68d3841a55843dcdd61840ad3ca09f7e1ab2d2f5191c35f4a998", "ABNORMAL-EMITTED-EVENT-DETECTED-1", "Exploitation"),  # abnormal function call
+             ("0x644b77e0d77d68d3841a55843dcdd61840ad3ca09f7e1ab2d2f5191c35f4a998", "ABNORMAL-FUNCTION-CALL-DETECTED-1", "Exploitation"),  # abnormal function call
+             ("0x644b77e0d77d68d3841a55843dcdd61840ad3ca09f7e1ab2d2f5191c35f4a998", "ABNORMAL-EMITTED-EVENT-DETECTED-1", "Exploitation"),  # abnormal function call
              ]
