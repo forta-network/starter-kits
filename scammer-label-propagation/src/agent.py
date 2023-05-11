@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 import forta_agent
 from web3 import Web3
@@ -8,8 +9,14 @@ from concurrent.futures import ThreadPoolExecutor
 from src.main import run_all
 from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, MAX_FINDINGS
 
-logging.basicConfig(filename=f"logs.log", level=logging.INFO, 
-                    format='%(levelname)s:%(asctime)s:%(name)s:%(lineno)d:%(message)s')
+
+# If we are in production, we log to the console. Otherwise, we log to a file
+if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+    logging.basicConfig(level=logging.INFO, 
+                        format='%(levelname)s:%(asctime)s:%(name)s:%(lineno)d:%(message)s')
+else:
+    logging.basicConfig(filename=f"logs.log", level=logging.INFO, 
+                        format='%(levelname)s:%(asctime)s:%(name)s:%(lineno)d:%(message)s')
 logger = logging.getLogger(__name__)
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -18,8 +25,14 @@ web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 def run_all_extended(central_node, alert_event):
     try:
         attackers_df, graph_statistics = run_all(central_node)
+    except Warning as w:
+        logger.warning(f"{central_node}:\tWarning running run_all in a thread: {w}", exc_info=True)
+        return []
     except Exception as e:
-        logger.error(f"{central_node}:\tError running run_all in a thread: {e}")
+        logger.error(f"{central_node}:\tError running run_all in a thread: {e}", exc_info=True)
+        # We need to raise the exception to expose error to the scan node
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+            raise e
         return []
     # Now we put things into a list of findings
     all_findings_list = []
@@ -79,7 +92,7 @@ def provide_handle_alert(w3):
 
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logger.debug("handle_alert inner called")
-        logger.debug(f"AlertId:{alert_event.alert_id};\tName:{alert_event.name};\tAlertHash:{alert_event.hash};\tBotId{alert_event.bot_id}")
+        logger.debug(f"AlertId:{alert_event.alert_id};\tName:{alert_event.name};\tAlertHash:{alert_event.hash};\tBotId{alert_event.bot_id};\tAddress:{alert_event.alert.addresses}")
         t = time.time()
         global executor
         global addresses_analyzed
@@ -87,7 +100,7 @@ def provide_handle_alert(w3):
 
         list_of_addresses = []
         if alert_event.alert.alert_id == 'SCAM-DETECTOR-ADDRESS-POISONING':
-            logger.info(f"Address poisoning. Addresses: {';'.join([label.entity for label in alert_event.alert.labels])}")
+            logger.debug(f"Address poisoning. Addresses: {';'.join([label.entity for label in alert_event.alert.labels])}")
             return []
         for label in alert_event.alert.labels:
             if label.confidence >= ATTACKER_CONFIDENCE and label.entity_type == forta_agent.EntityType.Address:
@@ -141,7 +154,11 @@ def provide_handle_block(w3):
         # we cache them in global alerts and will return them in the next block
         alerts = global_alerts[:MAX_FINDINGS]
         global_alerts = global_alerts[MAX_FINDINGS:]
-        logger.info(f"Block {block_event.block_number}:\tRF:{running_futures};PF:{pending_futures};\t {time.time() - t:.10f} s;\t{len(alerts)} findings")
+        # Only log if there are findings, we are debugging or there is something running in the background
+        if len(alerts) > 0 or running_futures > 0 or pending_futures > 0:
+            logger.info(f"Block {block_event.block_number}:\tRF:{running_futures};PF:{pending_futures};\t {time.time() - t:.10f} s;\t{len(alerts)} findings")
+        else:
+            logger.debug(f"Block {block_event.block_number}:\tRF:{running_futures};PF:{pending_futures};\t {time.time() - t:.10f} s;\tNo findings")
         return alerts
 
     return handle_block

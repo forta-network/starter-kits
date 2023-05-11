@@ -37,9 +37,9 @@ def get_all_related_addresses(central_node) -> str:
     if 'data' not in response.json().keys():
         raise ValueError(f'{central_node}:\tMore than 3 errors querying list of neighbors, skipping')
     if len(response.json()['data']) < MIN_NEIGHBORS:
-        raise ValueError(f'{central_node}:\tNot enough neighbors, skipping')
+        raise Warning(f'{central_node}:\tNot enough neighbors, skipping')
     if len(response.json()['data']) > MAX_NEIGHBORS:
-        raise ValueError(f'{central_node}:\tToo many neighbors, skipping')
+        raise Warning(f'{central_node}:\tToo many neighbors, skipping')
     list_of_addresses = str(tuple(pd.DataFrame(response.json()['data'])['address'].tolist()))
     return list_of_addresses
 
@@ -249,7 +249,7 @@ def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
             current_page += 1
     all_labels_df = pd.DataFrame([response['label'] for response in all_labels])
     if all_labels_df.shape[0] == 0:
-        raise ValueError(f'{central_node}:\tNo labels found, skipping')
+        raise Warning(f'{central_node}:\tNo labels found, skipping')
     labels_df = prepare_labels(all_labels_df)
     return labels_df
 
@@ -282,9 +282,9 @@ def get_automatic_labels(all_nodes_dict, transactions_overview, central_node, la
     # Attackers
     attackers_list = labels_df.loc[labels_df['attacker']>=attacker_confidence, 'address'].unique().tolist()
     if len(attackers_list) == 0:
-        raise ValueError(f'{central_node}:\tWith current attacker level {attacker_confidence} there are not enough attackers. Go to next address')
+        raise Warning(f'{central_node}:\tWith current attacker level {attacker_confidence} there are not enough attackers. Go to next address')
     if central_node not in attackers_list:
-        raise ValueError(f'{central_node}:\thas less attacker confidence than {attacker_confidence}. Go to next address')
+        raise Warning(f'{central_node}:\thas less attacker confidence than {attacker_confidence}. Go to next address')
     num_attackers = len(attackers_list)
     for attacker in attackers_list:
         automatic_labels[attacker] = 'attacker'
