@@ -1,4 +1,4 @@
-# Large Tether Transfer Agent
+# Scammer Label Propagation
 
 ## Description
 
