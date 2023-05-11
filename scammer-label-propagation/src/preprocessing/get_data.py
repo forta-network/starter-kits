@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
-from src.constants import attacker_bots, victim_bots, SIMULTANEOUS_ADDRESSES, MIN_NEIGHBORS
+from src.constants import attacker_bots, victim_bots, SIMULTANEOUS_ADDRESSES, MIN_NEIGHBORS, MAX_NEIGHBORS
 from src.storage import get_secrets
 
 logger = logging.getLogger(__name__)
@@ -38,6 +38,8 @@ def get_all_related_addresses(central_node) -> str:
         raise ValueError(f'{central_node}:\tMore than 3 errors querying list of neighbors, skipping')
     if len(response.json()['data']) < MIN_NEIGHBORS:
         raise ValueError(f'{central_node}:\tNot enough neighbors, skipping')
+    if len(response.json()['data']) > MAX_NEIGHBORS:
+        raise ValueError(f'{central_node}:\tToo many neighbors, skipping')
     list_of_addresses = str(tuple(pd.DataFrame(response.json()['data'])['address'].tolist()))
     return list_of_addresses
 
