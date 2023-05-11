@@ -94,7 +94,7 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
                 timeout=10,
             )
             run_status = response.json()
-            if run_status == 'failed':
+            if run_status in ['failed', 'canceled']:
                 logger.debug(f"{central_node}:\t{key} query failed. Re-querying. {response.json()}")
                 api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
                 response = requests.post(

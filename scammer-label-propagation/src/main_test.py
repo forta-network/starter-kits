@@ -28,12 +28,35 @@ class TestMain(unittest.TestCase):
             '0xee4d48171e0af7506297a3c85d3cf770391ac946',  # Address with 'entity' problem
             '0xc6899b77cfed08d92dbb693da530db9bc26d84c2',  # Address with 'data' problem
             '0xaf4fa85844ab4ad0b162f136e03cf0247123990c',  # 'length of value does not match length of index'
+            '0x960d0a37d82b046c699740dc98264b39996d1f0d',  # Expecting value: line 1 column 1 (char 0) '0x7ab1dc2432dfe72a111667f9ce41af7601768938
+            
         ]
         for central_node in central_nodes:
             print(central_node)
             executor.map(run_all, (central_node, ))
         executor.shutdown()
     
+    def test_warnings(self):
+        """
+        This test will check that addresses that are supposed to raise a warning do so
+        """
+        # Not enough neighbors, skipping
+        central_node = '0xb631506163da90c8b00f0fec5eab195454b2efdf'
+        catch_warning = False
+        try:
+            _ = run_all(central_node)
+        except Warning:
+            catch_warning = True
+        assert catch_warning, "run_all() should raise a warning for this address"
+        # With current attacker level 0.8 there are not enough attackers. Go to next address
+        central_node = '0x0e188570adbe7fb6e9483152d9daa181b1d6fd54'
+        catch_warning = False
+        try:
+            _ = run_all(central_node)
+        except Warning:
+            catch_warning = True
+        assert catch_warning, "run_all() should raise a warning for this address"
+
 
 if __name__ == '__main__':
     unittest.main()
