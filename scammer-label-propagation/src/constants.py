@@ -23,5 +23,7 @@ SIMULTANEOUS_ADDRESSES = 30
 N_WORKERS = 8
 # Minimum amount of neighbors to consider an address
 MIN_NEIGHBORS = 10
+# Maximum amount of neighbors to consider an address
+MAX_NEIGHBORS = 500
 # Maximum number of findings that can be sent in one handle call
 MAX_FINDINGS = 40
