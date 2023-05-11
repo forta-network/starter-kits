@@ -2,6 +2,7 @@ from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
 import pandas as pd
 import json
 import os
+import logging
 import forta_agent
 
 
@@ -19,7 +20,7 @@ class AlertCombinerFinding:
         # alert_data -> 'stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses'
 
         #only emit ATTACK-DETECTOR-4 and ATTACK-DETECTOR-5 alerts in test local or beta environments, but not production
-        if ((alert_id == "ATTACK-DETECTOR-4" or alert_id == "ATTACK-DETECTOR-5") and "beta" not in AlertCombinerFinding.get_bot_name() and ('NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'))):
+        if ((alert_id == "ATTACK-DETECTOR-4" or alert_id == "ATTACK-DETECTOR-5" or alert_id == "ATTACK-DETECTOR-6") and "beta" not in AlertCombinerFinding.get_bot_name() and ('NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'))):
             return None
 
         anomaly_scores = {}
@@ -54,20 +55,22 @@ class AlertCombinerFinding:
                 }
             }))
 
-            contracts = block_chain_indexer.get_contracts(address, chain_id)
-            for contract in contracts:
-                labels.append(Label({
-                    'entityType': EntityType.Address,
-                    'label': "attacker-contract",
-                    'entity': contract,
-                    'confidence': 0.20,
-                    'metadata': {
-                        'alert_ids': alert_id,
-                        'chain_id': chain_id,
-                        'threat_description_url': 'https://forta.org/attacks/'
-                    }
-    	        }))
-            
+            try:
+                contracts = block_chain_indexer.get_contracts(address, chain_id)
+                for contract in contracts:
+                    labels.append(Label({
+                        'entityType': EntityType.Address,
+                        'label': "attacker-contract",
+                        'entity': contract,
+                        'confidence': 0.20,
+                        'metadata': {
+                            'alert_ids': alert_id,
+                            'chain_id': chain_id,
+                            'threat_description_url': 'https://forta.org/attacks/'
+                        }
+                    }))
+            except Exception as e:
+                logging.warning(f"Error getting contracts for {address} {e}")
 
         return Finding({
                        'name': 'Attack detector identified an EOA with behavior consistent with an attack',
