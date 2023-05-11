@@ -631,3 +631,32 @@ class TestAlertCombiner:
 
         assert len(findings) == 1, "alert should have been raised"
         assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
+
+
+    def test_alert_with_end_user_attack(self):
+        # three alerts in diff stages for a given EOA
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        metadata = {"attacker_deployer_address": EOA_ADDRESS, "rugpull_techniques": "HIDDENTRANSFERREVERTS, HONEYPOT", "token_contract_address": "0xC159B59Bb001d26e69A7a6F278939559A0a5028a"}
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15", "HARD-RUG-PULL-1", metadata)  # this is an end user alert; should be ignored in context of AD calculation
+        findings = agent.detect_attack(w3, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, alert_event)
+
+        # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
+
+        assert len(findings) == 1, "alert should have been raised"
+        assert findings[0].alert_id == "ATTACK-DETECTOR-6", "ATTACK-DETECTOR-6 alert should have been raised as this associated with end user attack"
