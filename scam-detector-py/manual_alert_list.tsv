@@ -323,3 +323,11 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 9/5/23	0xcf18022D77d67134dbf462B7484eB3788d56561C	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1655905511361880071?s=20	1	Soft rug pull	scammer added ~4 $ETH to a liquidity pool & then swapped ~$90,000 worth of $DMAN for $ETH
 9/5/23	0x14252fd05c0c090391e2d1529cb14fa3e9405d349	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1655905513341612033?s=20	1	Soft rug pull	$GNS case: ~33.82 $ETH was rugged few days ago. Scammer deposited 4 $ETH from #Binance & added ~3 $ETH to GNS/WETH LP
 9/5/23	0x975823d9ef3257370Fc122EFAfEEEe013E540943	@CertiKAlert	https://twitter.com/CertiKAlert/status/1655898796100820994?s=20	1	Ice phishing	
+9/5/23	0xd0ede373762fa3bc58f02c5f2b61117d1976ad57	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1655905515216486401?s=20	1	Soft rug pull	$PEPEG was rugged on worth of ~33.82 $ETH.
+12/5/23	0xDc4d51D732a7C8E90727eb3628c89Ef655a25EC5	@CertiKAlert	https://twitter.com/CertiKAlert/status/1656881655338921985?s=20	1	Ice phishing	
+12/5/23	0x4404De29913e0fd055190e680771A016777973e5	@CertiKAlert	https://twitter.com/CertiKAlert/status/1656857487646277633?s=20	56	Soft rug pull	Flashloan exploit on the LW token.
+12/5/23	0x00002644e79602F056B03235106A9963826d0000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1656393968240787461?s=20	1	Ice phishing	
+12/5/23	0x04C6459042719CC3DD7514622097C229572D89AC	@CertiKAlert	https://twitter.com/CertiKAlert/status/1656881655338921985?s=20	1	Ice phishing	
+10/5/23	0x9D8a3F49888D23594A2EFcd2f3C5Fa8145541A51	@CertiKAlert	https://twitter.com/CertiKAlert/status/1654385278876876802?s=20	56	Ice phishing	
+10/5/23	0x6B67f9e79180e08cB42132754BC9f88558b1e535	@CertiKAlert	https://skynet.certik.com/alerts/security/816f318f-0884-4aa3-9c99-b014c2f90ad3	56	Soft rug pull	Tag_SNK-BUSD Pancake Pool Exploiter
+9/5/23	0x5Dcc4EC2E9C12AB2AF2eBe010Ea8Bf6B41Daa80a	@CertiKAlert	https://twitter.com/CertiKAlert/status/1654433037294219266?s=20	1	Ice phishing	
