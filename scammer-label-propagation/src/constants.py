@@ -27,3 +27,5 @@ MIN_NEIGHBORS = 10
 MAX_NEIGHBORS = 500
 # Maximum number of findings that can be sent in one handle call
 MAX_FINDINGS = 40
+# Random seed for reproducibility
+SEED = 1993

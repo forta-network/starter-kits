@@ -8,7 +8,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from src.constants import (ATTACKER_CONFIDENCE, MIN_FOLDS_ATTACKER, N_FOLDS,
-                           PREDICTED_ATTACKER_CONFIDENCE, VICTIM_SAMPLING)
+                           PREDICTED_ATTACKER_CONFIDENCE, VICTIM_SAMPLING, SEED)
 from src.model.aux import cross_entropy_masked
 from src.model.model import ModelAttention
 from src.model.train import prepare_graph_and_train
@@ -35,7 +35,7 @@ def run_all(central_node):
     data = collect_data_parallel_parts(central_node)
     all_nodes_dict, node_feature, transactions_overview, edge_indexes, edge_features = prepare_data(data)
     labels_df = download_labels_graphql(all_nodes_dict, central_node)
-    np.random.seed(1993)
+    np.random.seed(SEED)
     all_results = []
     for _ in range(N_FOLDS):
         labels_torch, automatic_labels = get_automatic_labels(
@@ -63,13 +63,8 @@ def run_all(central_node):
     web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
     attackers_not_contracts = []
     for address in list(filtered_attackers_df.index):
-        try:
-            attacker_code = web3.eth.get_code(Web3.toChecksumAddress(address))
-            if attacker_code == HexBytes('0x'):
-                attackers_not_contracts.append(address)
-        except ValueError as e:
-            logger.debug("web3 client didn't work, we need to solve that.")
-    
+        if not is_contract(web3, address):
+            attackers_not_contracts.append(address)
     filtered_attackers_df = filtered_attackers_df.loc[attackers_not_contracts]
     # filtered_attackers_df.to_csv(f'results/{central_node}.csv')  # write down for debugging
     logger.debug(filtered_attackers_df)
@@ -82,3 +77,14 @@ def run_all(central_node):
         'n_addresses_with_any_label': labels_df.shape[0],
     }
     return filtered_attackers_df, graph_statistics
+
+
+def is_contract(w3, address) -> bool:
+    """
+    this function determines whether address is a contract
+    :return: is_contract: bool
+    """
+    if address is None:
+        return True
+    code = w3.eth.get_code(Web3.toChecksumAddress(address))
+    return code != HexBytes("0x")

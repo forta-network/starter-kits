@@ -3,6 +3,7 @@ from forta_agent import  create_alert_event, create_block_event
 import agent
 import json
 import unittest
+from constants import N_WORKERS
 
 
 class TestScammerLabelPropagationAgent(unittest.TestCase):
@@ -168,7 +169,8 @@ class TestScammerLabelPropagationAgent(unittest.TestCase):
         for _, future in agent.global_futures.items():
             if future.running():
                 currently_running += 1
-        # assert currently_running == 4, "handle_alert() should run 4 addresses concurrently"
+        # 
+        assert currently_running <= N_WORKERS, "The number of concurrent processes should be less than the maximum number of workers"
         findings = []
         block_event = create_block_event(
             {'block': {'hash': '0xa', 'number': 1}})
