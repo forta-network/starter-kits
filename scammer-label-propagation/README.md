@@ -21,11 +21,17 @@ Describe each of the type of alerts fired by this agent
 - SCAMMER-LABEL-PROPAGATION-1
   - Fired when an address that was previously unlabeled (based on the subscribed bots and configured sensitivity)
   is marked as a potential attacker
-  - 'name is set to 'scammer-label-propagation'
-  - 'description' is set to 'Address marked as scammer by label propagation'
+  - 'name' is set to 'scammer-label-propagation'
+  - 'description' is set to '{Address} marked as scammer by label propagation'
   - 'alert_id' set to 'SCAMMER-LABEL-PROPAGATION-1'
   - 'severity' is set to 'High'
   - 'type' is set to 'Scam'
+  - 'metadata'
+      - 'central_node' is set to the node that was used as the center of the graph
+      - 'central_node_alert_id' is set to the alert id that triggered the central node
+      - 'central_node_alert_name' is set to the name of the alert that triggered the central node
+      - 'central_node_alert_hash' is set to the alert hash of the alert that triggered the central node
+      - 'graph_statistics' holds n_nodes, n_labeled_attackers, n_labeled_victims, n_predicted_attackers
   - Labels:
     - 'entity' is the marked address
     - 'label' is set to 'scammer-eoa' (there are no contracts)
@@ -48,7 +54,7 @@ The calls to 'handle_alert' are asynchronous, which means that sending an alert 
 
 We will expect to see in the logfile
 
-``
+```bash
 Initializing scammer label propagation bot. Subscribed to bots successfully: {'alertConfig': {'subscriptions': [{'botId': '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23', 'chainId': 1}]}}
 0xab01b6fa35daf2d2c6467669ff64a8cc95692514:	Start processing
 Alert ATTACK-DETECTOR-ICE-PHISHING:	0.0014028549 s. 1 addresses: 0xab01b6fa35daf2d2c6467669ff64a8cc95692514
@@ -68,6 +74,6 @@ Name: 0xa13ea6d6d9b41914c7a36ea15d4186af3aacd268, dtype: float64
 mean_probs_victim        0.064098
 mean_probs_attacker      0.935902
 Name: 0xbf6e4e8642606c585e04c679645f54dda3318b3c, dtype: float64
-``
+```
 
 In order to have a synchronous execution of the code, or for debugging purposes, please use the tests provided in `agent_test.py`.

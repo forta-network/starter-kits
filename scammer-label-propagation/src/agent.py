@@ -11,7 +11,7 @@ from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, MAX_FIN
 
 
 # If we are in production, we log to the console. Otherwise, we log to a file
-if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+if 'production' in os.environ.get('NODE_ENV', ''):
     logging.basicConfig(level=logging.INFO, 
                         format='%(levelname)s:%(asctime)s:%(name)s:%(lineno)d:%(message)s')
 else:
@@ -31,7 +31,7 @@ def run_all_extended(central_node, alert_event):
     except Exception as e:
         logger.error(f"{central_node}:\tError running run_all in a thread: {e}", exc_info=True)
         # We need to raise the exception to expose error to the scan node
-        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+        if 'production' in os.environ.get('NODE_ENV', ''):
             raise e
         return []
     # Now we put things into a list of findings
@@ -49,20 +49,23 @@ def run_all_extended(central_node, alert_event):
         for row_idx in range(attackers_df.shape[0]):
             attacker_info = attackers_df.iloc[row_idx]
             logger.info(f'{central_node}:\tNew attacker info: {attacker_info}')
-            label_dict = {
-                'entity': attacker_info.name,
-                'label': 'scammer-eoa',
-                'confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
-                'entity_type': forta_agent.EntityType.Address,
-                'metadata': {
+            metadata = {
                     'central_node': central_node,
                     'central_node_alert_id': alert_event.alert.alert_id,
                     'central_node_alert_name': alert_event.alert.name,
                     'central_node_alert_hash': alert_event.alert.hash,
                     'graph_statistics': graph_statistics,
                 }
+            label_dict = {
+                'entity': attacker_info.name,
+                'label': 'scammer-eoa',
+                'confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
+                'entity_type': forta_agent.EntityType.Address,
+                'metadata': metadata
             }
             finding_dict['labels'] = [forta_agent.Label(label_dict)]
+            finding_dict['metadata'] = metadata
+            finding_dict['description'] = f"{attacker_info.name} marked as scammer by label propagation"
             all_findings_list.append(Finding(finding_dict))
     return all_findings_list
         
@@ -142,8 +145,9 @@ def provide_handle_block(w3):
                 running_futures += 1
             elif future.done():
                 try:
-                    global_alerts += future.result()
+                    # A completed future may have a warning/error. We need to remove it from the global list anyway
                     completed_futures.append(address)
+                    global_alerts += future.result()
                 except Exception as e:
                     logger.error(f"Exception {e} occurred while collecting results from address {address}")
             else:
