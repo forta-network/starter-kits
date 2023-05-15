@@ -30,6 +30,7 @@ def get_all_related_addresses(central_node) -> str:
                 json={"address":central_node,"tt":max_datetime},
                 headers={"X-API-Key": API_key},
             )
+            _ = response.json()  # Try to parse the response. If answer is not 200, it will retry the request
         except Exception as e:
             logger.debug(f'Retrying for {i+1} time')
         else:
@@ -78,53 +79,67 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
     for key in queries.keys():
         logger.debug(f'{central_node}:\t{key}')
         api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
-        response = requests.post(
-            api_url,
-            json={"parameters" :{"addresses":list_of_addresses,"tt":max_datetime}},
-            headers={"X-API-Key": API_key},
-        )
-        active_queries[key] = response.json()["run_id"]
-    
-    while len(active_queries) > 0 and total_retries < max_retries:
-        keys_to_pop = []
-        for key in active_queries.keys():
-            response = requests.get(
-                f"https://api.allium.so/api/v1/explorer/query-runs/{active_queries[key]}/status",
-                headers={"X-API-Key": API_key},
-                timeout=10,
-            )
-            run_status = response.json()
-            if run_status in ['failed', 'canceled']:
-                logger.debug(f"{central_node}:\t{key} query failed. Re-querying. {response.json()}")
-                api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
+        # Retry mechanism in case the request fails
+        for i in range(3):
+            try:
                 response = requests.post(
                     api_url,
                     json={"parameters" :{"addresses":list_of_addresses,"tt":max_datetime}},
                     headers={"X-API-Key": API_key},
                 )
                 active_queries[key] = response.json()["run_id"]
-                total_retries += 1
-            elif run_status == 'success':
+            except Exception as e:
+                logger.debug(f'Retrying for {i+1} time')
+            else:
+                break
+    while len(active_queries) > 0 and total_retries < max_retries:
+        keys_to_pop = []
+        for key in active_queries.keys():
+            # Retry mechanism in case the request fails
+            for i in range(3):
                 try:
                     response = requests.get(
-                        f"https://api.allium.so/api/v1/explorer/query-runs/{active_queries[key]}/results?f=json",
+                        f"https://api.allium.so/api/v1/explorer/query-runs/{active_queries[key]}/status",
                         headers={"X-API-Key": API_key},
+                        timeout=10,
                     )
-                    data[key] = pd.DataFrame(response.json()['data'])
-                    keys_to_pop.append(key)
-                    # active_queries.pop(key)
-                    logger.debug(f"{central_node}:\t{key} Finished")
+                    run_status = response.json()
                 except Exception as e:
-                    logger.error(e)
-                    logger.debug(f"{central_node}:\t{key} failed after successfully running the query. Re-querying")
-                    api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
-                    response = requests.post(
-                        api_url,
-                        json={"parameters" :{"addresses":list_of_addresses,"tt":max_datetime}},
-                        headers={"X-API-Key": API_key},
-                    )
-                    active_queries[key] = response.json()["run_id"]
-                    total_retries += 1
+                    logger.debug(f'Retrying for {i+1} time')
+                else:
+                    break
+            if run_status in ['failed', 'canceled']:
+                logger.debug(f"{central_node}:\t{key} query failed. Re-querying. {response.json()}")
+                api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
+                # Retry mechanism in case the request fails
+                for i in range(3):
+                    try:
+                        response = requests.post(
+                            api_url,
+                            json={"parameters" :{"addresses":list_of_addresses,"tt":max_datetime}},
+                            headers={"X-API-Key": API_key},
+                        )
+                        active_queries[key] = response.json()["run_id"]
+                        total_retries += 1
+                    except Exception as e:
+                        logger.debug(f'Retrying for {i+1} time')
+                    else:
+                        break
+            elif run_status == 'success':
+                # Query is finished, we download the data. Retry more times to reduce costs.
+                for i in range(5):
+                    try:
+                        response = requests.get(
+                            f"https://api.allium.so/api/v1/explorer/query-runs/{active_queries[key]}/results?f=json",
+                            headers={"X-API-Key": API_key},
+                        )
+                        data[key] = pd.DataFrame(response.json()['data'])
+                        keys_to_pop.append(key)
+                        logger.debug(f"{central_node}:\t{key} Finished")
+                    except Exception as e:
+                        logger.debug(f'Retrying for {i+1} time')
+                    else:
+                        break
         for key in keys_to_pop:
             active_queries.pop(key)
         time.sleep(waiting_time)
