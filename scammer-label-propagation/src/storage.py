@@ -24,7 +24,7 @@ def _load_json(key: str) -> object:
         if res.status_code == 200:
             return res.json()
         else:
-            raise ValueError("error loading {key}")
+            raise ValueError(f"error loading {key}")
 
 
 def get_secrets():
