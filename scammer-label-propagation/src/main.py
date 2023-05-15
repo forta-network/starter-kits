@@ -76,7 +76,7 @@ def run_all(central_node):
         'n_labeled_victims_extended': len([label for label in automatic_labels.values() if label == 'victim']),
         'n_addresses_with_any_label': labels_df.shape[0],
     }
-    return filtered_attackers_df, graph_statistics
+    return filtered_attackers_df, str(graph_statistics)
 
 
 def is_contract(w3, address) -> bool:
