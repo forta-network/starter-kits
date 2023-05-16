@@ -31,6 +31,13 @@ class L2Cache:
             pickle.dump(obj, open(key, "wb"))
 
     @staticmethod
+    def remove(chain_id: int, key: str):
+        key = f"{VERSION}-{key}"
+        if not ('NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV')):
+            if os.path.exists(key):
+                os.remove(key)
+
+    @staticmethod
     def load(chain_id: int, key: str) -> object:
         key = f"{VERSION}-{key}"
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
