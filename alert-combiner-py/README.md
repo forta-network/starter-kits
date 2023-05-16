@@ -20,6 +20,7 @@ As such, this feed combines previously raised alerts under the initiating addres
     - the minimum anomaly scores per attack stage are combined (multiplied) across all stages for a common cluster (a set of addresses clustered by the cluster entity bot)
     - thresholds on the number of total alerts (3) and anomaly score (threshold of 1 * 10-7 for critical, 1 * 10-4 for low severity alerts)
     - is not part of a FP mitigation alert
+    - is not part of an end user attack alert
    2. Example
     - ICE-PHISHING-HIGH-NUM-APPROVALS with an anomaly score of 0.0001 and an attack stage mapping of Preparation
     - ICE-PHISHING-PREV-APPROVED-TRANSFERED with an anomaly score of 0.0005 and an attack stage mapping of Exploitation
@@ -31,7 +32,7 @@ As such, this feed combines previously raised alerts under the initiating addres
    1. Alert Criteria
     - a highly precise alert is emitted plus one more additional alert is emitted for a common cluster (a set of addresses clustered by the cluster entity bot)
     - is not part of a FP mitigation alert
-
+    - is not part of an end user attack alert
    2. Example 
    - AK-ATTACK-SIMULATION-0 (this is a highly precise alert)
    - CEX-FUNDING-1
@@ -43,6 +44,7 @@ As such, this feed combines previously raised alerts under the initiating addres
    1. Alert Criteria
     - an alert is emitted in each of the 4 attack stages for a common cluster (a set of addresses clustered by the cluster entity bot)
     - is not part of a FP mitigation alert
+    - is not part of an end user attack alert
    2. Example
     - CEX-FUNDING-1 (Funding)
     - SUSPICIOUS-CONTRACT-CREATION (Preparation)
@@ -94,6 +96,12 @@ The Attack Detector bot emits the following alerts:
 
 - ATTACK-DETECTOR-5
   - Fires when any of the above alerts would have triggered, but was FP mitigated. This alert is only emitted in beta version of bot.
+  - Severity is always set to "info" 
+  - Type is always set to "exploit" 
+  - Note: the detection bot will only alert once per cluster observed
+
+- ATTACK-DETECTOR-6
+  - Fires when any of the above alerts would have triggered, but was associated with an end user attack. This alert is only emitted in beta version of bot.
   - Severity is always set to "info" 
   - Type is always set to "exploit" 
   - Note: the detection bot will only alert once per cluster observed

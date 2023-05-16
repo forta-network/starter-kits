@@ -20,6 +20,7 @@ ENV NODE_ENV=production
 LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
 COPY ./fp_list.csv ./
+COPY ./manual_alert_list.tsv ./
 COPY ./LICENSE ./
 COPY ./basebot_parsing_config.csv ./
 COPY ./src ./src
