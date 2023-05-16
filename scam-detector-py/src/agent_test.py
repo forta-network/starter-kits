@@ -1,11 +1,12 @@
 import time
 import timeit
 import os
+import io
 import random
 from datetime import datetime
 import pandas as pd
 from forta_agent import create_alert_event,FindingSeverity, AlertEvent, Label, EntityType
-
+import requests
 import agent
 
 from constants import BASE_BOTS
@@ -16,8 +17,6 @@ w3 = Web3Mock()
 
 
 class TestScamDetector:
-    
-    
 
     def generate_alert(bot_id: str, alert_id: str, description = "", metadata={}, labels=[], transaction_hash = "0x123", alert_hash = '0xabc', timestamp = 0) -> AlertEvent:
         labels_tmp = [] if len(labels) == 0 else labels
@@ -194,8 +193,9 @@ class TestScamDetector:
         agent.initialize()
 
         findings = agent.emit_new_fp_finding(w3)
-
-        df_fps = pd.read_csv("fp_list.csv")
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
+        content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
+        df_fps = pd.read_csv(io.StringIO(content), sep=',')
         assert len(findings) == len(df_fps[df_fps['chain_id']==1]), "this should have triggered FP findings"
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be FP mitigation finding"
@@ -634,3 +634,20 @@ class TestScamDetector:
         assert len(alerts) == 2, "should be 2 alert"
         assert ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-1", "0xabc") in alerts, "should be in alerts"
         assert ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-2", "0xabc") in alerts, "should be in alerts"
+
+    def test_emit_new_manual_finding(self):
+        agent.clear_state()
+        agent.initialize()
+
+        findings = agent.emit_manual_finding(w3, True)
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/manual_alert_list.tsv')
+        content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
+        df_manual_entries = pd.read_csv(io.StringIO(content), sep='\t')
+        assert len(findings) > 0, "this should have triggered manual findings"
+        
+        for finding in findings:
+            address_lower = "0x6939432e462f7dCB6a3Ca39b9723d18a58FE9A65".lower()
+            if address_lower in finding.description.lower():
+                assert findings[0].alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+                assert findings[0].description == f"{address_lower} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING)", "wrong description"
+                assert findings[0].metadata["reported_by"] == "@CertiKAlert https://twitter.com/CertiKAlert/status/1640288904317378560?s=20"

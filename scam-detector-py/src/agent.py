@@ -416,13 +416,67 @@ def emit_contract_similarity_finding(w3, alert_event: forta_agent.alert_event.Al
             if not Utils.is_fp(w3, scammer_address_lower):
                 if scammer_address_lower not in ALERTED_CLUSTERS:
                     update_list(ALERTED_CLUSTERS, ALERTED_CLUSTERS_QUEUE_SIZE, scammer_address_lower)
-                    findings.append(ScamDetectorFinding.alert_similar_contract(block_chain_indexer, alert_event.alert.metadata, CHAIN_ID))
+                    finding = ScamDetectorFinding.alert_similar_contract(block_chain_indexer, alert_event.alert.metadata, CHAIN_ID)
+                    if(finding is not None):
+                        findings.append(finding)
                 else:
                     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} already alerted")
             else:
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} in FP.")
-        return findings
+    return findings
 
+
+def emit_manual_finding(w3, test = False) -> list:
+    global ALERTED_CLUSTERS
+    global CHAIN_ID
+    findings = []
+
+    if CHAIN_ID == -1:
+        logging.error("Chain ID not set")
+        raise Exception("Chain ID not set")
+
+    res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/manual_alert_list.tsv')
+    logging.info(f"Manual finding: made request to fetch manual alerts: {res.status_code}")
+    content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
+    df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
+    for index, row in df_manual_findings.iterrows():
+        chain_id = -1
+        try:
+            chain_id_float = row['Chain ID']
+            chain_id = int(chain_id_float)
+        except Exception as e:
+            logging.warning("Manual finding: Failed to get chain ID from manual finding")
+            continue
+
+        if chain_id != CHAIN_ID:
+            logging.info("Manual finding: Manual entry doesnt match chain ID.")
+            continue
+
+        scammer_address_lower = row['Address'].lower().strip()
+        cluster = scammer_address_lower
+        logging.info(f"Manual finding: Have manual entry for {scammer_address_lower}")
+        entity_clusters = read_entity_clusters(scammer_address_lower)
+        if scammer_address_lower in entity_clusters.keys():
+            cluster = entity_clusters[scammer_address_lower]
+
+        if Utils.is_contract(w3, cluster):
+            logging.info(f"Manual finding: Address {cluster} is a contract")
+            continue
+
+        if cluster not in ALERTED_CLUSTERS:
+            logging.info(f"Manual finding: Emitting manual finding for {cluster}")
+            update_list(ALERTED_CLUSTERS, ALERTED_CLUSTERS_QUEUE_SIZE, cluster)
+            tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
+            findings.append(ScamDetectorFinding.scam_finding_manual(block_chain_indexer, cluster, row['Threat category'], row['Account'] + " " + tweet, chain_id))
+            logging.info(f"Findings count {len(findings)}")
+            persist_state()
+
+            if test:
+                break
+        else:
+            logging.info(f"Manual finding: Already alerted on {scammer_address_lower}")
+
+    return findings
 
 # clear cache flag for perf testing
 def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state_flag = False) -> list:
@@ -504,14 +558,14 @@ def emit_new_fp_finding(w3) -> list:
     findings = []
 
     try:
-        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/fp_list.tsv')
-        content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.tsv', 'r').read()
-        df_fp = pd.read_csv(io.StringIO(content), sep='\t')
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
+        content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
+        df_fp = pd.read_csv(io.StringIO(content), sep=',')
         for index, row in df_fp.iterrows():
             chain_id = int(row['chain_id'])
             if chain_id != CHAIN_ID:
                 continue
-            cluster = row['cluster'].lower()
+            cluster = row['address'].lower()
             if cluster not in ALERTED_FP_CLUSTERS:
                 logging.info(f"{BOT_VERSION}: Emitting FP mitigation finding")
                 update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, cluster)
@@ -527,15 +581,11 @@ def emit_new_fp_finding(w3) -> list:
 
 def clear_state():
     # delete cache file
-    if os.path.exists(FINDINGS_CACHE_ALERT_KEY):
-        os.remove(FINDINGS_CACHE_ALERT_KEY)
-    if os.path.exists(FINDINGS_CACHE_BLOCK_KEY):
-        os.remove(FINDINGS_CACHE_BLOCK_KEY)
-    if os.path.exists(ALERTED_CLUSTERS_KEY):
-        os.remove(ALERTED_CLUSTERS_KEY)
-    if os.path.exists(ALERTED_FP_CLUSTERS_KEY):
-        os.remove(ALERTED_FP_CLUSTERS_KEY)
-
+    L2Cache.remove(CHAIN_ID, ALERTED_CLUSTERS_KEY)
+    L2Cache.remove(CHAIN_ID, ALERTED_FP_CLUSTERS_KEY)
+    L2Cache.remove(CHAIN_ID, FINDINGS_CACHE_BLOCK_KEY)
+    L2Cache.remove(CHAIN_ID, FINDINGS_CACHE_ALERT_KEY)
+    
     Utils.FP_MITIGATION_ADDRESSES = set()
     Utils.CONTRACT_CACHE = dict()
 
@@ -648,9 +698,13 @@ def provide_handle_block(w3):
         findings = []
         if datetime.now().minute == 0:  # every hour
             logging.info(f"{BOT_VERSION}: Handle block on the hour was called. Findings cache for blocks size: {len(FINDINGS_CACHE_BLOCK)}")
-            fp_findings = emit_new_fp_finding(w3)
-            logging.info(f"{BOT_VERSION}: Added {len(fp_findings)} fp findings.") 
+            fp_findings = emit_new_fp_finding(w3)                        
+            logging.info(f"{BOT_VERSION}: Added {len(fp_findings)} fp findings.")
             FINDINGS_CACHE_BLOCK.extend(fp_findings)
+            manual_findings = emit_manual_finding(w3)
+            logging.info(f"{BOT_VERSION}: Added {len(manual_findings)} manual findings.")
+            FINDINGS_CACHE_BLOCK.extend(manual_findings)
+
             logging.info(f"{BOT_VERSION}: Handle block on the hour was called. Findings cache for blocks size now: {len(FINDINGS_CACHE_BLOCK)}")
             
             persist_state()
@@ -659,7 +713,7 @@ def provide_handle_block(w3):
                 findings.append(finding)
             FINDINGS_CACHE_BLOCK = FINDINGS_CACHE_BLOCK[10:]
 
-        logging.info(f"{BOT_VERSION}: Return {len(findings)} to handleBlock.") 
+        logging.info(f"{BOT_VERSION}: Return {len(findings)} to handleBlock.")
         return findings
 
     return handle_block
