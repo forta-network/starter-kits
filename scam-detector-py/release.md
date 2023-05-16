@@ -1,7 +1,10 @@
 # Scam Detector Bot Release Notes
 
-## v0.1.22 (May 16 2023 - beta)
-- add new alert Id (SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT) when a known scammer is deploying a contract
+## v0.1.25 (May 16th 2023 - beta)
+- add manual alerting capability
+- restricted the contract similarity bot to only operate on scams where a contract is essential:
+    - SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING
+    - SCAM-DETECTOR-ADDRESS-POISONER
 
 
 ## v0.1.21 (May 10 2023 - beta)
@@ -22,3 +25,4 @@
 - added sharding support to ensure no alerts are being dropped due to processing time of the alerts
 - added persistence of findings/alerts cache, so no findings/alerts are lost upon a reassignment or restart
 - fixes various parsing issues of base bot alerts
+

@@ -126,3 +126,15 @@ class TestScamFindings:
         finding = ScamDetectorFinding.alert_FP(w3, EOA_ADDRESS_LARGE_TX + "," + EOA_ADDRESS_SMALL_TX)
         assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be FP"
         assert len(finding.labels) == 2, "should be 2"
+
+    def test_scam_finding_manual(self):
+        finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, EOA_ADDRESS_LARGE_TX, "ice phishing", "me http://foo.com", 1)  # this EOA did not deploy a contract
+        assert finding.alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+        assert finding.description == f'{EOA_ADDRESS_LARGE_TX} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING)', "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+        assert finding.metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
+        assert len(finding.labels) == 1, "should be 1"  
+        assert finding.labels[0].entity == EOA_ADDRESS_LARGE_TX, "should be EOA_ADDRESS"
+        assert finding.labels[0].metadata['alert_ids'] == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+        assert finding.labels[0].metadata['chain_id'] == 1, "should be 1"
+        assert finding.labels[0].metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
+        assert finding.labels[0].label == "scammer-eoa", "should be scammer-eoa"
