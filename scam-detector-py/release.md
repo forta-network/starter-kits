@@ -6,11 +6,9 @@
     - SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING
     - SCAM-DETECTOR-ADDRESS-POISONER
 
-
 ## v0.1.21 (May 10 2023 - beta)
 - tune confidence based on April precision numbers
 - switched from fraudulent seaport order to the [scammer nft trader bot](https://explorer.forta.network/bot/0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac), which covers additional on-chain market places (blur, looksrare and seaport). Renamed alertId SCAM-DETECTOR-FRAUDULENT-SEAPORT-ORDER to SCAM-DETECTOR-FRAUDULENT-NFT-ORDER as a result.
-
 
 ## v0.1.20 (May 4th 2023 - beta)
 - incorporated [hard rug pull](https://explorer.forta.network/bot/0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15
