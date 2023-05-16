@@ -57,6 +57,9 @@ The Scam Detector bot emits the following alerts:
 - SCAM-DETECTOR-SIMILAR-CONTRACT
   - Fired when a similar contract to a previously identified scammer contract has been identified
 
+- SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT
+  - When a known scammer deploys a contract
+
 - SCAM-DETECTOR-1
 - Fired when alert combination is observed that points to attack on chain that spans the 4 stages of an attack (funding, preparaiton, exploitation, and money laundering) Many of the alerts here point to rug pulls and rake tokens.
 
