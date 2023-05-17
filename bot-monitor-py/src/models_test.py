@@ -50,7 +50,7 @@ class TestUtils:
         lower_bound, upper_bound, last_hour_value = alert_rate_model.get_normal_range(last_hour, start_time)
         assert last_hour_value < upper_bound and last_hour_value > lower_bound
 
-    def test_get_time_series_date(self):
+    def test_get_time_series_data(self):
         # Initialize AlertRateModel
         alert_rate_model = AlertRateModel()
         start_time = datetime(2020, 12, 31, 23, 0, tzinfo=timezone.utc)
