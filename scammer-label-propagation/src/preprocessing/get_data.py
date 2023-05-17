@@ -27,6 +27,7 @@ def get_all_related_addresses(central_node) -> str:
     API_key = get_secrets()['apiKeys']['ALLIUM']
     query_name = 'get_addresses'
     run_id = get_query_id_dynamo(central_node, query_name)
+    logger.debug(f'{central_node}:\t{query_name}:\t{run_id}')
     api_url = f'https://api.allium.so/api/v1/explorer/queries/Q71VcKtUFjBtloXNZtpD/run-async'
     max_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     if run_id is None:
@@ -137,6 +138,7 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
         logger.debug(f'{central_node}:\t{key}')
         api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
         run_id = get_query_id_dynamo(central_node, key)
+        logger.debug(f'{central_node}:\t{key}:\t{run_id}')
         if run_id is None:
             # Retry mechanism in case the request fails
             for i in range(3):
