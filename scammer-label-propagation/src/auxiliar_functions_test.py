@@ -1,3 +1,4 @@
+import time
 import unittest
 import src.preprocessing.get_data as get_data
 import src.preprocessing.process_data as process_data
@@ -27,6 +28,18 @@ class TestAuxiliarFunctions(unittest.TestCase):
         put_query_id_dynamo(central_node, query_name, query_id_in)
         query_id_out = get_query_id_dynamo(central_node, query_name)
         assert query_id_out == query_id_in, "query_id_out should be equal to query_id_in"
+    
+    def test_cache_data(self):
+        central_node = '0xfb4c68caccfa3ea46a7d9a7b59a3f91b40705194'
+        t = time.time()
+        _ = get_data.collect_data_parallel_parts(central_node)
+        t2 = time.time()
+        _ = get_data.collect_data_parallel_parts(central_node)
+        t3 = time.time()
+        print(t2 - t)
+        print(t3 - t2)
+        assert t3 - t2 < t2 - t, "second call should be faster than first call"
+        
 
 
 if __name__ == '__main__':

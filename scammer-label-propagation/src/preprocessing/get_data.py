@@ -25,20 +25,73 @@ def get_all_related_addresses(central_node) -> str:
     # The SQL query for this can be found in file src/preprocessing/queries.sql
     logger.info(f'{central_node}\tQuerying all related addresses')
     API_key = get_secrets()['apiKeys']['ALLIUM']
-    api_url = f'https://api.allium.so/api/v1/explorer/queries/Q71VcKtUFjBtloXNZtpD/run'
+    query_name = 'get_addresses'
+    run_id = get_query_id_dynamo(central_node, query_name)
+    api_url = f'https://api.allium.so/api/v1/explorer/queries/Q71VcKtUFjBtloXNZtpD/run-async'
     max_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    for i in range(3):
-        try:
-            response = requests.post(
-                api_url,
-                json={"address":central_node,"tt":max_datetime},
-                headers={"X-API-Key": API_key},
-            )
-            _ = response.json()  # Try to parse the response. If answer is not 200, it will retry the request
-        except Exception as e:
-            logger.debug(f'Retrying for {i+1} time')
-        else:
-            break
+    if run_id is None:
+        # Retry mechanism in case the request fails
+        for i in range(3):
+            try:
+                response = requests.post(
+                    api_url,
+                    json={"parameters" :{"address":central_node, "tt": max_datetime}},
+                    headers={"X-API-Key": API_key},
+                )
+                run_id = response.json()["run_id"]
+            except Exception as e:
+                logger.debug(f'Retrying for {i+1} time')
+            else:
+                break
+        put_query_id_dynamo(central_node, query_name, run_id)
+    continue_querying = True
+    while continue_querying:
+        # Retry mechanism in case the request fails
+        for i in range(3):
+            try:
+                response = requests.get(
+                    f"https://api.allium.so/api/v1/explorer/query-runs/{run_id}/status",
+                    headers={"X-API-Key": API_key},
+                    timeout=10,
+                )
+                run_status = response.json()
+            except Exception as e:
+                logger.debug(f'Retrying for {i+1} time')
+            else:
+                break
+        if run_status in ['failed', 'canceled']:
+            logger.debug(f"{central_node}:\t{query_name} query failed. Re-querying. {response.json()}")
+            # Retry mechanism in case the request fails
+            for i in range(3):
+                try:
+                    response = requests.post(
+                        api_url,
+                        json={"parameters" :{"address":central_node, "tt": max_datetime}},
+                        headers={"X-API-Key": API_key},
+                    )
+                    run_id = response.json()["run_id"]
+                except Exception as e:
+                    logger.debug(f'Retrying for {i+1} time')
+                else:
+                    break
+            put_query_id_dynamo(central_node, query_name, run_id)
+        elif run_status == 'success':
+            # Query is finished, we download the data. Retry more times to reduce costs.
+            for i in range(5):
+                try:
+                    response = requests.get(
+                        f"https://api.allium.so/api/v1/explorer/query-runs/{run_id}/results?f=json",
+                        headers={"X-API-Key": API_key},
+                    )
+                    _ = response.json()  # Try to parse the response. If answer is not 200, it will retry the request
+                    continue_querying = False
+                except Exception as e:
+                    logger.debug(f'Retrying for {i+1} time')
+                else:
+                    break
+        if continue_querying:
+            logger.debug(f"{central_node}:\t{query_name} query still running")
+            time.sleep(10)
     if 'data' not in response.json().keys():
         raise ValueError(f'{central_node}:\tMore than 3 errors querying list of neighbors, skipping')
     if len(response.json()['data']) < MIN_NEIGHBORS:
@@ -83,19 +136,24 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
     for key in queries.keys():
         logger.debug(f'{central_node}:\t{key}')
         api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
-        # Retry mechanism in case the request fails
-        for i in range(3):
-            try:
-                response = requests.post(
-                    api_url,
-                    json={"parameters" :{"addresses":list_of_addresses,"tt":max_datetime}},
-                    headers={"X-API-Key": API_key},
-                )
-                active_queries[key] = response.json()["run_id"]
-            except Exception as e:
-                logger.debug(f'Retrying for {i+1} time')
-            else:
-                break
+        run_id = get_query_id_dynamo(central_node, key)
+        if run_id is None:
+            # Retry mechanism in case the request fails
+            for i in range(3):
+                try:
+                    response = requests.post(
+                        api_url,
+                        json={"parameters" :{"addresses":list_of_addresses,"tt":max_datetime}},
+                        headers={"X-API-Key": API_key},
+                    )
+                    active_queries[key] = response.json()["run_id"]
+                except Exception as e:
+                    logger.debug(f'Retrying for {i+1} time')
+                else:
+                    break
+            put_query_id_dynamo(central_node, key, active_queries[key])
+        else:
+            active_queries[key] = run_id
     while len(active_queries) > 0 and total_retries < max_retries:
         keys_to_pop = []
         for key in active_queries.keys():
@@ -129,6 +187,7 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
                         logger.debug(f'Retrying for {i+1} time')
                     else:
                         break
+                put_query_id_dynamo(central_node, key, active_queries[key])
             elif run_status == 'success':
                 # Query is finished, we download the data. Retry more times to reduce costs.
                 for i in range(5):
@@ -146,7 +205,9 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
                         break
         for key in keys_to_pop:
             active_queries.pop(key)
-        time.sleep(waiting_time)
+        if len(active_queries) > 0:
+            logger.debug(f"{central_node}:\t{len(active_queries)} queries still running")
+            time.sleep(waiting_time)
     logger.info(f'{central_node}:\tFinished downloading the data')
     return data
 
