@@ -7,13 +7,14 @@ from datetime import datetime, timedelta, timezone
 
 from src.constants import MONITORED_BOTS
 from src.models import AlertRateModel
+from src.L2Cache import L2Cache
 
 import forta_agent
 from forta_agent import get_json_rpc_url, Finding, FindingType, FindingSeverity
 from web3 import Web3
 
 CHAIN_ID = -1
-START_TIME = datetime.now(timezone.utc)
+START_TIME = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
 MODELS = {}
 FINDINGS_CACHE = []
 
@@ -42,6 +43,14 @@ def initialize():
         raise e
     
     global MODELS
+    models = L2Cache.load(CHAIN_ID, "MODELS")
+    MODELS = dict() if models is None else dict(models)
+
+    global FINDINGS_CACHE
+    findings_cache = L2Cache.load(CHAIN_ID, "FINDINGS_CACHE")
+    FINDINGS_CACHE = list() if findings_cache is None else list(findings_cache)
+
+
     global MONITORED_BOTS
     subscription_json = []
     for bot_id, alert_id in MONITORED_BOTS:
@@ -72,22 +81,22 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         current_time_utc = current_time.replace(tzinfo=timezone.utc)
         model = MODELS[alert_event.bot_id][alert_event.alert_id]
         model.update(current_time_utc)
-        time_series_lenght = len(model.data)
-        logging.info(f"bot {alert_event.bot_id} alertId {alert_event.alert.alert_id} - time series length: {time_series_lenght}")
-        logging.debug(model.data)
+        time_series_length = len(model.data)
+        logging.info(f"bot {alert_event.bot_id} alertId {alert_event.alert.alert_id} - time series length: {time_series_length}")
+        last_hour = current_time_utc - timedelta(hours=1)
+        logging.info(f"bot {alert_event.bot_id} alertId {alert_event.alert.alert_id} - time series: {model.get_time_series_data(current_time_utc, START_TIME)}")
 
         # Check for cold start
         if (current_time_utc - START_TIME).days < 1:
             return findings
 
-        last_hour = current_time_utc - timedelta(hours=1)
-        
         # Check if the alert rate is outside the normal range
         findings_cache_key = f"{alert_event.bot_id}, {alert_event.alert_id}, {CHAIN_ID}, {last_hour}"
-        lower_bound, upper_bound, actual_value = model.get_normal_range(last_hour, START_TIME)
+        lower_bound, upper_bound, actual_value = model.get_normal_range(last_hour, START_TIME)  # this only builds the model once per hour
+
         logging.info(f"{findings_cache_key} - lower bound: {lower_bound}, upper bound: {upper_bound}, actual value: {actual_value}")
 
-        if (actual_value < lower_bound or actual_value>upper_bound) and findings_cache_key not in FINDINGS_CACHE:
+        if (actual_value < lower_bound or actual_value > upper_bound) and findings_cache_key not in FINDINGS_CACHE:
             findings.append(Finding({
                     'name': 'Monitor bot identified abnormal alert range.',
                     'description': f'{alert_event.bot_id}, {alert_event.alert_id}, {CHAIN_ID} alert rate outside of normal range at {last_hour}.',
@@ -108,4 +117,16 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
             logging.info(f"alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
             raise e
         
+    return findings
+
+
+def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
+    global FINDINGS_CACHE
+    global MODELS
+
+    logging.debug("handle_block with w3 called")
+    findings = []
+    if datetime.now().minute == 0:  # every hour
+        L2Cache.write(FINDINGS_CACHE, CHAIN_ID, "FINDINGS_CACHE")
+        L2Cache.write(MODELS, CHAIN_ID, "MODELS")
     return findings

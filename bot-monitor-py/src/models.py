@@ -7,7 +7,7 @@ class AlertRateModel:
         self.model = Prophet(interval_width=0.90)
         self.data = pd.DataFrame(columns=['ds', 'y'])
         self.last_update_hour = None
-        
+
     def update(self, timestamp: datetime) -> None:
         # Truncate the timestamp to an hourly level
         timestamp = timestamp.replace(minute=0, second=0, microsecond=0, tzinfo=None)
@@ -46,20 +46,20 @@ class AlertRateModel:
 
             # Predict for the last hour
             forecast = self.model.predict(future)
-            
+
             # Check if the last hour is within the expected range of the model
             self.lower_bound = forecast['yhat_lower'].iloc[0]
             self.upper_bound = forecast['yhat_upper'].iloc[0]
             self.last_hour_value = self.data.loc[self.data['ds'] == last_hour_no_tx, 'y'].iloc[0]
 
             self.last_update_hour = last_hour_no_tx
-            
 
         return (self.lower_bound, self.upper_bound, self.last_hour_value)
+            
 
     def get_time_series_data(self, last_hour: datetime, start_hour: datetime):
         last_hour_no_tx = last_hour.replace(tzinfo=None)
         start_hour_no_tx = start_hour.replace(tzinfo=None)
-        time_series = self.data[(self.data['ds'] < last_hour_no_tx) & (self.data['ds'] > start_hour_no_tx)]['y'][-48:]
+        time_series = self.data[(self.data['ds'] <= last_hour_no_tx) & (self.data['ds'] >= start_hour_no_tx)]['y'][-48:]
         str_series = time_series.astype(str)
         return ','.join(str_series)
