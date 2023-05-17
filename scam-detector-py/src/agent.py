@@ -2,7 +2,7 @@ import logging
 import sys
 import requests
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import pandas as pd
 import numpy as np
@@ -15,7 +15,7 @@ from forta_agent import get_json_rpc_url,  Finding, FindingType, FindingSeverity
 from web3 import Web3
 
 from src.constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_CLUSTERS_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
-                       FINDINGS_CACHE_ALERT_KEY, FINDINGS_CACHE_BLOCK_KEY, ALERTED_FP_CLUSTERS_KEY, 
+                       FINDINGS_CACHE_ALERT_KEY, FINDINGS_CACHE_BLOCK_KEY, ALERTED_FP_CLUSTERS_KEY, FINDINGS_CACHE_TRANSACTION_KEY,
                        ALERTED_FP_CLUSTERS_QUEUE_SIZE, CONTRACT_SIMILARITY_BOTS, CONTRACT_SIMILARITY_BOT_THRESHOLDS)
 from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
 from src.findings import ScamDetectorFinding
@@ -28,6 +28,7 @@ web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 block_chain_indexer = BlockChainIndexer()
 
 INITIALIZED = False
+INITIALIZATION_TIME = datetime.now()
 CHAIN_ID = -1
 BOT_VERSION = Utils.get_bot_version()
 
@@ -35,6 +36,7 @@ ALERTED_CLUSTERS = set()  # cluster that have been alerted on
 ALERTED_FP_CLUSTERS = set()  # clusters which are considered FPs that have been alerted on
 FINDINGS_CACHE_BLOCK = []
 FINDINGS_CACHE_ALERT = []
+FINDINGS_CACHE_TRANSACTION = []
 
 s3 = None
 dynamo = None
@@ -76,6 +78,9 @@ def initialize():
     findings_cache_alert = load(CHAIN_ID, FINDINGS_CACHE_ALERT_KEY)
     FINDINGS_CACHE_ALERT = [] if findings_cache_alert is None else findings_cache_alert
 
+    global FINDINGS_CACHE_TRANSACTION
+    findings_cache_transaction = load(CHAIN_ID, FINDINGS_CACHE_TRANSACTION_KEY)
+    FINDINGS_CACHE_TRANSACTION = [] if findings_cache_transaction is None else findings_cache_transaction
     
 
     # subscribe to the base bots, FP mitigation and entity clustering bot
@@ -579,12 +584,39 @@ def emit_new_fp_finding(w3) -> list:
 
     return findings
 
+
+def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
+    findings = []
+
+    if transaction_event.to is None:
+        nonce = transaction_event.transaction.nonce
+        created_contract_address = Utils.calc_contract_address(w3, transaction_event.from_, nonce)
+
+        label_api = "https://api.forta.network/labels/state?sourceIds=0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23&entities="
+        res = requests.get(label_api + transaction_event.from_.lower())
+        original_alert_id = ""
+        if res.status_code == 200:
+            labels = res.json()
+            if 'events' in labels.keys() and len(labels['events']) > 0:
+                label_metadata = labels['events'][0]['label']['metadata']
+                original_alert_id = label_metadata[0][len("alert_ids="):]
+
+                label_source = labels['events'][0]['source']
+                original_alert_hash = label_source['alertHash']
+
+                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_alert_id, original_alert_hash, CHAIN_ID))
+        
+
+    return findings
+
+
 def clear_state():
     # delete cache file
     L2Cache.remove(CHAIN_ID, ALERTED_CLUSTERS_KEY)
     L2Cache.remove(CHAIN_ID, ALERTED_FP_CLUSTERS_KEY)
     L2Cache.remove(CHAIN_ID, FINDINGS_CACHE_BLOCK_KEY)
     L2Cache.remove(CHAIN_ID, FINDINGS_CACHE_ALERT_KEY)
+    L2Cache.remove(CHAIN_ID, FINDINGS_CACHE_TRANSACTION_KEY)
     
     Utils.FP_MITIGATION_ADDRESSES = set()
     Utils.CONTRACT_CACHE = dict()
@@ -602,6 +634,9 @@ def persist_state():
     global FINDINGS_CACHE_ALERT
     global FINDINGS_CACHE_ALERT_KEY
 
+    global FINDINGS_CACHE_TRANSACTION
+    global FINDINGS_CACHE_TRANSACTION_KEY
+
     global CHAIN_ID
 
     start = time.time()
@@ -609,6 +644,7 @@ def persist_state():
     persist(ALERTED_FP_CLUSTERS, CHAIN_ID, ALERTED_FP_CLUSTERS_KEY)
     persist(FINDINGS_CACHE_BLOCK, CHAIN_ID, FINDINGS_CACHE_BLOCK_KEY)
     persist(FINDINGS_CACHE_ALERT, CHAIN_ID, FINDINGS_CACHE_ALERT_KEY)
+    persist(FINDINGS_CACHE_TRANSACTION, CHAIN_ID, FINDINGS_CACHE_TRANSACTION_KEY)
 
     end = time.time()
     logging.info(f"Persisted bot state. took {end - start} seconds")
@@ -643,8 +679,16 @@ def provide_handle_alert(w3):
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logging.debug("handle_alert inner called")
         global INITIALIZED
+        global INITIALIZATION_TIME
         if not INITIALIZED:
-            raise Exception("Not initialized")
+            time_elapsed = datetime.now() - INITIALIZATION_TIME
+            if (time_elapsed > timedelta(minutes=5)):
+                logging.error(f"{BOT_VERSION}: Not initialized handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
+                sys.exit(1)
+            else:
+                logging.warning(f"{BOT_VERSION}: Not initialized handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Returning.")
+                return []
+
 
         global FINDINGS_CACHE_ALERT
         findings = []
@@ -692,8 +736,16 @@ def provide_handle_block(w3):
     def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
         logging.debug("handle_block with w3 called")
         global INITIALIZED
+        global INITIALIZATION_TIME
         if not INITIALIZED:
-            raise Exception("Not initialized")
+            time_elapsed = datetime.now() - INITIALIZATION_TIME
+            if (time_elapsed > timedelta(minutes=5)):
+                logging.error(f"{BOT_VERSION}: Not initialized handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
+                sys.exit(1)
+            else:
+                logging.warning(f"{BOT_VERSION}: Not initialized handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Returning.")
+                return []
+
         global FINDINGS_CACHE_BLOCK
         findings = []
         if datetime.now().minute == 0:  # every hour
@@ -713,7 +765,7 @@ def provide_handle_block(w3):
                 findings.append(finding)
             FINDINGS_CACHE_BLOCK = FINDINGS_CACHE_BLOCK[10:]
 
-        logging.info(f"{BOT_VERSION}: Return {len(findings)} to handleBlock.")
+        logging.debug(f"{BOT_VERSION}: Return {len(findings)} to handleBlock.")
         return findings
 
     return handle_block
@@ -728,3 +780,46 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent):
 def handle_block(block_event: forta_agent.block_event.BlockEvent):
     logging.debug("handle_block called")
     return real_handle_block(block_event)
+
+
+def provide_handle_transaction(w3):
+    logging.debug("provide_handle_transaction called")
+
+    def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
+        logging.debug("handle_transaction with w3 called")
+        global INITIALIZED
+        global INITIALIZATION_TIME
+        if not INITIALIZED:
+            time_elapsed = datetime.now() - INITIALIZATION_TIME
+            if (time_elapsed > timedelta(minutes=5)):
+                logging.error(f"{BOT_VERSION}: Not initialized handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
+                sys.exit(1)
+            else:
+                logging.warning(f"{BOT_VERSION}: Not initialized handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Returning.")
+                return []
+        
+        global FINDINGS_CACHE_TRANSACTION
+        findings = []
+        logging.debug(f"{BOT_VERSION}: Handle transaction was called. Findings cache for transaction size: {len(FINDINGS_CACHE_TRANSACTION)}")
+        contract_creation_findings = detect_scammer_contract_creation(w3, transaction_event)                        
+        logging.debug(f"{BOT_VERSION}: Added {len(contract_creation_findings)} scammer contract creation findings.")
+        FINDINGS_CACHE_BLOCK.extend(contract_creation_findings)
+
+        logging.debug(f"{BOT_VERSION}: Handle transaction on the hour was called. Findings cache for transaction size now: {len(FINDINGS_CACHE_TRANSACTION)}")
+            
+        for finding in FINDINGS_CACHE_TRANSACTION[0:10]:  # 10 findings per block due to size limitation
+            findings.append(finding)
+        FINDINGS_CACHE_TRANSACTION = FINDINGS_CACHE_TRANSACTION[10:]
+
+        logging.debug(f"{BOT_VERSION}: Return {len(findings)} to handleTransaction.")
+        return findings
+
+    return handle_transaction
+
+
+real_handle_transaction = provide_handle_transaction(web3)
+
+
+def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent):
+    logging.debug("handle_transaction called")
+    return real_handle_transaction(transaction_event)

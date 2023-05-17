@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## v0.1.26 (May 16th 2023 - beta)
+- add SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT alert for when a known scammer deploys a contract
+
 ## v0.1.25 (May 16th 2023 - beta)
 - add manual alerting capability
 - restricted the contract similarity bot to only operate on scams where a contract is essential:
