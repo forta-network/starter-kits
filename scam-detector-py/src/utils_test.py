@@ -68,6 +68,9 @@ class TestUtils:
     def test_is_beta(self):
         assert Utils.is_beta() is not None
 
-
     def test_is_fp_investigation1(self):
         assert not Utils.is_fp(real_w3, "0x61fF13F129a96d2d229D37A0531979852945433a".lower()), "this should not be a false positive"
+
+    def test_calc_contract_address(self):
+        contract_address = Utils.calc_contract_address(w3, EOA_ADDRESS_SMALL_TX, 9)
+        assert contract_address == "0x728ad672409DA288cA5B9AA85D1A55b803bA97D7", "should be the same contract address"

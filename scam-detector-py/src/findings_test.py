@@ -138,3 +138,19 @@ class TestScamFindings:
         assert finding.labels[0].metadata['chain_id'] == 1, "should be 1"
         assert finding.labels[0].metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
         assert finding.labels[0].label == "scammer-eoa", "should be scammer-eoa"
+
+    def test_scammer_contract_deployment(self):
+        finding = ScamDetectorFinding.scammer_contract_deployment(EOA_ADDRESS_LARGE_TX, CONTRACT, "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING", "0xabc", 1)
+
+        assert finding.alert_id == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT", "should be SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
+        assert finding.description == f'{EOA_ADDRESS_LARGE_TX} deployed a contract {CONTRACT} (SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT)'
+        assert finding.metadata['involved_alert_id_1'] == "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"
+        assert finding.metadata['involved_alert_hash_1'] == "0xabc"
+        assert len(finding.labels) == 1, "should be 1; only the contract as the scammer already exists"  
+        assert finding.labels[0].entity == CONTRACT, "should be CONTRACT"
+        assert finding.labels[0].metadata['alert_ids'] == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
+        assert finding.labels[0].metadata['deployer'] == EOA_ADDRESS_LARGE_TX
+        assert finding.labels[0].metadata['deployer_info'] == f"Deployer involved in SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING scam; this contract may or may not be related to this particular scam, but was created by the scammer."
+        assert finding.labels[0].metadata['chain_id'] == 1, "should be 1"
+        assert finding.labels[0].label == "scammer-contract", "should be scammer-contract"
+

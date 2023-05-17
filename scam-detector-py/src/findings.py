@@ -65,7 +65,7 @@ class ScamDetectorFinding:
                 label_metadata = labels['events'][0]['label']['metadata']
                 original_alert_id = label_metadata[0][len("alert_ids="):]
         
-        if original_alert_id in ['SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING']:
+        if original_alert_id in ['SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN']:
             labels = []
             confidence = CONFIDENCE_MAPPINGS[alert_id]
             labels.append(Label({
@@ -267,3 +267,41 @@ class ScamDetectorFinding:
             'metadata': {"reported_by": reported_by},
             'labels': labels
         })
+
+    @staticmethod
+    def scammer_contract_deployment(scammer_address: str, scammer_contract_address: str, original_alert_id: str, original_alert_hash: str, chain_id: int) -> Finding:
+
+        alert_id = "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
+        
+        if original_alert_id in ['SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN']:
+            labels = []
+            confidence = CONFIDENCE_MAPPINGS[alert_id]
+            labels.append(Label({
+                'entityType': EntityType.Address,
+                'label': "scammer-contract",
+                'entity': scammer_contract_address,
+                'confidence': confidence,
+                'metadata': {
+                    'alert_ids': alert_id,
+                    'chain_id': chain_id,
+                    'deployer': scammer_address,
+                    'deployer_info': f"Deployer involved in {original_alert_id} scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
+                    'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
+                }
+            }))
+
+            metadata = {}
+            metadata['scammer_address'] = scammer_address
+            metadata['scammer_contract_address'] = scammer_contract_address
+            metadata['involved_alert_id_1'] = original_alert_id
+            metadata['involved_alert_hash_1'] = original_alert_hash
+
+            return Finding({
+                'name': 'Scam detector identified a scammer EOA deploying a contract',
+                'description': f'{scammer_address} deployed a contract {scammer_contract_address} ({alert_id})',
+                'alert_id': alert_id,
+                'type': FindingType.Scam,
+                'severity': FindingSeverity.High,
+                'metadata': metadata,
+                'labels': labels
+            })

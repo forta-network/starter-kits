@@ -5,7 +5,7 @@ import io
 import random
 from datetime import datetime
 import pandas as pd
-from forta_agent import create_alert_event,FindingSeverity, AlertEvent, Label, EntityType
+from forta_agent import create_transaction_event, create_alert_event, FindingSeverity, AlertEvent, Label, EntityType
 import requests
 import agent
 
@@ -651,3 +651,26 @@ class TestScamDetector:
                 assert findings[0].alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
                 assert findings[0].description == f"{address_lower} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING)", "wrong description"
                 assert findings[0].metadata["reported_by"] == "@CertiKAlert https://twitter.com/CertiKAlert/status/1640288904317378560?s=20"
+
+
+    def test_scammer_contract_deployment(self):
+        agent.clear_state()
+        agent.initialize()
+
+        tx_event = create_transaction_event({
+            'transaction': {
+                'hash': "0",
+                'from': '0x9e187687cea757a65c7438f8cbfc3afa732dffc5',
+                'nonce': 9,
+            },
+            'block': {
+                'number': 0
+            },
+            'receipt': {
+                'logs': []}
+        })
+        findings = agent.detect_scammer_contract_creation(w3, tx_event)
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        assert findings[0].alert_id == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
+        assert findings[0].metadata["scammer_contract_address"] == "0xa781690be56b721a61336b5ec5d904417cdab626".lower(), "wrong scammer_contract"

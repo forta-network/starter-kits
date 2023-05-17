@@ -4,6 +4,7 @@ from hexbytes import HexBytes
 import requests
 import logging
 import io
+import rlp
 import pandas as pd
 import json
 
@@ -177,4 +178,14 @@ class Utils:
         shard = int(timestamp % total_shards)
         logging.debug(f"shard: {shard}")
         return shard
+    
+    @staticmethod
+    def calc_contract_address(w3, address, nonce) -> str:
+        """
+        this function calculates the contract address from sender/nonce
+        :return: contract address: str
+        """
+
+        address_bytes = bytes.fromhex(address[2:].lower())
+        return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
