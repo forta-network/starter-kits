@@ -7,9 +7,13 @@ import pandas as pd
 from datetime import datetime
 
 from src.constants import attacker_bots, victim_bots, SIMULTANEOUS_ADDRESSES, MIN_NEIGHBORS, MAX_NEIGHBORS
-from src.storage import get_secrets
+from src.storage import get_secrets, dynamo_table
+
 
 logger = logging.getLogger(__name__)
+global dynamo
+dynamo = dynamo_table(get_secrets())
+
 
 
 def get_all_related_addresses(central_node) -> str:
@@ -334,3 +338,38 @@ def get_automatic_labels(all_nodes_dict, transactions_overview, central_node, la
         elif automatic_labels[key] == 'attacker':
             labels[all_nodes_dict[key]] = 1
     return labels, automatic_labels
+
+
+def put_query_id_dynamo(central_node, query_name, query_id, timeout=4*60*60):
+    """
+    Puts the query id in dinamoDB. This is used to avoid querying the same address twice.
+    """
+    itemId = f"scam-label-propagation|queries"
+    sortId = f"{central_node}|{query_name}"
+    global dynamo
+    response = dynamo.put_item(
+        Item={"itemId": itemId, 
+              "sortKey": sortId, 
+              "queryId": query_id, 
+              "expiresAt": int(datetime.now().timestamp()) + int(timeout)}
+              )
+    if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+        logging.error(f"Error putting alert in dynamoDB: {response}")
+        return
+
+
+def get_query_id_dynamo(central_node, query_name):
+    """
+    Gets the query id in dinamoDB. This is used to avoid querying the same address twice.
+    """
+    itemId = f"scam-label-propagation|queries"
+    sortId = f"{central_node}|{query_name}"
+    global dynamo
+    response = dynamo.query(KeyConditionExpression='itemId = :id AND sortKey = :sortId',
+                            ExpressionAttributeValues={':id': itemId, ':sortId': sortId})
+    items = response.get('Items', [])
+    if len(items) == 0:
+        logger.debug(f"{central_node}:\t{query_name} is not running")
+        return None
+    else:
+        return items[0]['queryId']

@@ -1,6 +1,7 @@
 import unittest
 import src.preprocessing.get_data as get_data
 import src.preprocessing.process_data as process_data
+from src.preprocessing.get_data import put_query_id_dynamo, get_query_id_dynamo
 
 class TestAuxiliarFunctions(unittest.TestCase):
     def test_get_all_addresses(self):
@@ -18,6 +19,15 @@ class TestAuxiliarFunctions(unittest.TestCase):
         data = get_data.collect_data_parallel_parts(central_node)
         all_nodes_dict, node_feature, transactions_overview, edge_indexes, edge_features = process_data.prepare_data(data)
         labels_df = get_data.download_labels_graphql(all_nodes_dict, central_node)
+
+    def test_dynamo(self):
+        central_node = 'test1'
+        query_name = 'test2'
+        query_id_in = 'test4'
+        put_query_id_dynamo(central_node, query_name, query_id_in)
+        query_id_out = get_query_id_dynamo(central_node, query_name)
+        assert query_id_out == query_id_in, "query_id_out should be equal to query_id_in"
+
 
 if __name__ == '__main__':
     unittest.main()

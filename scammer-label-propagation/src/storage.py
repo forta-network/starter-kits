@@ -1,5 +1,6 @@
 import forta_agent
 import json
+import boto3
 import requests
 import os
 
@@ -29,3 +30,15 @@ def _load_json(key: str) -> object:
 
 def get_secrets():
     return _load_json("secrets.json")
+
+
+# Returns a boto3 table resource
+# All Items must have two string properties:  itemId, sortKey
+# https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/table/index.html
+def dynamo_table(secrets, region='us-east-1'):
+    d = boto3.resource('dynamodb',
+                       aws_access_key_id=secrets['aws']['accessKey'],
+                       aws_secret_access_key=secrets['aws']['secretKey'],
+                       region_name=region)
+
+    return d.Table(dynamo_table_name)
