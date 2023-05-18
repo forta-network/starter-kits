@@ -463,3 +463,40 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 5/16/2023	0x4da2FaceE5eB9F40da6FCB86A3264Cc777fFc60f	cseifert		1	Soft rug pull
 5/16/2023	0x84B8aECa2dadB97A3a7e2CBA0899FE1e13e6152e	cseifert		1	Soft rug pull
 5/16/2023	0x8908f93A43000A270F9e4F8cbDe6671cCc21fc26	cseifert		1	Soft rug pull
+5/17/2023	0xbdaaa0badf2ecd69b98d6d4ec0bcea6e3fe9c5cb	Blocksec		1	Ice phishing	
+5/17/2023	0x8975ea150d825e8394076dbed3aca9cf614d6a99	Blocksec		1	Ice phishing	
+5/17/2023	0x11ba7e7bfbdd876f5f62e2ebe2c057a0a3f45af2	Blocksec		1	Ice phishing	
+5/17/2023	0xD182b179EeC78C744b13Fed7c2766f98De4Fcc4a	@CertiKAlert	https://twitter.com/CertiKAlert/status/1658792699502133249?s=20	1	Ice phishing	
+5/17/2023	0x6f0fc555797a94b64348b4af8addd4185a4f74bd	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1658504523143340032?s=20	56	Soft rug pull	
+5/17/2023	0xbcf9b9515251e37626bf0351ecb65dee86048faa	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1658425697520566273?s=20	56	Soft rug pull	
+5/17/2023	0x11ba7e7bfbdd876f5f62e2ebe2c057a0a3f45af2	Blocksec		56	Ice phishing	
+5/18/2023	0xD182b179EeC78C744b13Fed7c2766f98De4Fcc4a	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659169933392068609?s=20	1	Ice phishing	
+5/18/2023	0x9C1c46705A729DF8bD25154e03A8A57bb28010e5	@CertiKAlert	https://skynet.certik.com/alerts/security/ba733e30-dcc0-410f-a8b4-801c5f990bbe	137	Ice phishing	
+5/18/2023	0x9C1c46705A729DF8bD25154e03A8A57bb28010e5	@CertiKAlert	https://skynet.certik.com/alerts/security/ba733e30-dcc0-410f-a8b4-801c5f990bbe	1	Ice phishing	
+5/18/2023	0x9C1c46705A729DF8bD25154e03A8A57bb28010e5	@CertiKAlert	https://skynet.certik.com/alerts/security/ba733e30-dcc0-410f-a8b4-801c5f990bbe	56	Ice phishing	
+5/18/2023	0x9C1c46705A729DF8bD25154e03A8A57bb28010e5	@CertiKAlert	https://skynet.certik.com/alerts/security/ba733e30-dcc0-410f-a8b4-801c5f990bbe	10	Ice phishing	
+5/18/2023	0x9C1c46705A729DF8bD25154e03A8A57bb28010e5	@CertiKAlert	https://skynet.certik.com/alerts/security/ba733e30-dcc0-410f-a8b4-801c5f990bbe	42161	Ice phishing	
+5/18/2023	0x82242F63946c6198Ec5bdf765bB013995195A586	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659072036474433537?s=20	1	Ice phishing	
+5/18/2023	0x82242F63946c6198Ec5bdf765bB013995195A586	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659072036474433537?s=20	10	Ice phishing	
+5/18/2023	0x82242F63946c6198Ec5bdf765bB013995195A586	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659072036474433537?s=20	137	Ice phishing	
+5/18/2023	0x82242F63946c6198Ec5bdf765bB013995195A586	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659072036474433537?s=20	250	Ice phishing	
+5/18/2023	0x82242F63946c6198Ec5bdf765bB013995195A586	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659072036474433537?s=20	56	Ice phishing	
+5/18/2023	0x82242F63946c6198Ec5bdf765bB013995195A586	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659072036474433537?s=20	42161	Ice phishing	
+5/18/2023	0x82242F63946c6198Ec5bdf765bB013995195A586	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659072036474433537?s=20	43114	Ice phishing	
+5/18/2023	0xACE5Ef13E0b4Fa2bEAac957408d6D0936227C559	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659061191363248128?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1659061191363248128%7Ctwgr%5E57add5530b10c901da963ec4afb75b4b5644736a%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Fskynet.certik.com%2Falerts%2Fsecurity%2Fd7512a24-e462-49eb-8983-a3cad63255f7	1	Ice phishing	
+5/18/2023	0xACE5Ef13E0b4Fa2bEAac957408d6D0936227C559	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659061191363248128?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1659061191363248128%7Ctwgr%5E57add5530b10c901da963ec4afb75b4b5644736a%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Fskynet.certik.com%2Falerts%2Fsecurity%2Fd7512a24-e462-49eb-8983-a3cad63255f7	10	Ice phishing	
+5/18/2023	0xACE5Ef13E0b4Fa2bEAac957408d6D0936227C559	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659061191363248128?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1659061191363248128%7Ctwgr%5E57add5530b10c901da963ec4afb75b4b5644736a%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Fskynet.certik.com%2Falerts%2Fsecurity%2Fd7512a24-e462-49eb-8983-a3cad63255f7	137	Ice phishing	
+5/18/2023	0xACE5Ef13E0b4Fa2bEAac957408d6D0936227C559	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659061191363248128?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1659061191363248128%7Ctwgr%5E57add5530b10c901da963ec4afb75b4b5644736a%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Fskynet.certik.com%2Falerts%2Fsecurity%2Fd7512a24-e462-49eb-8983-a3cad63255f7	250	Ice phishing	
+5/18/2023	0xACE5Ef13E0b4Fa2bEAac957408d6D0936227C559	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659061191363248128?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1659061191363248128%7Ctwgr%5E57add5530b10c901da963ec4afb75b4b5644736a%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Fskynet.certik.com%2Falerts%2Fsecurity%2Fd7512a24-e462-49eb-8983-a3cad63255f7	56	Ice phishing	
+5/18/2023	0xACE5Ef13E0b4Fa2bEAac957408d6D0936227C559	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659061191363248128?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1659061191363248128%7Ctwgr%5E57add5530b10c901da963ec4afb75b4b5644736a%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Fskynet.certik.com%2Falerts%2Fsecurity%2Fd7512a24-e462-49eb-8983-a3cad63255f7	42161	Ice phishing	
+5/18/2023	0xACE5Ef13E0b4Fa2bEAac957408d6D0936227C559	@CertiKAlert	https://twitter.com/CertiKAlert/status/1659061191363248128?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1659061191363248128%7Ctwgr%5E57add5530b10c901da963ec4afb75b4b5644736a%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Fskynet.certik.com%2Falerts%2Fsecurity%2Fd7512a24-e462-49eb-8983-a3cad63255f7	43114	Ice phishing	
+5/18/2023	0xDe1ca237291A47d849Aac8b2982D0f6912124174	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1659070894973808640?s=20	1	Protocol attack	Merlin_exploiter
+5/18/2023	0x59d779bed4db1e734d3fda3172d45bc3063ecd69	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1659044054821384192?s=20	1	Protocol attack	Uranium_Finance_exploiter
+5/18/2023	0x3aca05bd00572c1e01fb3354606571ad0f5f43ac	Blocksec		56	Ice phishing	
+5/18/2023	0x3aca05bd00572c1e01fb3354606571ad0f5f43ac	Blocksec		1		
+5/18/2023	0xf469ae9097fc337a84cc5206d21a7a6e8f0192b5	Blocksec		1	Ice phishing	
+5/18/2023	0x5f1f0c31ef3a1d85964daa92c1d61b9e1c3b095f	Blocksec		137	Ice phishing	
+5/18/2023	0x5f1f0c31ef3a1d85964daa92c1d61b9e1c3b095f	Blocksec		1	Ice phishing	
+5/18/2023	0xf469ae9097fc337a84cc5206d21a7a6e8f0192b5	Blocksec		56	Ice phishing	
+5/18/2023	0x488c540b8bf6e9b05fdcde1732aa64b8f0aa6139	Blocksec		1	Ice phishing	
+5/18/2023	0x73410a7051257b2b9df81f7288e537f672150e23	Blocksec		1	Ice phishing	
