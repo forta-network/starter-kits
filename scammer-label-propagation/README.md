@@ -32,6 +32,7 @@ Describe each of the type of alerts fired by this agent
       - 'central_node_alert_name' is set to the name of the alert that triggered the central node
       - 'central_node_alert_hash' is set to the alert hash of the alert that triggered the central node
       - 'graph_statistics' holds n_nodes, n_labeled_attackers, n_labeled_victims, n_predicted_attackers
+      - 'model_confidence' the confidence of the prediction
   - Labels:
     - 'entity' is the marked address
     - 'label' is set to 'scammer-eoa' (there are no contracts)
@@ -43,6 +44,7 @@ Describe each of the type of alerts fired by this agent
       - 'central_node_alert_name' is set to the name of the alert that triggered the central node
       - 'central_node_alert_hash' is set to the alert hash of the alert that triggered the central node
       - 'graph_statistics' holds n_nodes, n_labeled_attackers, n_labeled_victims, n_predicted_attackers
+      - 'model_confidence' the confidence of the prediction
 
 
 ## Test Data

@@ -60,6 +60,7 @@ def run_all_extended(central_node, alert_event):
                     'central_node_alert_name': alert_event.alert.name,
                     'central_node_alert_hash': alert_event.alert.hash,
                     'graph_statistics': graph_statistics,
+                    'model_confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
                 }
             label_dict = {
                 'entity': attacker_info.name,
