@@ -114,7 +114,12 @@ class TestScammerLabelPropagationAgent(unittest.TestCase):
 
 
     def test_repeated_address(self):
-        agent.initialize()
+        """
+        This test works with the dynamo table. In the real world, the multiple instances will be in different nodes, but here
+        we force it by having the same alert multiple times. The expected result is that it will add the address to the pool
+        up to three times, and then stop adding it
+        """
+        central_node = '0xfb4c68caccfa3ea46a7d9a7b59a3f91b40705194'
         alert = create_alert_event(
             {"alert":
                 {"name": "x",
@@ -124,19 +129,25 @@ class TestScammerLabelPropagationAgent(unittest.TestCase):
                  "source":
                     {"bot": {'id': "0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23"}},
                  "labels": [{
-                        'entity': '0xfb4c68caccfa3ea46a7d9a7b59a3f91b40705194',
+                        'entity': central_node,
                         'label': 'Attacker',
                         'confidence': 1,
                         'entity_type': 'Address'
                     }]
                  }
              })
-        _ = agent.handle_alert(alert)
-        assert len(agent.global_futures) == 1, "handle_alert() should add the address to the pool"
-        time.sleep(3)
-        _ = agent.handle_alert(alert)
-        assert len(agent.global_futures) == 1, "handle_alert() should not add the address to the pool if it is already there"
-
+        agent.initialize()
+        n_times_dynamodb = agent.get_address_from_dynamo(central_node)
+        while n_times_dynamodb < 4:
+            agent.initialize()
+            assert len(agent.global_futures) == 0, "handle_alert() should not have anything running after initialization"
+            _ = agent.handle_alert(alert)
+            if n_times_dynamodb < 3:
+                assert len(agent.global_futures) == 1, "handle_alert() should add the address to the pool"
+                n_times_dynamodb = agent.get_address_from_dynamo(central_node)
+            else:
+                assert len(agent.global_futures) == 0, "handle_alert() should not add the address to the pool"
+                n_times_dynamodb += 1        
 
     def test_more_addresses_than_concurrency(self):
         central_nodes = [
@@ -177,6 +188,7 @@ class TestScammerLabelPropagationAgent(unittest.TestCase):
         while len(agent.global_futures) > 0:
             time.sleep(30)
             findings += agent.handle_block(block_event)
+
 
 
 if __name__ == '__main__':

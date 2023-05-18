@@ -1,5 +1,7 @@
 import logging
+from datetime import datetime
 import os
+import random
 import time
 import forta_agent
 from web3 import Web3
@@ -7,16 +9,19 @@ from forta_agent import get_json_rpc_url, Finding
 from concurrent.futures import ThreadPoolExecutor
 
 from src.main import run_all
-from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, MAX_FINDINGS
+from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, MAX_FINDINGS, HOURS_BEFORE_REANALYZE
+from src.storage import get_secrets, dynamo_table
 
 
 # If we are in production, we log to the console. Otherwise, we log to a file
 if 'production' in os.environ.get('NODE_ENV', ''):
     logging.basicConfig(level=logging.INFO, 
                         format='%(levelname)s:%(asctime)s:%(name)s:%(lineno)d:%(message)s')
+    ENV = 'prod'
 else:
     logging.basicConfig(filename=f"logs.log", level=logging.INFO, 
                         format='%(levelname)s:%(asctime)s:%(name)s:%(lineno)d:%(message)s')
+    ENV = 'test'
 logger = logging.getLogger(__name__)
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -73,32 +78,56 @@ def run_all_extended(central_node, alert_event):
 def initialize():
     global executor
     executor = ThreadPoolExecutor(max_workers=N_WORKERS)
-    global addresses_analyzed
-    addresses_analyzed = []
     global global_futures
     global_futures = {}
     global global_alerts
     global_alerts = []
+    global dynamo
+    dynamo = dynamo_table(get_secrets())
 
     subscription_json = []
-    chain_id = web3.eth.chain_id
+    global CHAIN_ID
+    CHAIN_ID = web3.eth.chain_id
     for bot in attacker_bots:
-        subscription_json.append({"botId": bot, "chainId": chain_id})
+        subscription_json.append({"botId": bot, "chainId": CHAIN_ID})
     alert_config = {"alertConfig": {"subscriptions": subscription_json}}
     logger.info(f"Initializing scammer label propagation bot. Subscribed to bots successfully: {alert_config}")
     return alert_config
 
 
+def put_address_in_dynamo(central_node):
+    global dynamo
+    global ENV
+    itemId = f"scam-label-propagation|addresses|{ENV}|{CHAIN_ID}|{central_node}"
+    sortId = str(random.randint(0, 1000000))
+    expiring  = int(datetime.now().timestamp()) + int(HOURS_BEFORE_REANALYZE * 3600)
+    response = dynamo.put_item(
+        Item={"itemId": itemId, 
+                "sortKey": sortId, 
+                "expiresAt": expiring}
+                )
+    if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+        logging.error(f"Error putting address in dynamoDB: {response}")
+    return
+    
+def get_address_from_dynamo(central_node):
+    global dynamo
+    global ENV
+    itemId = f"scam-label-propagation|addresses|{ENV}|{CHAIN_ID}|{central_node}"
+    response = dynamo.query(KeyConditionExpression='itemId = :id',
+                            ExpressionAttributeValues={':id': itemId})
+    items = response.get('Items', [])
+    return len(items)
+
+
 def provide_handle_alert(w3):
     logger.debug("provide_handle_alert called")
-    
 
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logger.debug("handle_alert inner called")
         logger.debug(f"AlertId:{alert_event.alert_id};\tName:{alert_event.name};\tAlertHash:{alert_event.hash};\tBotId{alert_event.bot_id};\tAddress:{alert_event.alert.addresses}")
         t = time.time()
         global executor
-        global addresses_analyzed
         global global_futures
 
         list_of_addresses = []
@@ -110,10 +139,13 @@ def provide_handle_alert(w3):
                 list_of_addresses.append(label.entity)
         list_of_addresses = list(set(list_of_addresses))
         for address in list_of_addresses:
-            if address not in addresses_analyzed:
+            n_times_already_analyzed = get_address_from_dynamo(address)
+            if get_address_from_dynamo(address) < 3:
                 logger.debug(f"Adding address {address} to the pool")
                 global_futures[address] = executor.submit(run_all_extended, address, alert_event)
-                addresses_analyzed.append(address)
+                put_address_in_dynamo(address)
+            else:
+                logger.debug(f"Address {address} already analyzed {n_times_already_analyzed} times in the last {HOURS_BEFORE_REANALYZE} hours. Skipping")
         logger.info(f"Alert {alert_event.alert.alert_id}:\t{time.time() - t:.10f} s. {len(list_of_addresses)} addresses: {';'.join(list_of_addresses)}")
         return []
 
