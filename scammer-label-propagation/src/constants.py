@@ -29,3 +29,5 @@ MAX_NEIGHBORS = 500
 MAX_FINDINGS = 40
 # Random seed for reproducibility
 SEED = 1993
+# Hours before an address can be re-analyzed
+HOURS_BEFORE_REANALYZE = 48
