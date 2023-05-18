@@ -1,6 +1,6 @@
   {
   "name": "scam-detector-feed-beta",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/scam-detector-py",
   "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
   "chainIds": [
@@ -32,7 +32,7 @@
 
   },
   "dependencies": {
-    "forta-agent": "^0.1.31"
+    "forta-agent": "^0.1.32"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

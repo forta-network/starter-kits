@@ -230,7 +230,7 @@ class TestScamDetector:
         metadata = {"attacker_deployer_address":"0x8181bad152a10e7c750af35e44140512552a5cd9","rugpull_techniques":"HIDDENTRANSFERREVERTS, HONEYPOT","token_contract_address":"0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, True)
+        findings = agent.detect_scam(w3, alert_event, clear_state_flag=True)
 
         assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
         finding = findings[0]
@@ -248,7 +248,7 @@ class TestScamDetector:
         metadata = {"attacker_deployer_address":"0x8181bad152a10e7c750af35e44140512552a5cd9","rugpull_techniques":"HIDDENTRANSFERREVERTS, HONEYPOT","token_contract_address":"0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, True)
+        findings = agent.detect_scam(w3, alert_event, clear_state_flag=True)
 
         assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
         finding = findings[0]
@@ -256,8 +256,40 @@ class TestScamDetector:
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 
-        findings = agent.detect_scam(w3, alert_event, False)
+        findings = agent.detect_scam(w3, alert_event, clear_state_flag=False)
         assert len(findings) == 0, "this should have not triggered another finding"
+
+    def test_detect_repeat_finding(self):
+        agent.initialize()
+
+        bot_id = "0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15"
+        alert_id = "HARD-RUG-PULL-1"
+        description = "0x8181bad152a10e7c750af35e44140512552a5cd9 deployed a token contract 0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9 that may result in a hard rug pull."
+        metadata = {"attacker_deployer_address":"0x8181bad152a10e7c750af35e44140512552a5cd9","rugpull_techniques":"HIDDENTRANSFERREVERTS, HONEYPOT","token_contract_address":"0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = agent.detect_scam(w3, alert_event, clear_state_flag=True)
+
+        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-HARD-RUG-PULL", "should be hard rug pull finding"
+        assert finding.labels is not None, "labels should not be empty"
+        assert finding.labels[0].entity == '0x8181bad152a10e7c750af35e44140512552a5cd9'
+
+        bot_id = "0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11"
+        alert_id = "RAKE-TOKEN-CONTRACT-1"
+        description = "swapExactETHForTokensSupportingFeeOnTransferTokens function detected on Uniswap Router to take additional swap fee."
+        metadata = {"actualValueReceived":"1.188051244910305019265053e+24","anomalyScore":"0.2226202661207779","attackerRakeTokenDeployer":"0x8181bad152a10e7c750af35e44140512552a5cd9","feeRecipient":"0x440aeca896009f006eea3df4ba3a236ee8d57d36","from":"0x6c07456233f0e0fd03137d814aacf225f528068d","pairAddress":"0x2b25f23c31a490583ff55fb63cea459c098cc0e8","rakeTokenAddress":"0x440aeca896009f006eea3df4ba3a236ee8d57d36","rakeTokenDeployTxHash":"0xec938601346b2ecac1bd82f7ce025037c09a3d817d00d723efa6fc5507bca5c2","rakedFee":"2.09656102042995003399715e+23","rakedFeePercentage":"15.00","totalAmountTransferred":"1.397707346953300022664768e+24"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = agent.detect_scam(w3, alert_event, clear_state_flag=False)
+
+        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA for the different alert_id"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-RAKE-TOKEN", "should be hard rug pull finding"
+        assert finding.labels is not None, "labels should not be empty"
+        assert finding.labels[0].entity == '0x8181bad152a10e7c750af35e44140512552a5cd9'
+
 
     def test_detect_rake_token(self):
         agent.initialize()
@@ -316,7 +348,7 @@ class TestScamDetector:
         bot_id = "0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502"
         alert_id = "ADDRESS-POISONING"
         description = "Possible address poisoning transaction."
-        metadata = {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
+        metadata = {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":CONTRACT,"phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
         findings = agent.detect_scam(w3, alert_event, True)
@@ -674,3 +706,20 @@ class TestScamDetector:
         assert len(findings) == 1, "this should have triggered a finding"
         assert findings[0].alert_id == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
         assert findings[0].metadata["scammer_contract_address"] == "0xa781690be56b721a61336b5ec5d904417cdab626".lower(), "wrong scammer_contract"
+
+    def test_detect_eoa_association(self):
+        agent.initialize()
+        
+        bot_id = "0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848"
+        alert_id = "SCAMMER-LABEL-PROPAGATION-1"
+        description = "0x22914a4f5d97f6a3c4fcc1c44c3a13e567c0efeb marked as scammer by label propagation"
+        metadata = {"central_node":"0x13549e22de184a881fe3d164612ef15f99f6d4b3","model_confidence":"0.5","central_node_alert_hash":"0xbda39ad1c0a53555587a8bc9c9f711f0cad81fe89ef235a6d79ee905bc70526c","central_node_alert_id":"SCAM-DETECTOR-ICE-PHISHING","central_node_alert_name":"Scam detector identified an EOA with past alerts mapping to scam behavior","graph_statistics":"[object Object]"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = agent.detect_scam(w3, alert_event, True)
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        assert findings[0].alert_id == "SCAM-DETECTOR-SCAMMER-ASSOCIATION"
+        assert findings[0].labels is not None, "labels should not be empty"
+        label = findings[0].labels[0]
+        assert label.entity == "0x22914a4f5d97f6a3c4fcc1c44c3a13e567c0efeb", "entity should be attacker address"

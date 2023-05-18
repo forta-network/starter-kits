@@ -1,6 +1,6 @@
 from operator import inv
 from time import strftime
-from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
+from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType, get_labels
 from datetime import datetime
 import requests
 import logging
@@ -56,16 +56,20 @@ class ScamDetectorFinding:
 
         alert_id = "SCAM-DETECTOR-SIMILAR-CONTRACT"
 
-        label_api = "https://api.forta.network/labels/state?sourceIds=0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23&entities="
-        res = requests.get(label_api + existing_scammer_contract_address.lower())
-        original_alert_id = ""
-        if res.status_code == 200:
-            labels = res.json()
-            if 'events' in labels.keys() and len(labels['events']) > 0:
-                label_metadata = labels['events'][0]['label']['metadata']
-                original_alert_id = label_metadata[0][len("alert_ids="):]
+        original_alert_ids = set()
+        response = get_labels({'entities': [existing_scammer_contract_address.lower()],
+                    'sourceIds': ['0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'],
+                    'state': True})
+        labels = response.labels
+        for label in labels:
+            for metadata_keys in label.metadata.keys():
+                if 'alert_ids' in metadata_keys:
+                    original_alert_id = label.metadata["alert_ids"]
+                    original_alert_ids.add(original_alert_id)
+                    logging.info(f"retreived original alert id for label {existing_scammer_contract_address.lower()}: {original_alert_id}")
         
-        if original_alert_id in ['SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN']:
+
+        if len(original_alert_ids.intersection(set(['SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN'])))>0:
             labels = []
             confidence = CONFIDENCE_MAPPINGS[alert_id]
             labels.append(Label({
@@ -76,7 +80,7 @@ class ScamDetectorFinding:
                 'metadata': {
                     'alert_ids': alert_id,
                     'chain_id': chain_id,
-                    'similar_contract_alert_ids': original_alert_id,
+                    'similar_contract_alert_ids': ','.join(list(original_alert_ids)),
                     'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                     'bot_version': Utils.get_bot_version()
                 }
@@ -305,3 +309,64 @@ class ScamDetectorFinding:
                 'metadata': metadata,
                 'labels': labels
             })
+        
+    def scammer_association(block_chain_indexer, new_scammer_eoa: str, model_confidence: float, existing_scammer_eoa: str, original_alert_id: str, original_alert_hash: str, chain_id: int) -> Finding:
+        alert_id = "SCAM-DETECTOR-SCAMMER-ASSOCIATION"
+    
+        labels = []
+        confidence = CONFIDENCE_MAPPINGS[original_alert_id]
+        labels.append(Label({
+            'entityType': EntityType.Address,
+            'label': "scammer-eoa",
+            'entity': new_scammer_eoa,
+            'confidence': confidence * model_confidence,
+            'metadata': {
+                'alert_ids': alert_id,
+                'chain_id': chain_id,
+                'associated_scammer': existing_scammer_eoa,
+                'associated_scammer_alert_id': original_alert_id,
+                'associated_scammer_alert_hash': original_alert_hash,
+                'threat_description_url': ScamDetectorFinding.get_threat_description_url(original_alert_id),
+                'bot_version': Utils.get_bot_version()
+            }
+        }))
+
+        # get all deployed contracts by EOA and add label for those using etherscan or allium
+        try:
+            contracts = block_chain_indexer.get_contracts(new_scammer_eoa, chain_id)
+            for contract in contracts:
+                labels.append(Label({
+                    'entityType': EntityType.Address,
+                    'label': "scammer-contract",
+                    'entity': contract,
+                    'confidence': confidence * model_confidence * 0.8,
+                    'metadata': {
+                        'alert_ids': alert_id,
+                        'chain_id': chain_id,
+                        'associated_scammer': existing_scammer_eoa,
+                        'associated_scammer_alert_id': original_alert_id,
+                        'associated_scammer_alert_hash': original_alert_hash,
+                        'deployer': new_scammer_eoa,
+                        'deployer_info': f"Deployer associated with a scammer {existing_scammer_eoa}; this contract may or may not be related to this particular scam, but was created by the scammer.",
+                        'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
+                    }
+                }))
+        except Exception as e:
+            logging.warning(f"Error getting contracts for scammer address {new_scammer_eoa}: {e}")
+
+        metadata = {}
+        metadata['scammer_address'] = new_scammer_eoa
+        metadata['associated_scammer'] = existing_scammer_eoa
+        metadata['model_confidence'] = model_confidence
+        metadata['involved_alert_id_1'] = original_alert_id
+        metadata['involved_alert_hash_1'] = original_alert_hash
+
+        return Finding({
+            'name': 'Scam detector identified an EOA with past alerts mapping to scam behavior',
+            'description': f'{new_scammer_eoa} is associated with scammer {existing_scammer_eoa} (SCAM-DETECTOR-SCAMMER-ASSOCIATION)',
+            'alert_id': alert_id,
+            'type': FindingType.Scam,
+            'severity': FindingSeverity.Critical,
+            'metadata': metadata,
+            'labels': labels
+        })

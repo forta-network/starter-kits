@@ -1,6 +1,7 @@
 
 from web3 import Web3
 from hexbytes import HexBytes
+from forta_agent import get_labels
 import requests
 import logging
 import io
@@ -10,8 +11,7 @@ import json
 
 from src.constants import TX_COUNT_FILTER_THRESHOLD
 
-etherscan_label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
-
+ETHERSCAN_LABEL_SOURCE_IDS = ['etherscan','0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede']
 
 class Utils:
     FP_MITIGATION_ADDRESSES = set()
@@ -62,18 +62,15 @@ class Utils:
         if cluster is None:
             return ""
 
-        labels_str = []   
-        try:
-            res = requests.get(etherscan_label_api + cluster.lower())  # already comma separated
-            if res.status_code == 200:
-                labels = res.json()
-                if len(labels) > 0 and labels['events'] is not None:
-                    logging.info(f"retreived label for {cluster}: {labels['events'][0]}")
-                    labels_str.append(labels['events'][0]['label']['label'])
-            else:
-                logging.warning(f"Status code get_etherscan_label {res.status_code} {res.text}. Returning no label.")    
-        except Exception as e:
-            logging.warning(f"Exception in get_etherscan_label {e}. Returning no label.")
+        labels_str = []
+
+        response = get_labels({'entities': [cluster],
+                    'sourceIds': ETHERSCAN_LABEL_SOURCE_IDS,
+                    'state': True})
+        labels = response.labels
+        for label in labels:
+            logging.info(f"retreived label for {cluster}: {label.label}")
+            labels_str.append(label.label)
         
         return labels_str
 

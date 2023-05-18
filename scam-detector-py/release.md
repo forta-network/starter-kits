@@ -1,10 +1,15 @@
 # Scam Detector Bot Release Notes
 
+## v0.1.32 (May 18th 2023 - beta)
+- upgrade to latest SDK (1.1.16/ 0.1.32)
+- add SCAM-DETECTOR-SCAMMER-ASSOCIATION alert for when account is associated with a scammer account as per the [label propagation bot](https://explorer.forta.network/bot/0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848)
+- change alert caching to be per threat category, such that an alert/label gets emitted per threat category observed as opposed to only reporting the first threat category observed
+
 ## v0.1.26 (May 16th 2023 - beta)
 - add SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT alert for when a known scammer deploys a contract
 
 ## v0.1.25 (May 16th 2023 - beta)
-- add manual alerting capability
+- add manual alerting capability; these alerts will be flagged with alert id: SCAM-DETECTOR-MANUAL- [ THREAT-CATEGORY ], e.g. SCAM-DETECTOR-MANUAL-ICE-PHISHING
 - restricted the contract similarity bot to only operate on scams where a contract is essential:
     - SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING
     - SCAM-DETECTOR-ADDRESS-POISONER

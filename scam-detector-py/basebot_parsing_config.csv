@@ -69,3 +69,4 @@ bot_id,alert_id,location,attacker_address_location_in_description,metadata_field
 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0,NIP-5,metadata,,attacker,
 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0,NIP-6,metadata,,attacker,
 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0,NIP-6,metadata,,receiver,
+0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848,SCAMMER-LABEL-PROPAGATION-1,description,0,,
