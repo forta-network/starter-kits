@@ -141,7 +141,8 @@ def provide_handle_alert(w3):
         list_of_addresses = list(set(list_of_addresses))
         for address in list_of_addresses:
             n_times_already_analyzed = get_address_from_dynamo(address)
-            if get_address_from_dynamo(address) < 3:
+            # It doesn't need to run more than 3 times accross instances, and it doesn't need to run if it is already running
+            if get_address_from_dynamo(address) < 3 and address not in global_futures.keys():
                 logger.debug(f"Adding address {address} to the pool")
                 global_futures[address] = executor.submit(run_all_extended, address, alert_event)
                 put_address_in_dynamo(address)
