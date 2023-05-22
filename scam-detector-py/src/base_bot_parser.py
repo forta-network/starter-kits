@@ -16,6 +16,7 @@ class BaseBotParser:
                     
         for index, row in BaseBotParser.ICE_PHISHING_MAPPINGS_DF.iterrows():
             #  bot_id,alert_id,location,attacker_address_location_in_description,metadata_field,address_information
+            #  address information is to further differentiate one type of address vs the other from the same bot alert (e.g. address-poisioning vs address-posioner)
             if row['bot_id'] == alert_event.bot_id and row['alert_id'] in alert_event.alert_id:
                 if row['location'] == 'description':
                     metadata_obj = alert_event.alert.metadata.copy()
@@ -36,3 +37,4 @@ class BaseBotParser:
                     scammer_addresses[w3.eth.get_transaction(alert_event.transaction_hash)['to'].lower()] = metadata_obj
 
         return scammer_addresses
+    

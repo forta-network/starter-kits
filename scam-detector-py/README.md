@@ -83,7 +83,7 @@ The properties for the alerts above are identical:
 
 In addition, this bot also emits an alert in case a false positive has been observed. 
 
-- SCAM-DETECTOR-ICE-PHISHING-FALSE-POSITIVE
+- SCAM-DETECTOR-FALSE-POSITIVE
   - Fired when an FP has been identified
   - Severity is always set to "info" 
   - Type is always set to "info" 

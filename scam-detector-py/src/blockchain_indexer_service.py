@@ -9,7 +9,7 @@ from web3 import Web3
 import pandas as pd
 import logging
 
-from src.storage import get_secrets
+from storage import get_secrets
 
 class BlockChainIndexer:
 
@@ -124,17 +124,21 @@ class BlockChainIndexer:
 
         if chain_id != 56 and chain_id != 250:
             logging.info(f"get_contracts from allium for {address} on {chain_id}.")
-            response = requests.post(f"https://api.allium.so/api/v1/explorer/queries/{BlockChainIndexer.get_allium_query(chain_id)}/run",
-                json={"address_lower":address},
-                headers={"X-API-Key": BlockChainIndexer.get_allium_api_key()},
-            )
-            if response.status_code == 200:
-                json_data = json.loads(response.content)
-                df_allium_temp = pd.DataFrame(data=json_data["data"])
-                for index, row in df_allium_temp.iterrows():
-                    contracts.add(row["address"].lower())
-            else:
-                logging.warning(f"Error getting contract on allium for {address}, {chain_id} {response.status_code} {response.content}")
+            try:
+                response = requests.post(f"https://api.allium.so/api/v1/explorer/queries/{BlockChainIndexer.get_allium_query(chain_id)}/run",
+                    json={"address_lower":address},
+                    headers={"X-API-Key": BlockChainIndexer.get_allium_api_key()},
+                    timeout=60,  # 60 seconds
+                )
+                if response.status_code == 200:
+                    json_data = json.loads(response.content)
+                    df_allium_temp = pd.DataFrame(data=json_data["data"])
+                    for index, row in df_allium_temp.iterrows():
+                        contracts.add(row["address"].lower())
+                else:
+                    logging.warning(f"Error getting contract on allium for {address}, {chain_id} {response.status_code} {response.content}")
+            except requests.exceptions.ReadTimeout as e:
+                logging.warning(f"Error getting contract on allium for {address}, {chain_id} {e}")
 
         logging.info(f"get_contracts from etherscan for {address} on {chain_id}; returning {len(contracts)}.")
         return contracts

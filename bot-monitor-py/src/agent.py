@@ -2,6 +2,7 @@ import logging
 import datetime
 import sys
 import os
+import json
 import traceback
 from datetime import datetime, timedelta, timezone
 
@@ -17,6 +18,7 @@ CHAIN_ID = -1
 START_TIME = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
 MODELS = {}
 FINDINGS_CACHE = []
+BOT_VERSION = None
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -28,6 +30,17 @@ handler.setFormatter(formatter)
 root.addHandler(handler)
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
+
+
+def get_bot_version() -> str:
+    global BOT_VERSION
+    if BOT_VERSION is None:
+        logging.debug("getting bot version from package.json")
+        package = json.load(open("package.json"))
+        logging.debug("loaded package.json")
+        BOT_VERSION = package["version"]
+    return BOT_VERSION
+    
 
 def initialize():
     global CHAIN_ID
@@ -76,15 +89,14 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     try:
         logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got alert at {alert_event.alert.created_at}")
 
-        
         current_time = datetime.strptime(alert_event.alert.created_at[0:13], "%Y-%m-%dT%H")
         current_time_utc = current_time.replace(tzinfo=timezone.utc)
         model = MODELS[alert_event.bot_id][alert_event.alert_id]
         model.update(current_time_utc)
         time_series_length = len(model.data)
-        logging.info(f"bot {alert_event.bot_id} alertId {alert_event.alert.alert_id} - time series length: {time_series_length}")
+        logging.info(f"{get_bot_version()}: bot {alert_event.bot_id} alertId {alert_event.alert.alert_id} - time series length: {time_series_length}")
         last_hour = current_time_utc - timedelta(hours=1)
-        logging.info(f"bot {alert_event.bot_id} alertId {alert_event.alert.alert_id} - time series: {model.get_time_series_data(current_time_utc, START_TIME)}")
+        logging.info(f"{get_bot_version()}: bot {alert_event.bot_id} alertId {alert_event.alert.alert_id} - time series: {model.get_time_series_data(current_time_utc, START_TIME)}")
 
         # Check for cold start
         if (current_time_utc - START_TIME).days < 1:
@@ -94,7 +106,7 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         findings_cache_key = f"{alert_event.bot_id}, {alert_event.alert_id}, {CHAIN_ID}, {last_hour}"
         lower_bound, upper_bound, actual_value = model.get_normal_range(last_hour, START_TIME)  # this only builds the model once per hour
 
-        logging.info(f"{findings_cache_key} - lower bound: {lower_bound}, upper bound: {upper_bound}, actual value: {actual_value}")
+        logging.info(f"{get_bot_version()}: {findings_cache_key} - lower bound: {lower_bound}, upper bound: {upper_bound}, actual value: {actual_value}")
 
         if (actual_value < lower_bound or actual_value > upper_bound) and findings_cache_key not in FINDINGS_CACHE:
             findings.append(Finding({
@@ -112,9 +124,9 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
                 }))
             FINDINGS_CACHE.append(findings_cache_key)
     except BaseException as e:
-        logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e} - {traceback.format_exc()}")
+        logging.warning(f"{get_bot_version()}: alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e} - {traceback.format_exc()}")
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
-            logging.info(f"alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
+            logging.info(f"{get_bot_version()}: alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
             raise e
         
     return findings

@@ -1,5 +1,10 @@
 # Scam Detector Bot Release Notes
 
+## v0.1.33 (May 18th 2023 - beta)
+- better handling of contracts that base bots alerted on. the associated scammer-contract labels will be decorated with the appropriate alert_id whereas other contracts deployed by the same scammer will receive an unknown alert_id.
+- enhanced the handleTx contract creation to also add contracts that are indirectly created (e.g. uniswap pools)
+- add alert hashes in metadata of emitted label
+
 ## v0.1.32 (May 18th 2023 - beta)
 - upgrade to latest SDK (1.1.16/ 0.1.32)
 - add SCAM-DETECTOR-SCAMMER-ASSOCIATION alert for when account is associated with a scammer account as per the [label propagation bot](https://explorer.forta.network/bot/0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848)
