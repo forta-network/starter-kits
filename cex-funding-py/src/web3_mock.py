@@ -22,7 +22,7 @@ class EthMock:
             return 1
         return 0
         
-    chainId = 1
+    chain_id = 1
     
     def get_code(self, address):
         if address == NEW_CONTRACT:
