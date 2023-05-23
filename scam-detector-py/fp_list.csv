@@ -38,4 +38,39 @@ address,chain_id,comment
 0xe5ad66f494bb6d80ae79ce9265cebaa5c64848cc,1,"hackers" are stolen by only a slighty portion of the whole eth that they posses
 0xbd4d15053be2aeb70d544c6b8a7056f8a5c0250d,1,All targets seems like airdrop hunters. A same pattern happening (interation with ZKsync and starknet)
 0x66c7ad805d0d7f76038f2949574a93961032286b,1,"targets" are sending transfers to different EOAs
-
+0x2e6441363f7657fd31907ab58a7bc17ae5894113,1,"Stealing" the same target over and over again
+0xbd4698e42e57b9e024a86c37659739a674ebd08f,1, I don't see any 0 value transfer
+0x53ed53e7f9a4821ed370fee3124e8bac5e11a61c,1, There is not a 0 value transfer
+0xbbbccd07e987ad2728b82685066e8b301bde0b12,1, The only target is being drained in three different moments
+0x08a34cac368f1206a30803787d5e00cf4265c347,1, Targets are only stealed usdt. also in the majority of the cases target is fooled more than once
+0x7b64a9d924c60e675759ee05a9e7aa9efa85e7ef,1, HAcker stealing more than one time to the target. This does not have much sense
+0xfc9a5730bcecebf14c863aecba57a6e399a252cd,1,Only stealing tether (usdt). also same target
+0x282d9c068b8ae384f40cf027151b3c0e125b9919,1,Only stealing tether (usdt). also same target
+0xc4a72063c03e77893b2f0181ffd22b34cab170fd,1,There are no indicators why this should be a TP
+0x8aa3ee7fd8af894deaf7ad2d6cc18fa8c1620a61,1, Bulk transfer issue
+0xf7195c434b17ceae7eec89c9be640cb8f633a174,1, Bulk transfer issue
+0xcd7c3ea4dfc48f78ad71acfe2333e0bae26050ad,1, Only stealing tether (usdt), also same target
+0xdac61a45d77cdef4e06fa20637b35fdb1a3b2871,1, I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x000000697bb288f2528042e8844b65cd32beafca,1, Doesn't seem like an ice phishing
+0xc33d8f9b4859b7ce8267c5f6eb1526b16ecf0863,1, Doesn't seem like a TP. Targets are funded by exchanges, then stolen as soon as possible.
+0xbdfc0e5c25bdba5a8fb0cbde9c52c8abce4fafc5,1, Seems it isn't a phishing attack
+0x58cf5e7802b56b4a280a69ef659616dd89a6d81f,1, Seems it isn't a phishing attack
+0x328ebc7bb2ca4bf4216863042a960e3c64ed4c10,1, I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x0766b0101d274f230b8db771dbb20196e2f50cb9,1, There is a sale of a bunch of bored ape at a lower price than the floor. however still is a big amount. Around 25 ETH
+0x1b1b43add616b0d1e0d1a23f5d43d0465107859a,1, I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x77cb0e8af082d850f839d3324d324903d99919c0,1, I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xb1a9752d702b9e50db15e3b641d7098591752805,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x50f808e2876c025a2322883eb084c58528cf930d,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xcdf4930c1e3167faa772fa463ae8ff44d61273f0,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x81c1eaf33ee522b0f986ec7d0152c545c0a87344,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xf599ad8eaf92938dc1c47cfce97a549c838d6e88,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xd30e17a73a788850a3a372393ceb0036406467c2,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x908141d3113e1701dba8786d4012c90e5813313b,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x202eca424a8db90924a4daa3e6bcecd9311f668e,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x11faa794cead8d315a06132425b0ac26e49f2cb1,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x457ae2c5d81f2b5be0829157947a7d739861147e,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x9083fed81f3ab2ddeb376db0e394c8ae565182c1,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xef321d58dd9f6c9f513d1f68150e40446e5e5fdd,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xdfad36565b8753e9d2b0bdcbaf652c17f7733047,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x6231881cc679ad241ff5622cd1549008924f066a,1,I am not seiing why this should be considered as a TP. there was not any NFT sold for a low value
+0xfdd442e4d8752433e704da6b07c10b9e4236f62f,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
