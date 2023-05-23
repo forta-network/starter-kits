@@ -1,12 +1,111 @@
 from unittest.mock import patch
-from forta_agent import create_transaction_event, FindingSeverity, EntityType
+from web3 import Web3
+import timeit
+from forta_agent import create_transaction_event, EntityType, get_json_rpc_url
 import agent
 from web3_mock import Web3Mock, NEW_EOA, OLD_EOA, NEW_CONTRACT
 
 w3 = Web3Mock()
+real_w3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 
 class TestDEXFunding:
+    def test_cex_funding_perf_test(self):
+        global real_w3
+        agent.initialize()
+
+        global real_w3
+        tx = real_w3.eth.get_transaction(
+            '0x11aa33cf560a880cdc88785306d3f266aab0f22dd7ded7ddc99480ec89e9d634')
+
+        global cex_funding_tx_event
+        cex_funding_tx_event = create_transaction_event({
+            'transaction': {
+                'hash': '0x11aa33cf560a880cdc88785306d3f266aab0f22dd7ded7ddc99480ec89e9d634',
+                'to': tx.to,
+                'from': tx['from'],
+                'value': tx.value
+            },
+            'block': {
+                'number': tx.blockNumber
+            },
+            'receipt': {
+                'logs': []
+            }
+        })
+        
+        tx = real_w3.eth.get_transaction(
+            '0xd3420bc1a3ac57186738be77d326d342c6f196ff054867b5b97e31aaedaa4095')
+
+        global new_eoa_funding_tx_event
+        new_eoa_funding_tx_event = create_transaction_event({
+            'transaction': {
+                'hash': '0xd3420bc1a3ac57186738be77d326d342c6f196ff054867b5b97e31aaedaa4095',
+                'to': tx.to,
+                'from': tx['from'],
+                'value': tx.value
+            },
+            'block': {
+                'number': tx.blockNumber
+            },
+            'receipt': {
+                'logs': []
+            }
+        })
+
+        tx = real_w3.eth.get_transaction(
+            '0xb83d4f595c27755b601cea42036693d96fb60de181d19870e4a7459ff2fa3000')
+
+        global other_tx_event
+        other_tx_event = create_transaction_event({
+            'transaction': {
+                'hash': '0xb83d4f595c27755b601cea42036693d96fb60de181d19870e4a7459ff2fa3000',
+                'to': tx.to,
+                'from': tx['from'],
+                'value': tx.value
+            },
+            'block': {
+                'number': tx.blockNumber
+            },
+            'receipt': {
+                'logs': []
+            }
+        })
+        
+
+        # Chain: Blocktime, Number of Tx -> Avg processing time in ms target
+        # Ethereum: 12s, 150 -> 80ms
+        # BSC: 3s, 70 -> 43ms
+        # Polygon: 2s, 50 -> 40ms
+        # Avalanche: 2s, 5 -> 400ms
+        # Arbitrum: 1s, 5 -> 200ms
+        # Optimism: 24s, 150 -> 160ms
+        # Fantom: 1s, 5 -> 200ms
+
+        # local testing reveals an avg processing time of 110ms, which results in the following sharding config:
+        # Ethereum: 12s, 150 -> 80ms - 2
+        # BSC: 3s, 70 -> 43ms - 3
+        # Polygon: 2s, 50 -> 40ms - 3
+        # Avalanche: 2s, 5 -> 400ms - 1
+        # Arbitrum: 1s, 5 -> 200ms - 1
+        # Optimism: 24s, 150 -> 160ms - 1
+        # Fantom: 1s, 5 -> 200ms - 1
+
+        # we're assuming 0,001% of tx will contain a cex funding transaction to a new EOA
+
+        processing_runs = 10
+        processing_time_dex_funding_tx_avg_ms = timeit.timeit(
+            'agent.detect_dex_funding(real_w3, cex_funding_tx_event)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+        
+        processing_time_new_eoa_funding_tx_avg_ms = timeit.timeit(
+            'agent.detect_dex_funding(real_w3, new_eoa_funding_tx_event)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+
+        processing_time_other_tx_avg_ms = timeit.timeit(
+            'agent.detect_dex_funding(real_w3, other_tx_event)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+                
+        assert (processing_time_dex_funding_tx_avg_ms * 0.001 + processing_time_new_eoa_funding_tx_avg_ms * 0.05 + processing_time_other_tx_avg_ms * 0.949) / \
+            3 < 110, "processing time should be less than 230ms."
+
     def test_not_transfer_to_cex(self):
         agent.initialize()
 
