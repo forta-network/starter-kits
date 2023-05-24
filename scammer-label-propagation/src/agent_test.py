@@ -188,6 +188,25 @@ class TestScammerLabelPropagationAgent(unittest.TestCase):
         while len(agent.global_futures) > 0:
             time.sleep(30)
             findings += agent.handle_block(block_event)
+    
+    def test_run_all_extended(self):
+        central_node = '0xfa080f371f2b9986dfd0a692da4da343178233d0'
+        alert = {"alert":
+                 {"name": "x",
+                 "hash": "0xabc",
+                 "description": "description",
+                 "alert_id": "alert",
+                 "source":
+                    {"bot": {'id': "0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23"}},
+                 "labels": [{
+                        'entity': '0xfa080f371f2b9986dfd0a692da4da343178233d0',
+                        'label': 'Attacker',
+                        'confidence': 1,
+                        'entity_type': 'Address'
+                    }]
+                 }
+             }
+        agent.run_all_extended(central_node, create_alert_event(alert))
 
 
 

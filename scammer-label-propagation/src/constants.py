@@ -31,3 +31,5 @@ MAX_FINDINGS = 40
 SEED = 1993
 # Hours before an address can be re-analyzed
 HOURS_BEFORE_REANALYZE = 48
+# Path to the model
+MODEL_PATH = 'model.pth'
