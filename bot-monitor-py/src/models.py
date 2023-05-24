@@ -4,7 +4,7 @@ from datetime import datetime
 
 class AlertRateModel:
     def __init__(self):
-        self.model = Prophet(interval_width=0.90)
+        self.model = Prophet(interval_width=0.70)
         self.data = pd.DataFrame(columns=['ds', 'y'])
         self.last_update_hour = None
 

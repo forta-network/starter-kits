@@ -109,7 +109,7 @@ class TestScamFindings:
         assert finding.labels[0].metadata["base_bot_alert_ids"] == base_bot_alert_id
         assert finding.labels[0].metadata["base_bot_alert_hashes"] == base_bot_alert_hash
         v = "{'SCAM-DETECTOR-ADDRESS-POISONER'}"
-        assert finding.labels[0].metadata["info"] == f'This scammer {metadata["new_scammer_eoa"]} deployed a contract {metadata["new_scammer_contract_address"]} that is similar to a contract {metadata["scammer_contract_address"]} deployed by a known scammer {metadata["scammer_eoa"]} involved in {v} scam (alert hash: {metadata["alert_hash"]}).'
+        assert finding.labels[0].metadata["deployer_info"] == f'This scammer {metadata["new_scammer_eoa"]} deployed a contract {metadata["new_scammer_contract_address"]} that is similar to a contract {metadata["scammer_contract_address"]} deployed by a known scammer {metadata["scammer_eoa"]} involved in {v} scam (alert hash: {metadata["alert_hash"]}).'
         assert finding.labels[0].metadata["threat_description_url"] == ScamDetectorFinding.get_threat_description_url(alert_id)
 
         assert finding.labels[1].entity_type == EntityType.Address

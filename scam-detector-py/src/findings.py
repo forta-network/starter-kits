@@ -5,8 +5,8 @@ from datetime import datetime
 import requests
 import logging
 
-from utils import Utils
-from constants import CONFIDENCE_MAPPINGS
+from src.utils import Utils
+from src.constants import CONFIDENCE_MAPPINGS
 
 class ScamDetectorFinding:
 
@@ -82,7 +82,10 @@ class ScamDetectorFinding:
                     'chain_id': chain_id,
                     'base_bot_alert_ids': base_bot_alert_id,  # base bot alert id: contract similarity alert id
                     'base_bot_alert_hashes': base_bot_alert_hash,
-                    'info': f"This scammer {scammer_address} deployed a contract {scammer_contract_address} that is similar to a contract {existing_scammer_contract_address} deployed by a known scammer {existing_scammer_address} involved in {original_alert_ids} scam (alert hash: {alert_hash}).",
+                    'associated_scammer_contract': existing_scammer_contract_address,
+                    'associated_scammer_alert_ids': original_alert_ids,
+                    'associated_scammer_alert_hashes': alert_hash,
+                    'deployer_info': f"This scammer {scammer_address} deployed a contract {scammer_contract_address} that is similar to a contract {existing_scammer_contract_address} deployed by a known scammer {existing_scammer_address} involved in {original_alert_ids} scam (alert hash: {alert_hash}).",
                     'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                     'bot_version': Utils.get_bot_version()
                 }
@@ -98,6 +101,9 @@ class ScamDetectorFinding:
                     'chain_id': chain_id,
                     'base_bot_alert_ids': base_bot_alert_id,  # base bot alert id: contract similarity alert id
                     'base_bot_alert_hashes': base_bot_alert_hash,
+                    'associated_scammer_contract': existing_scammer_contract_address,
+                    'associated_scammer_alert_ids': original_alert_ids,
+                    'associated_scammer_alert_hashes': alert_hash,
                     'deployer_info': f"Deployer {scammer_address} deployed a contract {scammer_contract_address} that is similar to a contract {existing_scammer_contract_address} deployed by a known scammer {existing_scammer_address} involved in {original_alert_ids} scam (alert hash: {alert_hash}); this contract may or may not be related to this particular scam, but was created by the scammer.",
                     'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                     'bot_version': Utils.get_bot_version()
@@ -118,6 +124,9 @@ class ScamDetectorFinding:
                             'chain_id': chain_id,
                             'base_bot_alert_ids': base_bot_alert_id,  # base bot alert id: contract similarity alert id
                             'base_bot_alert_hashes': base_bot_alert_hash,
+                            'associated_scammer_contract': existing_scammer_contract_address,
+                            'associated_scammer_alert_ids': original_alert_ids,
+                            'associated_scammer_alert_hashes': alert_hash,
                             'deployer_info': f"Deployer {scammer_address} involved in {original_alert_ids} scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
                             'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                             'bot_version': Utils.get_bot_version()
@@ -196,7 +205,7 @@ class ScamDetectorFinding:
                                         'chain_id': chain_id,
                                         'base_bot_alert_ids': ','.join(list(involved_alert_ids)),
                                         'base_bot_alert_hashes': ','.join(list(involved_alert_hashes)),
-                                        'scammer': scammer_address,
+                                        'deployer_info': f"Deployer {scammer_address} involved in {alert_id} scam; this contract has been associated with this scam.",
                                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
                                     }
                                 }))
@@ -378,9 +387,9 @@ class ScamDetectorFinding:
                         'alert_ids': "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT",
                         'chain_id': chain_id,
                         'base_bot_alert_ids': base_bot_alert_id,  # alert from the label propagation bot
-                        'base_bot_alert_hashes': base_bot_alert_hash, # alert from the label propagation bot
-                        'associated_scammer': existing_scammer_eoa,  
-                        'associated_scammer_alert_ids': original_alert_id, # SCAM-DETECTOR alert id of the original associated scammer
+                        'base_bot_alert_hashes': base_bot_alert_hash,  # alert from the label propagation bot
+                        'associated_scammer': existing_scammer_eoa, 
+                        'associated_scammer_alert_ids': original_alert_id,  # SCAM-DETECTOR alert id of the original associated scammer
                         'associated_scammer_alert_hashes': original_alert_hash,
                         'deployer_info': f"Deployer {new_scammer_eoa} associated with a scammer {existing_scammer_eoa}; this contract may or may not be related to this particular scam, but was created by the scammer.",
                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
