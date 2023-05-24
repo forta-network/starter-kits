@@ -29,7 +29,7 @@ web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 def run_all_extended(central_node, alert_event):
     try:
-        attackers_df, graph_statistics = run_all(central_node)
+        attackers_df, graph_statistics, attackers_df_global = run_all(central_node)
     except Warning as w:
         logger.warning(f"{central_node}:\tWarning running run_all in a thread: {w}", exc_info=True)
         return []
@@ -73,6 +73,33 @@ def run_all_extended(central_node, alert_event):
             finding_dict['metadata'] = metadata
             finding_dict['description'] = f"{attacker_info.name} marked as scammer by label propagation"
             all_findings_list.append(Finding(finding_dict))
+    # Prepare the dataset for the global model
+    finding_dict_global = finding_dict.copy()
+    finding_dict_global['alert_id'] = 'SCAMMER-LABEL-PROPAGATION-2'
+    finding_dict_global['name'] = 'scammer-label-propagation-global'
+    finding_dict_global['description'] = 'Address marked as scammer by label propagation (global model)'
+    for row_idx in range(attackers_df_global.shape[0]):
+        attacker_info = attackers_df_global.iloc[row_idx]
+        logger.info(f'{central_node}:\tNew attacker info global: {attacker_info}')
+        metadata = {
+                'central_node': central_node,
+                'central_node_alert_id': alert_event.alert.alert_id,
+                'central_node_alert_name': alert_event.alert.name,
+                'central_node_alert_hash': alert_event.alert.hash,
+                'graph_statistics': graph_statistics,
+                'model_confidence': str(attacker_info['p_attacker']),
+            }
+        label_dict = {
+                'entity': attacker_info.name,
+                'label': 'scammer-eoa',
+                'confidence': str(attacker_info['p_attacker']),
+                'entity_type': forta_agent.EntityType.Address,
+                'metadata': metadata
+            }
+        finding_dict_global['labels'] = [forta_agent.Label(label_dict)]
+        finding_dict_global['metadata'] = metadata
+        finding_dict_global['description'] = f"{attacker_info.name} marked as scammer by label propagation (global model)"
+        all_findings_list.append(Finding(finding_dict_global))
     return all_findings_list
         
         

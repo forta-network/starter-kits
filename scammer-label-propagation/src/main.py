@@ -11,7 +11,7 @@ from src.constants import (ATTACKER_CONFIDENCE, MIN_FOLDS_ATTACKER, N_FOLDS,
                            PREDICTED_ATTACKER_CONFIDENCE, VICTIM_SAMPLING, SEED)
 from src.model.aux import cross_entropy_masked
 from src.model.model import ModelAttention
-from src.model.train import prepare_graph_and_train
+from src.model.train import prepare_graph_and_train, prepare_graph_and_predict
 from src.preprocessing.get_data import (collect_data_parallel_parts,
                                         download_labels_graphql,
                                         get_automatic_labels)
@@ -76,7 +76,20 @@ def run_all(central_node):
         'n_labeled_victims_extended': len([label for label in automatic_labels.values() if label == 'victim']),
         'n_addresses_with_any_label': labels_df.shape[0],
     }
-    return filtered_attackers_df, str(graph_statistics)
+    predictions_global_model = prepare_graph_and_predict(node_feature, edge_indexes, edge_features, labels_torch)
+    results_global_model = pd.DataFrame(predictions_global_model.numpy(), index=all_nodes_dict.keys(), columns=['p_victim', 'p_attacker'])
+    if results_global_model.loc[central_node].shape[0] == 0:
+        logger.info(f"{central_node}:\tThe global model did not predict the central node")
+    results_global_model = results_global_model[results_global_model['p_attacker'] >= PREDICTED_ATTACKER_CONFIDENCE]
+    results_global_model = results_global_model.loc[~results_global_model.index.isin(original_attackers)]
+    attackers_not_contracts_global = []
+    for address in list(results_global_model.index):
+        if not is_contract(web3, address):
+            attackers_not_contracts_global.append(address)
+    results_global_model = results_global_model.loc[attackers_not_contracts_global]
+    graph_statistics['n_predicted_attackers_global_model'] = results_global_model.shape[0]
+    logger.info(f"{central_node}:\tFinished processing: {results_global_model.shape[0]} attackers found with global model")
+    return filtered_attackers_df, str(graph_statistics), results_global_model
 
 
 def is_contract(w3, address) -> bool:

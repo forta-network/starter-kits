@@ -8,3 +8,6 @@ __pycache__
 results
 secrets.json
 logs.log
+data
+train_model
+model.pth
