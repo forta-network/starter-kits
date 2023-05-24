@@ -9,12 +9,12 @@ from web3 import Web3
 import pandas as pd
 import logging
 
-from storage import get_secrets
+from src.storage import get_secrets
 
 class BlockChainIndexer:
 
     FIRST_BLOCK_NUMBER = 15000000
-    SECRETS_JSON = get_secrets()
+    SECRETS_JSON = None
 
     @staticmethod
     def get_etherscan_url(chain_id):
@@ -52,6 +52,9 @@ class BlockChainIndexer:
     
     @staticmethod
     def get_allium_api_key():
+        if BlockChainIndexer.SECRETS_JSON is None:
+            BlockChainIndexer.SECRETS_JSON = get_secrets()
+        
         if "ALLIUM" in BlockChainIndexer.SECRETS_JSON['jsonRpc']:
             return BlockChainIndexer.SECRETS_JSON['jsonRpc']['ALLIUM']
         elif "ALLIUM" in BlockChainIndexer.SECRETS_JSON['apiKeys']:
@@ -61,6 +64,9 @@ class BlockChainIndexer:
 
     @staticmethod
     def get_api_key(chain_id):
+        if BlockChainIndexer.SECRETS_JSON is None:
+            BlockChainIndexer.SECRETS_JSON = get_secrets()
+    
         if chain_id == 1:
             return BlockChainIndexer.SECRETS_JSON['apiKeys']['ETHERSCAN_TOKEN']
         elif chain_id == 137:
@@ -126,10 +132,10 @@ class BlockChainIndexer:
             logging.info(f"get_contracts from allium for {address} on {chain_id}.")
             try:
                 response = requests.post(f"https://api.allium.so/api/v1/explorer/queries/{BlockChainIndexer.get_allium_query(chain_id)}/run",
-                    json={"address_lower":address},
-                    headers={"X-API-Key": BlockChainIndexer.get_allium_api_key()},
-                    timeout=60,  # 60 seconds
-                )
+                                         json={"address_lower": address},
+                                         headers={"X-API-Key": BlockChainIndexer.get_allium_api_key()},
+                                         timeout=60,  # 60 seconds
+                                         )
                 if response.status_code == 200:
                     json_data = json.loads(response.content)
                     df_allium_temp = pd.DataFrame(data=json_data["data"])

@@ -101,7 +101,7 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
     #                 }   
     #                 }))
     finding = Finding({
-            'name': 'Shard test bot',
+            'name': f'Shard {shard}',
             'description': f'{shard},{unix_timestamp},{alert_event.alert_hash},{alert_event.bot_id},{alert_event.alert.alert_id},observed)',
             'alert_id': "SHARD-TEST-2",
             'type': FindingType.Info,

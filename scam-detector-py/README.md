@@ -51,6 +51,9 @@ The Scam Detector bot emits the following alerts:
 - SCAM-DETECTOR-RAKE-TOKEN
   - Fired when a contract with a rake is identified
 
+- SCAM-DETECTOR-IMPERSONATING-TOKEN
+  - Fired when a token contract has been identified that is impersonating a known established token (e.g. USDC or USDT)
+
 - SCAM-DETECTOR-ADDRESS-POISONING or SCAM-DETECTOR-ADDRESS-POISONER
   - Fired when alert combination is observed that points to address poisoning attack 
 
@@ -166,3 +169,4 @@ When a false positive is observed, the scam detector will remove the previously 
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull bot | SOFT-RUG-PULL-SUS-POOL-REMOVAL | PassThrough |
 | 0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11 | rake token bot | RAKE-TOKEN-CONTRACT-1 | PassThrough |
 | 0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848 | scammer association bot | SCAMMER-LABEL-PROPAGATION-1 | PassThrough |
+| 0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127 | token impersonation | IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR | PassThrough |

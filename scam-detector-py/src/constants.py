@@ -68,6 +68,7 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
              ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-POOL-REMOVAL", "PassThrough", "SCAM-DETECTOR-SOFT-RUG-PULL"),  # soft rug pull bot (when rug pull actually happens)
              ("0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11", "RAKE-TOKEN-CONTRACT-1", "PassThrough", "SCAM-DETECTOR-RAKE-TOKEN"),  # rake token
              ("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-1", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # contract similarity bot
+             ("0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127", "IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR", "PassThrough", "SCAM-DETECTOR-IMPERSONATING-TOKEN"),  # IMPERSONATING token
         ]
 
 CONFIDENCE_MAPPINGS = {
@@ -84,8 +85,25 @@ CONFIDENCE_MAPPINGS = {
         "SCAM-DETECTOR-ADDRESS-POISONER": 0.05,
         "SCAM-DETECTOR-SIMILAR-CONTRACT": 0.4,
         "SCAM-DETECTOR-1": 0.2,
-        "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT": 0.4
+        "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT": 0.4,
+        "SCAM-DETECTOR-IMPERSONATING-TOKEN": 0.8
 }
+
+
+SWAP_FACTORY_ADDRESSES = {
+  1: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",  # uniswap
+  43114: "0x794C07912474351b3134E6D6B3B7b3b4A07cbAAa",  # uniswap
+  56: "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73",  # pancakeswap
+  137: "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32",  # quickswap
+  250: "0x514053a5bAa4CFef80aA7C2A55d2c8365a5B5eAd",  # sushiswap
+  42161: "0x1F98431c8aD98523631AE4a59f267346ea31F984",  # uniswap
+  10: "0x1F98431c8aD98523631AE4a59f267346ea31F984"  # uniswap
+}
+
+PAIRCREATED_EVENT_ABI = '{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"token0","type":"address"},{"indexed":true,"internalType":"address","name":"token1","type":"address"},{"indexed":false,"internalType":"address","name":"pair","type":"address"},{"indexed":false,"internalType":"uint256","name":"","type":"uint256"}],"name":"PairCreated","type":"event"}'
+POOLCREATED_EVENT_ABI = '{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"token0","type":"address"},{"indexed":true,"internalType":"address","name":"token1","type":"address"},{"indexed":true,"internalType":"uint24","name":"fee","type":"uint24"},{"indexed":false,"internalType":"int24","name":"tickSpacing","type":"int24"},{"indexed":false,"internalType":"address","name":"pool","type":"address"}],"name":"PoolCreated","type":"event"}'
+
+
 
 # BASE_BOTS = [
 #            ("0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732", "NFT-WASH-TRADE", "Preparation"),  # wash trading bot

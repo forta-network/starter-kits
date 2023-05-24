@@ -221,6 +221,24 @@ class TestScamDetector:
 
 
 
+    def test_detect_impersonation_token(self):
+        agent.initialize()
+
+        bot_id = "0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127"
+        alert_id = "IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR"
+        description = "0x3b31724aff894849b90c48024bab38f25a5ee302 deployed an impersonating token contract at 0xb4d91be6d0894de00a3e57c24f7abb0233814c82. It impersonates token USDC (USDC) at 0x115110423f4ad68a3092b298df7dc2549781108e"
+        metadata = {"anomalyScore":"0.09375","newTokenContract":"0xb4d91be6d0894de00a3e57c24f7abb0233814c82","newTokenDeployer":"0x3b31724aff894849b90c48024bab38f25a5ee302","newTokenName":"Cross Chain Token","newTokenSymbol":"USDC","oldTokenContract":"0x115110423f4ad68a3092b298df7dc2549781108e","oldTokenDeployer":"0x80ec4276d31b1573d53f5db75841762607bc2166","oldTokenName":"Cross Chain Token","oldTokenSymbol":"USDC"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = agent.detect_scam(w3, alert_event, clear_state_flag=True)
+
+        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-IMPERSONATING-TOKEN", "should be impersonated token finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+
+
     def test_detect_hard_rug_pull(self):
         agent.initialize()
 
@@ -706,6 +724,36 @@ class TestScamDetector:
         assert len(findings) == 1, "this should have triggered a finding"
         assert findings[0].alert_id == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
         assert findings[0].metadata["scammer_contract_address"] == "0xa781690be56b721a61336b5ec5d904417cdab626".lower(), "wrong scammer_contract"
+
+    def test_scammer_contract_deployment_indirect(self):
+        agent.clear_state()
+        agent.initialize()
+
+        tx_event = create_transaction_event({
+            'transaction': {
+                'hash': "0",
+                'from': "0x9e187687cea757a65c7438f8cbfc3afa732dffc5",
+                'to': "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+                'nonce': 9,
+            },
+            'block': {
+                'number': 0
+            },
+            'logs': [
+                    {'address': "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f".lower(),
+                    'topics': ["0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9","0x0000000000000000000000008fcbeec40e6926a79c60946544b371773cfa0e78", "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"],
+                    'data': f"0x0000000000000000000000002091a6f364e1ea474be9333c6fa3a23ecd604d66000000000000000000000000000000000000000000000000000000000002d7c7"
+                 }
+            ],
+            'receipt': {
+                'logs': []
+            }
+        })
+        findings = agent.detect_scammer_contract_creation(w3, tx_event)
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        assert findings[0].alert_id == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
+        assert findings[0].metadata["scammer_contract_address"] == "0x2091a6f364e1ea474be9333c6fa3a23ecd604d66".lower(), "wrong scammer_contract"
 
     def test_detect_eoa_association(self):
         agent.initialize()
