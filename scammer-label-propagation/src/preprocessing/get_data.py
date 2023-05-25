@@ -32,7 +32,7 @@ def get_all_related_addresses(central_node) -> str:
     max_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     if run_id is None:
         # Retry mechanism in case the request fails
-        for i in range(3):
+        for i in range(5):
             try:
                 response = requests.post(
                     api_url,
@@ -42,6 +42,8 @@ def get_all_related_addresses(central_node) -> str:
                 run_id = response.json()["run_id"]
             except Exception as e:
                 logger.debug(f'Retrying for {i+1} time')
+                if i == 4:
+                    raise ValueError(f'{central_node}:\t{query_name} query failed. {response}.\n{e}', exc_info=True)
             else:
                 break
         put_query_id_dynamo(central_node, query_name, run_id)
@@ -50,7 +52,7 @@ def get_all_related_addresses(central_node) -> str:
     n_retry = 0
     while continue_querying:
         # Retry mechanism in case the request fails
-        for i in range(3):
+        for i in range(5):
             try:
                 response = requests.get(
                     f"https://api.allium.so/api/v1/explorer/query-runs/{run_id}/status",
@@ -60,12 +62,14 @@ def get_all_related_addresses(central_node) -> str:
                 run_status = response.json()
             except Exception as e:
                 logger.debug(f'Retrying for {i+1} time')
+                if i == 4:
+                    raise ValueError(f'{central_node}:\tGet addresses query failed. {response}.\n{e}', exc_info=True)
             else:
                 break
         if run_status in ['failed', 'canceled']:
             logger.debug(f"{central_node}:\t{query_name} query failed. Re-querying. {response.json()}")
             # Retry mechanism in case the request fails
-            for i in range(3):
+            for i in range(5):
                 try:
                     response = requests.post(
                         api_url,
@@ -75,6 +79,8 @@ def get_all_related_addresses(central_node) -> str:
                     run_id = response.json()["run_id"]
                 except Exception as e:
                     logger.debug(f'Retrying for {i+1} time')
+                    if i == 4:
+                        raise ValueError(f'{central_node}:\t{query_name} query failed. {response}.\n{e}', exc_info=True)
                 else:
                     break
             put_query_id_dynamo(central_node, query_name, run_id)
@@ -90,6 +96,8 @@ def get_all_related_addresses(central_node) -> str:
                     continue_querying = False
                 except Exception as e:
                     logger.debug(f'Retrying for {i+1} time')
+                    if i == 4:
+                        raise ValueError(f'{central_node}:\t{query_name} query failed. {response}.\n{e}', exc_info=True)
                 else:
                     break
         n_retry += 1
@@ -146,7 +154,7 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
         logger.debug(f'{central_node}:\t{key}:\t{run_id}')
         if run_id is None:
             # Retry mechanism in case the request fails
-            for i in range(3):
+            for i in range(5):
                 try:
                     response = requests.post(
                         api_url,
@@ -156,6 +164,8 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
                     active_queries[key] = response.json()["run_id"]
                 except Exception as e:
                     logger.debug(f'Retrying for {i+1} time')
+                    if i == 4:
+                        raise ValueError(f'{central_node}:\t{key} query failed. {response}.\n{e}', exc_info=True)
                 else:
                     break
             put_query_id_dynamo(central_node, key, active_queries[key])
@@ -165,7 +175,7 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
         keys_to_pop = []
         for key in active_queries.keys():
             # Retry mechanism in case the request fails
-            for i in range(3):
+            for i in range(5):
                 try:
                     response = requests.get(
                         f"https://api.allium.so/api/v1/explorer/query-runs/{active_queries[key]}/status",
@@ -175,13 +185,15 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
                     run_status = response.json()
                 except Exception as e:
                     logger.debug(f'Retrying for {i+1} time')
+                    if i == 4:
+                        raise ValueError(f'{central_node}:\t{key} query failed. {response}.\n{e}', exc_info=True)
                 else:
                     break
             if run_status in ['failed', 'canceled']:
                 logger.debug(f"{central_node}:\t{key} query failed. Re-querying. {response.json()}")
                 api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
                 # Retry mechanism in case the request fails
-                for i in range(3):
+                for i in range(5):
                     try:
                         response = requests.post(
                             api_url,
@@ -192,6 +204,8 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
                         total_retries += 1
                     except Exception as e:
                         logger.debug(f'Retrying for {i+1} time')
+                        if i == 4:
+                            raise ValueError(f'{central_node}:\t{key} query failed. {response}.\n{e}', exc_info=True)
                     else:
                         break
                 put_query_id_dynamo(central_node, key, active_queries[key])
@@ -208,6 +222,8 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
                         logger.debug(f"{central_node}:\t{key} Finished")
                     except Exception as e:
                         logger.debug(f'Retrying for {i+1} time')
+                        if i == 4:
+                            raise ValueError(f'{central_node}:\t{key} query failed. {response}.\n{e}', exc_info=True)
                     else:
                         break
         for key in keys_to_pop:
@@ -295,13 +311,15 @@ def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
         # We allow at most n_addresses pages to not overcharge the system, in case there is a contract
         current_page = 0
         while next_page_exists and current_page < SIMULTANEOUS_ADDRESSES:
-            for i in range(3):
+            for i in range(5):
                 try:
                     payload = dict(query=query, variables=query_variables)
                     response = requests.request("POST", forta_api, json=payload, headers=headers)
                     all_labels += response.json()['data']['labels']['labels']
                 except Exception as e:
-                        logger.debug(f'Retrying for {i+1} time')
+                    logger.debug(f'Retrying for {i+1} time')
+                    if i == 4:
+                        raise ValueError(f'{central_node}:\tLabels query failed. {response}.\n{e}', exc_info=True)
                 else:
                     break
             next_page_exists = response.json()['data']['labels']['pageInfo']['hasNextPage']
@@ -321,13 +339,15 @@ def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
         # We allow at most n_addresses pages to not overcharge the system, in case there is a contract
         current_page = 0
         while next_page_exists and current_page < SIMULTANEOUS_ADDRESSES:
-            for i in range(3):
+            for i in range(5):
                 try:
                     payload = dict(query=query, variables=query_variables)
                     response = requests.request("POST", forta_api, json=payload, headers=headers)
                     all_labels += response.json()['data']['labels']['labels']
                 except Exception as e:
-                        logger.debug(f'Retrying for {i+1} time')
+                    logger.debug(f'Retrying for {i+1} time')
+                    if i == 4:
+                        raise ValueError(f'{central_node}:\tLabels query failed. {response}.\n{e}', exc_info=True)
                 else:
                     break
             next_page_exists = response.json()['data']['labels']['pageInfo']['hasNextPage']
