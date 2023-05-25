@@ -46,6 +46,8 @@ def get_all_related_addresses(central_node) -> str:
                 break
         put_query_id_dynamo(central_node, query_name, run_id)
     continue_querying = True
+    max_number_of_retries = 100  # 100 * 10 seconds = 1000 seconds = 16 minutes max time running
+    n_retry = 0
     while continue_querying:
         # Retry mechanism in case the request fails
         for i in range(3):
@@ -90,6 +92,9 @@ def get_all_related_addresses(central_node) -> str:
                     logger.debug(f'Retrying for {i+1} time')
                 else:
                     break
+        n_retry += 1
+        if n_retry > max_number_of_retries:
+            raise Warning(f'{central_node}:\t{query_name} query took too long, skipping')
         if continue_querying:
             logger.debug(f"{central_node}:\t{query_name} query still running")
             time.sleep(10)
