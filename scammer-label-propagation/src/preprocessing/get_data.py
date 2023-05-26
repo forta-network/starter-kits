@@ -48,7 +48,7 @@ def get_all_related_addresses(central_node) -> str:
                 break
         put_query_id_dynamo(central_node, query_name, run_id)
     continue_querying = True
-    max_number_of_retries = 100  # 100 * 10 seconds = 1000 seconds = 16 minutes max time running
+    max_number_of_retries = 50  # 50 * 20 seconds = 1000 seconds = 16 minutes max time running
     n_retry = 0
     while continue_querying:
         # Retry mechanism in case the request fails
@@ -57,7 +57,7 @@ def get_all_related_addresses(central_node) -> str:
                 response = requests.get(
                     f"https://api.allium.so/api/v1/explorer/query-runs/{run_id}/status",
                     headers={"X-API-Key": API_key},
-                    timeout=10,
+                    timeout=20,
                 )
                 run_status = response.json()
             except Exception as e:
@@ -66,6 +66,7 @@ def get_all_related_addresses(central_node) -> str:
                     raise ValueError(f'{central_node}:\tGet addresses query failed. {response}.\n{e}', exc_info=True)
             else:
                 break
+        logger.info(f"{central_node}:\t{query_name} query still {run_status} with id {run_id}")
         if run_status in ['failed', 'canceled']:
             logger.debug(f"{central_node}:\t{query_name} query failed. Re-querying. {response.json()}")
             # Retry mechanism in case the request fails
@@ -105,7 +106,7 @@ def get_all_related_addresses(central_node) -> str:
             raise Warning(f'{central_node}:\t{query_name} query took too long, skipping')
         if continue_querying:
             logger.debug(f"{central_node}:\t{query_name} query still running")
-            time.sleep(10)
+            time.sleep(20)
     if 'data' not in response.json().keys():
         raise ValueError(f'{central_node}:\tMore than 3 errors querying list of neighbors, skipping')
     if len(response.json()['data']) < MIN_NEIGHBORS:
@@ -146,7 +147,7 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
     total_retries = 0
     max_retries = 10
     data = {}
-    logger.debug(f'{central_node}:\tDownloading the data')
+    logger.info(f'{central_node}:\tDownloading the data')
     for key in queries.keys():
         logger.debug(f'{central_node}:\t{key}')
         api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
@@ -173,6 +174,7 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
             active_queries[key] = run_id
     while len(active_queries) > 0 and total_retries < max_retries:
         keys_to_pop = []
+        logger_str = f'{central_node}:\t'
         for key in active_queries.keys():
             # Retry mechanism in case the request fails
             for i in range(5):
@@ -189,6 +191,8 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
                         raise ValueError(f'{central_node}:\t{key} query failed. {response}.\n{e}', exc_info=True)
                 else:
                     break
+            # logger.info(f'{central_node}:\t{key}\t{active_queries[key]}\t{run_status}')
+            logger_str += f'{key}:\t{active_queries[key]}-{run_status}\t'
             if run_status in ['failed', 'canceled']:
                 logger.debug(f"{central_node}:\t{key} query failed. Re-querying. {response.json()}")
                 api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
@@ -228,6 +232,7 @@ def collect_data_parallel_parts(central_node) -> pd.DataFrame:
                         break
         for key in keys_to_pop:
             active_queries.pop(key)
+        logger.info(logger_str)
         if len(active_queries) > 0:
             logger.debug(f"{central_node}:\t{len(active_queries)} queries still running")
             time.sleep(waiting_time)
