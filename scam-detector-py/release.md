@@ -1,10 +1,12 @@
 # Scam Detector Bot Release Notes
 
-## v0.1.33 (May 24th 2023 - beta)
+## v0.1.33 (May 30th 2023 - beta)
 - better handling of contracts that base bots alerted on. the associated scammer-contract labels will be decorated with the appropriate alert_id whereas other contracts deployed by the same scammer will receive an generic "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT" alert_id.
 - enhanced the handleTx contract creation to also add pool contract creations (e.g. uniswap pools)
 - add original alert hashes in metadata of emitted label; unified meta data fields for different types of labels for consistency
 - incorporate [token impersonation bot](https://explorer.forta.network/bot/0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127) as a passthrough alert: SCAM-DETECTOR-IMPERSONATING-TOKEN
+- integrated new alerts from the [ice phishing bot](https://explorer.forta.network/bot/0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14): ICE-PHISHING-PULL-SWEEPTOKEN and ICE-PHISHING-OPENSEA-PROXY-UPGRADE. The former allows an scammer to create a transfer transaction using a multicall with pull and sweepToken function; the latter, the scammer can trick a user to upgrading the implementation of a user's opensea proxy contract to the attacker's implementation, which gives the attacker control over user's assets. 
+- integrated new alert from the [label propagation bot](https://explorer.forta.network/bot/0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848): SCAMMER-LABEL-PROPAGATION-2 which operates on a global as opposed to local label propagation graph model.
 
 ## v0.1.32 (May 18th 2023 - beta)
 - upgrade to latest SDK (1.1.16/ 0.1.32)

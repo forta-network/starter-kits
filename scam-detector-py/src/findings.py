@@ -278,8 +278,8 @@ class ScamDetectorFinding:
                 'confidence': 1,
                 'metadata': {
                     'alert_ids': "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category,
-                    'reported_by': reported_by,
                     'chain_id': chain_id,
+                    'reported_by': reported_by,
                     'bot_version': Utils.get_bot_version()
                 }
             }))
