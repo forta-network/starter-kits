@@ -500,3 +500,18 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 5/18/2023	0xf469ae9097fc337a84cc5206d21a7a6e8f0192b5	Blocksec		56	Ice phishing	
 5/18/2023	0x488c540b8bf6e9b05fdcde1732aa64b8f0aa6139	Blocksec		1	Ice phishing	
 5/18/2023	0x73410a7051257b2b9df81f7288e537f672150e23	Blocksec		1	Ice phishing	
+5/24/2023	0x054a3574d8082112575843dd944ff42c58dda38d	Blocksec	https://twitter.com/Phalcon_xyz/status/1661424685320634368?s=20	56	Protocol attack	GPT_Token
+5/24/2023	0xcB5ab783Ec11704e07886B17Dbfc8BdDEaDD2CbC	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1661406574844280833?s=20	1	Soft rug pull	
+5/24/2023	0x0fb95dd3f4beefaf237addb5486fa183b1ebe794	@DeDotFiSecurity
+	https://twitter.com/DeDotFiSecurity/status/1661406577344106499?s=20	1	Soft rug pull	
+5/24/2023	0x0ca7e7e5745bd457f5ed7265ff2cd1c8208575e1	@DeDotFiSecurity
+	https://twitter.com/DeDotFiSecurity/status/1661406579390808068?s=20	1	Soft rug pull	
+5/24/2023	0xcac1143c6a07fbac729dddb66546f39df6feacec	Blocksec		1	Ice phishing	
+5/24/2023	0xcac1143c6a07fbac729dddb66546f39df6feacec	Blocksec		56	Ice phishing	
+5/26/2023	0x63605E53D422C4F1ac0e01390AC59aAf84C44A51	@realScamSniffer	https://twitter.com/realScamSniffer/status/1644149450481467392?s=20	1	Protocol attack	
+5/29/2023	0x80826e9801420e19a948b8ef477fd20f754932dc	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1663367792421384192?s=20	42161	Ice phishing	
+5/29/2023	0x839076925e0fCb9280cD604741D13844de4eE1E2	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1663363959028867072?s=20	1	Ice phishing	
+5/29/2023	0x7817c4100E8E51c147c7B7EaC1259abBdF47E7f0	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1663288925694066692?s=20	1	Soft rug pull	
+5/29/2023	0x8d9117Dca154289175c79a2A1b8521F14a5c186F	@CertiKAlert	https://twitter.com/CertiKAlert/status/1663177169118408709?s=20	1	Protocol attack	
+5/29/2023	0x0000f3b15fce720cc6d0bc915e06bc753ea30000	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1663117227070222336?s=20	1	Ice phishing	
+5/29/2023	0x625C2374595b3215D0e192d292Bd9ca837cb0c47	@CertiKAlert	https://twitter.com/CertiKAlert/status/1663114692477288449?s=20	1	Protocol attack	
