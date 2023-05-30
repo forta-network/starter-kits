@@ -104,6 +104,7 @@ class Utils:
                 or 'hack' in etherscan_label
                 or 'heist' in etherscan_label
                 or 'exploit' in etherscan_label
+                or 'drainer' in etherscan_label
                 or 'scam' in etherscan_label
                 or 'fraud' in etherscan_label
                 or '.eth' in etherscan_label
