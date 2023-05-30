@@ -35,6 +35,8 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-SCAM-CREATOR-APPROVAL", "Combination", ""),  # ice phishing
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-SCAM-TRANSFER", "Combination", ""),  # ice phishing
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-SCAM-CREATOR-TRANSFER", "Combination", ""),  # ice phishing
+             ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PULL-SWEEPTOKEN", "Combination", ""),  # ice phishing
+             ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-OPENSEA-PROXY-UPGRADE", "Combination", ""),  # ice phishing
              ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", "Combination", ""),  # tornado cash withdrawl
              ("0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a", "TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION", "Combination", ""),  # Tornado Cash Funded Account Interaction
              ("0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2", "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", "Combination", ""),  # money laundering
@@ -67,7 +69,8 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
              ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-POOL-REMOVAL && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION", "PassThrough", "SCAM-DETECTOR-SOFT-RUG-PULL"),  # soft rug pull bot
              ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-POOL-REMOVAL", "PassThrough", "SCAM-DETECTOR-SOFT-RUG-PULL"),  # soft rug pull bot (when rug pull actually happens)
              ("0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11", "RAKE-TOKEN-CONTRACT-1", "PassThrough", "SCAM-DETECTOR-RAKE-TOKEN"),  # rake token
-             ("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-1", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # contract similarity bot
+             ("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-1", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # local model
+             ("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-2", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # global model
              ("0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127", "IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR", "PassThrough", "SCAM-DETECTOR-IMPERSONATING-TOKEN"),  # IMPERSONATING token
         ]
 
