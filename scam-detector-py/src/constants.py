@@ -35,8 +35,8 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-SCAM-CREATOR-APPROVAL", "Combination", ""),  # ice phishing
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-SCAM-TRANSFER", "Combination", ""),  # ice phishing
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-SCAM-CREATOR-TRANSFER", "Combination", ""),  # ice phishing
-             ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PULL-SWEEPTOKEN", "Combination", ""),  # ice phishing
-             ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-OPENSEA-PROXY-UPGRADE", "Combination", ""),  # ice phishing
+             ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PULL-SWEEPTOKEN", "Passthrough", ""),  # ice phishing
+             ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-OPENSEA-PROXY-UPGRADE", "Passthrough", ""),  # ice phishing
              ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", "Combination", ""),  # tornado cash withdrawl
              ("0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a", "TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION", "Combination", ""),  # Tornado Cash Funded Account Interaction
              ("0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2", "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", "Combination", ""),  # money laundering
@@ -74,6 +74,72 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
              ("0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127", "IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR", "PassThrough", "SCAM-DETECTOR-IMPERSONATING-TOKEN"),  # IMPERSONATING token
         ]
 
+# model information
+# double check whether the above subscriptions include the below model features; otherwise the feature would never be populated
+MODEL_NAME = "v1_scammer_model.joblib"
+MODEL_FEATURES = ['0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef_AK-AZTEC-PROTOCOL-FUNDED-ACCOUNT-INTERACTION-0',
+       '0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef_AK-AZTEC-PROTOCOL-FUNDING',
+       '0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef_count',
+       '0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058_FLD_FUNDING',
+       '0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058_FLD_Laundering',
+       '0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058_FLD_NEW_FUNDING',
+       '0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058_count',
+       '0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46_MALICIOUS-ACCOUNT-FUNDING',
+       '0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46_count',
+       '0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_ANOMALOUS-TOKEN-TRANSFERS-TX',
+       '0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_INVALID-TOKEN-TRANSFERS-TX',
+       '0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_NORMAL-TOKEN-TRANSFERS-TX',
+       '0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_count',
+       '0x33faef3222e700774af27d0b71076bfa26b8e7c841deb5fb10872a78d1883dba_SLEEPMINT-1',
+       '0x33faef3222e700774af27d0b71076bfa26b8e7c841deb5fb10872a78d1883dba_count',
+       '0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99_SUSPICIOUS-CONTRACT-CREATION',
+       '0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99_count',
+       '0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3_UNVERIFIED-CODE-CONTRACT-CREATION',
+       '0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3_count',
+       '0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a_TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION',
+       '0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a_count',
+       '0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad_SAFE-TOKEN-CONTRACT-CREATION',
+       '0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad_SUSPICIOUS-TOKEN-CONTRACT-CREATION',
+       '0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad_count',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-APPROVAL-FOR-ALL',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC1155-APPROVAL-FOR-ALL',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC1155-APPROVAL-FOR-ALL-INFO',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC20-PERMIT',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC20-PERMIT-INFO',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL-INFO',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-APPROVALS',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS-LOW',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS-INFO',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-SUSPICIOUS-APPROVAL',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-SUSPICIOUS-TRANSFER',
+       '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_count',
+       '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e_FUNDING-CHANGENOW-LOW-AMOUNT',
+       '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e_FUNDING-CHANGENOW-NEW-ACCOUNT',
+       '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e_count',
+       '0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c_SAFE-CONTRACT-CREATION',
+       '0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c_SUSPICIOUS-CONTRACT-CREATION',
+       '0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c_count',
+       '0xabdeff7672e59d53c7702777652e318ada644698a9faf2e7f608ec846b07325b_MEV-ACCOUNT',
+       '0xabdeff7672e59d53c7702777652e318ada644698a9faf2e7f608ec846b07325b_count',
+       '0xaf9ac4c204eabdd39e9b00f91c8383dc01ef1783e010763cad05cc39e82643bb_LARGE-TRANSFER-OUT',
+       '0xaf9ac4c204eabdd39e9b00f91c8383dc01ef1783e010763cad05cc39e82643bb_count',
+       '0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_FLASHBOTS-TRANSACTIONS',
+       '0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_count',
+       '0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f_AK-AZTEC-PROTOCOL-DEPOSIT-EVENT',
+       '0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f_count',
+       '0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f_ASSET-DRAINED',
+       '0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f_count',
+       '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb_CEX-FUNDING-1',
+       '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb_count']
+MODEL_ALERT_THRESHOLD_LOOSE = 0.50  # precison of 7/8 (88%) on test set; 40/40 (100%) on train set
+MODEL_ALERT_THRESHOLD_STRICT = 0.59  # precision of 100% on test and train set
+
+
+# utilized for passthrough and combiner labels
+# these are sourced from manual analysis and represent precision
 CONFIDENCE_MAPPINGS = {
         "SCAM-DETECTOR-SLEEP-MINTING": 0.7,
         "SCAM-DETECTOR-ICE-PHISHING": 0.62,
@@ -94,6 +160,7 @@ CONFIDENCE_MAPPINGS = {
 }
 
 
+# for handleTx to identify new contract deployments, which are indirect
 SWAP_FACTORY_ADDRESSES = {
   1: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",  # uniswap
   43114: "0x794C07912474351b3134E6D6B3B7b3b4A07cbAAa",  # uniswap
@@ -103,7 +170,6 @@ SWAP_FACTORY_ADDRESSES = {
   42161: "0x1F98431c8aD98523631AE4a59f267346ea31F984",  # uniswap
   10: "0x1F98431c8aD98523631AE4a59f267346ea31F984"  # uniswap
 }
-
 PAIRCREATED_EVENT_ABI = '{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"token0","type":"address"},{"indexed":true,"internalType":"address","name":"token1","type":"address"},{"indexed":false,"internalType":"address","name":"pair","type":"address"},{"indexed":false,"internalType":"uint256","name":"","type":"uint256"}],"name":"PairCreated","type":"event"}'
 POOLCREATED_EVENT_ABI = '{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"token0","type":"address"},{"indexed":true,"internalType":"address","name":"token1","type":"address"},{"indexed":true,"internalType":"uint24","name":"fee","type":"uint24"},{"indexed":false,"internalType":"int24","name":"tickSpacing","type":"int24"},{"indexed":false,"internalType":"address","name":"pool","type":"address"}],"name":"PoolCreated","type":"event"}'
 
