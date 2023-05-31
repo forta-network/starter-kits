@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## v0.2.0 (June 1st 2023 - beta)
+- introduction of additional handler that assesses alerts for a given EOA utililizing a supervised machine learning model for combination alerts. For version 0.2.0, if either the traditional combination heuristic or the ML model raise an alert, both alerts will be raised. A flag in the metadata will allow to differentiate what algorithm was used. 
+
+
 ## v0.1.33 (May 30th 2023 - beta)
 - better handling of contracts that base bots alerted on. the associated scammer-contract labels will be decorated with the appropriate alert_id whereas other contracts deployed by the same scammer will receive an generic "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT" alert_id.
 - enhanced the handleTx contract creation to also add pool contract creations (e.g. uniswap pools)

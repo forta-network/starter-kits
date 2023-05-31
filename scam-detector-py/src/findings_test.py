@@ -26,7 +26,7 @@ class TestScamFindings:
         chain_id = 1
         scammer_contract_addresses = { CONTRACT }
 
-        finding = ScamDetectorFinding.scam_finding(block_chain_indexer, EOA_ADDRESS_SMALL_TX, start_date, end_date, scammer_contract_addresses, involved_addresses, involved_alerts, alert_id, hashes, chain_id)
+        finding = ScamDetectorFinding.scam_finding(block_chain_indexer, EOA_ADDRESS_SMALL_TX, start_date, end_date, scammer_contract_addresses, involved_addresses, involved_alerts, alert_id, hashes, chain_id, "passthrough")
         assert finding.alert_id == alert_id
         assert finding.severity == FindingSeverity.Critical
         assert finding.type == FindingType.Scam
@@ -41,6 +41,7 @@ class TestScamFindings:
         assert finding.metadata["involved_alert_id_1"] == "ICE-PHISHING"
         assert finding.metadata["involved_alert_hashes_1"] == "0xabc"
         assert finding.metadata["scammer_addresses"] == EOA_ADDRESS_SMALL_TX
+        assert finding.metadata["handler_type"] == "passthrough"
         assert len(finding.labels) == 2
 
   
@@ -53,6 +54,7 @@ class TestScamFindings:
         assert finding.labels[0].metadata["base_bot_alert_hashes"] == "0xabc"
         assert finding.labels[0].metadata["chain_id"] == chain_id
         assert finding.labels[0].metadata["threat_description_url"] == ScamDetectorFinding.get_threat_description_url(alert_id)
+        assert finding.labels[0].metadata["handler_type"] == "passthrough"
 
         assert finding.labels[1].entity_type == EntityType.Address
         assert finding.labels[1].entity == CONTRACT
@@ -63,6 +65,7 @@ class TestScamFindings:
         assert finding.labels[1].metadata["base_bot_alert_ids"] == "ICE-PHISHING"
         assert finding.labels[1].metadata["base_bot_alert_hashes"] == "0xabc"
         assert finding.labels[1].metadata["threat_description_url"] == ScamDetectorFinding.get_threat_description_url(alert_id)
+        assert finding.labels[0].metadata["handler_type"] == "passthrough"
 
 
 

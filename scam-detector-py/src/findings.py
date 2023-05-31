@@ -5,8 +5,8 @@ from datetime import datetime
 import requests
 import logging
 
-from src.utils import Utils
-from src.constants import CONFIDENCE_MAPPINGS
+from utils import Utils
+from constants import CONFIDENCE_MAPPINGS
 
 class ScamDetectorFinding:
 
@@ -155,7 +155,7 @@ class ScamDetectorFinding:
             })
 
     @staticmethod
-    def scam_finding(block_chain_indexer, scammer_addresses: str, start_date: datetime, end_date: datetime, scammer_contract_addresses: set, involved_addresses: set, involved_alert_ids: set, alert_id: str, involved_alert_hashes: set, chain_id: int) -> Finding:
+    def scam_finding(block_chain_indexer, scammer_addresses: str, start_date: datetime, end_date: datetime, scammer_contract_addresses: set, involved_addresses: set, involved_alert_ids: set, alert_id: str, involved_alert_hashes: set, chain_id: int, handler_type: str) -> Finding:
         involved_addresses = list(involved_addresses)[0:10]
         involved_alert_hashes = list(involved_alert_hashes)[0:10]
 
@@ -165,7 +165,8 @@ class ScamDetectorFinding:
         involved_addresses_dict = {"involved_addresses_" + str(i): address for i, address in enumerate(involved_addresses, 1)}
         involved_alert_ids_dict = {"involved_alert_id_" + str(i): alert_id for i, alert_id in enumerate(involved_alert_ids, 1)}
         involved_alert_hashes_dict = {"involved_alert_hashes_" + str(i): alert_id for i, alert_id in enumerate(involved_alert_hashes, 1)}
-        meta_data = {**attacker_address_md_dict, **start_date_dict, **end_date_dict, **involved_addresses_dict, **involved_alert_ids_dict, **involved_alert_hashes_dict}
+        handler_type_dict = {"handler_type": handler_type}
+        meta_data = {**attacker_address_md_dict, **start_date_dict, **end_date_dict, **involved_addresses_dict, **involved_alert_ids_dict, **involved_alert_hashes_dict, **handler_type_dict}
 
         labels = []
         confidence = CONFIDENCE_MAPPINGS[alert_id]
@@ -182,7 +183,8 @@ class ScamDetectorFinding:
                         'base_bot_alert_ids': ','.join(list(involved_alert_ids)),
                         'base_bot_alert_hashes': ','.join(list(involved_alert_hashes)),
                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
-                        'bot_version': Utils.get_bot_version()
+                        'bot_version': Utils.get_bot_version(),
+                        'handler_type': handler_type
                     }
                 }))
 
@@ -206,7 +208,8 @@ class ScamDetectorFinding:
                                         'base_bot_alert_ids': ','.join(list(involved_alert_ids)),
                                         'base_bot_alert_hashes': ','.join(list(involved_alert_hashes)),
                                         'deployer_info': f"Deployer {scammer_address} involved in {alert_id} scam; this contract has been associated with this scam.",
-                                        'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id)
+                                        'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
+                                        'handler_type': handler_type
                                     }
                                 }))
                             else:
@@ -222,7 +225,8 @@ class ScamDetectorFinding:
                                         'base_bot_alert_hashes': ','.join(list(involved_alert_hashes)),
                                         'deployer_info': f"Deployer {scammer_address} involved in {alert_id} scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
                                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
-                                        'bot_version': Utils.get_bot_version()
+                                        'bot_version': Utils.get_bot_version(),
+                                        'handler_type': handler_type
                                     }
                                 }))
                     except Exception as e:

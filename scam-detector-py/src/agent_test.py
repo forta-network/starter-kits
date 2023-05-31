@@ -5,11 +5,12 @@ import io
 import random
 from datetime import datetime
 import pandas as pd
+import numpy as np
 from forta_agent import create_transaction_event, create_alert_event, FindingSeverity, AlertEvent, Label, EntityType
 import requests
 import agent
 
-from constants import BASE_BOTS
+from constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES
 from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX
 from utils import Utils
 
@@ -771,3 +772,118 @@ class TestScamDetector:
         assert findings[0].labels is not None, "labels should not be empty"
         label = findings[0].labels[0]
         assert label.entity == "0x22914a4f5d97f6a3c4fcc1c44c3a13e567c0efeb", "entity should be attacker address"
+
+    def test_build_feature_vector(self):
+        # alerts are tuples of (botId, alertId, alertHash)
+        alerts = [('0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5', 'FLASHBOTS-TRANSACTIONS', '0x1'),
+                  ('0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14', 'ICE-PHISHING-ERC20-PERMIT', '0x2'),
+                  ('0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14', 'ICE-PHISHING-ERC721-APPROVAL-FOR-ALL', '0x3'),
+                  ('0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14', 'ICE-PHISHING-ERC721-APPROVAL-FOR-ALL', '0x4')
+                  ]
+
+        df_expected_feature_vector = pd.DataFrame(columns=agent.MODEL_FEATURES)
+        df_expected_feature_vector.loc[0] = np.zeros(len(agent.MODEL_FEATURES))
+        df_expected_feature_vector.iloc[0]["0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_FLASHBOTS-TRANSACTIONS"] = 1
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC20-PERMIT"] = 1
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL"] = 2
+        df_expected_feature_vector.iloc[0]["0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_count"] = 1
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_count"] = 3
+
+        df_expected_feature_vector = df_expected_feature_vector.sort_index(axis=1)  # sort columns alphabetically
+
+        df_feature_vector = agent.build_feature_vector(alerts, EOA_ADDRESS_SMALL_TX)
+        assert df_feature_vector.equals(df_expected_feature_vector), "should be equal"
+
+    def test_get_score(self):
+        agent.initialize()
+
+        df_expected_feature_vector = pd.DataFrame(columns=agent.MODEL_FEATURES)
+        df_expected_feature_vector.loc[0] = np.zeros(len(agent.MODEL_FEATURES))
+
+        df_expected_feature_vector.iloc[0]["0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_NORMAL-TOKEN-TRANSFERS-TX"] = 1
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL"] = 1
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS"] = 3
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS"] = 1
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-SUSPICIOUS-APPROVAL"] = 5
+        df_expected_feature_vector.iloc[0]["0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f_ASSET-DRAINED"] = 3
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_count"] = 10
+        df_expected_feature_vector.iloc[0]["0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f_count"] = 3
+        df_expected_feature_vector.iloc[0]["0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_count"] = 1
+
+        score = agent.get_model_score(df_expected_feature_vector)
+        assert score > MODEL_ALERT_THRESHOLD_LOOSE, "should greater than model threshold"
+
+    def test_get_score_empty_features(self):
+        agent.initialize()
+
+        df_expected_feature_vector = pd.DataFrame(columns=agent.MODEL_FEATURES)
+        df_expected_feature_vector.loc[0] = np.zeros(len(agent.MODEL_FEATURES))
+        
+
+        score = agent.get_model_score(df_expected_feature_vector)
+        assert score < MODEL_ALERT_THRESHOLD_LOOSE, "should less than model threshold"
+
+    def test_scam_critical(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        label = {"label": "Scammer",
+                 "confidence": 0.25,
+                 "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99B3821",
+                 "entityType": EntityType.Address
+                 }
+
+        alerts = {"0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_NORMAL-TOKEN-TRANSFERS-TX": 1,
+                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL": 1,
+                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS": 3,
+                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS": 1,
+                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-SUSPICIOUS-APPROVAL": 5,
+                  "0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f_ASSET-DRAINED": 3}
+
+        timestamp = datetime.now().timestamp()
+        all_findings = []
+        count = 1
+        for alert_key in alerts.keys():
+            num_alerts = alerts[alert_key]
+            for i in range(num_alerts):
+                bot_id = alert_key.split("_")[0]
+                alert_id = alert_key.split("_")[1]
+                alert_hash = str(hex(count))
+                alert = TestScamDetector.generate_alert(bot_id=bot_id, alert_id=alert_id, timestamp=int(timestamp), labels=[label], alert_hash=alert_hash)
+                findings = agent.detect_scam(w3, alert)
+                all_findings.extend(findings)
+                count += 1
+
+        assert len(all_findings) == 1, "should have one finding"
+        assert all_findings[0].alert_id == "SCAM-DETECTOR-MODEL-1", "should be SCAM-DETECTOR-MODEL-1"
+        assert all_findings[0].severity == FindingSeverity.Critical, "should be Critical"
+
+
+
+    def test_get_scam_detector_alert_ids(self):
+        alert_list = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-ERC20-SCAM-PERMIT", "hash1"), ("0xac82fb2a572c7c0d41dc19d24790db17148d1e00505596ebe421daf91c837799", "ATTACK-DETECTOR-1", "hash2"), ("0xdba64bc69511d102162914ef52441275e651f817e297276966be16aeffe013b0", "UMBRA-RECEIVE", "hash3")]
+        expected_result = {"SCAM-DETECTOR-ICE-PHISHING", "SCAM-DETECTOR-1"}
+
+        actual = agent.get_scam_detector_alert_ids(alert_list)
+        assert actual == expected_result
+
+    def test_subscription_model_features(self):
+        missing_subscription_str = ""
+        
+        for feature in MODEL_FEATURES:
+            botId1 = feature.split("_")[0]
+            alertId1 = feature.split("_")[1]
+            if alertId1 == "count":
+                continue
+
+            found = False
+            for botId, alertId, alert_logic, target_alert_id in BASE_BOTS:
+                if botId == botId1 and alertId == alertId1:
+                    found = True
+
+            if not found:
+                missing_subscription_str += f'("{botId1}","{alertId1}","Combination",""),\r\n'
+            
+        print(missing_subscription_str) 
+        assert missing_subscription_str == "", f"Missing subscription for {missing_subscription_str}"
+
