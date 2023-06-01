@@ -439,13 +439,17 @@ class TestScamDetector:
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14"
-        alert_id = "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL"
+        alert_id = "ICE-PHISHING-SUSPICIOUS-TRANSFER"
         description = "0x21E13f16838e2fe78056f5fd50251ffd6e7098b4 obtained transfer approval for 3 assets by 6 accounts over period of 2 days."
         metadata = {}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
         findings = agent.detect_scam(w3, alert_event, True)
-        assert len(findings) == 0, "this should have not triggered a finding"
+        found_combination_finding = False
+        for finding in findings:
+            if finding.metadata['handler_type']=='combination':
+                found_combination_finding = True
+        assert not found_combination_finding, "should not have found combination finding"
 
         bot_id = "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"
         alert_id = "FUNDING-TORNADO-CASH"
@@ -454,19 +458,22 @@ class TestScamDetector:
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
         findings = agent.detect_scam(w3, alert_event, False)
-        assert len(findings) == 1, "this should have triggered a finding"
-        finding = findings[0]
-        assert finding.metadata is not None, "metadata should not be empty"
-        assert any(alert_event.alert_hash in str(value) for key, value in finding.metadata.items()), "metadata should contain alert hashes"
-        assert any('TORNADO' in str(value) for key, value in finding.metadata.items()), "metadata should contain alert its"
-        assert finding.labels is not None, "labels should not be empty"
-        label = finding.labels[0]
-        assert label.entity == "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4", "entity should be attacker address"
-        assert label.label == "scammer-eoa", "entity should labeled as scam"
-        assert label.confidence == 0.62, "entity should labeled with 0.62 confidence"
-        assert label.metadata['alert_ids'] == "SCAM-DETECTOR-ICE-PHISHING", "entity should labeled as ice phishing"
-        assert label.metadata['chain_id'] == 1, "entity should labeled for chain_id 1"
-
+        assert len(findings) > 1, "this should have triggered a finding"
+        found_combination_finding = False
+        for finding in findings:
+            if finding.metadata['handler_type']=='combination':
+                found_combination_finding = True
+                assert finding.metadata is not None, "metadata should not be empty"
+                assert any(alert_event.alert_hash in str(value) for key, value in finding.metadata.items()), "metadata should contain alert hashes"
+                assert any('TORNADO' in str(value) for key, value in finding.metadata.items()), "metadata should contain alert its"
+                assert finding.labels is not None, "labels should not be empty"
+                label = finding.labels[0]
+                assert label.entity == "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4", "entity should be attacker address"
+                assert label.label == "scammer-eoa", "entity should labeled as scam"
+                assert label.confidence == 0.62, "entity should labeled with 0.62 confidence"
+                assert label.metadata['alert_ids'] == "SCAM-DETECTOR-ICE-PHISHING", "entity should labeled as ice phishing"
+                assert label.metadata['chain_id'] == 1, "entity should labeled for chain_id 1"
+        assert found_combination_finding, "should have found combination finding"
 
     def test_detect_alert_pos_finding_combiner_3_metadata(self):
         agent.initialize()
@@ -480,7 +487,11 @@ class TestScamDetector:
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
        
         findings = agent.detect_scam(w3, alert_event, True)
-        assert len(findings) == 0, "this should have not triggered a finding"
+        found_combination_finding = False
+        for finding in findings:
+            if finding.metadata['handler_type']=='combination':
+                found_combination_finding = True
+        assert not found_combination_finding, "should not have found combination finding"
 
         bot_id = "0xd935a697faab13282b3778b2cb8dd0aa4a0dde07877f9425f3bf25ac7b90b895"
         alert_id = "AE-MALICIOUS-ADDR"
@@ -489,7 +500,12 @@ class TestScamDetector:
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
         findings = agent.detect_scam(w3, alert_event, False)
-        assert len(findings) == 1, "this should have not triggered a finding"
+        assert len(findings) > 1, "this should have triggered a finding"
+        found_combination_finding = False
+        for finding in findings:
+            if finding.metadata['handler_type']=='combination':
+                found_combination_finding = True
+        assert found_combination_finding, "should have found combination finding"
 
     def test_detect_alert_pos_finding_combiner_3_tx_to(self):
         agent.initialize()
@@ -502,7 +518,11 @@ class TestScamDetector:
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
        
         findings = agent.detect_scam(w3, alert_event, True)
-        assert len(findings) == 0, "this should have not triggered a finding"
+        found_combination_finding = False
+        for finding in findings:
+            if finding.metadata['handler_type']=='combination':
+                found_combination_finding = True
+        assert not found_combination_finding, "should not have found combination finding"
 
         bot_id = "0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4"
         alert_id = "forta-text-messages-possible-hack"
@@ -511,7 +531,12 @@ class TestScamDetector:
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
         findings = agent.detect_scam(w3, alert_event, False)
-        assert len(findings) == 1, "this should have not triggered a finding"
+        assert len(findings) > 1, "this should have  triggered a finding"
+        found_combination_finding = False
+        for finding in findings:
+            if finding.metadata['handler_type']=='combination':
+                found_combination_finding = True
+        assert found_combination_finding, "should have found combination finding"
 
     def test_detect_alert_no_finding_large_tx_count(self):
         agent.initialize()
@@ -835,10 +860,8 @@ class TestScamDetector:
 
         alerts = {"0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_NORMAL-TOKEN-TRANSFERS-TX": 1,
                   "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL": 1,
-                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS": 3,
-                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS": 1,
-                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-SUSPICIOUS-APPROVAL": 5,
-                  "0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f_ASSET-DRAINED": 3}
+                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS": 1
+                 }
 
         timestamp = datetime.now().timestamp()
         all_findings = []
@@ -849,14 +872,20 @@ class TestScamDetector:
                 bot_id = alert_key.split("_")[0]
                 alert_id = alert_key.split("_")[1]
                 alert_hash = str(hex(count))
-                alert = TestScamDetector.generate_alert(bot_id=bot_id, alert_id=alert_id, timestamp=int(timestamp), labels=[label], alert_hash=alert_hash)
+                alert = TestScamDetector.generate_alert(bot_id=bot_id, alert_id=alert_id, timestamp=int(timestamp), description=EOA_ADDRESS_SMALL_TX, labels=[label], alert_hash=alert_hash)
                 findings = agent.detect_scam(w3, alert)
+                print(f"bot_id: {bot_id}, alert_id: {alert_id}, findings len: {len(findings)}")
                 all_findings.extend(findings)
                 count += 1
 
         assert len(all_findings) == 1, "should have one finding"
-        assert all_findings[0].alert_id == "SCAM-DETECTOR-MODEL-1", "should be SCAM-DETECTOR-MODEL-1"
+        assert all_findings[0].alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be SCAM-DETECTOR-ICE-PHISHING"
         assert all_findings[0].severity == FindingSeverity.Critical, "should be Critical"
+
+        assert all_findings[0].labels is not None, "labels should not be empty"
+        label = all_findings[0].labels[0]
+        assert label.confidence > 0.80 and label.confidence < 0.81, "confidence should be between 0.80 and 0.81"
+        assert label.metadata['handler_type'] == "ml"
 
 
 
@@ -872,7 +901,7 @@ class TestScamDetector:
         
         for feature in MODEL_FEATURES:
             botId1 = feature.split("_")[0]
-            alertId1 = feature.split("_")[1]
+            alertId1 = feature[len(botId1) + 1:]
             if alertId1 == "count":
                 continue
 
@@ -882,7 +911,7 @@ class TestScamDetector:
                     found = True
 
             if not found:
-                missing_subscription_str += f'("{botId1}","{alertId1}","Combination",""),\r\n'
+                missing_subscription_str += f'("{botId1}", "{alertId1}", "Combination", ""),\r\n'
             
         print(missing_subscription_str) 
         assert missing_subscription_str == "", f"Missing subscription for {missing_subscription_str}"
