@@ -41,7 +41,8 @@ LUABASE_QUERY_FREQUENCY_IN_HOURS = 4
 HIGHLY_PRECISE_BOTS = [("0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", "Preparation"),  # suspicious contract creation ML
                        ("0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6", "AK-ATTACK-SIMULATION-0", "Preparation"),  # attack simulation
                        ("0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2", "SUSPICIOUS-FLASHLOAN-CONTRACT-CREATION", "Preparation"),  # suspicious-flashloan-contract-creation
-                       ("0xb31f0db68c5231bad9c00877a3141da353970adcc14e1efe5b14c4d2d93c787f", "AK-ATTACK-SIMULATION-0", "Preparation")  # attack simulation targeted
+                       ("0xb31f0db68c5231bad9c00877a3141da353970adcc14e1efe5b14c4d2d93c787f", "AK-ATTACK-SIMULATION-0", "Preparation"),  # attack simulation targeted
+                       ("0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac", "LARGE-PROFIT", "Exploitation"),  # large profit
                        ]
 
 # will filter EOAs associated with alerts from end user attack bots (will emit those as ATTACK-DETECTOR-6 alertId (beta only))

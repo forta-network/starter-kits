@@ -1,5 +1,9 @@
 # Attack Detector Bot Release Notes
 
+## v0.3.42 (June 1 2023: beta)
+- added large profit bot to high precision bots
+- relaxed logic to fire when more than one high precision bots fire
+
 ## v0.3.41 (May 11 2023: beta, May 31 2023: prod)
 - Attack detector often reports on end user related attacks, such as rake tokens, rug pulls as these attacks often follow the same patterns as a protocol exploit of funding, preparation, exploitation, and money laundering. The attack detector is supposed to only emit protocol exploits though. In this version, a new filter has been added where EOAs that are associated with specific end user attacks are degraded to a new alert Id: ATTACK-DETECTOR-6 (only will emitted in the beta version of the bot). The end user attacks are sourced from three bots: [hard rug pull](https://explorer.forta.network/bot/0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15
 ), [soft rug pull](https://explorer.forta.network/bot/0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1
