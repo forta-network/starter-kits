@@ -14,6 +14,8 @@ END_USER_ATTACK_CLUSTERS_QUEUE_MAX_SIZE=100000
 
 DEFAULT_ANOMALY_SCORE = 0.001  # used if anomaly score is less or eq than 0
 
+POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD = 40  # assume validator if alert count is larger than this threshold on polygon as the topic analysis seems unreliable
+
 ENTITY_CLUSTER_BOT = "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9"
 ENTITY_CLUSTER_BOT_ALERT_ID = "ENTITY-CLUSTER"
 

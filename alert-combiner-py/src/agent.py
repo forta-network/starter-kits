@@ -19,7 +19,7 @@ from src.constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX
                            FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE,
                            MIN_ALERTS_COUNT, ALERTS_DATA_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY,
                            VICTIMS_KEY, VICTIM_QUEUE_MAX_SIZE, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS, DEFAULT_ANOMALY_SCORE, HIGHLY_PRECISE_BOTS,
-                           ALERTED_CLUSTERS_FP_MITIGATED_KEY, END_USER_ATTACK_BOTS, END_USER_ATTACK_CLUSTERS_KEY, END_USER_ATTACK_CLUSTERS_QUEUE_MAX_SIZE)
+                           ALERTED_CLUSTERS_FP_MITIGATED_KEY, END_USER_ATTACK_BOTS, END_USER_ATTACK_CLUSTERS_KEY, END_USER_ATTACK_CLUSTERS_QUEUE_MAX_SIZE, POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD)
 from src.L2Cache import L2Cache
 from src.blockchain_indexer_service import BlockChainIndexer
 
@@ -481,7 +481,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                                     logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
                                     fp_mitigated = True
 
-                                if is_polygon_validator(w3, cluster, alert_event.alert.source.block.number):
+                                if (CHAIN_ID == 137 and len(alert_data) > POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD) or is_polygon_validator(w3, cluster, alert_event.alert.source.block.number):
                                     logging.info(f"alert {alert_event.alert_hash} - {cluster} is polygon validator. Wont raise finding")
                                     fp_mitigated = True
 
