@@ -155,7 +155,7 @@ class ScamDetectorFinding:
             })
 
     @staticmethod
-    def scam_finding(block_chain_indexer, scammer_addresses: str, start_date: datetime, end_date: datetime, scammer_contract_addresses: set, involved_addresses: set, involved_alert_ids: set, alert_id: str, involved_alert_hashes: set, chain_id: int, handler_type: str) -> Finding:
+    def scam_finding(block_chain_indexer, scammer_addresses: str, start_date: datetime, end_date: datetime, scammer_contract_addresses: set, involved_addresses: set, involved_alert_ids: set, alert_id: str, involved_alert_hashes: set, chain_id: int, handler_type: str, score = 0.0) -> Finding:
         involved_addresses = list(involved_addresses)[0:10]
         involved_alert_hashes = list(involved_alert_hashes)[0:10]
 
@@ -170,6 +170,8 @@ class ScamDetectorFinding:
 
         labels = []
         confidence = CONFIDENCE_MAPPINGS[alert_id]
+        if handler_type == "ml" and score != 0.0:
+            confidence = score
         if alert_id in ["SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-NFT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING']:
             for scammer_address in scammer_addresses.split(","):
                 labels.append(Label({

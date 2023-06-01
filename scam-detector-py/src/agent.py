@@ -341,6 +341,12 @@ def build_feature_vector(alerts: list, cluster: str) -> pd.DataFrame:
         df_feature_vector.loc[0, column] = pivoted.loc[cluster, column]
 
     df_feature_vector = df_feature_vector.sort_index(axis=1) #sort columns alphabetically
+
+    for column in df_feature_vector.columns:
+        if column not in MODEL_FEATURES:
+            logging.warning(f"Feature {column} not in model features. Dropping.")
+            df_feature_vector.drop(columns=[column], inplace=True)
+
     return df_feature_vector
 
 def get_model_score(df_feature_vector: pd.DataFrame) -> float:
@@ -396,11 +402,7 @@ def emit_combination_or_ml_finding(w3, alert_event: forta_agent.alert_event.Aler
         if Utils.is_contract(w3, cluster):
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} is contract, skipping")
             continue
-
-        if already_alerted(cluster, "SCAM-DETECTOR-ICE-PHISHING"):
-            logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on; skipping")
-            continue
-
+        
         put_alert(alert_event, cluster)
 
         # get all alerts from dynamo for the cluster
@@ -432,7 +434,8 @@ def emit_combination_or_ml_finding(w3, alert_event: forta_agent.alert_event.Aler
         alert_condition_met_ml = False
         feature_vector = build_feature_vector(alert_list, cluster)
         score = get_model_score(feature_vector)
-        model_threshold = MODEL_ALERT_THRESHOLD_STRICT if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV') else MODEL_ALERT_THRESHOLD_LOOSE
+        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got score {score} for cluster {cluster}")
+        model_threshold = MODEL_ALERT_THRESHOLD_LOOSE if Utils.is_beta() else MODEL_ALERT_THRESHOLD_STRICT
         if score>model_threshold:
             alert_condition_met_ml = True
 
@@ -444,6 +447,10 @@ def emit_combination_or_ml_finding(w3, alert_event: forta_agent.alert_event.Aler
 
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
             for alert_id in get_scam_detector_alert_ids(alert_list):
+                if already_alerted(cluster, alert_id) and not Utils.is_beta():  # alert repeatedly for beta version, but not prod version
+                    logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
+                    continue
+
                 unique_alertIds = set(alert[1] for alert in alert_list)
                 unique_alertHashes = set(alert[2] for alert in alert_list)
                 created_at_datetime = datetime.strptime(alert_event.alert.created_at[0:19], "%Y-%m-%dT%H:%M:%S")
@@ -484,7 +491,7 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
         alert_id_target = alert_target(alert_event, BASE_BOTS)
         alert_id = "SCAM-DETECTOR-ADDRESS-POISONER" if scammer_addresses_dict[scammer_address]["address_information"] == "poisoner" else alert_id_target
         if already_alerted(cluster, alert_id):
-            logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on; skipping")
+            logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
             continue
 
         if Utils.is_fp(w3, cluster):
@@ -675,8 +682,11 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
                 return emit_eoa_association_finding(w3, alert_event)
             elif alert_logic(alert_event, BASE_BOTS) == "PassThrough":
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - is passthrough alert")
-                return emit_passthrough_finding(w3, alert_event)
-            elif alert_logic(alert_event, BASE_BOTS) == "Combination":
+                findings = []
+                findings.extend(emit_combination_or_ml_finding(w3, alert_event)) # pushing passthrough to assess how well we would do with an ML approach; this is more for testing purposes right now
+                findings.extend(emit_passthrough_finding(w3, alert_event))
+                return findings
+            elif alert_logic(alert_event, BASE_BOTS) == "Combination":  
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - is combination alert")
                 return emit_combination_or_ml_finding(w3, alert_event)
             else:
