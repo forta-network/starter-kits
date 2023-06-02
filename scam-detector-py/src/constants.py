@@ -206,7 +206,7 @@ MODEL_FEATURES = ['0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b64
        '0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4_count',
        '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb_CEX-FUNDING-1',
        '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb_count']
-MODEL_ALERT_THRESHOLD_LOOSE = 0.59  # precison of 39/48 (81%) on test set; 173/192 (90%) on train set
+MODEL_ALERT_THRESHOLD_LOOSE = 0.63  # precison of 39/48 (81%) on test set; 173/192 (90%) on train set
 MODEL_ALERT_THRESHOLD_STRICT = 0.81  # precision of 100% on test and train set
 
 

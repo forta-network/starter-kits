@@ -170,3 +170,61 @@ When a false positive is observed, the scam detector will remove the previously 
 | 0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11 | rake token bot | RAKE-TOKEN-CONTRACT-1 | PassThrough |
 | 0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848 | scammer association bot | SCAMMER-LABEL-PROPAGATION-1 | PassThrough |
 | 0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127 | token impersonation | IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR | PassThrough |
+| 0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac | nft trader | nft-possible-phishing-transfer | PassThrough |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS | PassThrough |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PERMITTED-ERC20-TRANSFER | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SUSPICIOUS-TRANSFER | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-HIGH-NUM-ERC721-APPROVALS | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-ERC20-APPROVAL-FOR-ALL | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-ERC721-APPROVAL-FOR-ALL | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-ERC1155-APPROVAL-FOR-ALL | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-ERC20-SCAM-PERMIT | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-ERC20-SCAM-CREATOR-PERMIT | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SCAM-APPROVAL | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SCAM-CREATOR-APPROVAL | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SCAM-TRANSFER | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SCAM-CREATOR-TRANSFER | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PULL-SWEEPTOKEN | Passthrough |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-OPENSEA-PROXY-UPGRADE | Passthrough |
+| 0x33faef3222e700774af27d0b71076bfa26b8e7c841deb5fb10872a78d1883dba | sleep minting | SLEEPMINT-3 | Combination |
+| 0x47b86137077e18a093653990e80cb887be98e7445291d8cf811d3b2932a3c4d2 | aztec bot | AK-AZTEC-PROTOCOL-DEPOSIT-EVENT | Combination |
+| 0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848 | scammer label propagation | SCAMMER-LABEL-PROPAGATION-2 | PassThrough |
+| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | funding laundering bot | FLD_FUNDING | Combination |
+| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | funding laundering bot | FLD_Laundering | Combination |
+| 0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058 | funding laundering bot | FLD_NEW_FUNDING | Combination |
+| 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0 | native ice phishing | NIP-2 | Combination |
+| 0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8 | anomalous token ML model | ANOMALOUS-TOKEN-TRANSFERS-TX | Combination |
+| 0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8 | anomalous token ML model | INVALID-TOKEN-TRANSFERS-TX | Combination |
+| 0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8 | anomalous token ML model | NORMAL-TOKEN-TRANSFERS-TX | Combination |
+| 0x33faef3222e700774af27d0b71076bfa26b8e7c841deb5fb10872a78d1883dba | sleep minting | SLEEPMINT-1 | Combination |
+| 0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99 | suspicious contract creation | SUSPICIOUS-CONTRACT-CREATION | Combination |
+| 0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99 | suspicious contract creation | SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH | Combination |
+| 0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac | nft trader | indexed-nft-sale | Combination |
+| 0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac | nft trader | nft-sale | Combination |
+| 0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac | nft trader | nft-sold-above-floor-price | Combination |
+| 0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac | nft trader | scammer-nft-trader | Combination |
+| 0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127 | impersonating token bot | IMPERSONATED-TOKEN-DEPLOYMENT | Combination |
+| 0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac | large profit bot | LARGE-PROFIT | Combination |
+| 0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad | malicious token contract ML bot | NON-MALICIOUS-TOKEN-CONTRACT-CREATION | Combination |
+| 0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad | malicious token contract ML bot | SAFE-TOKEN-CONTRACT-CREATION | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-APPROVAL-FOR-ALL | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-ERC1155-APPROVAL-FOR-ALL-INFO | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-ERC20-PERMIT | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-ERC20-PERMIT-INFO | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-ERC721-APPROVAL-FOR-ALL-INFO | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS-LOW | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS-INFO | Combination |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SUSPICIOUS-APPROVAL | Combination |
+| 0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e | change now bot | FUNDING-CHANGENOW-LOW-AMOUNT | Combination |
+| 0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502 | address poisoning bot | ADDRESS-POISONING-ZERO-VALUE | Combination |
+| 0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c | contract ML bot | SAFE-CONTRACT-CREATION | Combination |
+| 0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c | contract ML bot | SUSPICIOUS-CONTRACT-CREATION | Combination |
+| 0xabdeff7672e59d53c7702777652e318ada644698a9faf2e7f608ec846b07325b | MEV bot | MEV-ACCOUNT | Combination |
+| 0xaf9ac4c204eabdd39e9b00f91c8383dc01ef1783e010763cad05cc39e82643bb | large transfer out bot | LARGE-TRANSFER-OUT | Combination |
+| 0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5 | flashbot bot | FLASHBOTS-TRANSACTIONS | Combination |
+| 0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15 | hard rug pull | HARD-RUG-PULL-HONEYPOT-DYNAMIC | Combination |
+| 0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f | positive reputation bot | POSITIVE-REPUTATION-1 | Combination |
+| 0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f | asset drained bot | ASSET-DRAINED | Combination |
+| 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION | Combination |
+| 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE | Combination |

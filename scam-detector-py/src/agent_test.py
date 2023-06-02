@@ -19,6 +19,7 @@ w3 = Web3Mock()
 
 class TestScamDetector:
 
+    @staticmethod
     def generate_alert(bot_id: str, alert_id: str, description = "", metadata={}, labels=[], transaction_hash = "0x123", alert_hash = '0xabc', timestamp = 0) -> AlertEvent:
         labels_tmp = [] if len(labels) == 0 else labels
         ts = "2022-11-18T03:01:21.457234676Z" if timestamp == 0 else datetime.fromtimestamp(timestamp).strftime("%Y-%m-%dT%H:%M:%S.%f123Z")  # 2022-11-18T03:01:21.457234676Z
@@ -36,6 +37,14 @@ class TestScamDetector:
                 }
         
         return create_alert_event(alert)
+    
+    @staticmethod
+    def filter_findings(findings: list, handler_type: str) -> list:
+        findings_result = []
+        for finding in findings:
+            if 'handler_type' in finding.metadata.keys() and finding.metadata['handler_type'] == handler_type:
+                findings_result.append(finding)
+        return findings_result
 
     def test_initialize(self):
         agent.initialize()
@@ -147,6 +156,7 @@ class TestScamDetector:
     def test_perf_combination_alert(self):
         global w3 
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
         shards = Utils.get_total_shards(1)
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
@@ -178,6 +188,8 @@ class TestScamDetector:
 
     def test_documentation(self):
         # read readme.md
+
+        missing_documentation = ""
         with open("README.md", "r") as f:
             readme = f.read()
 
@@ -186,12 +198,16 @@ class TestScamDetector:
                 for line in readme.split("\n"):
                     if bot_id in line and alert_id in line and alert_logic in line:
                         found = True
-            assert found, f"bot {bot_id} with alert {alert_id} and logic {alert_logic} not found in readme.md"
+                # | 0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127 | token impersonation | IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR | PassThrough |
+                if not found:
+                    missing_documentation += f"| {bot_id} | | {alert_id} | {alert_logic} |\r\n"
+        assert len(missing_documentation) == 0, missing_documentation
         
 
     def test_fp_mitigation_proper_chain_id(self):
         agent.clear_state()
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         findings = agent.emit_new_fp_finding(w3)
         res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
@@ -205,6 +221,7 @@ class TestScamDetector:
 
     def test_detect_wash_trading(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732"
         alert_id = "NFT-WASH-TRADE"
@@ -212,7 +229,7 @@ class TestScamDetector:
         metadata = {"buyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","sellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
         assert len(findings) == 2, "this should have triggered a finding for all two EOAs"
         finding = findings[0]
@@ -224,6 +241,7 @@ class TestScamDetector:
 
     def test_detect_impersonation_token(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127"
         alert_id = "IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR"
@@ -231,7 +249,7 @@ class TestScamDetector:
         metadata = {"anomalyScore":"0.09375","newTokenContract":"0xb4d91be6d0894de00a3e57c24f7abb0233814c82","newTokenDeployer":"0x3b31724aff894849b90c48024bab38f25a5ee302","newTokenName":"Cross Chain Token","newTokenSymbol":"USDC","oldTokenContract":"0x115110423f4ad68a3092b298df7dc2549781108e","oldTokenDeployer":"0x80ec4276d31b1573d53f5db75841762607bc2166","oldTokenName":"Cross Chain Token","oldTokenSymbol":"USDC"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, clear_state_flag=True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
         assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
         finding = findings[0]
@@ -242,6 +260,7 @@ class TestScamDetector:
 
     def test_detect_hard_rug_pull(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15"
         alert_id = "HARD-RUG-PULL-1"
@@ -249,7 +268,7 @@ class TestScamDetector:
         metadata = {"attacker_deployer_address":"0x8181bad152a10e7c750af35e44140512552a5cd9","rugpull_techniques":"HIDDENTRANSFERREVERTS, HONEYPOT","token_contract_address":"0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, clear_state_flag=True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
         assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
         finding = findings[0]
@@ -260,6 +279,7 @@ class TestScamDetector:
 
     def test_detect_hard_rug_pull_no_repeat_finding(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15"
         alert_id = "HARD-RUG-PULL-1"
@@ -267,7 +287,7 @@ class TestScamDetector:
         metadata = {"attacker_deployer_address":"0x8181bad152a10e7c750af35e44140512552a5cd9","rugpull_techniques":"HIDDENTRANSFERREVERTS, HONEYPOT","token_contract_address":"0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, clear_state_flag=True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
         assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
         finding = findings[0]
@@ -275,11 +295,12 @@ class TestScamDetector:
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 
-        findings = agent.detect_scam(w3, alert_event, clear_state_flag=False)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"passthrough")
         assert len(findings) == 0, "this should have not triggered another finding"
 
     def test_detect_repeat_finding(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15"
         alert_id = "HARD-RUG-PULL-1"
@@ -287,7 +308,7 @@ class TestScamDetector:
         metadata = {"attacker_deployer_address":"0x8181bad152a10e7c750af35e44140512552a5cd9","rugpull_techniques":"HIDDENTRANSFERREVERTS, HONEYPOT","token_contract_address":"0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, clear_state_flag=True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
         assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
         finding = findings[0]
@@ -301,9 +322,9 @@ class TestScamDetector:
         metadata = {"actualValueReceived":"1.188051244910305019265053e+24","anomalyScore":"0.2226202661207779","attackerRakeTokenDeployer":"0x8181bad152a10e7c750af35e44140512552a5cd9","feeRecipient":"0x440aeca896009f006eea3df4ba3a236ee8d57d36","from":"0x6c07456233f0e0fd03137d814aacf225f528068d","pairAddress":"0x2b25f23c31a490583ff55fb63cea459c098cc0e8","rakeTokenAddress":"0x440aeca896009f006eea3df4ba3a236ee8d57d36","rakeTokenDeployTxHash":"0xec938601346b2ecac1bd82f7ce025037c09a3d817d00d723efa6fc5507bca5c2","rakedFee":"2.09656102042995003399715e+23","rakedFeePercentage":"15.00","totalAmountTransferred":"1.397707346953300022664768e+24"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, clear_state_flag=False)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"passthrough")
 
-        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA for the different alert_id"
+        assert len(findings) == 2, "this should have triggered a finding for delpoyer EOA for the different alert_id"
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-RAKE-TOKEN", "should be hard rug pull finding"
         assert finding.labels is not None, "labels should not be empty"
@@ -312,6 +333,7 @@ class TestScamDetector:
 
     def test_detect_rake_token(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11"
         alert_id = "RAKE-TOKEN-CONTRACT-1"
@@ -319,9 +341,9 @@ class TestScamDetector:
         metadata = {"actualValueReceived":"1.188051244910305019265053e+24","anomalyScore":"0.2226202661207779","attackerRakeTokenDeployer":"0xa0f80e637919e7aad4090408a63e0c8eb07dfa03","feeRecipient":"0x440aeca896009f006eea3df4ba3a236ee8d57d36","from":"0x6c07456233f0e0fd03137d814aacf225f528068d","pairAddress":"0x2b25f23c31a490583ff55fb63cea459c098cc0e8","rakeTokenAddress":"0x440aeca896009f006eea3df4ba3a236ee8d57d36","rakeTokenDeployTxHash":"0xec938601346b2ecac1bd82f7ce025037c09a3d817d00d723efa6fc5507bca5c2","rakedFee":"2.09656102042995003399715e+23","rakedFeePercentage":"15.00","totalAmountTransferred":"1.397707346953300022664768e+24"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
-        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
+        assert len(findings) == 2, "this should have triggered a finding for delpoyer EOA"
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-RAKE-TOKEN", "should be hard rug pull finding"
         assert finding.metadata is not None, "metadata should not be empty"
@@ -337,6 +359,7 @@ class TestScamDetector:
 
     def test_detect_soft_rug_pull(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4"
         alert_id = "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION"
@@ -344,7 +367,7 @@ class TestScamDetector:
         metadata = {"alert_hash":"0xd99ed20f397dbe53721e9a3424d0b87bcffb8df09fc2a9fea5748f81f3c7d324 && 0x0de8a4f6e1efff58a43cb20a81dd491e23b5eea32412a7b679129eb7b0638ea1","alert_id":"SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION","bot_id":"0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1","contractAddress":"\"0x27382445B936C1f362CbBC32E3d3fa5947220030\"","deployer":"\"0xa3fe18ced8d32ca601e3b4794856c85f6f56a176\"","token":"\"0xdd17532733f084ee4aa2de4a14993ef363843216\"","txHashes":"\"0x136af8104791a904614df3728a4bacf3bb79854db362e70f65e64a787ca23efa\""}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
         assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
         finding = findings[0]
@@ -363,6 +386,7 @@ class TestScamDetector:
 
     def test_detect_address_poisoning(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502"
         alert_id = "ADDRESS-POISONING"
@@ -370,7 +394,7 @@ class TestScamDetector:
         metadata = {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":CONTRACT,"phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
         assert len(findings) == 3, "this should have triggered a finding for all three EOAs"
         finding = findings[0]
@@ -382,6 +406,7 @@ class TestScamDetector:
 
     def test_detect_native_ice_phishing(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0"
         alert_id = "NIP-1"
@@ -389,7 +414,7 @@ class TestScamDetector:
         metadata = {"anomalyScore":"0.000002526532805344122","attacker":"0x63d8c1d3141a89c4dcad07d9d224bed7be8bb183","funcSig":"ClaimTokens()","victim":"0x7cfb946f174807a4746658274763e4d7642233df"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
         assert len(findings) == 1, "this should have triggered a finding"
         finding = findings[0]
@@ -400,6 +425,7 @@ class TestScamDetector:
     
     def test_detect_ice_phishing_passthrough(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14"
         alert_id = "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS"
@@ -407,7 +433,7 @@ class TestScamDetector:
         metadata = {"anomalyScore":"0.00012297740401709194","firstTxHash":"0x5840ac6991b6603de6b05a9da514e5b4d70b15f4bfa36175dd78388915d0b9a9","lastTxHash":"0xf841ffd55ee93da17dd1b017805904ce29c3127dee2db53872234f094d1ce2a0"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
         assert len(findings) == 1, "this should have triggered a finding"
         finding = findings[0]
@@ -419,6 +445,7 @@ class TestScamDetector:
 
     def test_detect_fraudulent_seaport_orders(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac"
         alert_id = "nft-possible-phishing-transfer"
@@ -426,13 +453,15 @@ class TestScamDetector:
         metadata = {"interactedMarket": "opensea","transactionHash": "0x4fff109d9a6c030fce4de9426229a113524903f0babd6de11ee6c046d07226ff","toAddr": "0xBF96d79074b269F75c20BD9fa6DAed0773209EE7","fromAddr": "0x08395C15C21DC3534B1C3b1D4FA5264E5Bd7020C","initiator": "0xaefc35de05da370f121998b0e2e95698841de9b1","totalPrice": "0.001","avgItemPrice": "0.0002","contractAddress": "0xae99a698156ee8f8d07cbe7f271c31eeaac07087","floorPrice": "0.58","timestamp": "1671432035","floorPriceDiff": "-99.97%"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
         assert len(findings) == 2, "this should have triggered a finding"
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER", "should be nft order finding"
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
+
+   
 
     def test_detect_alert_pos_finding_combiner_3_description(self):
         agent.initialize()
@@ -444,12 +473,8 @@ class TestScamDetector:
         metadata = {}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, True)
-        found_combination_finding = False
-        for finding in findings:
-            if finding.metadata['handler_type']=='combination':
-                found_combination_finding = True
-        assert not found_combination_finding, "should not have found combination finding"
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"combination")
+        assert len(findings) == 0
 
         bot_id = "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"
         alert_id = "FUNDING-TORNADO-CASH"
@@ -457,23 +482,19 @@ class TestScamDetector:
         metadata = {}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, False)
-        assert len(findings) > 1, "this should have triggered a finding"
-        found_combination_finding = False
-        for finding in findings:
-            if finding.metadata['handler_type']=='combination':
-                found_combination_finding = True
-                assert finding.metadata is not None, "metadata should not be empty"
-                assert any(alert_event.alert_hash in str(value) for key, value in finding.metadata.items()), "metadata should contain alert hashes"
-                assert any('TORNADO' in str(value) for key, value in finding.metadata.items()), "metadata should contain alert its"
-                assert finding.labels is not None, "labels should not be empty"
-                label = finding.labels[0]
-                assert label.entity == "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4", "entity should be attacker address"
-                assert label.label == "scammer-eoa", "entity should labeled as scam"
-                assert label.confidence == 0.62, "entity should labeled with 0.62 confidence"
-                assert label.metadata['alert_ids'] == "SCAM-DETECTOR-ICE-PHISHING", "entity should labeled as ice phishing"
-                assert label.metadata['chain_id'] == 1, "entity should labeled for chain_id 1"
-        assert found_combination_finding, "should have found combination finding"
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"combination")
+        finding = findings[0]
+        assert len(findings) == 1, "this should have triggered a finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert any(alert_event.alert_hash in str(value) for key, value in finding.metadata.items()), "metadata should contain alert hashes"
+        assert any('TORNADO' in str(value) for key, value in finding.metadata.items()), "metadata should contain alert its"
+        assert finding.labels is not None, "labels should not be empty"
+        label = finding.labels[0]
+        assert label.entity == "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4", "entity should be attacker address"
+        assert label.label == "scammer-eoa", "entity should labeled as scam"
+        assert label.confidence == 0.62, "entity should labeled with 0.62 confidence"
+        assert label.metadata['alert_ids'] == "SCAM-DETECTOR-ICE-PHISHING", "entity should labeled as ice phishing"
+        assert label.metadata['chain_id'] == 1, "entity should labeled for chain_id 1"
 
     def test_detect_alert_pos_finding_combiner_3_metadata(self):
         agent.initialize()
@@ -486,12 +507,8 @@ class TestScamDetector:
         metadata = {}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
        
-        findings = agent.detect_scam(w3, alert_event, True)
-        found_combination_finding = False
-        for finding in findings:
-            if finding.metadata['handler_type']=='combination':
-                found_combination_finding = True
-        assert not found_combination_finding, "should not have found combination finding"
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"combination")
+        assert len(findings) == 0
 
         bot_id = "0xd935a697faab13282b3778b2cb8dd0aa4a0dde07877f9425f3bf25ac7b90b895"
         alert_id = "AE-MALICIOUS-ADDR"
@@ -499,13 +516,8 @@ class TestScamDetector:
         metadata = {"amount":"0","from":"0x4f07bb5b0c204da3d1c7a35dab23114ac2145980","malicious_details":"[{'index': '609', 'id': '1ae52e', 'name': 'moonbirdsraffle.xyz', 'type': 'scam', 'url': 'https://moonbirdsraffle.xyz', 'hostname': 'moonbirdsraffle.xyz', 'featured': '0', 'path': '/*', 'category': 'Phishing', 'subcategory': 'Moonbirds', 'description': 'Fake Moonbirds NFT site phishing for funds', 'reporter': 'CryptoScamDB', 'severity': '1', 'updated': '1.65635E+12', 'address': '0x21e13f16838e2fe78056f5fd50251ffd6e7098b4'}]","to":"0x335eeef8e93a7a757d9e7912044d9cd264e2b2d8"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, False)
-        assert len(findings) > 1, "this should have triggered a finding"
-        found_combination_finding = False
-        for finding in findings:
-            if finding.metadata['handler_type']=='combination':
-                found_combination_finding = True
-        assert found_combination_finding, "should have found combination finding"
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"combination")
+        assert len(findings) == 1, "this should have triggered a finding"
 
     def test_detect_alert_pos_finding_combiner_3_tx_to(self):
         agent.initialize()
@@ -517,12 +529,8 @@ class TestScamDetector:
         metadata = {}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
        
-        findings = agent.detect_scam(w3, alert_event, True)
-        found_combination_finding = False
-        for finding in findings:
-            if finding.metadata['handler_type']=='combination':
-                found_combination_finding = True
-        assert not found_combination_finding, "should not have found combination finding"
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"combination")
+        assert len(findings) == 0
 
         bot_id = "0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4"
         alert_id = "forta-text-messages-possible-hack"
@@ -530,13 +538,8 @@ class TestScamDetector:
         metadata = {}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        findings = agent.detect_scam(w3, alert_event, False)
-        assert len(findings) > 1, "this should have  triggered a finding"
-        found_combination_finding = False
-        for finding in findings:
-            if finding.metadata['handler_type']=='combination':
-                found_combination_finding = True
-        assert found_combination_finding, "should have found combination finding"
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"combination")
+        assert len(findings) == 1, "this should have triggered a finding"
 
     def test_detect_alert_no_finding_large_tx_count(self):
         agent.initialize()
@@ -548,7 +551,7 @@ class TestScamDetector:
         metadata = {}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
        
-        findings = agent.detect_scam(w3, alert_event, True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"combination")
         assert len(findings) == 0, "this should have not triggered a finding"
 
         bot_id = "0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4"
@@ -558,7 +561,7 @@ class TestScamDetector:
         transaction_hash = "0x53244cc27feed6c1d7f44381119cf14054ef2aa6ea7fbec5af4e4258a5a02618"
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, transaction_hash=transaction_hash)
 
-        findings = agent.detect_scam(w3, alert_event, False)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"combination")
         assert len(findings) == 0, "this should have not triggered a finding as the EOA has too many txs"
 
     def test_detect_alert_pos_nofinding(self):
@@ -571,7 +574,7 @@ class TestScamDetector:
         metadata = {}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
        
-        findings = agent.detect_scam(w3, alert_event, True)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"combination")
         assert len(findings) == 0, "this should have not triggered a finding"
 
         bot_id = "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"
@@ -580,7 +583,7 @@ class TestScamDetector:
         metadata = {}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
        
-        findings = agent.detect_scam(w3, alert_event, False)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"combination")
         assert len(findings) == 0, "this should have not triggered a finding"
 
         bot_id = "0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2"
@@ -589,7 +592,7 @@ class TestScamDetector:
         metadata = {}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
        
-        findings = agent.detect_scam(w3, alert_event, False)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"combination")
         assert len(findings) == 0, "this should have not triggered a finding"
 
 
@@ -603,7 +606,7 @@ class TestScamDetector:
         metadata = {"entityAddresses":"0x7A2a13C269b3B908Ca5599956A248c5789Cc953f,0x91C1B58F24F5901276b1F2CfD197a5B73e31F96E"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
        
-        findings = agent.detect_scam(w3, alert_event, True)
+        findings = agent.detect_scam(w3, alert_event, clear_state_flag=True)
         assert len(findings) == 0, "this should have not triggered a finding"
 
         bot_id = "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14"
@@ -612,7 +615,7 @@ class TestScamDetector:
         metadata = {}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
        
-        findings = agent.detect_scam(w3, alert_event, False)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"combination")
         assert len(findings) == 0, "this should have not triggered a finding"
 
         bot_id = "0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4"
@@ -622,12 +625,13 @@ class TestScamDetector:
         metadata = {}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, transaction_hash=transaction_hash)
        
-        findings = agent.detect_scam(w3, alert_event, False)
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"combination")
         assert len(findings) == 1, "this should have triggered a finding"
 
 
     def test_detect_alert_similar_contract(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
         
         bot_id = "0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560"
         alert_id = "NEW-SCAMMER-CONTRACT-CODE-HASH"
@@ -714,6 +718,7 @@ class TestScamDetector:
     def test_emit_new_manual_finding(self):
         agent.clear_state()
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         findings = agent.emit_manual_finding(w3, True)
         res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/manual_alert_list.tsv')
@@ -732,6 +737,7 @@ class TestScamDetector:
     def test_scammer_contract_deployment(self):
         agent.clear_state()
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         tx_event = create_transaction_event({
             'transaction': {
@@ -754,6 +760,7 @@ class TestScamDetector:
     def test_scammer_contract_deployment_indirect(self):
         agent.clear_state()
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         tx_event = create_transaction_event({
             'transaction': {
@@ -783,6 +790,7 @@ class TestScamDetector:
 
     def test_detect_eoa_association(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
         
         bot_id = "0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848"
         alert_id = "SCAMMER-LABEL-PROPAGATION-1"
@@ -821,6 +829,7 @@ class TestScamDetector:
 
     def test_get_score(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         df_expected_feature_vector = pd.DataFrame(columns=agent.MODEL_FEATURES)
         df_expected_feature_vector.loc[0] = np.zeros(len(agent.MODEL_FEATURES))
@@ -840,6 +849,7 @@ class TestScamDetector:
 
     def test_get_score_empty_features(self):
         agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         df_expected_feature_vector = pd.DataFrame(columns=agent.MODEL_FEATURES)
         df_expected_feature_vector.loc[0] = np.zeros(len(agent.MODEL_FEATURES))
@@ -859,8 +869,7 @@ class TestScamDetector:
                  }
 
         alerts = {"0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_NORMAL-TOKEN-TRANSFERS-TX": 1,
-                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL": 1,
-                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS": 1
+                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL": 1
                  }
 
         timestamp = datetime.now().timestamp()
@@ -872,8 +881,8 @@ class TestScamDetector:
                 bot_id = alert_key.split("_")[0]
                 alert_id = alert_key.split("_")[1]
                 alert_hash = str(hex(count))
-                alert = TestScamDetector.generate_alert(bot_id=bot_id, alert_id=alert_id, timestamp=int(timestamp), description=EOA_ADDRESS_SMALL_TX, labels=[label], alert_hash=alert_hash)
-                findings = agent.detect_scam(w3, alert)
+                alert_event = TestScamDetector.generate_alert(bot_id=bot_id, alert_id=alert_id, timestamp=int(timestamp), description=EOA_ADDRESS_SMALL_TX, labels=[label], alert_hash=alert_hash)
+                findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"ml")
                 print(f"bot_id: {bot_id}, alert_id: {alert_id}, findings len: {len(findings)}")
                 all_findings.extend(findings)
                 count += 1
@@ -884,8 +893,9 @@ class TestScamDetector:
 
         assert all_findings[0].labels is not None, "labels should not be empty"
         label = all_findings[0].labels[0]
-        assert label.confidence > 0.80 and label.confidence < 0.81, "confidence should be between 0.80 and 0.81"
         assert label.metadata['handler_type'] == "ml"
+        assert label.confidence > 0.80 and label.confidence < 0.81, "confidence should be between 0.80 and 0.81"
+        
 
 
 
