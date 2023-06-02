@@ -5,6 +5,7 @@ from web3.middleware import geth_poa_middleware
 import agent
 import json
 import os
+import pandas as pd
 from forta_agent import EntityType
 from datetime import datetime, timedelta
 from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
@@ -396,7 +397,40 @@ class TestAlertCombiner:
         assert len(findings) == 1, "alert should have been raised given three alerts and score exceeds threshold"
         assert abs(findings[0].metadata["anomaly_score"] - 5e-9) < 1e-20, 'incorrect anomaly score'
 
-    def test_alert_simple_case_with_victim(self):
+
+    def test_get_victim_info(self):
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        metadata = {"address1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "holders1": "", "protocolTwitter1": "wrappedEth", "protocolUrl1": "", "tag1": "Wrapped Ether"}
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250", "VICTIM-IDENTIFIER-PREPARATION-STAGE", metadata)  # contains victim info
+        findings = agent.detect_attack(w3, alert_event)
+
+        alert_data = pd.DataFrame(['0x123'], columns=['transaction_hash'])
+
+        victim_address, victim_name, victim_metadata = agent.get_victim_info(alert_data, agent.CONTEXT)
+        assert victim_address == '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 'incorrect victim address'
+        assert victim_name == 'Wrapped Ether', 'incorrect victim name'
+        metadata_with_bot_type = metadata.copy()
+        metadata_with_bot_type['bot_type'] = 'victim'
+        assert victim_metadata == metadata, 'incorrect victim metadata'
+
+
+    def test_get_loss_info(self):
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+
+        metadata = {"anomalyScore":"0.9","profit1":"$31624.41","txFrom":"0x5671ac7ea07666b69750ab675c70975886ed052b","txTo":"0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b"}
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac", "LARGE-PROFIT", metadata)  # contains victim info
+        agent.detect_attack(w3, alert_event)
+
+        alert_data = pd.DataFrame([['Exploitation','0x123']], columns=['stage','transaction_hash'])
+
+        loss_info = agent.get_loss_info(alert_data, agent.CONTEXT)
+        assert loss_info == 'Loss of $31624.41'
+
+
+    def test_alert_simple_case_with_victim_losses(self):
         # three alerts in diff stages for a given EOA
         # no FP
         # anomaly score < 10 E-8
@@ -415,8 +449,12 @@ class TestAlertCombiner:
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250", "VICTIM-IDENTIFIER-PREPARATION-STAGE", metadata)  # contains victim info
         findings = agent.detect_attack(w3, alert_event)
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        metadata = {"anomalyScore":(50.0 / 10000000),"profit1":"$31624.41","txFrom":"0x5671ac7ea07666b69750ab675c70975886ed052b","txTo":"0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b"}
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac", "LARGE-PROFIT", metadata)  # contains victim info
         findings = agent.detect_attack(w3, alert_event)
+
+#        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+#        findings = agent.detect_attack(w3, alert_event)
 
         # 100.0/100000 * 200.0/10000 * 50.0/10000000 -> 1E-10
 
@@ -424,6 +462,7 @@ class TestAlertCombiner:
         assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
         assert "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2".lower() in findings[0].description, "victim not included in description"
         assert "Wrapped Ether" in findings[0].description, "victim name not included in description"
+        assert "31624.41" in findings[0].description, "loss info not included in description"
 
     def test_alert_repeat_alerts(self):
         # three alerts in diff stages for a given EOA

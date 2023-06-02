@@ -1,5 +1,8 @@
 # Attack Detector Bot Release Notes
 
+## v0.3.43 (June 2 2023: beta)
+- added contextual information around losses to alerts
+
 ## v0.3.42 (June 1 2023: beta, June 2 2023: prod)
 - added large profit bot to high precision bots
 - relaxed logic to fire when more than one high precision bots fire
