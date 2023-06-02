@@ -16,17 +16,17 @@ import forta_agent
 from forta_agent import get_json_rpc_url,  Finding, FindingType, FindingSeverity
 from web3 import Web3
 
-from constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_CLUSTERS_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
+from src.constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_CLUSTERS_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
                        FINDINGS_CACHE_ALERT_KEY, FINDINGS_CACHE_BLOCK_KEY, ALERTED_FP_CLUSTERS_KEY, FINDINGS_CACHE_TRANSACTION_KEY,
                        ALERTED_FP_CLUSTERS_QUEUE_SIZE, CONTRACT_SIMILARITY_BOTS, CONTRACT_SIMILARITY_BOT_THRESHOLDS, EOA_ASSOCIATION_BOTS,
                        EOA_ASSOCIATION_BOT_THRESHOLDS, PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES, POOLCREATED_EVENT_ABI,
                        MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT, MODEL_FEATURES, MODEL_NAME)
-from storage import s3_client, dynamo_table, get_secrets, bucket_name
-from findings import ScamDetectorFinding
-from blockchain_indexer_service import BlockChainIndexer
-from base_bot_parser import BaseBotParser
-from l2_cache import L2Cache
-from utils import Utils
+from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
+from src.findings import ScamDetectorFinding
+from src.blockchain_indexer_service import BlockChainIndexer
+from src.base_bot_parser import BaseBotParser
+from src.l2_cache import L2Cache
+from src.utils import Utils
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 block_chain_indexer = BlockChainIndexer()
@@ -175,10 +175,10 @@ def alert_target(alert_event: forta_agent.alert_event.AlertEvent, bots: tuple) -
     return ""
 
 
-def update_list(items: dict, max_size: int, item: str, alert_id: str):
+def update_list(items: dict, max_size: int, item: str, alert_id: str, handler_type = ""):
     if item not in items.keys():
         items[item] = set()
-    items[item].add(alert_id)
+    items[item].add(handler_type+alert_id)
 
 
     while len(items) > max_size:
@@ -357,10 +357,10 @@ def get_model_score(df_feature_vector: pd.DataFrame) -> float:
     return predictions_proba[0]
 
 
-def already_alerted(cluster: str, alert_id: str):
+def already_alerted(cluster: str, alert_id: str, handler_type = ""):
     global ALERTED_CLUSTERS
     if cluster in ALERTED_CLUSTERS.keys():
-        if alert_id in ALERTED_CLUSTERS[cluster]:
+        if (handler_type+alert_id) in ALERTED_CLUSTERS[cluster]:
             return True
     return False
 
@@ -447,20 +447,25 @@ def emit_combination_or_ml_finding(w3, alert_event: forta_agent.alert_event.Aler
 
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
             for alert_id in get_scam_detector_alert_ids(alert_list):
-                if already_alerted(cluster, alert_id) and not Utils.is_beta():  # alert repeatedly for beta version, but not prod version
-                    logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
-                    continue
 
                 unique_alertIds = set(alert[1] for alert in alert_list)
                 unique_alertHashes = set(alert[2] for alert in alert_list)
                 created_at_datetime = datetime.strptime(alert_event.alert.created_at[0:19], "%Y-%m-%dT%H:%M:%S")
                 if alert_condition_met_combination:
-                    findings.append(ScamDetectorFinding.scam_finding(block_chain_indexer, scammer_address_lower, created_at_datetime, created_at_datetime, scammer_contract_addresses, alert_event.alert.addresses, unique_alertIds, alert_id, unique_alertHashes, CHAIN_ID, "combination"))
+                    if already_alerted(cluster, alert_id, "combination") and not Utils.is_beta():  # alert repeatedly for beta version, but not prod version
+                        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
+                    else:
+                        findings.append(ScamDetectorFinding.scam_finding(block_chain_indexer, scammer_address_lower, created_at_datetime, created_at_datetime, scammer_contract_addresses, alert_event.alert.addresses, unique_alertIds, alert_id, unique_alertHashes, CHAIN_ID, "combination"))
+                        update_list(ALERTED_CLUSTERS, ALERTED_CLUSTERS_QUEUE_SIZE, cluster, alert_id, "combination")
                 if alert_condition_met_ml:
-                    findings.append(ScamDetectorFinding.scam_finding(block_chain_indexer, scammer_address_lower, created_at_datetime, created_at_datetime, scammer_contract_addresses, alert_event.alert.addresses, unique_alertIds, alert_id, unique_alertHashes, CHAIN_ID, "ml"))
+                    if already_alerted(cluster, alert_id, "combination") and not Utils.is_beta():  # alert repeatedly for beta version, but not prod version
+                        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
+                    else:
+                        findings.append(ScamDetectorFinding.scam_finding(block_chain_indexer, scammer_address_lower, created_at_datetime, created_at_datetime, scammer_contract_addresses, alert_event.alert.addresses, unique_alertIds, alert_id, unique_alertHashes, CHAIN_ID, "ml", score))
+                        update_list(ALERTED_CLUSTERS, ALERTED_CLUSTERS_QUEUE_SIZE, cluster, alert_id, "ml")
                 
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} added to findings. Findings size: {len(findings)}")
-                update_list(ALERTED_CLUSTERS, ALERTED_CLUSTERS_QUEUE_SIZE, cluster, alert_id)
+                
 
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - return total findings: {len(findings)}")
     return findings
@@ -490,7 +495,7 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
 
         alert_id_target = alert_target(alert_event, BASE_BOTS)
         alert_id = "SCAM-DETECTOR-ADDRESS-POISONER" if scammer_addresses_dict[scammer_address]["address_information"] == "poisoner" else alert_id_target
-        if already_alerted(cluster, alert_id):
+        if already_alerted(cluster, alert_id, "passthrough"):
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
             continue
 
@@ -502,7 +507,7 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
         created_at_datetime = datetime.strptime(alert_event.alert.created_at[0:19], "%Y-%m-%dT%H:%M:%S")
         findings.append(ScamDetectorFinding.scam_finding(block_chain_indexer, scammer_address_lower, created_at_datetime, created_at_datetime, scammer_contract_addresses, alert_event.alert.addresses, {alert_event.alert_id}, alert_id, {alert_event.alert_hash}, CHAIN_ID, "passthrough"))
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} added to findings. Findings size: {len(findings)}")
-        update_list(ALERTED_CLUSTERS, ALERTED_CLUSTERS_QUEUE_SIZE, cluster, alert_id)
+        update_list(ALERTED_CLUSTERS, ALERTED_CLUSTERS_QUEUE_SIZE, cluster, alert_id, "passthrough")
 
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - return total findings: {len(findings)}")
     return findings
@@ -613,7 +618,7 @@ def emit_manual_finding(w3, test = False) -> list:
 
             threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']
             alert_id_threat_category = threat_category.upper().replace(" ", "-")
-            alert_id = "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category,
+            alert_id = "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category
             if not already_alerted(scammer_address_lower, alert_id):
                 logging.info(f"Manual finding: Emitting manual finding for {cluster}")
                 tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
