@@ -1,5 +1,11 @@
 # Scam Detector Bot Release Notes
 
+## v0.2.2 (June 5th 2023 - beta)
+- refactor of label to avoid deduping. Prior to version 0.2.2 a label was either scammer-eoa or scammer-contract with alertId in the metadata giving additional context. Now, the label itself with have this context in the form of 'scammer-eoa/threat_category', e.g. 'scammer-eoa/ice-phishing'. A subscriber can still query all scammer labels using a wildcard query, e.g. scammer* or scammer-eoa*
+
+## v0.2.1 (June 2nd 2023 - beta)
+- add handler type into alert description
+
 ## v0.2.0 (June 1st 2023 - beta)
 - introduction of additional handler that assesses alerts for a given EOA utililizing a supervised machine learning model for combination alerts. For version 0.2.0, if either the traditional combination heuristic or the ML model raise an alert, both alerts will be raised. A flag 'handler_type' in the metadata will allow to differentiate what algorithm was used. 
 

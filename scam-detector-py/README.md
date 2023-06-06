@@ -2,126 +2,87 @@
 
 ## Description
 
-The Scam Detector bot combines past alerts under a common address from a variety of underlying base bots to emit a high precision alert. It does so by mapping each alert to the four attack stages (Funding, Preparation, Exploitaiton and Money Laundering/ Post Exploitation) utilizing a heuristic detection approach.
+The Scam Detector bot combines past alerts under a common address from a variety of underlying base bots to emit a high precision label on EOAs and contract addresses. 
 
-Individual alerts can have low precision (in other words raise false positives). This feed combines past alerts to separate the signal from noise. 
+The Scam Detector bot has four handlers that process alerts differently:
+1. Passthrough - this handler normalizes the alert information from the base bot and emits an label with minimal processing. 
+2. Combination - this handler consumes a set of alerts and then applies rules to determine to emit an label. E.g. ice phishing + tornado cash funding -> ice phishing alert
+3. ML - this handler works similar to the combination handler, but utilizes a supervised machine learning model instead of a manually authored heuristic.
+4. Propagation - this handler propagates labels from another label. E.g. a scammer was identified deployed an social engineering ice phishing contract. A similar contract bot identified a new scammer account deloying a similar contract. 
 
-It does so with the realization that an attack usually consists of 4 distinct phases:
-- funding (e.g. tornado cash funding)
-- preparation (e.g. creation of an attacker contract)
-- exploitation (e.g. draining funds from a contract)
-- money laundering (e.g. sending funds to tornado cash)/ post exploitation (e.g. on-chain txt messages)
+In addition, the scam detector can consume manual information from the Forta community to identify scammers. 
 
-As such, this feed combines previously raised alerts under the initiating address (i.e. the scammer address) for a given time window (2 calendar days, so between 24-48h) and emits a cricial alert when a specific combination of alerts is observed. 
-
-As a result, the precision of this alert is quite high, but also some scams may be missed. Note, in the case where scams are missed, the broader set of detection bots deployed on Forta will still raise individual alerts that users can subscribe to.
+Which base bots are used by which handler is documented in the base bot table below.
 
 ## Supported Chains
 
-- All Forta supported chains (note, it will appear that the bot only executes on one chain, but as it queries past Forta alerts, it essentially covers all chains)
+- All Forta supported chains 
 
-## Alerts
+## Labels
 
-The Scam Detector bot emits the following alerts:
-
-- SCAM-DETECTOR-SLEEP-MINTING
-  - Fired when alert combination is observed that points to a sleep minting attack
-
-- SCAM-DETECTOR-ICE-PHISHING
-  - Fired when alert combination is observed that points to an ice phishing attack
-
-- SCAM-DETECTOR-WASH-TRADE
-  - Fired when a NFT wash trade has been observed
-
-- SCAM-DETECTOR-FRAUDULENT-NFT-ORDER
-  - Fired when alert combination is observed that points to an fraudulent NFT order
-
-- SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING
-  - Fired when alert combination is observed that points to an native ice phishing involving social engineering techniques (e.g. SecurityUpdate() function sig in the input data field)
-
-- SCAM-DETECTOR-NATIVE-ICE-PHISHING
-  - Fired when alert combination is observed that points to an native ice phishing without social engineering component
-
-- SCAM-DETECTOR-HARD-RUG-PULL
-  - Fired when a contract with hard rug pull techniques is identified
-
-- SCAM-DETECTOR-SOFT-RUG-PULL
-  - Fired when a contract with soft rug pull techniques is identified
-
-- SCAM-DETECTOR-RAKE-TOKEN
-  - Fired when a contract with a rake is identified
-
-- SCAM-DETECTOR-IMPERSONATING-TOKEN
-  - Fired when a token contract has been identified that is impersonating a known established token (e.g. USDC or USDT)
-
-- SCAM-DETECTOR-ADDRESS-POISONING or SCAM-DETECTOR-ADDRESS-POISONER
-  - Fired when alert combination is observed that points to address poisoning attack 
-
-- SCAM-DETECTOR-MANUAL-threat_category (where threat_category is replaced with the actual threat category, e.g. SCAM-DETECTOR-MANUAL-ICE-PHISHING)
-  - Fired when the Forta community adds a new indicator manually (either by mining public data sources or manual investigations)
-
-- SCAM-DETECTOR-SIMILAR-CONTRACT
-  - Fired when a similar contract to a previously identified scammer contract has been identified
-
-- SCAM-DETECTOR-SCAMMER-ASSOCIATION
-  - Fired when an EOA is associated with a known scammer account (e.g. receiving or sending funds)
-
-- SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT
-  - When a known scammer deploys a contract
-
-- SCAM-DETECTOR-1
-- Fired when alert combination is observed that points to attack on chain that spans the 4 stages of an attack (funding, preparaiton, exploitation, and money laundering) Many of the alerts here point to rug pulls and rake tokens.
-
-The properties for the alerts above are identical:
-- Severity is always set to "critical" 
-- Type is always set to "exploit" 
-- Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
-  - scammer_address: string
-  - scammer_contract_address: string (if applicable)
-  - start_date: date str (%Y-%m-%d)
-  - end_date: date str (%Y-%m-%d)
-  - involved_addresses_x: string
-  - involved_alert_id_x: string
-  - involved_alert_hashes_x: string
-
-In addition, this bot also emits an alert in case a false positive has been observed. 
-
-- SCAM-DETECTOR-FALSE-POSITIVE
-  - Fired when an FP has been identified
-  - Severity is always set to "info" 
-  - Type is always set to "info" 
+The Scam Detector bot emits labels for identified scammer EOAs and contract addresses. The label will contain the following information:
+- label/entity - the address (either EOA or contract address)
+- label/entityType - EntityType.ADDRESS
+- label/confidence - a confidence score from 0-1.0 with 1.0 being most confident the label is correct
+- label/remove - a flag indicating whether the label is being added or removed
+- label/label - a string denoting the label that was placed on the entity. It consists of three elements delimited by a forward slash:
+1. scammer-eoa | scammer-contract
+2. threat_category (see below)
+3. handler_type (passhthrough, combination, ml, manual)
+- label/metadata/bot_version - version of the bot when the label was added
+- label/metadata/threat_description_url - URL that describes the threat_category in more detail
 
 
-The Scam Detector bot emits labels for each scammer address observed. The meta data contains the corresponding alertID. E.g.
+Threat categories are as follows:
+- sleep-minting - Fired when alert combination is observed that points to a sleep minting attack
+- ice-phishing - Fired when alert combination is observed that points to an ice phishing attack
+- wash-trading - Fired when a NFT wash trade has been observed
+- fraudulent-nft-order - Fired when alert combination is observed that points to an fraudulent NFT order
+- native-ice-phishing-social-engineering - Fired when alert combination is observed that points to an native ice phishing involving social engineering techniques (e.g. SecurityUpdate() function sig in the input data field)
+- native-ice-phishing - Fired when alert combination is observed that points to an native ice phishing without social engineering component
+- hard-rug-pull - Fired when a contract with hard rug pull techniques is identified
+- soft-rug-pull - Fired when a contract with soft rug pull techniques is identified
+- rake-token - Fired when a contract with a rake is identified
+- impersonating-token - Fired when a token contract has been identified that is impersonating a known established token (e.g. USDC or USDT)
+- address-poisoning - Fired when alert combination is observed that points to address poisoning attack; this threat category is used for labeling poisoning addresses
+- address-poisoner - Fired when alert combination is observed that points to address poisoning attack; this threat category is used for labeling poisoner addresses, aka the address that is initiating the poisoning and the contract performing the poisioning
+- attack-stages - Fired when alert combination is observed that points to attack on chain that spans the 4 stages of an attack (funding, preparaiton, exploitation, and money laundering) Many of the alerts here point to rug pulls and rake tokens.
+- similar contract - Fired when a similar contract to a previously identified scammer contract has been identified
+- scammer association - Fired when an EOA is associated with a known scammer account (e.g. receiving or sending funds)
+- scammer-deployed-contract - When a known scammer deploys a contract
+
+
+Additional informaiton can be found on the label for provenance purposes:
+- source/transactionHash - the hash of the transaction that the scam detector processed when emitting the label. Either source/transactionHash, source/block.numer or source/alertHash needs to be set.
+- source/block.number - the number of the block that the scam detector processed when emitting the label. Either source/transactionHash, source/block.numer or source/alertHash needs to be set.
+- source/alertHash - the hash of the alert that the scam detector processed when emitting the label. Either source/transactionHash, source/block.numer or source/alertHash needs to be set.
+- base_bot_alert_ids - if one or more alerts were processed by the scam detector, this field contains the alert_ids of those alerts.
+- base_bot_alert_hashes - if one or more alerts were processed by the scam detector, this field contains the alert_hashes of those alerts.
+- deployer_info - if the label is a contract, this field provides additional information of the deployer.
+- reported_by - if the label was manually emitted, this field provides information who reported the label.
+- associated_scammer - an associated scammer comes into play for propagation alerts. This field contains the scammer entity from which the label was propagated from.
+- associated_scammer_contract - an associated scammer comes into play for propagation alerts. If a contract was involved, this field contains the scammer contract address from which the label was propagated from.      
+- associated_scammer_threat_categories - an associated scammer comes into play for propagation alerts. It contains all the threat categories associated with the original scammer.
+- associated_scammer_threat_categories - an associated scammer comes into play for propagation alerts. It contains all alert_hashes with the original scammer.
+
+In case of false positives are identified, the scam detector will emit a remove label.
+
+Example label/label:
 ```
     'entityType': EntityType.Address,
-    'label': "scammer-eoa",
+    'label': "scammer-contract/ice-phishing/manual",
     'entity': address,
     'confidence': 0.8,
     'remove': "false",
     'metadata': {
-      'alert_id': alert_id,
-      'chain_id': chain_id
-    }
-```
-
-and any contract deployed by the scammer eoa:
-```
-    'entityType': EntityType.Address,
-    'label': "scammer-contract",
-    'entity': address,
-    'confidence': 0.8,
-    'remove': "false",
-    'metadata': {
-      'alert_id': alert_id,
-      'chain_id': chain_id
+      'threat_description_url=https://forta.org/attack#ice-phishing'
     }
 ```
 
 When a false positive is observed, the scam detector will remove the previously set label:
 ```
     'entityType': EntityType.Address,
-    'label': "scam",
+    'label': "scammer-eoa/ice-phishing/ml",
     'entity': address,
     'confidence': 0.8,
     'remove': "true"

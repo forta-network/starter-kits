@@ -1,3 +1,5 @@
+DEBUG_ALERT_ENABLED = False
+
 ALERT_LOOKBACK_WINDOW_IN_DAYS = 7
 
 ENTITY_CLUSTER_BOTS = [("0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER")]
@@ -213,22 +215,22 @@ MODEL_ALERT_THRESHOLD_STRICT = 0.81  # precision of 100% on test and train set
 # utilized for passthrough and combiner labels
 # these are sourced from manual analysis and represent precision
 CONFIDENCE_MAPPINGS = {
-        "SCAM-DETECTOR-SLEEP-MINTING": 0.7,
-        "SCAM-DETECTOR-ICE-PHISHING": 0.62,
-        "SCAM-DETECTOR-WASH-TRADE": 0.99, 
-        "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER": 0.66,
-        "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING": 0.75,
-        "SCAM-DETECTOR-NATIVE-ICE-PHISHING":  0.408,
-        "SCAM-DETECTOR-HARD-RUG-PULL": 0.52,
-        "SCAM-DETECTOR-SOFT-RUG-PULL": 0.53,
-        "SCAM-DETECTOR-RAKE-TOKEN": 0.60,
-        "SCAM-DETECTOR-ADDRESS-POISONING": 0.99,
-        "SCAM-DETECTOR-ADDRESS-POISONER": 0.05,
-        "SCAM-DETECTOR-IMPERSONATING-TOKEN": 0.8,
-        "SCAM-DETECTOR-1": 0.2,
-        "SCAM-DETECTOR-SIMILAR-CONTRACT": 0.4,
-        "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT": 0.4,
-        "SCAM-DETECTOR-SCAMMER-ASSOCIATION": 0.4,
+        "sleep-minting": 0.7,
+        "ice-phishing": 0.62,
+        "wash-trading": 0.99, 
+        "fraudulent-nft-order": 0.66,
+        "native-ice-phishing-social-engineering": 0.75,
+        "native-ice-phishing":  0.408,
+        "hard-rug-pull": 0.52,
+        "soft-rug-pull": 0.53,
+        "rake-token": 0.60,
+        "address-poisoning": 0.99,
+        "address-poisoner": 0.05,
+        "impersonating-token": 0.8,
+        "attack-stages": 0.2,
+        "similar-contract": 0.4,
+        "scammer-deployed-contract": 0.4,
+        "scammer-association": 0.4,
 }
 
 
