@@ -97,7 +97,7 @@ class ScamDetectorFinding:
 
         original_threat_categories = set()  # scammer-eoa/* threat categories of the original scammer
         source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
-        df_labels = forta_explorer.get_labels(existing_scammer_contract_address.lower(), source_id, datetime(2023,1,1), datetime.now())
+        df_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = existing_scammer_contract_address.lower())
         delim = "/"
         for index, row in df_labels.iterrows():
             if ("scammer-contract"+delim) in row['labelstr']:
@@ -121,7 +121,7 @@ class ScamDetectorFinding:
                     'associated_scammer_contract': existing_scammer_contract_address,
                     'associated_scammer_threat_categories': ','.join(original_threat_categories),
                     'associated_scammer_alert_hashes': alert_hash,
-                    'deployer_info': f"This scammer {scammer_address} deployed a contract {scammer_contract_address} that is similar to a contract {existing_scammer_contract_address} deployed by a known scammer {existing_scammer_address} involved in {','.join(original_threat_categories)} scam (alert hash: {alert_hash}).",
+                    'deployer_info': f"Deployer {scammer_address} deployed a contract {scammer_contract_address} that is similar to a contract {existing_scammer_contract_address} deployed by a known scammer {existing_scammer_address} involved in {','.join(original_threat_categories)} scam (alert hash: {alert_hash}).",
                     'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                     'bot_version': Utils.get_bot_version()
                 }
@@ -188,8 +188,8 @@ class ScamDetectorFinding:
 
     @staticmethod
     def scam_finding(block_chain_indexer, forta_explorer, scammer_addresses: str, start_date: datetime, end_date: datetime, scammer_contract_addresses: set, involved_addresses: set, involved_alert_ids: set, alert_id: str, involved_alert_hashes: set, chain_id: int, handler_type: str, score = 0.0, feature_vector = None) -> Finding:
+        feature_vector_str = ""
         if feature_vector is not None:
-            feature_vector_str = ""
             for i, row in feature_vector.iterrows():
                 for col in feature_vector.columns:
                     feature_vector_str += f"{row[col]},"
@@ -285,19 +285,17 @@ class ScamDetectorFinding:
         })
 
     @staticmethod
-    def alert_FP(w3, addresses: str) -> Finding:
+    def alert_FP(w3, address: str, label: str) -> Finding:
 
         labels = []
-        for address in addresses.split(","):
-            label = "scammer-contract" if Utils.is_contract(w3, address) else "scammer-eoa"
-            labels.append(Label({
-                    'entityType': EntityType.Address,
-                    'label': label, #TODO - need to negate all labels; further need to query to conduct cleanup
-                    'entity': address,
-                    'confidence': 0.99,
-                    'remove': "true",
-                    'bot_version': Utils.get_bot_version()
-                }))
+        labels.append(Label({
+                'entityType': EntityType.Address,
+                'label': label,
+                'entity': address,
+                'confidence': 0.99,
+                'remove': "true",
+                'bot_version': Utils.get_bot_version()
+            }))
 
         return Finding({
             'name': 'Scam detector identified an address that was incorrectly alerted on. Emitting false positive alert.',

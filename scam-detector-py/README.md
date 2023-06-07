@@ -79,7 +79,7 @@ Example label/label:
     }
 ```
 
-When a false positive is observed, the scam detector will remove the previously set label:
+When a false positive is observed, the scam detector will remove the previously set label including removal of derived labels (e.g. a EOA deploying a contract; a similar contract being identified)
 ```
     'entityType': EntityType.Address,
     'label': "scammer-eoa/ice-phishing/ml",

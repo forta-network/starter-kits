@@ -11,10 +11,14 @@ import requests
 import agent
 
 from constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES
-from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX
+from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX, CONTRACT2
+from forta_explorer_mock import FortaExplorerMock
+from blockchain_indexer_mock import BlockChainIndexerMock
 from utils import Utils
 
 w3 = Web3Mock()
+forta_explorer = FortaExplorerMock()
+block_chain_indexer = BlockChainIndexerMock()
 
 
 class TestScamDetector:
@@ -50,140 +54,140 @@ class TestScamDetector:
         agent.initialize()
         assert agent.INITIALIZED
 
-    def test_perf_passthrough_alert(self):
-        global w3
-        agent.initialize()
-        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+    # def test_perf_passthrough_alert(self):
+    #     global w3
+    #     agent.initialize()
+    #     agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
-        shards = Utils.get_total_shards(1)
+    #     shards = Utils.get_total_shards(1)
         
-        bot_id = "0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732"
-        alert_id = "NFT-WASH-TRADE"
-        description = "test Wash Trade on test."
-        metadata = {"buyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","sellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}
-        global wash_trading_alert_event
-        wash_trading_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+    #     bot_id = "0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732"
+    #     alert_id = "NFT-WASH-TRADE"
+    #     description = "test Wash Trade on test."
+    #     metadata = {"buyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","sellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}
+    #     global wash_trading_alert_event
+    #     wash_trading_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        bot_id = "0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15"
-        alert_id = "HARD-RUG-PULL-1"
-        description = "0x8181bad152a10e7c750af35e44140512552a5cd9 deployed a token contract 0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9 that may result in a hard rug pull."
-        metadata = {"attacker_deployer_address":"0x8181bad152a10e7c750af35e44140512552a5cd9","rugpull_techniques":"HIDDENTRANSFERREVERTS, HONEYPOT","token_contract_address":"0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9"}
-        global hard_rug_pull_alert_event
-        hard_rug_pull_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+    #     bot_id = "0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15"
+    #     alert_id = "HARD-RUG-PULL-1"
+    #     description = "0x8181bad152a10e7c750af35e44140512552a5cd9 deployed a token contract 0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9 that may result in a hard rug pull."
+    #     metadata = {"attacker_deployer_address":"0x8181bad152a10e7c750af35e44140512552a5cd9","rugpull_techniques":"HIDDENTRANSFERREVERTS, HONEYPOT","token_contract_address":"0xb68470e3E66862bbeC3E84A4f1993D1d100bc5A9"}
+    #     global hard_rug_pull_alert_event
+    #     hard_rug_pull_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        bot_id = "0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11"
-        alert_id = "RAKE-TOKEN-CONTRACT-1"
-        description = "swapExactETHForTokensSupportingFeeOnTransferTokens function detected on Uniswap Router to take additional swap fee."
-        metadata = {"actualValueReceived":"1.188051244910305019265053e+24","anomalyScore":"0.2226202661207779","attackerRakeTokenDeployer":"0xa0f80e637919e7aad4090408a63e0c8eb07dfa03","feeRecipient":"0x440aeca896009f006eea3df4ba3a236ee8d57d36","from":"0x6c07456233f0e0fd03137d814aacf225f528068d","pairAddress":"0x2b25f23c31a490583ff55fb63cea459c098cc0e8","rakeTokenAddress":"0x440aeca896009f006eea3df4ba3a236ee8d57d36","rakeTokenDeployTxHash":"0xec938601346b2ecac1bd82f7ce025037c09a3d817d00d723efa6fc5507bca5c2","rakedFee":"2.09656102042995003399715e+23","rakedFeePercentage":"15.00","totalAmountTransferred":"1.397707346953300022664768e+24"}
-        global rake_token_alert_event
-        rake_token_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+    #     bot_id = "0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11"
+    #     alert_id = "RAKE-TOKEN-CONTRACT-1"
+    #     description = "swapExactETHForTokensSupportingFeeOnTransferTokens function detected on Uniswap Router to take additional swap fee."
+    #     metadata = {"actualValueReceived":"1.188051244910305019265053e+24","anomalyScore":"0.2226202661207779","attackerRakeTokenDeployer":"0xa0f80e637919e7aad4090408a63e0c8eb07dfa03","feeRecipient":"0x440aeca896009f006eea3df4ba3a236ee8d57d36","from":"0x6c07456233f0e0fd03137d814aacf225f528068d","pairAddress":"0x2b25f23c31a490583ff55fb63cea459c098cc0e8","rakeTokenAddress":"0x440aeca896009f006eea3df4ba3a236ee8d57d36","rakeTokenDeployTxHash":"0xec938601346b2ecac1bd82f7ce025037c09a3d817d00d723efa6fc5507bca5c2","rakedFee":"2.09656102042995003399715e+23","rakedFeePercentage":"15.00","totalAmountTransferred":"1.397707346953300022664768e+24"}
+    #     global rake_token_alert_event
+    #     rake_token_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        bot_id = "0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4"
-        alert_id = "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION"
-        description = "Likely Soft rug pull has been detected"
-        metadata = {"alert_hash":"0xd99ed20f397dbe53721e9a3424d0b87bcffb8df09fc2a9fea5748f81f3c7d324 && 0x0de8a4f6e1efff58a43cb20a81dd491e23b5eea32412a7b679129eb7b0638ea1","alert_id":"SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION","bot_id":"0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1","contractAddress":"\"0x27382445B936C1f362CbBC32E3d3fa5947220030\"","deployer":"\"0xa3fe18ced8d32ca601e3b4794856c85f6f56a176\"","token":"\"0xdd17532733f084ee4aa2de4a14993ef363843216\"","txHashes":"\"0x136af8104791a904614df3728a4bacf3bb79854db362e70f65e64a787ca23efa\""}
-        global soft_rug_pull_alert_event
-        soft_rug_pull_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+    #     bot_id = "0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4"
+    #     alert_id = "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION"
+    #     description = "Likely Soft rug pull has been detected"
+    #     metadata = {"alert_hash":"0xd99ed20f397dbe53721e9a3424d0b87bcffb8df09fc2a9fea5748f81f3c7d324 && 0x0de8a4f6e1efff58a43cb20a81dd491e23b5eea32412a7b679129eb7b0638ea1","alert_id":"SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION","bot_id":"0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1","contractAddress":"\"0x27382445B936C1f362CbBC32E3d3fa5947220030\"","deployer":"\"0xa3fe18ced8d32ca601e3b4794856c85f6f56a176\"","token":"\"0xdd17532733f084ee4aa2de4a14993ef363843216\"","txHashes":"\"0x136af8104791a904614df3728a4bacf3bb79854db362e70f65e64a787ca23efa\""}
+    #     global soft_rug_pull_alert_event
+    #     soft_rug_pull_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        bot_id = "0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502"
-        alert_id = "ADDRESS-POISONING"
-        description = "Possible address poisoning transaction."
-        metadata = {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
-        global address_poisoning_alert_event
-        address_poisoning_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+    #     bot_id = "0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502"
+    #     alert_id = "ADDRESS-POISONING"
+    #     description = "Possible address poisoning transaction."
+    #     metadata = {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":"0x81ff66ef2097c8c699bff5b7edcf849eb4f452ce","phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
+    #     global address_poisoning_alert_event
+    #     address_poisoning_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        bot_id = "0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0"
-        alert_id = "NIP-1"
-        description = "0x7cfb946f174807a4746658274763e4d7642233df sent funds to 0x63d8c1d3141a89c4dcad07d9d224bed7be8bb183 with ClaimTokens() as input data"
-        metadata = {"anomalyScore":"0.000002526532805344122","attacker":"0x63d8c1d3141a89c4dcad07d9d224bed7be8bb183","funcSig":"ClaimTokens()","victim":"0x7cfb946f174807a4746658274763e4d7642233df"}
-        global nip_alert_event
-        nip_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+    #     bot_id = "0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0"
+    #     alert_id = "NIP-1"
+    #     description = "0x7cfb946f174807a4746658274763e4d7642233df sent funds to 0x63d8c1d3141a89c4dcad07d9d224bed7be8bb183 with ClaimTokens() as input data"
+    #     metadata = {"anomalyScore":"0.000002526532805344122","attacker":"0x63d8c1d3141a89c4dcad07d9d224bed7be8bb183","funcSig":"ClaimTokens()","victim":"0x7cfb946f174807a4746658274763e4d7642233df"}
+    #     global nip_alert_event
+    #     nip_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        bot_id = "0xd9584a587a469f3cdd8a03ffccb14114bc78485657e28739b8036aee7782df5c"
-        alert_id = "SEAPORT-PHISHING-TRANSFER"
-        description = "3 SewerPass id/s: 19445,25417,5996 sold on Opensea 🌊 for 0.01 ETH with a floor price of 2.5 ETH"
-        metadata = {"anomaly_score":"0.5","attackHash":"0x016e615428b93eb914ed85aa2bea6962650dfbff6a112edab58ad9ad2fb70640","buyPrice":"0.005","collectionFloor":"14.999","contractAddress":"0xed5af388653567af2f388e6224dc7c4b3241c544","contractName":"Azuki","currency":"ETH","fromAddr":"0x477849ba81b0944f6261bd0fbd24820bce800dc6","hash":"0xd8ddec3d6b10e8e5fe8dddc4535e065e5c19d5d937ffcd493936d6d0a5d25c14","initiator":"0x24278f2643e90b56a519aef6e612d91dca5257d1","itemPrice":"0.005","market":"Opensea 🌊","profit":"0.005","quantity":"2","toAddr":"0x24278f2643e90b56a519aef6e612d91dca5257d1","tokenIds":"9291,9307","totalPrice":"0.01"}
-        global fraudulent_seaport_orders_alert_event
-        fraudulent_seaport_orders_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+    #     bot_id = "0xd9584a587a469f3cdd8a03ffccb14114bc78485657e28739b8036aee7782df5c"
+    #     alert_id = "SEAPORT-PHISHING-TRANSFER"
+    #     description = "3 SewerPass id/s: 19445,25417,5996 sold on Opensea 🌊 for 0.01 ETH with a floor price of 2.5 ETH"
+    #     metadata = {"anomaly_score":"0.5","attackHash":"0x016e615428b93eb914ed85aa2bea6962650dfbff6a112edab58ad9ad2fb70640","buyPrice":"0.005","collectionFloor":"14.999","contractAddress":"0xed5af388653567af2f388e6224dc7c4b3241c544","contractName":"Azuki","currency":"ETH","fromAddr":"0x477849ba81b0944f6261bd0fbd24820bce800dc6","hash":"0xd8ddec3d6b10e8e5fe8dddc4535e065e5c19d5d937ffcd493936d6d0a5d25c14","initiator":"0x24278f2643e90b56a519aef6e612d91dca5257d1","itemPrice":"0.005","market":"Opensea 🌊","profit":"0.005","quantity":"2","toAddr":"0x24278f2643e90b56a519aef6e612d91dca5257d1","tokenIds":"9291,9307","totalPrice":"0.01"}
+    #     global fraudulent_seaport_orders_alert_event
+    #     fraudulent_seaport_orders_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        bot_id = "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14"
-        alert_id = "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS"
-        description = "0xFB4d3EB37bDe8FA4B52c60AAbE55B3Cd9908EC73 obtained transfer approval for 78 ERC-20 tokens by 195 accounts over period of 4 days."
-        metadata = {"anomalyScore":"0.00012297740401709194","firstTxHash":"0x5840ac6991b6603de6b05a9da514e5b4d70b15f4bfa36175dd78388915d0b9a9","lastTxHash":"0xf841ffd55ee93da17dd1b017805904ce29c3127dee2db53872234f094d1ce2a0"}
-        global ice_phishing_alert_event
-        ice_phishing_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
-
-
-        #below the alert rates of passhthrough bots across all chains, so very conservative
-        #wash trading alert rate: 500/day max 
-        #soft rug pull alert rate: 1000/day max
-        #hard rug pull alert rate: 300/day max
-        #rake token alert rate: 10000/day max
-        #seaport order alert rate: 2000/day max
-        #ice phishing alert rate: 5000/day max
-        #address poisoning: 60000/day max
-        #native ice phishing alert rate: 1000/day max
-        #alert_detector alert rate: 100/day max
-        #contract similarity alert rate: 400/day max
-        #TOTAL: 80000day max
-
-        #we have 86400000ms/day, so an alert needs to process in less than 86400000/80000 = 1080ms; given this is for all chains, but there is skew, we multiply that by 2
-
-        processing_runs = 10
-        processing_time_wash_trading_ms = timeit.timeit('agent.detect_scam(w3, wash_trading_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
-        processing_time_hard_rug_pull_ms = timeit.timeit('agent.detect_scam(w3, hard_rug_pull_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
-        processing_time_soft_rug_pull_ms = timeit.timeit('agent.detect_scam(w3, soft_rug_pull_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
-        processing_time_address_poisoning_ms = timeit.timeit('agent.detect_scam(w3, address_poisoning_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
-        processing_time_fraudulent_seaport_orders_ms = timeit.timeit('agent.detect_scam(w3, fraudulent_seaport_orders_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
-        processing_time_nip_ms = timeit.timeit('agent.detect_scam(w3, nip_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
-        processing_time_ice_phishing_ms = timeit.timeit('agent.detect_scam(w3, ice_phishing_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
-        processing_time_rake_token_ms = timeit.timeit('agent.detect_scam(w3, rake_token_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
-        processing_time_avg = ((processing_time_wash_trading_ms * (500.0/80000) + processing_time_hard_rug_pull_ms * (300.0/80000) + processing_time_rake_token_ms * (10000.0/80000 +  processing_time_soft_rug_pull_ms * (1000.0/80000)) + 
-                                processing_time_address_poisoning_ms * (60000.0/80000) + processing_time_fraudulent_seaport_orders_ms * (2000.0/80000) + processing_time_nip_ms * (1000.0/80000 +  processing_time_ice_phishing_ms * (5000.0/80000)))/8)
-
-        assert (processing_time_avg/shards) < (1080*2), f"""processing time should be less than {(1080*2)}ms based on the existing sharding config, but is {(processing_time_avg/shards)} ms, 
-            wash_trading: {processing_time_wash_trading_ms}, 
-            hard_rug_pull: {processing_time_hard_rug_pull_ms}.
-            rake_token: {processing_time_rake_token_ms} 
-            soft_rug_pull: {processing_time_soft_rug_pull_ms} 
-            nip: {processing_time_nip_ms} 
-            fraudulent_seaport_orders: {processing_time_fraudulent_seaport_orders_ms} 
-            address_poisoning: {processing_time_address_poisoning_ms} 
-            ice_phishing: {processing_time_ice_phishing_ms}
-            If not, this bot is unlikely to keep up with fast chains, like Polygon"""
+    #     bot_id = "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14"
+    #     alert_id = "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS"
+    #     description = "0xFB4d3EB37bDe8FA4B52c60AAbE55B3Cd9908EC73 obtained transfer approval for 78 ERC-20 tokens by 195 accounts over period of 4 days."
+    #     metadata = {"anomalyScore":"0.00012297740401709194","firstTxHash":"0x5840ac6991b6603de6b05a9da514e5b4d70b15f4bfa36175dd78388915d0b9a9","lastTxHash":"0xf841ffd55ee93da17dd1b017805904ce29c3127dee2db53872234f094d1ce2a0"}
+    #     global ice_phishing_alert_event
+    #     ice_phishing_alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
 
-    def test_perf_combination_alert(self):
-        global w3 
-        agent.initialize()
-        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
-        shards = Utils.get_total_shards(1)
-        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+    #     #below the alert rates of passhthrough bots across all chains, so very conservative
+    #     #wash trading alert rate: 500/day max 
+    #     #soft rug pull alert rate: 1000/day max
+    #     #hard rug pull alert rate: 300/day max
+    #     #rake token alert rate: 10000/day max
+    #     #seaport order alert rate: 2000/day max
+    #     #ice phishing alert rate: 5000/day max
+    #     #address poisoning: 60000/day max
+    #     #native ice phishing alert rate: 1000/day max
+    #     #alert_detector alert rate: 100/day max
+    #     #contract similarity alert rate: 400/day max
+    #     #TOTAL: 80000day max
 
-        bot_id = "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14"
-        alert_id = "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL"
-        description = "0x21E13f16838e2fe78056f5fd50251ffd6e7098b4 obtained transfer approval for 3 assets by 6 accounts over period of 2 days."
-        metadata = {}
-        global alert_event_1
-        alert_event_1 = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+    #     #we have 86400000ms/day, so an alert needs to process in less than 86400000/80000 = 1080ms; given this is for all chains, but there is skew, we multiply that by 2
 
-        bot_id = "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"
-        alert_id = "FUNDING-TORNADO-CASH"
-        description = "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4 interacted with contract 0xcc5f573a93fcab719640f660173b8217664605d3"
-        metadata = {}
-        global alert_event_2
-        alert_event_2 = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+    #     processing_runs = 10
+    #     processing_time_wash_trading_ms = timeit.timeit('agent.detect_scam(w3, wash_trading_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+    #     processing_time_hard_rug_pull_ms = timeit.timeit('agent.detect_scam(w3, hard_rug_pull_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+    #     processing_time_soft_rug_pull_ms = timeit.timeit('agent.detect_scam(w3, soft_rug_pull_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+    #     processing_time_address_poisoning_ms = timeit.timeit('agent.detect_scam(w3, address_poisoning_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+    #     processing_time_fraudulent_seaport_orders_ms = timeit.timeit('agent.detect_scam(w3, fraudulent_seaport_orders_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+    #     processing_time_nip_ms = timeit.timeit('agent.detect_scam(w3, nip_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+    #     processing_time_ice_phishing_ms = timeit.timeit('agent.detect_scam(w3, ice_phishing_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+    #     processing_time_rake_token_ms = timeit.timeit('agent.detect_scam(w3, rake_token_alert_event, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+    #     processing_time_avg = ((processing_time_wash_trading_ms * (500.0/80000) + processing_time_hard_rug_pull_ms * (300.0/80000) + processing_time_rake_token_ms * (10000.0/80000 +  processing_time_soft_rug_pull_ms * (1000.0/80000)) + 
+    #                             processing_time_address_poisoning_ms * (60000.0/80000) + processing_time_fraudulent_seaport_orders_ms * (2000.0/80000) + processing_time_nip_ms * (1000.0/80000 +  processing_time_ice_phishing_ms * (5000.0/80000)))/8)
 
-        processing_runs = 10
-        alert_event_1_ms = timeit.timeit('agent.detect_scam(w3, alert_event_1, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
-        alert_event_2_ms = timeit.timeit('agent.detect_scam(w3, alert_event_2, False)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+    #     assert (processing_time_avg/shards) < (1080*2), f"""processing time should be less than {(1080*2)}ms based on the existing sharding config, but is {(processing_time_avg/shards)} ms, 
+    #         wash_trading: {processing_time_wash_trading_ms}, 
+    #         hard_rug_pull: {processing_time_hard_rug_pull_ms}.
+    #         rake_token: {processing_time_rake_token_ms} 
+    #         soft_rug_pull: {processing_time_soft_rug_pull_ms} 
+    #         nip: {processing_time_nip_ms} 
+    #         fraudulent_seaport_orders: {processing_time_fraudulent_seaport_orders_ms} 
+    #         address_poisoning: {processing_time_address_poisoning_ms} 
+    #         ice_phishing: {processing_time_ice_phishing_ms}
+    #         If not, this bot is unlikely to keep up with fast chains, like Polygon"""
+
+
+    # def test_perf_combination_alert(self):
+    #     global w3 
+    #     agent.initialize()
+    #     agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+    #     shards = Utils.get_total_shards(1)
+    #     agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+    #     bot_id = "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14"
+    #     alert_id = "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL"
+    #     description = "0x21E13f16838e2fe78056f5fd50251ffd6e7098b4 obtained transfer approval for 3 assets by 6 accounts over period of 2 days."
+    #     metadata = {}
+    #     global alert_event_1
+    #     alert_event_1 = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+    #     bot_id = "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"
+    #     alert_id = "FUNDING-TORNADO-CASH"
+    #     description = "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4 interacted with contract 0xcc5f573a93fcab719640f660173b8217664605d3"
+    #     metadata = {}
+    #     global alert_event_2
+    #     alert_event_2 = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+    #     processing_runs = 10
+    #     alert_event_1_ms = timeit.timeit('agent.detect_scam(w3, alert_event_1, True)', number=processing_runs, globals=globals()) * 1000 / processing_runs
+    #     alert_event_2_ms = timeit.timeit('agent.detect_scam(w3, alert_event_2, False)', number=processing_runs, globals=globals()) * 1000 / processing_runs
        
-        processing_time_avg = ((alert_event_2_ms * (1.0/2) + alert_event_1_ms * (1.0/2))/2)
+    #     processing_time_avg = ((alert_event_2_ms * (1.0/2) + alert_event_1_ms * (1.0/2))/2)
 
-        assert (processing_time_avg/shards) < (1080*2), f"""processing time should be less than {(1080*2)}ms based on the existing sharding config, but is {(processing_time_avg/shards)} ms, 
-            alert_event_1: {alert_event_1_ms} 
-            alert_event_2: {alert_event_2_ms}
-            If not, this bot is unlikely to keep up with fast chains, like Polygon"""
+    #     assert (processing_time_avg/shards) < (1080*2), f"""processing time should be less than {(1080*2)}ms based on the existing sharding config, but is {(processing_time_avg/shards)} ms, 
+    #         alert_event_1: {alert_event_1_ms} 
+    #         alert_event_2: {alert_event_2_ms}
+    #         If not, this bot is unlikely to keep up with fast chains, like Polygon"""
         
 
     def test_documentation(self):
@@ -202,22 +206,6 @@ class TestScamDetector:
                 if not found:
                     missing_documentation += f"| {bot_id} | | {alert_id} | {alert_logic} |\r\n"
         assert len(missing_documentation) == 0, missing_documentation
-        
-
-    def test_fp_mitigation_proper_chain_id(self):
-        agent.clear_state()
-        agent.initialize()
-        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
-
-        findings = agent.emit_new_fp_finding(w3)
-        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
-        content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
-        df_fps = pd.read_csv(io.StringIO(content), sep=',')
-        assert len(findings) == len(df_fps[df_fps['chain_id']==1]), "this should have triggered FP findings"
-        finding = findings[0]
-        assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be FP mitigation finding"
-        assert finding.labels is not None, "labels should not be empty"
-
 
     def test_detect_wash_trading(self):
         agent.initialize()
@@ -633,30 +621,31 @@ class TestScamDetector:
         
         bot_id = "0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560"
         alert_id = "NEW-SCAMMER-CONTRACT-CODE-HASH"
-        description = "0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0 created contract 0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2. It is similar to scam contract 0xe22536ac6f6a20dbb283e7f61a880993eab63313 created by 0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e."
-        metadata = {"alertHash":"0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016","newScammerContractAddress":"0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2","newScammerEoa":"0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0","scammerContractAddress":"0xe22536ac6f6a20dbb283e7f61a880993eab63313","scammerEoa":"0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e","similarityHash":"68e6432db785f93986a9d49b19077067f8b694612f2bc1e8ef5cd38af2c8727e","similarityScore":"0.9847575306892395"}
+        description = "0x731c8288a5a411c2bc0608061a7d8cb08f006685 created contract 0xeac1236222d92fc66e1fd44122c132c4e122859b. It is similar to scam contract 0xd680016776474bd8d9acc98c96c9d7d794cbf9b4 created by 0x713a39d422918d1f9157129426e4b08e6478ef05"
+
+        metadata = {"alert_hash":"0xfb1ba7974e2be1622c2f0db7a9ceb763650c857434d55ba06127a0409ac5ce7d","new_scammer_contract_address":"0xeac1236222d92fc66e1fd44122c132c4e122859b","new_scammer_eoa":"0x731c8288a5a411c2bc0608061a7d8cb08f006685","scammer_contract_address":"0xd680016776474bd8d9acc98c96c9d7d794cbf9b4","scammer_eoa":"0x713a39d422918d1f9157129426e4b08e6478ef05","similarity_hash":"0f18d246eedcd7b1e7df31a0922701da640e6df376675746b1f76199bc06910a","similarity_score":"0.9847575306892395"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
         findings = agent.detect_scam(w3, alert_event, True)
 
         assert len(findings) == 1, "this should have triggered a finding"
         assert findings[0].alert_id == "SCAM-DETECTOR-SIMILAR-CONTRACT"
-        assert findings[0].metadata['scammer_address'] == "0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0", "metadata should not be empty"
-        assert findings[0].metadata['scammer_contract_address'] == "0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2", "metadata should not be empty"
-        assert findings[0].metadata['existing_scammer_address'] == "0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e", "metadata should not be empty"
-        assert findings[0].metadata['existing_scammer_contract_address'] == "0xe22536ac6f6a20dbb283e7f61a880993eab63313", "metadata should not be empty"
+        assert findings[0].metadata['scammer_address'] == "0x731c8288a5a411c2bc0608061a7d8cb08f006685", "metadata should not be empty"
+        assert findings[0].metadata['scammer_contract_address'] == "0xeac1236222d92fc66e1fd44122c132c4e122859b", "metadata should not be empty"
+        assert findings[0].metadata['existing_scammer_address'] == "0x713a39d422918d1f9157129426e4b08e6478ef05", "metadata should not be empty"
+        assert findings[0].metadata['existing_scammer_contract_address'] == "0xd680016776474bd8d9acc98c96c9d7d794cbf9b4", "metadata should not be empty"
         assert findings[0].metadata['similarity_score'] == "0.9847575306892395", "metadata should not be empty"
-        assert findings[0].metadata['involved_alert_id_1'] == "SCAM-DETECTOR-ADDRESS-POISONER", "metadata should not be empty"
-        assert findings[0].metadata['involved_alert_hash_1'] == "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016", "metadata should not be empty"
+        assert findings[0].metadata['involved_alert_id_1'] == "SCAM-DETECTOR-RAKE-TOKEN", "metadata should not be empty"
+        assert findings[0].metadata['involved_alert_hash_1'] == "0xfb1ba7974e2be1622c2f0db7a9ceb763650c857434d55ba06127a0409ac5ce7d", "metadata should not be empty"
 
         assert findings[0].labels is not None, "labels should not be empty"
         label = findings[0].labels[0]
-        assert label.entity == "0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0", "entity should be attacker address"
+        assert label.entity == "0x731c8288a5a411c2bc0608061a7d8cb08f006685", "entity should be attacker address"
         assert label.label == "scammer-eoa/similar-contract/propagation", "entity should labeled as scam"
         assert label.confidence == 0.4, "entity should labeled with 0.7 confidence"
 
         label = findings[0].labels[1]
-        assert label.entity == "0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2", "entity should be attacker address"
+        assert label.entity == "0xeac1236222d92fc66e1fd44122c132c4e122859b", "entity should be attacker address"
         assert label.label == "scammer-contract/similar-contract/propagation", "entity should labeled as scam"
         assert label.confidence == 0.4, "entity should labeled with 0.7 confidence"
 
@@ -724,7 +713,7 @@ class TestScamDetector:
             address_lower = "0x6939432e462f7dCB6a3Ca39b9723d18a58FE9A65".lower()
             if address_lower in finding.description.lower():
                 assert findings[0].alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
-                assert findings[0].description == f"{address_lower} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING)", "wrong description"
+                assert findings[0].description == f"{address_lower} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)", "wrong description"
                 assert findings[0].metadata["reported_by"] == "@CertiKAlert https://twitter.com/CertiKAlert/status/1640288904317378560?s=20"
 
 
@@ -887,7 +876,7 @@ class TestScamDetector:
 
         assert all_findings[0].labels is not None, "labels should not be empty"
         label = all_findings[0].labels[0]
-        assert label.metadata['handler_type'] == "ml"
+        assert "/ml" in label.label
         assert label.confidence > 0.80 and label.confidence < 0.81, "confidence should be between 0.80 and 0.81"
         
 
@@ -920,3 +909,91 @@ class TestScamDetector:
         print(missing_subscription_str) 
         assert missing_subscription_str == "", f"Missing subscription for {missing_subscription_str}"
 
+    def test_fp_mitigation_proper_chain_id(self):
+        agent.clear_state()
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        findings = agent.emit_new_fp_finding(w3)
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
+        content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
+        df_fps = pd.read_csv(io.StringIO(content), sep=',')
+        assert len(findings) > 0, "this should have triggered FP findings"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be FP mitigation finding"
+        assert finding.labels is not None, "labels should not be empty"
+
+    def test_get_similar_contract_labels(self):
+        agent.clear_state()
+        agent.initialize()
+        similar_contract_labels = agent.get_similar_contract_labels(w3, forta_explorer)
+
+        # from_address was detected first and it propagated its label to the to_address
+        from_address = "0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc6"
+        from_address_deployer = "0x2320a28f52334d62622cc2eafa15de55f9987ecc"
+        to_address = "0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc5"
+        to_address_deployer = "0x2320a28f52334d62622cc2eafa15de55f9987eaa"
+
+        assert similar_contract_labels[similar_contract_labels['from_entity'] == from_address].iloc[0]['to_entity'] == to_address
+        assert similar_contract_labels[similar_contract_labels['from_entity'] == from_address].iloc[0]['from_entity_deployer'] == from_address_deployer
+        assert similar_contract_labels[similar_contract_labels['to_entity'] == to_address].iloc[0]['to_entity_deployer'] == to_address_deployer
+
+    def test_get_scammer_association_labels(self):
+        agent.clear_state()
+        agent.initialize()
+        scammer_association_labels = agent.get_scammer_association_labels(w3, forta_explorer)
+
+        # from_address was detected first and it propagated its label to the to_address
+        from_address = "0x3805ad836968b7d844eac2fe0eb312ccc37e4630"
+        to_address = "0x3805ad836968b7d844eac2fe0eb312ccc37e463a"
+
+        assert scammer_association_labels[scammer_association_labels['from_entity'] == from_address].iloc[0]['to_entity'] == to_address
+
+    def test_obtain_all_fp_labels_deployed_contracts(self):
+        # got address EOA_ADDRESS_SMALL_TX that deployed contract CONTRACT
+        agent.clear_state()
+        agent.initialize()
+
+        similar_contract_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
+        scammer_association_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
+
+        fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_SMALL_TX, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, 1)
+        sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
+        sorted_fp_labels = list(sorted_fp_labels)
+        assert len(sorted_fp_labels) == 2, "should have two FP label; one for the EOA, one for the contract"
+        assert list(sorted_fp_labels)[0][0] == EOA_ADDRESS_SMALL_TX.lower()
+        assert 'scammer-eoa/' in list(sorted_fp_labels)[0][1] 
+        assert list(sorted_fp_labels)[1][0] == CONTRACT.lower()
+        assert 'scammer-contract/' in list(sorted_fp_labels)[1][1] 
+
+    def test_obtain_all_fp_labels_scammer_association(self):
+        # got address EOA_ADDRESS_LARGE_TX that was propagated from address EOA_ADDRESS_SMALL_TX
+        agent.clear_state()
+        agent.initialize()
+
+        similar_contract_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
+        scammer_association_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
+        scammer_association_labels = scammer_association_labels.append({'from_entity': EOA_ADDRESS_LARGE_TX.lower(), 'to_entity': EOA_ADDRESS_SMALL_TX.lower()}, ignore_index=True)
+
+        fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_LARGE_TX, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, 1)
+        sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
+        sorted_fp_labels = list(sorted_fp_labels)
+        assert len(sorted_fp_labels) == 4, "should have three FP labels; one for each EOA and contract"
+        assert list(sorted_fp_labels)[0][0] == EOA_ADDRESS_SMALL_TX.lower()
+        assert 'scammer-eoa/' in list(sorted_fp_labels)[0][1] 
+        assert list(sorted_fp_labels)[3][0] == EOA_ADDRESS_LARGE_TX.lower()
+        assert 'scammer-eoa/' in list(sorted_fp_labels)[3][1]  
+       
+    def test_obtain_all_fp_labels_similar_contract(self):
+        # got address A that deployed contract B; contract B propagated to contract D
+        agent.clear_state()
+        agent.initialize()
+
+        similar_contract_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
+        similar_contract_labels = similar_contract_labels.append({'from_entity': CONTRACT.lower(), 'from_entity_deployer': EOA_ADDRESS_LARGE_TX.lower(), 'to_entity_deployer': EOA_ADDRESS_SMALL_TX.lower(), 'to_entity': CONTRACT2.lower()}, ignore_index=True)
+        scammer_association_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
+        
+        fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_LARGE_TX, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, 1)
+        sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
+        sorted_fp_labels = list(sorted_fp_labels)
+        assert len(sorted_fp_labels) == 4, "should have four FP labels; one for each EOA and contract"

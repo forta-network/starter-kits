@@ -84,7 +84,7 @@ class TestScamFindings:
         assert finding.severity == FindingSeverity.Critical
         assert finding.type == FindingType.Scam
         assert finding.name == f'Scam detector identified an EOA with past alerts mapping to scam behavior'
-        assert finding.description == f"0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0 likely involved in a scam ({alert_id})"
+        assert finding.description == f"0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0 likely involved in a scam ({alert_id}, propagation)"
         assert finding.metadata is not None
         assert finding.labels is not None
 
@@ -118,21 +118,18 @@ class TestScamFindings:
         
 
     def test_alert_FP(self):
-        finding = ScamDetectorFinding.alert_FP(w3, EOA_ADDRESS_LARGE_TX)
+        finding = ScamDetectorFinding.alert_FP(w3, EOA_ADDRESS_LARGE_TX, "scammer-eoa/similar-contract/propagation")
         assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be FP"
-        assert finding.description == f'{EOA_ADDRESS_LARGE_TX} likely not involved in a scam (SCAM-DETECTOR-FALSE-POSITIVE)', "should be FP"
+        assert finding.description == f'{EOA_ADDRESS_LARGE_TX} likely not involved in a scam (SCAM-DETECTOR-FALSE-POSITIVE, manual)', "should be FP"
         assert len(finding.labels) == 1, "should be 1"
-
-
-    def test_alert_FP_cluster(self):
-        finding = ScamDetectorFinding.alert_FP(w3, EOA_ADDRESS_LARGE_TX + "," + EOA_ADDRESS_SMALL_TX)
-        assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be FP"
-        assert len(finding.labels) == 2, "should be 2"
+        assert finding.labels[0].label == "scammer-eoa/similar-contract/propagation", "should be scammer-eoa/similar-contract/propagation"
+        assert finding.labels[0].remove == 'true', "should be remove"
+        assert finding.labels[0].entity == EOA_ADDRESS_LARGE_TX, "should be EOA_ADDRESS_LARGE_TX"
 
     def test_scam_finding_manual(self):
         finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, EOA_ADDRESS_LARGE_TX, "ice phishing", "me http://foo.com", 1)  # this EOA did not deploy a contract
         assert finding.alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
-        assert finding.description == f'{EOA_ADDRESS_LARGE_TX} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING)', "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+        assert finding.description == f'{EOA_ADDRESS_LARGE_TX} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)', "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
         assert finding.metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
         assert len(finding.labels) == 1, "should be 1"  
         assert finding.labels[0].entity == EOA_ADDRESS_LARGE_TX, "should be EOA_ADDRESS"
@@ -144,7 +141,7 @@ class TestScamFindings:
 
         assert finding is not None
         assert finding.alert_id == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT", "should be SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
-        assert finding.description == f'{EOA_ADDRESS_LARGE_TX} deployed a contract {CONTRACT} (SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT)'
+        assert finding.description == f'{EOA_ADDRESS_LARGE_TX} deployed a contract {CONTRACT} (SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT, propagation)'
         assert len(finding.labels) == 1, "should be 1; only the contract as the scammer already exists"  
         assert finding.labels[0].entity == CONTRACT, "should be CONTRACT"
         assert finding.labels[0].metadata['associated_scammer'] == EOA_ADDRESS_LARGE_TX
@@ -173,7 +170,7 @@ class TestScamFindings:
         finding = ScamDetectorFinding.scammer_association(block_chain_indexer, forta_explorer, new_address, model_confidence, base_bot_alert_id, base_bot_alert_hash, existing_address, original_alert_id, original_alert_hash, 1)
 
         assert finding.alert_id == "SCAM-DETECTOR-SCAMMER-ASSOCIATION"
-        assert finding.description == f'{EOA_ADDRESS_SMALL_TX} is associated with scammer {EOA_ADDRESS_LARGE_TX} (SCAM-DETECTOR-SCAMMER-ASSOCIATION)'
+        assert finding.description == f'{EOA_ADDRESS_SMALL_TX} is associated with scammer {EOA_ADDRESS_LARGE_TX} (SCAM-DETECTOR-SCAMMER-ASSOCIATION, propagation)'
         assert finding.metadata['involved_alert_id_1'] == "SCAM-DETECTOR-ICE-PHISHING"
         assert finding.metadata['involved_alert_hash_1'] == original_alert_hash
         assert len(finding.labels) == 2, "should be 2"  
