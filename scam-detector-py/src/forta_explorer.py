@@ -13,6 +13,9 @@ class FortaExplorer:
     @staticmethod
     def get_value(items: list, key: str):
         v = ''
+        if items is None:
+            return v
+        
         for item in items:
             if item.startswith(key):
                 v = item.split('=')[1]
@@ -21,7 +24,7 @@ class FortaExplorer:
 
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
-    def get_labels(entity: str, source_id: str, start_date: datetime, end_date: datetime) -> pd.DataFrame:
+    def get_labels(source_id: str, start_date: datetime, end_date: datetime, entity: str = "", label_query: str = "") -> pd.DataFrame:
         url = "https://api.forta.network/graphql"
         chunk_size = 8000
 
@@ -33,6 +36,7 @@ class FortaExplorer:
             query = """query exampleQuery {
                         labels(
                             input: {
+                                LABELS_CLAUSE
                                 SOURCEIDS_CLAUSE
                                 CREATEDBEFORE_CLAUSE
                                 CREATEDSINCE_CLAUSE
@@ -74,6 +78,10 @@ class FortaExplorer:
                 after_clause = """after: {{pageToken:"{0}"}}""".format(pageToken)
 
             # this is a bit hacky
+            if label_query != "":
+                query = query.replace("LABELS_CLAUSE", f"""labels: ["{label_query}"]""")    
+            else: 
+                query = query.replace("LABELS_CLAUSE", f"")    
             query = query.replace("SOURCEIDS_CLAUSE", f"""sourceIds: ["{source_id}"]""")
             query = query.replace("ENTITY_CLAUSE", f"""entities: ["{entity}"]""")
             query = query.replace("CREATEDBEFORE_CLAUSE", f"""createdBefore: {int(end_date.timestamp()*1000)}""")

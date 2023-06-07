@@ -711,7 +711,9 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
 
     return findings
 
-
+# This function emits FPs for each address in the static list maintained by the Forta Community residing on github
+# FPs are processed by emitting a label with the remove flag set to True; note, the label needs to match the original label, so we need to pull the original label from the API
+# Further, given a label - through propagation - could expand out, the algorithm needs to assess what labels were set due to propagation and remove those as well
 def emit_new_fp_finding(w3) -> list:
     global ALERTED_FP_CLUSTERS
     global CHAIN_ID
@@ -725,6 +727,10 @@ def emit_new_fp_finding(w3) -> list:
             raise Exception("CHAIN_ID not set")
     findings = []
 
+    similar_contract_labels = None
+    scammer_association_labels = None
+
+
     try:
         res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
         content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
@@ -735,10 +741,18 @@ def emit_new_fp_finding(w3) -> list:
                 continue
             cluster = row['address'].lower()
             if cluster not in ALERTED_FP_CLUSTERS.keys():
-                logging.info(f"{BOT_VERSION}: Emitting FP mitigation finding")
                 update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, cluster, "SCAM-DETECTOR-FALSE-POSITIVE")
-                findings.append(ScamDetectorFinding.alert_FP(w3, cluster))
-                logging.info(f"{BOT_VERSION}: Findings count {len(FINDINGS_CACHE_BLOCK)}")
+                for address in cluster.split(','):
+                    if scammer_association_labels is None:
+                        scammer_association_labels = get_scammer_association_labels(w3, forta_explorer)
+                    if similar_contract_labels is None:
+                        similar_contract_labels = get_similar_contract_labels(w3, forta_explorer)
+                    
+                    for (entity, label) in obtain_all_fp_labels(w3, address, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, CHAIN_ID):
+                        logging.info(f"{BOT_VERSION}: Emitting FP mitigation finding for {entity} {label}")
+                        update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, entity, "SCAM-DETECTOR-FALSE-POSITIVE")
+                        findings.append(ScamDetectorFinding.alert_FP(w3, entity, label))
+                        logging.info(f"{BOT_VERSION}: Findings count {len(FINDINGS_CACHE_BLOCK)}")
     except BaseException as e:
         logging.warning(f"{BOT_VERSION}: emit fp finding exception: {e} - {traceback.format_exc()}")
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
@@ -747,11 +761,131 @@ def emit_new_fp_finding(w3) -> list:
 
     return findings
 
+def get_value(items: list, key: str):
+    v = ''
+    for item in items:
+        if item.startswith(key):
+            v = item.split('=')[1].lower()
+            break
+    return v
+
+# contains from_entity, from_entity_deployer, to_entity, to_entity_deployer
+def get_similar_contract_labels(w3, forta_explorer) -> pd.DataFrame:
+    source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
+    df_labels = forta_explorer.get_labels(source_id, datetime(2023,3,1), datetime.now(), label_query = "scammer-contract/similar-contract/propagation")
+    df_labels.rename(columns={'entity': 'to_entity'}, inplace=True)
+    df_labels['from_entity'] = df_labels['metadata'].apply(lambda x: get_value(x, "associated_scammer_contract"))
+    df_labels['deployer_info'] = df_labels['metadata'].apply(lambda x: get_value(x, "deployer_info"))
+    df_labels['from_entity_deployer'] = df_labels['deployer_info'].apply(lambda x: x[216:216+42])
+    df_labels['to_entity_deployer'] = df_labels['deployer_info'].apply(lambda x: x[9:9+42])
+    df_labels['from_entity'] = df_labels['metadata'].apply(lambda x: get_value(x, "associated_scammer_contract"))
+    # drop all but from_entity and to_entity
+    df_labels.drop(df_labels.columns.difference(['from_entity', 'from_entity_deployer', 'to_entity', 'to_entity_deployer']), 1, inplace=True)                                      
+    return df_labels
+
+
+
+# contains from_entity and to_entity
+def get_scammer_association_labels(w3, forta_explorer) -> pd.DataFrame:
+    source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
+    df_labels = forta_explorer.get_labels(source_id, datetime(2023,3,1), datetime.now(), label_query = "scammer-eoa/scammer-association/propagation")
+    df_labels.rename(columns={'entity': 'to_entity'}, inplace=True)
+    # lower case all addresses
+    df_labels['to_entity'] = df_labels['to_entity'].apply(lambda x: x.lower())
+    df_labels['from_entity'] = df_labels['metadata'].apply(lambda x: get_value(x, "associated_scammer"))
+    # drop all but from_entity and to_entity
+    df_labels.drop(df_labels.columns.difference(['from_entity', 'to_entity']), 1, inplace=True)                                      
+    return df_labels
+
+
+
+# this function returns a list of all labels that need to be removed with the address as a starting point
+# it contain a queue of addresses to process and a set of addresses that have already been processed
+# returns a tuple of (entity, label) where label consists of scammer-label/threat_category/handler_type or just scammer-label for older labels (pre 0.2.2)
+def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_explorer, similar_contract_labels: pd.DataFrame, scammer_association_labels: pd.DataFrame, chain_id: int) -> set:
+    global ALERTED_FP_CLUSTERS
+    global ALERTED_FP_CLUSTERS
+
+    logging.info(f"{BOT_VERSION}: {starting_address} obtain_all_fp_labels")
+
+    source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
+
+    fp_labels = set()
+
+    to_process = set()
+    processed = set()
+    to_process.add(starting_address)
+    while len(to_process) > 0:
+        address = to_process.pop().lower()
+        if address in processed:
+            continue
+
+        if Utils.is_contract(w3, address):
+            forta_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity=address)
+            logging.info(f"{BOT_VERSION}: {starting_address} processing contract {address}. Obtained {len(forta_labels)} labels")
+            for index, row in forta_labels.iterrows():
+                logging.info(f"{BOT_VERSION}: {starting_address} processing contract {address}. Label {row['labelstr']}")
+                if "scammer-contract" in row["labelstr"]:
+                    logging.info(f"{BOT_VERSION}: {starting_address} adding FP label {row['labelstr']} for contract {address}")
+                    fp_labels.add((address,row["labelstr"]))
+
+                    similar_contract_labels_for_address = similar_contract_labels[similar_contract_labels['from_entity'] == address]
+                    for index, row in similar_contract_labels_for_address.iterrows():
+                        logging.info(f"{BOT_VERSION}: {starting_address} adding to process due to contract similarity from_entity {address} -> to_entity {row['to_entity']}, to_entity_deployer {row['to_entity_deployer']}, from_entity_deployer {row['from_entity_deployer']}")
+                        to_process.add(row['to_entity'])
+                        to_process.add(row['to_entity_deployer'])
+                        to_process.add(row['from_entity_deployer'])
+
+                    similar_contract_labels_for_address = similar_contract_labels[similar_contract_labels['to_entity'] == address]
+                    for index, row in similar_contract_labels_for_address.iterrows():
+                        logging.info(f"{BOT_VERSION}: {starting_address} adding to process due to contract similarity to_entity {address} -> from_entity {row['from_entity']}, from_entity_deployer {row['from_entity_deployer']}, to_entity_deployer {row['to_entity_deployer']}")
+                        to_process.add(row['from_entity'])
+                        to_process.add(row['from_entity_deployer'])
+                        to_process.add(row['to_entity_deployer'])
+
+
+        else:
+            forta_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity=address)
+            logging.info(f"{BOT_VERSION}: {starting_address} processing EOA {address}. Obtained {len(forta_labels)} labels")
+            for index, row in forta_labels.iterrows():
+                logging.info(f"{BOT_VERSION}: {starting_address} processing EOA {address}. Label {row['labelstr']}")
+                if "scammer-eoa" in row["labelstr"]:
+                    logging.info(f"{BOT_VERSION}: {starting_address} adding FP label {row['labelstr']} for contract {address}")
+                    fp_labels.add((address, row["labelstr"]))
+
+                    # query all deployed contract and add to to_process set
+                    contract_addresses = block_chain_indexer.get_contracts(address, chain_id)
+                    if len(contract_addresses) > 0:
+                        logging.info(f"{BOT_VERSION}: {starting_address} adding to process from deployer {address} -> contract addresses {','.join(contract_addresses)}")
+                        to_process.update(contract_addresses)
+                    else:
+                        logging.info(f"{BOT_VERSION}: {starting_address} no contracts found for deployer {address}")
+
+                    # assess whether there are any scammer association propagation labels for this address and add to to_process set
+                    scammer_association_labels_for_address = scammer_association_labels[scammer_association_labels['from_entity'] == address]
+                    for index, row in scammer_association_labels_for_address.iterrows():
+                        logging.info(f"{BOT_VERSION}: {starting_address} adding to process from from_entity {address} -> to_entity {row['to_entity']}")
+                        to_process.add(row['to_entity'])
+
+                    scammer_association_labels_for_address = scammer_association_labels[scammer_association_labels['to_entity'] == address]
+                    for index, row in scammer_association_labels_for_address.iterrows():
+                        logging.info(f"{BOT_VERSION}: {starting_address} adding to process from to_entity {address} -> to_entity {row['from_entity']}")
+                        to_process.add(row['from_entity'])
+                        
+
+        processed.add(address)
+        update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, address, "SCAM-DETECTOR-FALSE-POSITIVE")
+
+    return fp_labels
+
+
+
+
 
 def get_original_threat_category_alert_hash(address: str) -> (tuple):
 
     source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
-    labels_df = FortaExplorer.get_labels(address.lower(), source_id, datetime(2023,1,1), datetime.now())
+    labels_df = FortaExplorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = address.lower())
     for index, row in labels_df.iterrows():
         if "scammer-eoa" in row["labelstr"]:
             threat_category = row["labelstr"].split("/")[1] if "/" in row["labelstr"] else "unknown"
@@ -927,7 +1061,9 @@ def provide_handle_block(w3):
 
         global FINDINGS_CACHE_BLOCK
         findings = []
-        if datetime.now().minute == 0:  # every hour
+        dt = datetime.fromtimestamp(block_event.block.timestamp)
+        logging.info(f"{BOT_VERSION}: handle block called with block timestamp {dt}")
+        if dt.minute == 0:  # every hour
             logging.info(f"{BOT_VERSION}: Handle block on the hour was called. Findings cache for blocks size: {len(FINDINGS_CACHE_BLOCK)}")
             fp_findings = emit_new_fp_finding(w3)                        
             logging.info(f"{BOT_VERSION}: Added {len(fp_findings)} fp findings.")

@@ -7,7 +7,7 @@ import requests
 import forta_agent
 
 DATABASE = "https://research.forta.network/database/bot/"
-VERSION = "V6"
+VERSION = "V7"
 
 
 class L2Cache:
