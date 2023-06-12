@@ -117,7 +117,7 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
 
 # model information
 # double check whether the above subscriptions include the below model features; otherwise the feature would never be populated
-MODEL_NAME = "v3_scammer_model.joblib"
+MODEL_NAME = "v4_scammer_model.joblib"
 MODEL_FEATURES = ['0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732_NFT-WASH-TRADE',
        '0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732_count',
        '0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732_uniqalertid_count',
@@ -192,6 +192,7 @@ MODEL_FEATURES = ['0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b64
        '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_count',
        '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_uniqalertid_count',
        '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e_FUNDING-CHANGENOW-LOW-AMOUNT',
+       '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e_FUNDING-CHANGENOW-NEW-ACCOUNT',
        '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e_count',
        '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e_uniqalertid_count',
        '0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502_ADDRESS-POISONING',
@@ -234,8 +235,8 @@ MODEL_FEATURES = ['0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b64
        '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb_CEX-FUNDING-1',
        '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb_count',
        '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb_uniqalertid_count']
-MODEL_ALERT_THRESHOLD_LOOSE = 0.70  # precison of 42/48 (88%) on test set; 183/192 (95%) on train set
-MODEL_ALERT_THRESHOLD_STRICT = 0.88  # precision of 100% on test and train set
+MODEL_ALERT_THRESHOLD_LOOSE = 0.65  # precison of 42/48 (88%) on test set; 183/192 (95%) on train set
+MODEL_ALERT_THRESHOLD_STRICT = 0.84  # precision of 100% on test and train set
 
 
 # utilized for passthrough and combiner labels

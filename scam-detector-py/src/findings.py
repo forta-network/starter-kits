@@ -233,7 +233,8 @@ class ScamDetectorFinding:
                         'base_bot_alert_hashes': ','.join(list(involved_alert_hashes)),
                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                         'bot_version': Utils.get_bot_version(),
-                        'feature_vector': feature_vector_str
+                        'feature_vector': feature_vector_str,
+                        'model_name': MODEL_NAME
                     }
                 }))
 
@@ -256,7 +257,9 @@ class ScamDetectorFinding:
                                         'base_bot_alert_hashes': ','.join(list(involved_alert_hashes)),
                                         'deployer_info': f"Deployer {scammer_address} involved in {alert_id} scam; this contract has been associated with this scam.",
                                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
-                                        'bot_version': Utils.get_bot_version()
+                                        'bot_version': Utils.get_bot_version(),
+                                        'feature_vector': feature_vector_str,
+                                        'model_name': MODEL_NAME
                                     }
                                 }))
                             else:

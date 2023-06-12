@@ -854,7 +854,7 @@ class TestScamDetector:
                  }
 
         alerts = {"0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_NORMAL-TOKEN-TRANSFERS-TX": 1,
-                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL": 1
+                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL": 4
                  }
 
         timestamp = datetime.now().timestamp()
@@ -872,14 +872,14 @@ class TestScamDetector:
                 all_findings.extend(findings)
                 count += 1
 
-        assert len(all_findings) == 1, "should have one finding"
+        assert len(all_findings) == 3, "should have one finding for EOA/ 2 for contracts created by EOA"
         assert all_findings[0].alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be SCAM-DETECTOR-ICE-PHISHING"
         assert all_findings[0].severity == FindingSeverity.Critical, "should be Critical"
 
         assert all_findings[0].labels is not None, "labels should not be empty"
         label = all_findings[0].labels[0]
         assert "/ml" in label.label
-        assert label.confidence > 0.86 and label.confidence < 0.87, "confidence should be between 0.86 and 0.87"
+        assert label.confidence > 0.77 and label.confidence < 0.78, "confidence should be between 0.77 and 0.78"
         
 
 
