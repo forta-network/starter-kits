@@ -379,7 +379,7 @@ class TestScamDetector:
         bot_id = "0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502"
         alert_id = "ADDRESS-POISONING"
         description = "Possible address poisoning transaction."
-        metadata = {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197955","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":CONTRACT,"phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
+        metadata = {"attackerAddresses":"0x1a1c0eda425a77fcf7ef4ba6ff1a5bf85e4fc168,0x55d398326f99059ff775485246999027b3197954","anomaly_score":"0.0023634453781512603","logs_length":"24","phishingContract":CONTRACT,"phishingEoa":"0xf6eb5da5850a1602d3d759395480179624cffe2c"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
         findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
@@ -803,7 +803,9 @@ class TestScamDetector:
         df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC20-PERMIT"] = 1
         df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL"] = 2
         df_expected_feature_vector.iloc[0]["0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_count"] = 1
+        df_expected_feature_vector.iloc[0]["0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5_uniqalertid_count"] = 1
         df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_count"] = 3
+        df_expected_feature_vector.iloc[0]["0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_uniqalertid_count"] = 2
 
         df_expected_feature_vector = df_expected_feature_vector.sort_index(axis=1)  # sort columns alphabetically
 
@@ -877,7 +879,7 @@ class TestScamDetector:
         assert all_findings[0].labels is not None, "labels should not be empty"
         label = all_findings[0].labels[0]
         assert "/ml" in label.label
-        assert label.confidence > 0.80 and label.confidence < 0.81, "confidence should be between 0.80 and 0.81"
+        assert label.confidence > 0.86 and label.confidence < 0.87, "confidence should be between 0.86 and 0.87"
         
 
 
@@ -895,7 +897,7 @@ class TestScamDetector:
         for feature in MODEL_FEATURES:
             botId1 = feature.split("_")[0]
             alertId1 = feature[len(botId1) + 1:]
-            if alertId1 == "count":
+            if alertId1 == "count" or alertId1 == "uniqalertid_count":
                 continue
 
             found = False

@@ -1,7 +1,7 @@
 
 from web3 import Web3
 from hexbytes import HexBytes
-from forta_agent import get_labels
+from forta_agent import get_labels, Label
 import requests
 import logging
 import io
@@ -11,9 +11,9 @@ import json
 
 from src.constants import TX_COUNT_FILTER_THRESHOLD
 
-ETHERSCAN_LABEL_SOURCE_IDS = ['etherscan','0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede']
 
 class Utils:
+    ETHERSCAN_LABEL_SOURCE_IDS = ['etherscan','0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede']
     FP_MITIGATION_ADDRESSES = set()
     CONTRACT_CACHE = dict()
     BOT_VERSION = None
@@ -65,12 +65,13 @@ class Utils:
         labels_str = []
 
         response = get_labels({'entities': [cluster],
-                    'sourceIds': ETHERSCAN_LABEL_SOURCE_IDS,
+                    'sourceIds': Utils.ETHERSCAN_LABEL_SOURCE_IDS,
                     'state': True})
         labels = response.labels
         for label in labels:
-            logging.info(f"retreived label for {cluster}: {label.label}")
-            labels_str.append(label.label)
+            if label.source.bot is None or label.source.bot.id in Utils.ETHERSCAN_LABEL_SOURCE_IDS:
+                logging.info(f"retreived label for {cluster}: {label.label}")
+                labels_str.append(label.label)
         
         return labels_str
 

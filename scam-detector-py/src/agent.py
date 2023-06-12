@@ -327,16 +327,31 @@ def build_feature_vector(alerts: list, cluster: str) -> pd.DataFrame:
 
     bot_count_features = set()
     for column in pivoted.columns:
-        bot_count_features.add(column[0:66])
+        if column in MODEL_FEATURES:
+            bot_count_features.add(column[0:66])
 
     for bot_count_feature in bot_count_features:
         pivoted[bot_count_feature + '_count'] = 0
+        pivoted[bot_count_feature + '_uniqalertid_count'] = 0
 
     for index, row in pivoted.iterrows():
+        bot_id_unique_alert_ids = {}
         for column in pivoted.columns:
-            if column[0:66] in bot_count_features and column[0:66] + '_count' not in column:
+            if column[0:66] in bot_count_features and column[0:66] + '_count' not in column and column in MODEL_FEATURES:
                 count = row[column]
                 pivoted.loc[index, column[0:66] + '_count'] += count
+
+                #increment unique alert id count if count > 0
+                if column[0:66] not in bot_id_unique_alert_ids:
+                    bot_id_unique_alert_ids[column[0:66]] = 0
+
+                if count > 0 and "_count" not in column:
+                    bot_id_unique_alert_ids[column[0:66]] += 1
+
+
+        for column in pivoted.columns:
+            if "_uniqalertid_count" in column:
+                pivoted.loc[index, column] = bot_id_unique_alert_ids[column[0:66]]
 
 
     for column in pivoted.columns:
@@ -463,7 +478,7 @@ def emit_combination_or_ml_finding(w3, alert_event: forta_agent.alert_event.Aler
                     if already_alerted(cluster, alert_id, "combination") and not Utils.is_beta():  # alert repeatedly for beta version, but not prod version
                         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
                     else:
-                        findings.append(ScamDetectorFinding.scam_finding(block_chain_indexer, forta_explorer, scammer_address_lower, created_at_datetime, created_at_datetime, scammer_contract_addresses, alert_event.alert.addresses, unique_alertIds, alert_id, unique_alertHashes, CHAIN_ID, "ml", score))
+                        findings.append(ScamDetectorFinding.scam_finding(block_chain_indexer, forta_explorer, scammer_address_lower, created_at_datetime, created_at_datetime, scammer_contract_addresses, alert_event.alert.addresses, unique_alertIds, alert_id, unique_alertHashes, CHAIN_ID, "ml", score, feature_vector))
                         update_list(ALERTED_CLUSTERS, ALERTED_CLUSTERS_QUEUE_SIZE, cluster, alert_id, "ml")
                 
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} added to findings. Findings size: {len(findings)}")

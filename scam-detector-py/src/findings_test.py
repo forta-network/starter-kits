@@ -1,5 +1,5 @@
 from datetime import datetime
-from web3_mock import EOA_ADDRESS_LARGE_TX, EOA_ADDRESS_SMALL_TX, CONTRACT, Web3Mock
+from web3_mock import EOA_ADDRESS_LARGE_TX, EOA_ADDRESS_SMALL_TX, CONTRACT, Web3Mock, CONTRACT2
 from forta_agent import FindingSeverity, FindingType, EntityType
 from blockchain_indexer_mock import BlockChainIndexerMock
 from forta_explorer_mock import FortaExplorerMock
@@ -104,7 +104,7 @@ class TestScamFindings:
         assert finding.labels[0].confidence == 0.4
         assert finding.labels[0].metadata["base_bot_alert_ids"] == base_bot_alert_id
         assert finding.labels[0].metadata["base_bot_alert_hashes"] == base_bot_alert_hash
-        assert finding.labels[0].metadata["deployer_info"] == f'This scammer {metadata["new_scammer_eoa"]} deployed a contract {metadata["new_scammer_contract_address"]} that is similar to a contract {metadata["scammer_contract_address"]} deployed by a known scammer {metadata["scammer_eoa"]} involved in address-poisoner scam (alert hash: {metadata["alert_hash"]}).'
+        assert finding.labels[0].metadata["deployer_info"] == f'Deployer {metadata["new_scammer_eoa"]} deployed a contract {metadata["new_scammer_contract_address"]} that is similar to a contract {metadata["scammer_contract_address"]} deployed by a known scammer {metadata["scammer_eoa"]} involved in address-poisoner scam (alert hash: {metadata["alert_hash"]}).'
         assert finding.labels[0].metadata["threat_description_url"] == ScamDetectorFinding.get_threat_description_url(alert_id)
 
         assert finding.labels[1].entity_type == EntityType.Address
@@ -131,10 +131,15 @@ class TestScamFindings:
         assert finding.alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
         assert finding.description == f'{EOA_ADDRESS_LARGE_TX} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)', "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
         assert finding.metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
-        assert len(finding.labels) == 1, "should be 1"  
+        assert len(finding.labels) == 2, "should be 1"  
         assert finding.labels[0].entity == EOA_ADDRESS_LARGE_TX, "should be EOA_ADDRESS"
         assert finding.labels[0].metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
         assert finding.labels[0].label == "scammer-eoa/ice-phishing/manual", "should be scammer-eoa"
+
+        assert finding.labels[1].entity == CONTRACT2, "should be EOA_ADDRESS"
+        assert finding.labels[1].metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
+        assert finding.labels[1].label == "scammer-contract/scammer-deployed-contract/propagation", "should be scammer-eoa"
+
 
     def test_scammer_contract_deployment(self):
         finding = ScamDetectorFinding.scammer_contract_deployment(EOA_ADDRESS_LARGE_TX, CONTRACT, "native-ice-phishing-social-engineering", "0xabc", 1)
