@@ -6,7 +6,7 @@ import requests
 import logging
 
 from src.utils import Utils
-from src.constants import CONFIDENCE_MAPPINGS
+from src.constants import CONFIDENCE_MAPPINGS, MODEL_NAME
 
 class ScamDetectorFinding:
 
@@ -188,6 +188,8 @@ class ScamDetectorFinding:
 
     @staticmethod
     def scam_finding(block_chain_indexer, forta_explorer, scammer_addresses: str, start_date: datetime, end_date: datetime, scammer_contract_addresses: set, involved_addresses: set, involved_alert_ids: set, alert_id: str, involved_alert_hashes: set, chain_id: int, handler_type: str, score = 0.0, feature_vector = None) -> Finding:
+        global MODEL_NAME
+        
         feature_vector_str = ""
         if feature_vector is not None:
             for i, row in feature_vector.iterrows():
@@ -195,6 +197,7 @@ class ScamDetectorFinding:
                     feature_vector_str += f"{row[col]},"
         
         logging.info(f"Feature vector: {feature_vector_str}")
+        logging.info(f"Model name: {MODEL_NAME}")
         
         involved_addresses = list(involved_addresses)[0:10]
         involved_alert_hashes = list(involved_alert_hashes)[0:10]
@@ -216,6 +219,7 @@ class ScamDetectorFinding:
             confidence = score
         confidence_dict = {"confidence": confidence}
         feature_vector_dict = {"feature_vector": feature_vector_str}
+        model_name_dict = {"model_name": MODEL_NAME}
 
         if alert_id in ["SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-NFT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING']:
             for scammer_address in scammer_addresses.split(","):
@@ -272,7 +276,7 @@ class ScamDetectorFinding:
                     except Exception as e:
                         logging.warning(f"Error getting contracts for scammer address {scammer_address}: {e}")
 
-        meta_data = {**attacker_address_md_dict, **start_date_dict, **end_date_dict, **involved_addresses_dict, **involved_alert_ids_dict, **involved_alert_hashes_dict, **handler_type_dict, **confidence_dict, **feature_vector_dict}
+        meta_data = {**attacker_address_md_dict, **start_date_dict, **end_date_dict, **involved_addresses_dict, **involved_alert_ids_dict, **involved_alert_hashes_dict, **handler_type_dict, **confidence_dict, **feature_vector_dict, **model_name_dict}
       
         return Finding({
             'name': 'Scam detector identified an EOA with past alerts mapping to scam behavior',
