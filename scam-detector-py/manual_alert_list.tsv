@@ -515,89 +515,137 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 5/29/2023	0x8d9117Dca154289175c79a2A1b8521F14a5c186F	@CertiKAlert	https://twitter.com/CertiKAlert/status/1663177169118408709?s=20	1	Protocol attack	
 5/29/2023	0x0000f3b15fce720cc6d0bc915e06bc753ea30000	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1663117227070222336?s=20	1	Ice phishing	
 5/29/2023	0x625C2374595b3215D0e192d292Bd9ca837cb0c47	@CertiKAlert	https://twitter.com/CertiKAlert/status/1663114692477288449?s=20	1	Protocol attack	
-5/6/2023	0x49CE2CF6888A9Fd4f65Aa0F41b120eF279B680Fb	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1665628540640067584?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xf0f7139919a32539a49f3455340eb9F30A3F79b3	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1665628540640067584?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0x89Ce3C75a9b4833111409AcC2eB8a69a83ec2255	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1665628540640067584?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0x391628df29ac2B66c11AE9515289A26BE06a6340	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1665628540640067584?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xD29061b76101c5Fa086694bd034A88E43594d30f	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1665628540640067584?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0x7F691EBA903423900B40a397d94f9062cae72Dbf	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1665628540640067584?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	1	Ice phishing	
-5/6/2023	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	10	Ice phishing	
-5/6/2023	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	250	Ice phishing	
-5/6/2023	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	137	Ice phishing	
-5/6/2023	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	42161	Ice phishing	
-5/6/2023	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	43114	Ice phishing	
-5/6/2023	0xe80b7dd89d1cf4b709612dd9e045da93f33973f9	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1665451247019646978?s=20		Soft rug pull	
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0xc9658b8aeb47b81ef1eff42a593772215fa55d47	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	56	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0x8661a803d63b238a1d72e82deecc1a384b9860de	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	43114	Protocol attack	Atomic_Wallet_hack
-5/6/2023	0x2357cf432c4213408b1b2dbafcae30a9c8366859	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	137	Protocol attack	Atomic_Wallet_hack
-13/6/2023	0x00003d1cEf5F30E34510198cB045E4ae0aa20000	https://skynet.certik.com/alerts/security		1	Ice phishing	
-13/6/2023	0x3C7eCDb964A310A40EbBFf410772B4F240B0b8Cf	https://skynet.certik.com/alerts/security		56	Soft rug pull	
-13/6/2023	0x189cF534de3097C08B6bEAF6EB2B9179DAb122d1	https://skynet.certik.com/alerts/security		1	Protocol attack	Exploit on a Deus Finance DEI/USD liquidity pool.
-13/6/2023	0x3C7eCDb964A310A40EbBFf410772B4F240B0b8Cf	https://skynet.certik.com/alerts/security		56	Soft rug pull	
-13/6/2023	0x1E8419E724d51E87f78E222D935fbbdeb631a08B	https://skynet.certik.com/alerts/security		1	Soft rug pull	
-13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		1	Ice phishing	
-13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		56	Ice phishing	
-13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		137	Ice phishing	
-13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		250	Ice phishing	
-13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		10	Ice phishing	
-13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		43114	Ice phishing	
-13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		42161	Ice phishing	
-13/6/2023	0x1E8419E724d51E87f78E222D935fbbdeb631a08B	https://skynet.certik.com/alerts/security		1	Soft rug pull	
+6/5/2023	0x49CE2CF6888A9Fd4f65Aa0F41b120eF279B680Fb	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1665628540640067584?s=20	1	Protocol attack	Atomic_Wallet_hack
+6/5/2023	0xf0f7139919a32539a49f3455340eb9F30A3F79b3	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1665628540640067584?s=20	1	Protocol attack	Atomic_Wallet_hack
+6/5/2023	0x89Ce3C75a9b4833111409AcC2eB8a69a83ec2255	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1665628540640067584?s=20	1	Protocol attack	Atomic_Wallet_hack
+6/5/2023	0x391628df29ac2B66c11AE9515289A26BE06a6340	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1665628540640067584?s=20	1	Protocol attack	Atomic_Wallet_hack
+6/5/2023	0xD29061b76101c5Fa086694bd034A88E43594d30f	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1665628540640067584?s=20	1	Protocol attack	Atomic_Wallet_hack
+6/5/2023	0x7F691EBA903423900B40a397d94f9062cae72Dbf	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1665628540640067584?s=20	1	Protocol attack	Atomic_Wallet_hack
+6/5/2023	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	1	Ice phishing	
+6/5/2023	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	10	Ice phishing	
+6/5/2023	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	250	Ice phishing	
+6/5/2023	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	137	Ice phishing	
+6/5/2023	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	42161	Ice phishing	
+6/5/2023	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	43114	Ice phishing	
+6/5/2023	0xe80b7dd89d1cf4b709612dd9e045da93f33973f9	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1665451247019646978?s=20		Soft rug pull	
+6/5/2023	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
+6/5/2023	0xc9658b8aeb47b81ef1eff42a593772215fa55d47	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	56	Protocol attack	Atomic_Wallet_hack
+6/5/2023	0x8661a803d63b238a1d72e82deecc1a384b9860de	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	43114	Protocol attack	Atomic_Wallet_hack
+6/5/2023	0x2357cf432c4213408b1b2dbafcae30a9c8366859	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	137	Protocol attack	Atomic_Wallet_hack
+6/13/2023	0x00003d1cEf5F30E34510198cB045E4ae0aa20000	https://skynet.certik.com/alerts/security		1	Ice phishing	
+6/13/2023	0x3C7eCDb964A310A40EbBFf410772B4F240B0b8Cf	https://skynet.certik.com/alerts/security		56	Soft rug pull	
+6/13/2023	0x189cF534de3097C08B6bEAF6EB2B9179DAb122d1	https://skynet.certik.com/alerts/security		1	Protocol attack	Exploit on a Deus Finance DEI/USD liquidity pool.
+6/13/2023	0x3C7eCDb964A310A40EbBFf410772B4F240B0b8Cf	https://skynet.certik.com/alerts/security		56	Soft rug pull	
+6/13/2023	0x1E8419E724d51E87f78E222D935fbbdeb631a08B	https://skynet.certik.com/alerts/security		1	Soft rug pull	
+6/13/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		1	Ice phishing	
+6/13/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		56	Ice phishing	
+6/13/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		137	Ice phishing	
+6/13/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		250	Ice phishing	
+6/13/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		10	Ice phishing	
+6/13/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		43114	Ice phishing	
+6/13/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		42161	Ice phishing	
+6/13/2023	0x1E8419E724d51E87f78E222D935fbbdeb631a08B	https://skynet.certik.com/alerts/security		1	Soft rug pull	
+Date	Address	Account	Tweet	Chain ID	Threat category	Comment
+6/14/23	0x60d939de5adf27be53613769606f14cd675664c8	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x5c850fcd66c26c30533e1b879390501fad6fe18c	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x687fc3f9ff4d15d8e00d24136d96b62a25d680ae	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x198cfa74d47a2fd0393d4223ea802e864cbfee7c	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x616fa7a72480c541337fd612ba925a88fc74cba0	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xbcd2008b781800bfc706d462a72e40d0ab74ec50	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x3cfa0d9d98d651eb8d993be85206c09a70bb3489	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xf968679d6c74771c57cd77894e8bb8953fecf1f0	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x7a238314612f6e6d92d71e051c239e3823678414	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xbb265b0345246ebc1c731ec205c1f1cdafa2b9e0	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x0cb628f8f215e8a38d3a87a5ea0af01507e18e73	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x098f65b7b6c5fcff3922e851ad3ee3360f0fdd81	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x333380597a1b7270923c855d81cf1b834333309b	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x76c7fbc94a655ad84f8f015da6a78ec33f95402a	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xf8a0f6651dcd8d6afa70a5b6e7152d16797c7ab1	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x0261ba354054c8dc4630579ef9d5ecfb420894c9	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x40a17117919ff6b755f5ee47ba3386c6ef94d44e	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xb89aad86cc777c7c8e38e044c2af27ee57a0b2c5	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x15ce65363dbe9ac79b126e0f727276062c8d9c14	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xc7a4dca0518aeb85975c2d9025a1eb6aa5792281	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xc3bbefc7520e16bfd08cdb0d0cb9916dd4b91265	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x52aadd2899fbb382b79992bb0b606cf8a48ecebc	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x2ebee3b68620572588f4ee8630d4061b5f16634a	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x1b7612052cb5d3be59765d8bd74bdbd298597793	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x354e450773140f0640da2888fca69a3cbd714e81	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x2eb5bee9d42c1aa41bbab009fa63713e60309952	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xb84c49c1a3a50f691f6e6ea056d837d6bdf6098f	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xd0b0371a8697bfee7e482f1a7ce0cf9ba304911e	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x968c4af2180f9043778e222cace36c468e638171	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xa822c9f4c3925a351de93debbfb55f6428753239	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x0d1170ccdca7b867e07eb2d3d73abe26bb7c9ec7	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x80a207391d480be003011f73e1198d406a194f1d	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x30f876d7f671fc7fecde899524b3faf14d2662e0	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xd5ec4184f918598fa67d1c18306e48042836772a	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x20c6eead2c6692b8140fd8391b50c151ab219480	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xf3e31be9b20292edfc5eda1fd36779f199e273ee	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x5bb09e157ba80c2b90627f130d5ec1c13fa59a6e	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x1addab495bb0600bc09dff14b930434ecc56a471	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x2f8ff5442588aeebf6226fadda687b9ae857027b	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xcdc5e64ea8cee336ebb026f6ce46d486f1c94b09	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xaa4c7c9808193857a930e5cb5f9f2a257164f9b3	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x054316c2aaee7ded767a28dbd4b2fd7d2e1bdc78	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x70b14a78ab21a0003a11eae5ddceb429906cab39	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x8cc9ab2b832a23803198ab80b7e3611c877fdeb4	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x7f3be6345edbe8a45b956db84667c283a790dad9	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xa5bb27aa97e47c13648b826c2666bc8e572acfb2	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x73f5873f191b16b959d7503dc74d3b0f37475176	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x7fc821f7ded3bc4379eacef6aa5eee71670e6dec	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xeaec878d2a3fa1ec97998a2084bcb9337e5bc108	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xf1e8c2daadc27c35242f6f0524085fd1aace9ecf	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xe493cbee5f9053e468b19e21a9eefcefe72e38ed	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xdcba3c457c1bc31426ec04046950837fe36a9f8a	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x1512b7d1de01f3f773f0f8e8b4780ebd16190c11	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x09d59c566947928fe91dfcbe0c802fb5d0aba560	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xd86c37bf7320b505370cb2b1626eda9558146c02	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x1c8bff590e2603220ea5cfcd2dd792729650088b	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x3d85612113642af85d706b53c300112ec1c4f10f	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x9d25915a8a4b800dba67967d281b6a3f4c491e6f	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x45f9fad58411267d611796452d98433aca35b5f3	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x31d194ebbe82c8f9a54199cfd07ddbca28703328	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xdbadbd82cdac5dc5034bcb9f8e037b5239fd7996	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x160deda333c8f698c9063c473e8df943a49a9c00	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x4fbfd0987882bbd203b46ee931658ad47a526f6e	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x88edbbb01f287af1c06cfcf2a3c9082ea4de6242	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x96c2a5206c8ac1e10bf34a2ee8c5d58b0d327139	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xace8cba94964983afc55f379c3a72847e76755a8	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xa32d3b92273b4bad7d590b2ce45b1473788c979d	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x37161cedb8f518f7fe4b310609854c76d439398d	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xa8b020053fa098275183810221b7c90ec9233250	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x3fab4a9692afe0fd1db37f2d40d3bb98b00a6999	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xe371369683c0ea377a3f75967795c6c8d486089b	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x1c922a26c4e74de614801f08f44056fa1698e243	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x15ff36db35ff32d5dc78e7d3633091d956cd694a	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x79fcf32e9ea81b1ac38f306b0a1d0c4a59177514	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xe51ff18e7b6a8c807c33c6d914a25975968dca12	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x00a6eb15507a4c70f147d8eea1ed96fc0e829054	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x398531e018074855a9689eb3f56b8eaebd90e65c	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x6da437ab97ac5f0cba7d30cd35a88692674aa0dc	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x8d64c8e4a4865512a10467e11066288ea4cdd8f0	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x300f09b557d3236f9276ea676335e7b01fc4c11f	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x53b4895a09d0210788ad80347fa81495f1e72a30	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x997a064168b23bd8e99dbbad0ae10e7fab3f09e3	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x590bd61836a26f3e2c1d64f862edffd93d98f0e8	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x9b22e8365f633fed8e6a05182d07ea4c3941180d	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x60620de9acf3d1053476b52d7290e3686d1f07af	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xfb8351c0c61cea6414871f17011a28cd2e587c5a	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x2e6dd4364f0131f3a65167f75a87440538418c3b	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xc24f2a5e2865d1dde5ff31d5121106b62db46366	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x20e44c93f509f79cb99217187a5c2251195be769	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xac6b96587fdf8ef946074adfa641266f0bb9e0bf	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xf75956d00f19ee1012983f3d1d969b809a9bc696	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xf9d0001fd833274f979b7d3c9dc4b8075a449484	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x06d162d0073a1de94d0e9aaf68e001c447720448	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x40e5f17094ecb4f4913819bd478867db87d8c46a	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x9a57efdad1b549c09955cc2755124599ff901718	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xc6af3aabc7d0e4ff035ea52f95bbf0f37bc6a33d	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xd2eed71175f80ababa8913f5d608949a599507cf	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x86eb43604437f24e26465705017d72c3b0a09d80	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x91ea48af762c67b5798094ec744ab10bfcbb0acd	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xfb429fdee77f9c63e72a4d02595af9c123ff7ce1	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xabbd0663dff4995a1ae7c40b1a3f97c53ca54b27	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0x7ba7ce922495f06c9b35aa8adfd4202a8def42f4	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/14/23	0xb3f15cc1e31bb0164dd3fdd07887927e42548051	@cseifert	N/A	1	native ice phishing	https://forta.org/attacks/#sleepdrop
