@@ -502,10 +502,8 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 5/18/23	0x73410a7051257b2b9df81f7288e537f672150e23	Blocksec		1	Ice phishing	
 5/24/23	0x054a3574d8082112575843dd944ff42c58dda38d	Blocksec	https://twitter.com/Phalcon_xyz/status/1661424685320634368?s=20	56	Protocol attack	GPT_Token
 5/24/23	0xcB5ab783Ec11704e07886B17Dbfc8BdDEaDD2CbC	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1661406574844280833?s=20	1	Soft rug pull	
-5/24/23	0x0fb95dd3f4beefaf237addb5486fa183b1ebe794	@DeDotFiSecurity
-	https://twitter.com/DeDotFiSecurity/status/1661406577344106499?s=20	1	Soft rug pull	
-5/24/23	0x0ca7e7e5745bd457f5ed7265ff2cd1c8208575e1	@DeDotFiSecurity
-	https://twitter.com/DeDotFiSecurity/status/1661406579390808068?s=20	1	Soft rug pull	
+5/24/23	0x0fb95dd3f4beefaf237addb5486fa183b1ebe794	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1661406577344106499?s=20	1	Soft rug pull	
+5/24/23	0x0ca7e7e5745bd457f5ed7265ff2cd1c8208575e1	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1661406579390808068?s=20	1	Soft rug pull	
 5/24/23	0xcac1143c6a07fbac729dddb66546f39df6feacec	Blocksec		1	Ice phishing	
 5/24/23	0xcac1143c6a07fbac729dddb66546f39df6feacec	Blocksec		56	Ice phishing	
 5/26/23	0x63605E53D422C4F1ac0e01390AC59aAf84C44A51	@realScamSniffer	https://twitter.com/realScamSniffer/status/1644149450481467392?s=20	1	Protocol attack	
