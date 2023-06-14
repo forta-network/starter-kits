@@ -92,7 +92,7 @@ When a false positive is observed, the scam detector will remove the previously 
 
 | BotID | Name | AlertId | Alert Logic |
 |-------|------|---------|-------|
-| 0xd9584a587a469f3cdd8a03ffccb14114bc78485657e28739b8036aee7782df5c | SEAPORT-PHISHING-TRANSFER | PassThrough |
+| 0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac | nft-phishing-sale | PassThrough |
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-HIGH-NUM-APPROVALS | Combination |
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PREV-APPROVED-TRANSFERED | PassThrough |
 | 0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400 | tornado cash withdrawl | FUNDING-TORNADO-CASH | Combination |

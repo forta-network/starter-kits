@@ -60,7 +60,7 @@ class TestBaseBotParser:
 
     def test_get_fromAddr_nft_order_metadata(self):
         metadata = {"interactedMarket": "opensea","transactionHash": "0x4fff109d9a6c030fce4de9426229a113524903f0babd6de11ee6c046d07226ff","toAddr": "0xBF96d79074b269F75c20BD9fa6DAed0773209EE7","fromAddr": "0x08395C15C21DC3534B1C3b1D4FA5264E5Bd7020C","initiator": "0xaefc35de05da370f121998b0e2e95698841de9b1","totalPrice": "0.001","avgItemPrice": "0.0002","contractAddress": "0xae99a698156ee8f8d07cbe7f271c31eeaac07087","floorPrice": "0.58","timestamp": "1671432035","floorPriceDiff": "-99.97%"}
-        alert_event = TestBaseBotParser.generate_alert("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "nft-possible-phishing-transfer", "description", metadata)
+        alert_event = TestBaseBotParser.generate_alert("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "nft-phishing-sale", "description", metadata)
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
         assert "0xBF96d79074b269F75c20BD9fa6DAed0773209EE7".lower() in addresses.keys(), "this should be the attacker address"
         assert "0xaefc35de05da370f121998b0e2e95698841de9b1" in addresses.keys(), "this should also be attacker address"

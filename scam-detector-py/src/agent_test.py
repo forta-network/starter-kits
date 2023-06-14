@@ -436,7 +436,7 @@ class TestScamDetector:
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac"
-        alert_id = "nft-possible-phishing-transfer"
+        alert_id = "nft-phishing-sale"
         description = "3 SewerPass id/s: 19445,25417,5996 sold on Opensea 🌊 for 0.01 ETH with a floor price of 2.5 ETH"
         metadata = {"interactedMarket": "opensea","transactionHash": "0x4fff109d9a6c030fce4de9426229a113524903f0babd6de11ee6c046d07226ff","toAddr": "0xBF96d79074b269F75c20BD9fa6DAed0773209EE7","fromAddr": "0x08395C15C21DC3534B1C3b1D4FA5264E5Bd7020C","initiator": "0xaefc35de05da370f121998b0e2e95698841de9b1","totalPrice": "0.001","avgItemPrice": "0.0002","contractAddress": "0xae99a698156ee8f8d07cbe7f271c31eeaac07087","floorPrice": "0.58","timestamp": "1671432035","floorPriceDiff": "-99.97%"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
@@ -621,31 +621,31 @@ class TestScamDetector:
         
         bot_id = "0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560"
         alert_id = "NEW-SCAMMER-CONTRACT-CODE-HASH"
-        description = "0x731c8288a5a411c2bc0608061a7d8cb08f006685 created contract 0xeac1236222d92fc66e1fd44122c132c4e122859b. It is similar to scam contract 0xd680016776474bd8d9acc98c96c9d7d794cbf9b4 created by 0x713a39d422918d1f9157129426e4b08e6478ef05"
+        description = "0xb48b5b285ecda25e4e06614db34f19ac59ece577 likely involved in a scam (SCAM-DETECTOR-SIMILAR-CONTRACT, propagation)"
 
-        metadata = {"alert_hash":"0xfb1ba7974e2be1622c2f0db7a9ceb763650c857434d55ba06127a0409ac5ce7d","new_scammer_contract_address":"0xeac1236222d92fc66e1fd44122c132c4e122859b","new_scammer_eoa":"0x731c8288a5a411c2bc0608061a7d8cb08f006685","scammer_contract_address":"0xd680016776474bd8d9acc98c96c9d7d794cbf9b4","scammer_eoa":"0x713a39d422918d1f9157129426e4b08e6478ef05","similarity_hash":"0f18d246eedcd7b1e7df31a0922701da640e6df376675746b1f76199bc06910a","similarity_score":"0.9847575306892395"}
+        metadata = {"alert_hash":"0x57e0151973e453af21de041ac0ed5bea06f8167da6cfb38240939d6d3b3fd201","new_scammer_contract_address":"0x43abdc640427091f6ce16f68c92775f0c3b4e43b","new_scammer_eoa":"0xb48b5b285ecda25e4e06614db34f19ac59ece577","scammer_contract_address":"0x2874a919b86b7f49f1fa3b53a2a61800a29a6a3b","scammer_eoa":"0xba412a06bb5222861f825363112d452cb4bf1164","similarity_hash":"8b2a9102c1ae5826271f6cf8c5bac3cfd49c524c0838458fa122d0fde374e359","similarity_score":"0.9804986119270325"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
         findings = agent.detect_scam(w3, alert_event, True)
 
         assert len(findings) == 1, "this should have triggered a finding"
         assert findings[0].alert_id == "SCAM-DETECTOR-SIMILAR-CONTRACT"
-        assert findings[0].metadata['scammer_address'] == "0x731c8288a5a411c2bc0608061a7d8cb08f006685", "metadata should not be empty"
-        assert findings[0].metadata['scammer_contract_address'] == "0xeac1236222d92fc66e1fd44122c132c4e122859b", "metadata should not be empty"
-        assert findings[0].metadata['existing_scammer_address'] == "0x713a39d422918d1f9157129426e4b08e6478ef05", "metadata should not be empty"
-        assert findings[0].metadata['existing_scammer_contract_address'] == "0xd680016776474bd8d9acc98c96c9d7d794cbf9b4", "metadata should not be empty"
-        assert findings[0].metadata['similarity_score'] == "0.9847575306892395", "metadata should not be empty"
-        assert findings[0].metadata['involved_alert_id_1'] == "SCAM-DETECTOR-RAKE-TOKEN", "metadata should not be empty"
-        assert findings[0].metadata['involved_alert_hash_1'] == "0xfb1ba7974e2be1622c2f0db7a9ceb763650c857434d55ba06127a0409ac5ce7d", "metadata should not be empty"
+        assert findings[0].metadata['scammer_address'] == "0xb48b5b285ecda25e4e06614db34f19ac59ece577", "metadata should not be empty"
+        assert findings[0].metadata['scammer_contract_address'] == "0x43abdc640427091f6ce16f68c92775f0c3b4e43b", "metadata should not be empty"
+        assert findings[0].metadata['existing_scammer_address'] == "0xba412a06bb5222861f825363112d452cb4bf1164", "metadata should not be empty"
+        assert findings[0].metadata['existing_scammer_contract_address'] == "0x2874a919b86b7f49f1fa3b53a2a61800a29a6a3b", "metadata should not be empty"
+        assert findings[0].metadata['similarity_score'] == "0.9804986119270325", "metadata should not be empty"
+        assert findings[0].metadata['involved_threat_categories'] == "rake-token", "metadata should not be empty"
+        assert findings[0].metadata['involved_alert_hash_1'] == "0x57e0151973e453af21de041ac0ed5bea06f8167da6cfb38240939d6d3b3fd201", "metadata should not be empty"
 
         assert findings[0].labels is not None, "labels should not be empty"
         label = findings[0].labels[0]
-        assert label.entity == "0x731c8288a5a411c2bc0608061a7d8cb08f006685", "entity should be attacker address"
+        assert label.entity == "0xb48b5b285ecda25e4e06614db34f19ac59ece577", "entity should be attacker address"
         assert label.label == "scammer-eoa/similar-contract/propagation", "entity should labeled as scam"
         assert label.confidence == 0.4, "entity should labeled with 0.7 confidence"
 
         label = findings[0].labels[1]
-        assert label.entity == "0xeac1236222d92fc66e1fd44122c132c4e122859b", "entity should be attacker address"
+        assert label.entity == "0x43abdc640427091f6ce16f68c92775f0c3b4e43b", "entity should be attacker address"
         assert label.label == "scammer-contract/similar-contract/propagation", "entity should labeled as scam"
         assert label.confidence == 0.4, "entity should labeled with 0.7 confidence"
 
