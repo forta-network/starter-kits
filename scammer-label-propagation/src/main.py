@@ -10,9 +10,9 @@ from web3 import Web3
 from src.constants import (ATTACKER_CONFIDENCE, MIN_FOLDS_ATTACKER, N_FOLDS,
                            PREDICTED_ATTACKER_CONFIDENCE, VICTIM_SAMPLING, SEED)
 from src.model.aux import cross_entropy_masked
-from src.model.model import ModelAttention
+from src.model.model import ModelAttention, ModelAttentionMultiHead
 from src.model.train import prepare_graph_and_train, prepare_graph_and_predict
-from src.preprocessing.get_data import (collect_data_parallel_parts,
+from src.preprocessing.get_data import (collect_data_parallel_parts, collect_data_zettablock,
                                         download_labels_graphql,
                                         get_automatic_labels)
 from src.preprocessing.process_data import prepare_data
@@ -29,10 +29,12 @@ def run_all(central_node):
     central_node = central_node.lower()
     logger.info(f"{central_node}:\tStart processing")
 
-    model_type = ModelAttention
+    # model_type = ModelAttention
+    model_type = ModelAttentionMultiHead
     loss_function = cross_entropy_masked
 
-    data = collect_data_parallel_parts(central_node)
+    # data = collect_data_parallel_parts(central_node)
+    data = collect_data_zettablock(central_node)
     all_nodes_dict, node_feature, transactions_overview, edge_indexes, edge_features = prepare_data(data)
     labels_df = download_labels_graphql(all_nodes_dict, central_node)
     np.random.seed(SEED)
