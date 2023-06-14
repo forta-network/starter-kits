@@ -16,6 +16,216 @@ dynamo = dynamo_table(get_secrets())
 
 
 
+def collect_data_zettablock(central_node):
+    n_retries = 3
+    API_key = get_secrets()['apiKeys']['ZETTABLOCK']
+
+    list_of_addresses = get_list_of_addresses_zettablock(central_node, API_key, n_retries=n_retries)
+    erc20_data = get_erc20_data_zettablock(list_of_addresses, API_key=API_key, n_retries=n_retries)
+    eth_data = get_eth_data_zettablock(list_of_addresses, API_key=API_key, n_retries=n_retries)
+    data = {**erc20_data, **eth_data}
+    logger.info(f'{central_node}:\tData collected')
+    return data
+
+
+def get_list_of_addresses_zettablock(central_node, API_key, n_retries=3):
+    # Fist step is to query all the addresses that had some interaction with the central node
+    # all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_4afc4b8183174d1dbbef855a0144efd4/graphql"
+    all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_bb1d414ac0ac4d76a1ff1ae2e2b5c3f0/graphql"
+    all_addresses_query = """
+    query associatedAddresses($address: String) {
+      receiver: records(from_address: $address) {
+        to_address
+      }
+      sender: records(to_address: $address) {
+        from_address
+      }
+    }
+    """
+    all_addresses_variables = {"address": central_node}
+    payload = {"query": all_addresses_query, "variables": all_addresses_variables}
+    headers = {
+        "accept": "application/json",
+        "X-API-KEY": API_key,
+        "content-type": "application/json"
+    }
+    # Need to add a retry mechanism in case the request fails
+    for i in range(n_retries):
+        try:
+            response = requests.post(all_addresses_url, json=payload, headers=headers)
+            if response.status_code != 200:
+                raise ValueError(f"Status code: {response.status_code}")
+        except Exception as e:
+            logger.debug('Retrying')
+            if i == (n_retries - 1):
+                raise ValueError(f'{central_node}:\tGetting all addresses failed. {response}\n{e}', exec_info=True)
+        else:
+            break
+    
+    list_of_addresses = list(set([a['from_address'] for a in response.json()['data']['sender']] + 
+                                 [a['to_address'] for a in response.json()['data']['receiver']]))
+    if len(list_of_addresses) < MIN_NEIGHBORS:
+        raise Warning(f'{central_node}:\tNot enough neighbors, skipping')
+    if len(list_of_addresses) > MAX_NEIGHBORS:
+        raise Warning(f'{central_node}:\tToo many neighbors, skipping')
+    return list_of_addresses
+
+
+def get_erc20_data_zettablock(list_of_addresses, API_key, n_retries=3):
+    # ERC20 obtaining the data
+    erc20_url = "https://api.zettablock.com/api/v1/dataset/sq_e0c40a9d7531406fad1deef330c9ec66/graphql"
+    erc20_query = """
+        query associatedAddresses($address: String!) {
+        receiver: records(from_address: $address) {
+            data_creation_date
+            from_address
+            to_address
+            sum_price_in_usd
+            max_price_in_usd
+            n_erc20_transactions_together
+        }
+        sender: records(to_address: $address) {
+            data_creation_date
+            from_address
+            to_address
+            sum_price_in_usd
+            max_price_in_usd
+            n_erc20_transactions_together
+        }
+        }
+    """
+    all_erc20_transactions = []
+    headers = {
+            "accept": "application/json",
+            "X-API-KEY": API_key,
+            "content-type": "application/json"
+        }
+    for address in list_of_addresses:
+        variables = {"address":address}
+        payload = {"query": erc20_query, "variables": variables}
+        for i in range(n_retries):
+            try:
+                response = requests.post(erc20_url, json=payload, headers=headers)
+                if response.status_code != 200:
+                    raise ValueError(f"Status code: {response.status_code}")
+            except Exception as e:
+                logger.debug('Retrying')
+            else:
+                all_erc20_transactions.append(pd.DataFrame(response.json()['data']['receiver']))
+                all_erc20_transactions.append(pd.DataFrame(response.json()['data']['sender']))
+                break
+        # If the request fails n_retries times, it will skip the address
+        if i == (n_retries - 1):
+            continue
+    
+    all_erc20_transactions_df = pd.concat(all_erc20_transactions).reset_index(drop=True).drop_duplicates()
+
+    erc20_out = all_erc20_transactions_df[
+        all_erc20_transactions_df['from_address'].isin(list_of_addresses)].groupby('from_address').agg(
+        {'to_address': 'nunique', 'sum_price_in_usd': 'sum', 'max_price_in_usd': 'max', 'n_erc20_transactions_together': 'sum'}).reset_index()
+    erc20_out['avg_usd_out_erc20'] = erc20_out['sum_price_in_usd'] / erc20_out['n_erc20_transactions_together']
+    erc20_out.columns = ['address', 'n_unique_addresses_out', 'total_usd_out_erc20', 'max_usd_out_erc20', 'n_transactions_out_erc20', 'avg_usd_out_erc20']
+
+    erc20_in = all_erc20_transactions_df[
+        all_erc20_transactions_df['to_address'].isin(list_of_addresses)].groupby('to_address').agg(
+        {'from_address': 'nunique', 'sum_price_in_usd': 'sum', 'max_price_in_usd': 'max', 'n_erc20_transactions_together': 'sum'}).reset_index()
+    erc20_in['avg_usd_in_erc20'] = erc20_in['sum_price_in_usd'] / erc20_in['n_erc20_transactions_together']
+    erc20_in.columns = ['address', 'n_unique_addresses_in', 'total_usd_in_erc20', 'max_usd_in_erc20', 'n_transactions_in_erc20', 'avg_usd_in_erc20']
+
+    all_erc20_transactions_temp = all_erc20_transactions_df[all_erc20_transactions_df['to_address'].isin(list_of_addresses)]
+    all_erc20_transactions_temp = all_erc20_transactions_temp[all_erc20_transactions_temp['from_address'].isin(list_of_addresses)]
+    all_erc20_transactions_temp = all_erc20_transactions_temp.groupby(['from_address', 'to_address']).agg(
+        {'sum_price_in_usd': 'sum', 'max_price_in_usd': 'max', 'n_erc20_transactions_together': 'sum'}).reset_index()
+    all_erc20_transactions_temp['avg_usd_erc20'] = all_erc20_transactions_temp['sum_price_in_usd'] / all_erc20_transactions_temp['n_erc20_transactions_together']
+    all_erc20_transactions_temp.columns = ['from_address', 'to_address', 'total_usd_together_erc20', 'max_usd_together_erc20', 
+                                           'n_transactions_together_erc20', 'avg_usd_together_erc20']    
+
+    erc20_data = {}
+    # Ordering columns
+    erc20_data['all_erc20_transactions'] = all_erc20_transactions_temp[['from_address', 'to_address', 'n_transactions_together_erc20',
+       'max_usd_together_erc20', 'avg_usd_together_erc20','total_usd_together_erc20']]
+    erc20_data['erc20_out'] = erc20_out[['address', 'n_transactions_out_erc20', 'max_usd_out_erc20', 'avg_usd_out_erc20', 'total_usd_out_erc20']]
+    erc20_data['erc20_in'] = erc20_in[['address', 'n_transactions_in_erc20', 'max_usd_in_erc20', 'avg_usd_in_erc20', 'total_usd_in_erc20']]
+    return erc20_data
+
+
+def get_eth_data_zettablock(list_of_addresses, API_key, n_retries=3):
+    # ETH transactions obtaining the data
+    eth_url = "https://api.zettablock.com/api/v1/dataset/sq_d68db0368d1c41da836e423061af5616/graphql"
+    eth_query = """
+        query associatedAddresses($address: String!) {
+        receiver: records(from_address: $address) {
+            data_creation_date
+            from_address
+            to_address
+            sum_value_eth
+            max_value_eth
+            n_transactions_together
+        }
+        sender: records(to_address: $address) {
+            data_creation_date
+            from_address
+            to_address
+            sum_value_eth
+            max_value_eth
+            n_transactions_together
+        }
+        }
+    """
+    all_eth_transactions = []
+    headers = {
+            "accept": "application/json",
+            "X-API-KEY": API_key,
+            "content-type": "application/json"
+        }
+    for address in list_of_addresses:
+        variables = {"address":address}
+        payload = {"query": eth_query, "variables": variables}
+        for i in range(n_retries):
+            try:
+                response = requests.post(eth_url, json=payload, headers=headers)
+                if response.status_code != 200:
+                    raise ValueError(f"Status code: {response.status_code}")
+            except Exception as e:
+                logger.debug('Retrying')
+            else:
+                all_eth_transactions.append(pd.DataFrame(response.json()['data']['receiver']))
+                all_eth_transactions.append(pd.DataFrame(response.json()['data']['sender']))
+                break
+        # If the request fails n_retries times, it will skip the address
+        if i == (n_retries - 1):
+            continue
+
+    all_eth_transactions_df = pd.concat(all_eth_transactions).reset_index(drop=True).drop_duplicates()
+    eth_out = all_eth_transactions_df[
+        all_eth_transactions_df['from_address'].isin(list_of_addresses)].groupby('from_address').agg(
+        {'to_address': 'nunique', 'sum_value_eth': 'sum', 'max_value_eth': 'max', 'n_transactions_together': 'sum'}).reset_index()
+    eth_out['avg_value_out_eth'] = eth_out['sum_value_eth'] / eth_out['n_transactions_together']
+    eth_out.columns = ['address', 'n_unique_addresses_out', 'total_value_out_eth', 'max_value_out_eth', 'n_transactions_out_eth', 'avg_value_out_eth']
+
+    eth_in = all_eth_transactions_df[
+        all_eth_transactions_df['to_address'].isin(list_of_addresses)].groupby('to_address').agg(
+        {'from_address': 'nunique', 'sum_value_eth': 'sum', 'max_value_eth': 'max', 'n_transactions_together': 'sum'}).reset_index()
+    eth_in['avg_value_in_eth'] = eth_in['sum_value_eth'] / eth_in['n_transactions_together']
+    eth_in.columns = ['address', 'n_unique_addresses_in', 'total_value_in_eth', 'max_value_in_eth', 'n_transactions_in_eth', 'avg_value_in_eth']
+
+    all_eth_transactions_temp = all_eth_transactions_df[all_eth_transactions_df['to_address'].isin(list_of_addresses)]
+    all_eth_transactions_temp = all_eth_transactions_temp[all_eth_transactions_temp['from_address'].isin(list_of_addresses)]
+    all_eth_transactions_temp = all_eth_transactions_temp.groupby(['from_address', 'to_address']).agg(
+        {'sum_value_eth': 'sum', 'max_value_eth': 'max', 'n_transactions_together': 'sum'}).reset_index()
+    all_eth_transactions_temp['avg_value_together_eth'] = all_eth_transactions_temp['sum_value_eth'] / all_eth_transactions_temp['n_transactions_together']
+    all_eth_transactions_temp.columns = ['from_address', 'to_address', 'total_value_together', 'max_value_together_eth', 
+                                           'n_transactions_together', 'avg_value_together_eth']    
+    
+    eth_data = {}
+    eth_data['all_eth_transactions'] = all_eth_transactions_temp[[
+        'from_address', 'to_address', 'n_transactions_together', 'max_value_together_eth', 'avg_value_together_eth', 
+        'total_value_together']]
+    eth_data['eth_out'] = eth_out[['address', 'n_transactions_out_eth', 'max_value_out_eth', 'avg_value_out_eth', 'total_value_out_eth']]
+    eth_data['eth_in'] = eth_in[['address', 'n_transactions_in_eth', 'max_value_in_eth', 'avg_value_in_eth', 'total_value_in_eth']]
+    return eth_data
+
+
 def get_all_related_addresses(central_node) -> str:
     """
     Querying allium. Returns the list of addresses that are first order neighbours of the central node.
