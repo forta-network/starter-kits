@@ -1,6 +1,6 @@
 # Attack Detector Bot Release Notes
 
-## v0.3.43 (June 12 2023: beta)
+## v0.3.43 (June 12 2023: beta, June 14 2023: prod)
 - moved from allium to zettablock to obtain contract creations
 
 ## v0.3.42 (June 1 2023: beta, June 2 2023: prod)
