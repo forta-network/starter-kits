@@ -545,7 +545,6 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 6/13/23	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		43114	Ice phishing	
 6/13/23	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		42161	Ice phishing	
 6/13/23	0x1E8419E724d51E87f78E222D935fbbdeb631a08B	https://skynet.certik.com/alerts/security		1	Soft rug pull	
-Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 6/14/23	0x60d939de5adf27be53613769606f14cd675664c8	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
 6/14/23	0x5c850fcd66c26c30533e1b879390501fad6fe18c	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
 6/14/23	0x687fc3f9ff4d15d8e00d24136d96b62a25d680ae	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
