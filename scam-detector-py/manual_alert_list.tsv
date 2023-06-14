@@ -588,3 +588,16 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 5/6/2023	0xc9658b8aeb47b81ef1eff42a593772215fa55d47	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	56	Protocol attack	Atomic_Wallet_hack
 5/6/2023	0x8661a803d63b238a1d72e82deecc1a384b9860de	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	43114	Protocol attack	Atomic_Wallet_hack
 5/6/2023	0x2357cf432c4213408b1b2dbafcae30a9c8366859	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	137	Protocol attack	Atomic_Wallet_hack
+13/6/2023	0x00003d1cEf5F30E34510198cB045E4ae0aa20000	https://skynet.certik.com/alerts/security		1	Ice phishing	
+13/6/2023	0x3C7eCDb964A310A40EbBFf410772B4F240B0b8Cf	https://skynet.certik.com/alerts/security		56	Soft rug pull	
+13/6/2023	0x189cF534de3097C08B6bEAF6EB2B9179DAb122d1	https://skynet.certik.com/alerts/security		1	Protocol attack	Exploit on a Deus Finance DEI/USD liquidity pool.
+13/6/2023	0x3C7eCDb964A310A40EbBFf410772B4F240B0b8Cf	https://skynet.certik.com/alerts/security		56	Soft rug pull	
+13/6/2023	0x1E8419E724d51E87f78E222D935fbbdeb631a08B	https://skynet.certik.com/alerts/security		1	Soft rug pull	
+13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		1	Ice phishing	
+13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		56	Ice phishing	
+13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		137	Ice phishing	
+13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		250	Ice phishing	
+13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		10	Ice phishing	
+13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		43114	Ice phishing	
+13/6/2023	0x9eF28E7A16f94c95C44906d8f1Bd603f931E82aB	https://skynet.certik.com/alerts/security		42161	Ice phishing	
+13/6/2023	0x1E8419E724d51E87f78E222D935fbbdeb631a08B	https://skynet.certik.com/alerts/security		1	Soft rug pull	
