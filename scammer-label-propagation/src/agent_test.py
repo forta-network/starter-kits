@@ -199,7 +199,7 @@ class TestScammerLabelPropagationAgent(unittest.TestCase):
                  "source":
                     {"bot": {'id': "0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23"}},
                  "labels": [{
-                        'entity': '0xfa080f371f2b9986dfd0a692da4da343178233d0',
+                        'entity': central_node,
                         'label': 'Attacker',
                         'confidence': 1,
                         'entity_type': 'Address'
