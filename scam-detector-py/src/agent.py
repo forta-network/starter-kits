@@ -677,7 +677,7 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
                 logging.error(f"{BOT_VERSION}: CHAIN_ID not set")
                 raise Exception("CHAIN_ID not set")
 
-        chain_id = int(alert_event.chain_id) if (alert_event.alert.source.block.chain_id is None or alert_event.alert.source.block.chain_id == 0) else int(alert_event.alert.source.block.chain_id)
+        chain_id = int(alert_event.chain_id) 
         if chain_id == CHAIN_ID:
             # got alert from the right chain
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - received alert for proper chain {CHAIN_ID}")
@@ -795,7 +795,7 @@ def get_similar_contract_labels(w3, forta_explorer) -> pd.DataFrame:
     df_labels['to_entity_deployer'] = df_labels['deployer_info'].apply(lambda x: x[9:9+42])
     df_labels['from_entity'] = df_labels['metadata'].apply(lambda x: get_value(x, "associated_scammer_contract"))
     # drop all but from_entity and to_entity
-    df_labels.drop(df_labels.columns.difference(['from_entity', 'from_entity_deployer', 'to_entity', 'to_entity_deployer']), 1, inplace=True)                                      
+    df_labels.drop(df_labels.columns.difference(['from_entity', 'from_entity_deployer', 'to_entity', 'to_entity_deployer']), axis=1, inplace=True)                                      
     return df_labels
 
 
@@ -809,7 +809,7 @@ def get_scammer_association_labels(w3, forta_explorer) -> pd.DataFrame:
     df_labels['to_entity'] = df_labels['to_entity'].apply(lambda x: x.lower())
     df_labels['from_entity'] = df_labels['metadata'].apply(lambda x: get_value(x, "associated_scammer"))
     # drop all but from_entity and to_entity
-    df_labels.drop(df_labels.columns.difference(['from_entity', 'to_entity']), 1, inplace=True)                                      
+    df_labels.drop(df_labels.columns.difference(['from_entity', 'to_entity']), axis=1, inplace=True)                                      
     return df_labels
 
 

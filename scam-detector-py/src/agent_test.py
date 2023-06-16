@@ -449,7 +449,43 @@ class TestScamDetector:
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 
-   
+
+    def test_detect_private_key_compromise(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03"
+        alert_id = "PKC-2"
+        description = "0x006a176a0092b19ad0438919b08a0ed317a2a9b5 transferred funds to 0xdcde9a1d3a0357fa3db6ae14aacb188155362974 and has been inactive for a week"
+        metadata = {"anomalyScore":"0.00011111934217349434","attacker":"0xdcde9a1d3a0357fa3db6ae14aacb188155362974","transferredAsset":"MATIC","txHash":"0xd39f161892b9cb184b9daa44d2d5ce4a75ab3133275d5f12a4a2b5eed56b6f41","victims":"0x006a176a0092b19ad0438919b08a0ed317a2a9b5"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "should be private key compromise finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+
+
+    def test_detect_impersonating_token(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127"
+        alert_id = "IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR"
+        description = "0x0cfeaed6f106154153325342d509b3a61b94d68c deployed an impersonating token contract at 0xfbd4f5ce3824af29fcb9e90ccb239f1761670606. It impersonates token BTC (Bitcoin) at 0x05f774f2eca50291a0407ca881f6405d84ea005b"
+        metadata = {"anomalyScore":"0.008463572974272662","newTokenContract":"0xfbd4f5ce3824af29fcb9e90ccb239f1761670606","newTokenDeployer":"0x0cfeaed6f106154153325342d509b3a61b94d68c","newTokenName":"Bitcoin","newTokenSymbol":"BTC","oldTokenContract":"0x05f774f2eca50291a0407ca881f6405d84ea005b","oldTokenDeployer":"0x5abf98eb769114e43b1c87413f2a93a384d2e905","oldTokenName":"Bitcoin","oldTokenSymbol":"BTC"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-IMPERSONATING-TOKEN", "should be impersonating token finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
 
     def test_detect_alert_pos_finding_combiner_3_description(self):
         agent.initialize()
@@ -854,7 +890,7 @@ class TestScamDetector:
                  }
 
         alerts = {"0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8_NORMAL-TOKEN-TRANSFERS-TX": 1,
-                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL": 4
+                  "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_ICE-PHISHING-ERC721-APPROVAL-FOR-ALL": 1
                  }
 
         timestamp = datetime.now().timestamp()
@@ -872,14 +908,14 @@ class TestScamDetector:
                 all_findings.extend(findings)
                 count += 1
 
-        assert len(all_findings) == 3, "should have one finding for EOA/ 2 for contracts created by EOA"
+        assert len(all_findings) == 1
         assert all_findings[0].alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be SCAM-DETECTOR-ICE-PHISHING"
         assert all_findings[0].severity == FindingSeverity.Critical, "should be Critical"
 
         assert all_findings[0].labels is not None, "labels should not be empty"
         label = all_findings[0].labels[0]
         assert "/ml" in label.label
-        assert label.confidence > 0.77 and label.confidence < 0.78, "confidence should be between 0.77 and 0.78"
+        assert label.confidence > 0.86 and label.confidence < 0.87, "confidence should be between 0.86 and 0.87"
         
 
 

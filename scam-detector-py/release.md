@@ -1,10 +1,12 @@
 # Scam Detector Bot Release Notes
 
-## v0.2.3 (June 13th 2023 - beta)
+## v0.2.8 (June 15th 2023 - beta)
 - refactor of label to avoid deduping. Prior to version 0.2.2 a label was either scammer-eoa or scammer-contract with alertId in the metadata giving additional context. Now, the label itself with have this context in the form of 'scammer-eoa/threat_category', e.g. 'scammer-eoa/ice-phishing'. A subscriber can still query all scammer labels using a wildcard query, e.g. scammer* or scammer-eoa*
 - enhance handleFP function to remove specific labels as well as remove labels comprehensively
 - replaced Allium with Zettablock to obtain deployed contract information
-- updated ML model to include FP cases in training data (v4)
+- updated ML model to unique alert id counts as features (v3)
+- incorporate [token impersonation bot](https://explorer.forta.network/bot/0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127) as a passthrough alert: SCAM-DETECTOR-IMPERSONATING-TOKEN
+- incorporate [private key compromise bot](https://explorer.forta.network/bot/0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03) as a passthrough alert: SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE
 
 ## v0.2.1 (June 2nd 2023 - beta)
 - add handler type into alert description
@@ -17,7 +19,6 @@
 - better handling of contracts that base bots alerted on. the associated scammer-contract labels will be decorated with the appropriate alert_id whereas other contracts deployed by the same scammer will receive an generic "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT" alert_id.
 - enhanced the handleTx contract creation to also add pool contract creations (e.g. uniswap pools)
 - add original alert hashes in metadata of emitted label; unified meta data fields for different types of labels for consistency
-- incorporate [token impersonation bot](https://explorer.forta.network/bot/0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127) as a passthrough alert: SCAM-DETECTOR-IMPERSONATING-TOKEN
 - integrated new alerts from the [ice phishing bot](https://explorer.forta.network/bot/0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14): ICE-PHISHING-PULL-SWEEPTOKEN and ICE-PHISHING-OPENSEA-PROXY-UPGRADE. The former allows an scammer to create a transfer transaction using a multicall with pull and sweepToken function; the latter, the scammer can trick a user to upgrading the implementation of a user's opensea proxy contract to the attacker's implementation, which gives the attacker control over user's assets. 
 - integrated new alert from the [label propagation bot](https://explorer.forta.network/bot/0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848): SCAMMER-LABEL-PROPAGATION-2 which operates on a global as opposed to local label propagation graph model.
 

@@ -46,6 +46,7 @@ Threat categories are as follows:
 - impersonating-token - Fired when a token contract has been identified that is impersonating a known established token (e.g. USDC or USDT)
 - address-poisoning - Fired when alert combination is observed that points to address poisoning attack; this threat category is used for labeling poisoning addresses
 - address-poisoner - Fired when alert combination is observed that points to address poisoning attack; this threat category is used for labeling poisoner addresses, aka the address that is initiating the poisoning and the contract performing the poisioning
+- private-key-compromise - Fired when it is suspected that a scammer (e.g. through malware) stolen someone's private key and started to drain assets from the user's wallet
 - attack-stages - Fired when alert combination is observed that points to attack on chain that spans the 4 stages of an attack (funding, preparaiton, exploitation, and money laundering) Many of the alerts here point to rug pulls and rake tokens.
 - similar contract - Fired when a similar contract to a previously identified scammer contract has been identified
 - scammer association - Fired when an EOA is associated with a known scammer account (e.g. receiving or sending funds)
@@ -93,6 +94,7 @@ When a false positive is observed, the scam detector will remove the previously 
 | BotID | Name | AlertId | Alert Logic |
 |-------|------|---------|-------|
 | 0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac | nft-phishing-sale | PassThrough |
+| 0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac | nft-possible-phishing-transfer | Combination |
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-HIGH-NUM-APPROVALS | Combination |
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PREV-APPROVED-TRANSFERED | PassThrough |
 | 0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400 | tornado cash withdrawl | FUNDING-TORNADO-CASH | Combination |
@@ -189,3 +191,4 @@ When a false positive is observed, the scam detector will remove the previously 
 | 0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f | asset drained bot | ASSET-DRAINED | Combination |
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION | Combination |
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE | Combination |
+| 0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03 | private key compromise | PKC-2 | Passthrough |

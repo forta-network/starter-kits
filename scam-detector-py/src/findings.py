@@ -35,6 +35,8 @@ class ScamDetectorFinding:
             return url + "#rake-token"
         elif alert_id == "SCAM-DETECTOR-IMPERSONATING-TOKEN":
             return url + "#impersonating-token"
+        elif alert_id == "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE":
+            return url + "#private-key-compromise"
         else:
             return url
         
@@ -72,6 +74,8 @@ class ScamDetectorFinding:
             return "scammer-deployed-contract"
         elif alert_id == "SCAM-DETECTOR-1":
             return "attack-stages"
+        elif alert_id == "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE":
+            return "private-key-compromise"
         else:
             return ""
 
@@ -221,7 +225,7 @@ class ScamDetectorFinding:
         feature_vector_dict = {"feature_vector": feature_vector_str}
         model_name_dict = {"model_name": MODEL_NAME}
 
-        if alert_id in ["SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-NFT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING']:
+        if alert_id in ["SCAM-DETECTOR-IMPERSONATING-TOKEN", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-NFT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING']:
             for scammer_address in scammer_addresses.split(","):
                 labels.append(Label({
                     'entityType': EntityType.Address,
