@@ -113,12 +113,13 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f", "POSITIVE-REPUTATION-1", "Combination", ""),
                 ("0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f", "ASSET-DRAINED", "Combination", ""),
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION", "Combination", ""),
-                ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE", "Combination", ""),                
+                ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE", "Combination", ""),
+                ("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-2", "PassThrough", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE")                
                 ]
 
 # model information
 # double check whether the above subscriptions include the below model features; otherwise the feature would never be populated
-MODEL_NAME = "v4_scammer_model.joblib"
+MODEL_NAME = "v3_scammer_model.joblib"
 MODEL_FEATURES = ['0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732_NFT-WASH-TRADE',
        '0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732_count',
        '0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732_uniqalertid_count',
@@ -193,7 +194,6 @@ MODEL_FEATURES = ['0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b64
        '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_count',
        '0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14_uniqalertid_count',
        '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e_FUNDING-CHANGENOW-LOW-AMOUNT',
-       '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e_FUNDING-CHANGENOW-NEW-ACCOUNT',
        '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e_count',
        '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e_uniqalertid_count',
        '0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502_ADDRESS-POISONING',
@@ -236,29 +236,30 @@ MODEL_FEATURES = ['0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b64
        '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb_CEX-FUNDING-1',
        '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb_count',
        '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb_uniqalertid_count']
-MODEL_ALERT_THRESHOLD_LOOSE = 0.65  # precison of 42/48 (88%) on test set; 183/192 (95%) on train set
-MODEL_ALERT_THRESHOLD_STRICT = 0.84  # precision of 100% on test and train set
+MODEL_ALERT_THRESHOLD_LOOSE = 0.70  # precison of 42/48 (88%) on test set; 183/192 (95%) on train set
+MODEL_ALERT_THRESHOLD_STRICT = 0.88  # precision of 100% on test and train set
 
 
 # utilized for passthrough and combiner labels
-# these are sourced from manual analysis and represent precision
+# these are sourced from manual analysis and represent precision - last updated 6/15/2023
 CONFIDENCE_MAPPINGS = {
         "sleep-minting": 0.7,
-        "ice-phishing": 0.62,
+        "ice-phishing": 0.75,
         "wash-trading": 0.99, 
-        "fraudulent-nft-order": 0.66,
-        "native-ice-phishing-social-engineering": 0.75,
-        "native-ice-phishing":  0.408,
-        "hard-rug-pull": 0.52,
+        "fraudulent-nft-order": 0.79,
+        "native-ice-phishing-social-engineering": 0.85,
+        "native-ice-phishing":  0.84,
+        "hard-rug-pull": 0.73,
         "soft-rug-pull": 0.53,
-        "rake-token": 0.60,
+        "rake-token": 0.77,
         "address-poisoning": 0.99,
-        "address-poisoner": 0.05,
-        "impersonating-token": 0.8,
+        "address-poisoner": 0.99,
+        "impersonating-token": 0.99,
         "attack-stages": 0.2,
         "similar-contract": 0.4,
         "scammer-deployed-contract": 0.4,
         "scammer-association": 0.4,
+        "private-key-compromise": 0.4,
 }
 
 

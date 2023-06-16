@@ -76,6 +76,8 @@ class BlockChainIndexer:
     
     @staticmethod
     def sql_to_csv(querystr: str) -> str:
+        timeout_sec = 5 * 60  # 5 minutes
+
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
@@ -108,9 +110,12 @@ class BlockChainIndexer:
                     while True:
                         res = requests.get(queryrun_status_endpoint, headers=headers)
                         state = json.loads(res.text)['state']
+                        logging.info(f"Zettablock state {i}: {state}")
                         if state == 'SUCCEEDED' or state == 'FAILED':
                             return state
-                        time.sleep(i)
+                        time.sleep(1)
+                        if i > timeout_sec:
+                            return state
                         i += 1
             
                 if get_response(queryrun_id) == 'SUCCEEDED':

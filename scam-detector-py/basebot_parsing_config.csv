@@ -130,6 +130,7 @@ bot_id,alert_id,type,location,attacker_address_location_in_description,metadata_
 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4,SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION,eoa,metadata,,deployer,
 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14,ICE-PHISHING-HIGH-NUM-APPROVALS,eoa,description,0,,
 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14,ICE-PHISHING-APPROVAL-FOR-ALL,eoa,description,0,,
+0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03,PKC-2,eoa,metadata,,attacker,
 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0,NIP-5,contract,metadata,,address,
 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0,NIP-6,contract,metadata,,address,
 0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11,RAKE-TOKEN-CONTRACT-1,contract,metadata,,pairAddress,
