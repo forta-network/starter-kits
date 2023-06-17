@@ -191,4 +191,4 @@ When a false positive is observed, the scam detector will remove the previously 
 | 0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f | asset drained bot | ASSET-DRAINED | Combination |
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION | Combination |
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE | Combination |
-| 0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03 | private key compromise | PKC-2 | Passthrough |
+| 0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03 | private key compromise | PKC-2 | PassThrough |

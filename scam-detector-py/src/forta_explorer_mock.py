@@ -19,12 +19,12 @@ class FortaExplorerMock:
                 'SCAM-DETECTOR-ADDRESS-POISONER',
                 '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacbaaaaa',
                 1,
-                'scammer-contract/address-poisoner/passhthrough',
+                'address-poisoner',
                 '0xe22536ac6f6a20dbb283e7f61a880993eab63313',
                 'addresss',
                 False,
                 0.9,
-                'metadata',
+                ["address_type=contract","handler_type=passthrough"],
                 '0.2.0'
             ]])
             labels_df = pd.concat([labels_df, temp])
@@ -38,12 +38,12 @@ class FortaExplorerMock:
                 'SCAM-DETECTOR-ADDRESS-POISONER',
                 '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacbaaaaa',
                 1,
-                'scammer-eoa/address-poisoner/passhthrough',
+                'address-poisoner',
                 EOA_ADDRESS_SMALL_TX,
                 'addresss',
                 False,
                 0.9,
-                'metadata',
+                ["address_type=EOA","handler_type=passthrough"],
                 '0.2.0'
             ]])
             labels_df = pd.concat([labels_df, temp])
@@ -57,12 +57,12 @@ class FortaExplorerMock:
                 'SCAM-DETECTOR-ADDRESS-POISONER',
                 '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacbaaaaa',
                 1,
-                'scammer-eoa/address-poisoner/passhthrough',
+                'address-poisoner',
                 EOA_ADDRESS_LARGE_TX,
                 'addresss',
                 False,
                 0.9,
-                'metadata',
+                ["address_type=EOA","handler_type=passthrough"],
                 '0.2.0'
             ]])
             labels_df = pd.concat([labels_df, temp])
@@ -76,18 +76,18 @@ class FortaExplorerMock:
                 'SCAM-DETECTOR-ADDRESS-POISONER',
                 '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacbaaaaa',
                 1,
-                'scammer-contract/address-poisoner/passhthrough',
+                'address-poisoner',
                 CONTRACT,
                 'addresss',
                 False,
                 0.9,
-                'metadata',
+                ["address_type=contract","handler_type=passhthrough"],
                 '0.2.0'
             ]])
             labels_df = pd.concat([labels_df, temp])
 
 
-        if entity == '' and label_query == 'scammer-contract/similar-contract/propagation':
+        if entity == '' and label_query == 'similar-contract':
             temp = pd.DataFrame(columns = ['createdAt', 'id', 'label', 'source', 'alertId', 'alertHash', 'chainId', 'labelstr', 'entity', 'entityType', 'remove', 'confidence', 'metadata', 'botVersion', ], data = [[
                 '2023-03-05 16:01:00',
                 '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacbaaaaa',
@@ -101,12 +101,12 @@ class FortaExplorerMock:
                 'addresss',
                 False,
                 0.9,
-                ["base_bot_alert_ids=ADDRESS-POISONING-FAKE-TOKEN","base_bot_alert_hashes=0x003e7643042d22f54b817ed14003ad6acbee18f40a818b4e5edadd75d9e9b617","threat_description_url=https://forta.org/attacks#address-poisoning","bot_version=0.2.2","associated_scammer_contract=0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc6","deployer_info=Deployer 0x2320a28f52334d62622cc2eafa15de55f9987eaa deployed a contract 0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc5 that is similar to a contract 0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc6 deployed by a known scammer 0x2320a28f52334d62622cc2eafa15de55f9987ecc"],
+                ["address_type=contract","handler_type=propagation","base_bot_alert_ids=ADDRESS-POISONING-FAKE-TOKEN","base_bot_alert_hashes=0x003e7643042d22f54b817ed14003ad6acbee18f40a818b4e5edadd75d9e9b617","threat_description_url=https://forta.org/attacks#address-poisoning","bot_version=0.2.2","associated_scammer_contract=0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc6","deployer_info=Deployer 0x2320a28f52334d62622cc2eafa15de55f9987eaa deployed a contract 0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc5 that is similar to a contract 0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc6 deployed by a known scammer 0x2320a28f52334d62622cc2eafa15de55f9987ecc"],
                 '0.2.0'
             ]])
             labels_df = pd.concat([labels_df, temp])
 
-        if entity == '' and label_query == 'scammer-eoa/scammer-association/propagation':
+        if entity == '' and label_query == 'scammer-association':
             temp = pd.DataFrame(columns = ['createdAt', 'id', 'label', 'source', 'alertId', 'alertHash', 'chainId', 'labelstr', 'entity', 'entityType', 'remove', 'confidence', 'metadata', 'botVersion', ], data = [[
                 '2023-03-05 16:01:00',
                 '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacbaaaaa',
@@ -120,7 +120,7 @@ class FortaExplorerMock:
                 'addresss',
                 False,
                 0.9,
-                ["base_bot_alert_ids=ADDRESS-POISONING-FAKE-TOKEN","base_bot_alert_hashes=0x003e7643042d22f54b817ed14003ad6acbee18f40a818b4e5edadd75d9e9b617","threat_description_url=https://forta.org/attacks#address-poisoning","bot_version=0.2.2","associated_scammer=0x3805ad836968b7d844eac2fe0eb312ccc37e4630"],
+                ["address_type=EOA","handler_type=propagation","base_bot_alert_ids=ADDRESS-POISONING-FAKE-TOKEN","base_bot_alert_hashes=0x003e7643042d22f54b817ed14003ad6acbee18f40a818b4e5edadd75d9e9b617","threat_description_url=https://forta.org/attacks#address-poisoning","bot_version=0.2.2","associated_scammer=0x3805ad836968b7d844eac2fe0eb312ccc37e4630"],
                 '0.2.0'
             ]])
             labels_df = pd.concat([labels_df, temp])
