@@ -33,6 +33,7 @@ class TestScamDetector:
                    "addresses": [],
                    "description": description,
                    "alertId": alert_id,
+                   "chainId": 1,
                    "createdAt": ts,
                    "source": {"bot": {'id': bot_id}, "block": {"chainId": 1, 'number': 5},  'transactionHash': transaction_hash},
                    "metadata": metadata,
@@ -337,11 +338,11 @@ class TestScamDetector:
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
         assert finding.labels[0].entity == '0xa0f80e637919e7aad4090408a63e0c8eb07dfa03'
-        assert finding.labels[0].label == 'scammer-eoa/rake-token/passthrough'
+        assert finding.labels[0].label == 'rake-token'
         found_contract = False
         for label in finding.labels:
             if label.entity == '0x440aeca896009f006eea3df4ba3a236ee8d57d36':
-                assert label.label == 'scammer-contract/rake-token/passthrough'
+                assert label.label == 'rake-token'
                 found_contract = True   
         assert found_contract, "should have found scammer contract"
 
@@ -363,11 +364,11 @@ class TestScamDetector:
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
         assert finding.labels[0].entity == '0xa3fe18ced8d32ca601e3b4794856c85f6f56a176'
-        assert finding.labels[0].label == 'scammer-eoa/soft-rug-pull/passthrough'
+        assert finding.labels[0].label == 'soft-rug-pull'
         found_contract = False
         for label in finding.labels:
             if label.entity == '0xdd17532733f084ee4aa2de4a14993ef363843216':
-                assert label.label == 'scammer-contract/soft-rug-pull/passthrough'
+                assert label.label == 'soft-rug-pull'
                 found_contract = True   
         assert found_contract, "should have found scammer contract"
 
@@ -515,8 +516,8 @@ class TestScamDetector:
         assert finding.labels is not None, "labels should not be empty"
         label = finding.labels[0]
         assert label.entity == "0x21e13f16838e2fe78056f5fd50251ffd6e7098b4", "entity should be attacker address"
-        assert label.label == "scammer-eoa/ice-phishing/combination", "entity should labeled as scam"
-        assert label.confidence == 0.62, "entity should labeled with 0.62 confidence"
+        assert label.label == "ice-phishing", "entity should labeled as scam"
+        assert label.confidence == 0.75, "entity should labeled with 0.62 confidence"
 
     def test_detect_alert_pos_finding_combiner_3_metadata(self):
         agent.initialize()
@@ -650,7 +651,7 @@ class TestScamDetector:
         findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"combination")
         assert len(findings) == 1, "this should have triggered a finding"
 
-    # TODO - fix with new data once version 0.2.2 is deployed and emitted such labels
+    # TODO - fix with new data once version 0.2.8 is deployed and emitted such labels
     def test_detect_alert_similar_contract(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
@@ -677,12 +678,12 @@ class TestScamDetector:
         assert findings[0].labels is not None, "labels should not be empty"
         label = findings[0].labels[0]
         assert label.entity == "0xb48b5b285ecda25e4e06614db34f19ac59ece577", "entity should be attacker address"
-        assert label.label == "scammer-eoa/similar-contract/propagation", "entity should labeled as scam"
+        assert label.label == "similar-contract", "entity should labeled as scam"
         assert label.confidence == 0.4, "entity should labeled with 0.7 confidence"
 
         label = findings[0].labels[1]
         assert label.entity == "0x43abdc640427091f6ce16f68c92775f0c3b4e43b", "entity should be attacker address"
-        assert label.label == "scammer-contract/similar-contract/propagation", "entity should labeled as scam"
+        assert label.label == "similar-contract", "entity should labeled as scam"
         assert label.confidence == 0.4, "entity should labeled with 0.7 confidence"
 
     def test_put_entity_cluster(self):
@@ -914,7 +915,7 @@ class TestScamDetector:
 
         assert all_findings[0].labels is not None, "labels should not be empty"
         label = all_findings[0].labels[0]
-        assert "/ml" in label.label
+        assert "ml" == label.metadata['handler_type']
         assert label.confidence > 0.86 and label.confidence < 0.87, "confidence should be between 0.86 and 0.87"
         
 
