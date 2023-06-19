@@ -5,14 +5,16 @@ from forta_agent import Finding, FindingType, FindingSeverity, get_json_rpc_url,
 from src.constants import THRESHOLDS, DAY_LOOKBACK_WINDOW
 from web3 import Web3
 from bot_alert_rate import calculate_alert_rate, ScanCountType
-from src.keys import ZETTABLOCK_KEY
+from src.storage import get_secrets
+
+SECRETS_JSON = get_secrets()
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 CHAIN_ID = -1
 
 
 def initialize():
-    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
 
 def detect_suspicious_native_transfers(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:

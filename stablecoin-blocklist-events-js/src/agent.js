@@ -18,8 +18,8 @@ const {
 
 // load any bot configuration parameters
 const config = require("../bot-config.json");
-
-const { ZETTABLOCK_API_KEY, BOT_ID } = require("./keys");
+const { BOT_ID } = require("./keys");
+const { getSecrets } = require("./storage");
 
 // set up a variable to hold initialization data used in the handler
 const initializeData = {};
@@ -139,7 +139,8 @@ async function createAlert(
 
 function provideInitialize(data) {
   return async function initialize() {
-    process.env["ZETTABLOCK_API_KEY"] = ZETTABLOCK_API_KEY;
+    const SECRETS_JSON = await getSecrets();
+    process.env["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"];
     chainId = (await getEthersProvider().getNetwork()).chainId;
 
     /* eslint-disable no-param-reassign */

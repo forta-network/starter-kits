@@ -16,7 +16,9 @@ from src.utils.findings import (
     InvalidModelFeatures,
 )
 from src.utils.logger import logger
-from src.utils.keys import ZETTABLOCK_KEY
+from src.storage import get_secrets
+
+SECRETS_JSON = get_secrets()
 
 ML_MODEL = None
 ML_EXPLAINER = None
@@ -36,7 +38,7 @@ def initialize():
     with open("model_explainer.pkl", "rb") as f:
         ML_EXPLAINER = dill.load(f)
     logger.info("Complete loading model explainer")
-    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
 
 def get_explanations(model_input) -> str:
