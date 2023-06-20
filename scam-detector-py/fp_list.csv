@@ -74,3 +74,11 @@ address,chain_id,comment
 0xdfad36565b8753e9d2b0bdcbaf652c17f7733047,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
 0x6231881cc679ad241ff5622cd1549008924f066a,1,I am not seiing why this should be considered as a TP. there was not any NFT sold for a low value
 0xfdd442e4d8752433e704da6b07c10b9e4236f62f,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xd4bb298f935cdfa7eb5e363d168f838bb65cdff4,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0x42d403ab9b0603442ac991c0cfe124105dde0811,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0xb90973421e3B6bB342838989C86278d4601D42f3,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0xe7462ed316f6fd3442fd3e78fde1ef745a4c87b4,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0xfa080f371f2b9986dfd0a692da4da343178233d0,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0x4e283abd94aee0a5a64a582def7b22bba60576d8,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0xbf901f52aef5bb098f6f7918e1fa0c639720f409,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0x75444282050682a43d1220cc4a09362c032538a3,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
