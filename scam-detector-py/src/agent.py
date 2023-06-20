@@ -177,10 +177,10 @@ def alert_target(alert_event: forta_agent.alert_event.AlertEvent, bots: tuple) -
     return ""
 
 
-def update_list(items: dict, max_size: int, item: str, alert_id: str, handler_type = ""):
+def update_list(items: dict, max_size: int, item: str, alert_id: str, logic = ""):
     if item not in items.keys():
         items[item] = set()
-    items[item].add(handler_type+alert_id)
+    items[item].add(logic+alert_id)
 
 
     while len(items) > max_size:
@@ -374,10 +374,10 @@ def get_model_score(df_feature_vector: pd.DataFrame) -> float:
     return predictions_proba[0]
 
 
-def already_alerted(cluster: str, alert_id: str, handler_type = ""):
+def already_alerted(cluster: str, alert_id: str, logic = ""):
     global ALERTED_CLUSTERS
     if cluster in ALERTED_CLUSTERS.keys():
-        if (handler_type+alert_id) in ALERTED_CLUSTERS[cluster]:
+        if (logic+alert_id) in ALERTED_CLUSTERS[cluster]:
             return True
     return False
 
@@ -816,7 +816,7 @@ def get_scammer_association_labels(w3, forta_explorer) -> pd.DataFrame:
 
 # this function returns a list of all labels that need to be removed with the address as a starting point
 # it contain a queue of addresses to process and a set of addresses that have already been processed
-# returns a tuple of (entity, label) where label consists of scammer-label/threat_category/handler_type or just scammer-label for older labels (pre 0.2.2)
+# returns a tuple of (entity, label) where label consists of scammer-label/threat_category/logic or just scammer-label for older labels (pre 0.2.2)
 def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_explorer, similar_contract_labels: pd.DataFrame, scammer_association_labels: pd.DataFrame, chain_id: int) -> set:
     global ALERTED_FP_CLUSTERS
     global ALERTED_FP_CLUSTERS
@@ -840,9 +840,12 @@ def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_e
             logging.info(f"{BOT_VERSION}: {starting_address} processing contract {address}. Obtained {len(forta_labels)} labels")
             for index, row in forta_labels.iterrows():
                 logging.info(f"{BOT_VERSION}: {starting_address} processing contract {address}. Label {row['labelstr']}")
-                if any("contract" in s for s in row['metadata']):
-                    logging.info(f"{BOT_VERSION}: {starting_address} adding FP label {row['labelstr']} for contract {address}")
-                    fp_labels.add((address,row["labelstr"],row['metadata']))
+            
+                if row['metadata'] is not None and any("address_type=contract" in s for s in row['metadata']) and any("threat_category=" in s for s in row['metadata']):
+                    threat_category_pair = next((s for s in row['metadata'] if "threat_category" in s), None)
+                    threat_category = threat_category_pair.split("=")[1] 
+                    logging.info(f"{BOT_VERSION}: {starting_address} adding FP label threat category {threat_category} for contract {address}")
+                    fp_labels.add((address,threat_category,tuple(row['metadata'])))
 
                     similar_contract_labels_for_address = similar_contract_labels[similar_contract_labels['from_entity'] == address]
                     for index, row in similar_contract_labels_for_address.iterrows():
@@ -864,9 +867,11 @@ def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_e
             logging.info(f"{BOT_VERSION}: {starting_address} processing EOA {address}. Obtained {len(forta_labels)} labels")
             for index, row in forta_labels.iterrows():
                 logging.info(f"{BOT_VERSION}: {starting_address} processing EOA {address}. Label {row['labelstr']}")
-                if any("EOA" in s for s in row['metadata']):
-                    logging.info(f"{BOT_VERSION}: {starting_address} adding FP label {row['labelstr']} for contract {address}")
-                    fp_labels.add((address, row["labelstr"],row['metadata']))
+                if row['metadata'] is not None and any("address_type=EOA" in s for s in row['metadata']) and any("threat_category=" in s for s in row['metadata']):
+                    threat_category_pair = next((s for s in row['metadata'] if "threat_category" in s), None)
+                    threat_category = threat_category_pair.split("=")[1] 
+                    logging.info(f"{BOT_VERSION}: {starting_address} adding FP label threat category {threat_category} for EOA {address}")
+                    fp_labels.add((address, threat_category,tuple(row['metadata'])))
 
                     # query all deployed contract and add to to_process set
                     contract_addresses = block_chain_indexer.get_contracts(address, chain_id)
@@ -902,8 +907,9 @@ def get_original_threat_category_alert_hash(address: str) -> (tuple):
     source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
     labels_df = FortaExplorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = address.lower())
     for index, row in labels_df.iterrows():
-        if any("EOA" in s for s in row['metadata']):
-            threat_category = row["labelstr"]
+        if row['metadata'] is not None and any("address_type=EOA" in s for s in row['metadata']) and any("threat_category=" in s for s in row['metadata']):
+            threat_category_pair = next((s for s in row['metadata'] if "threat_category" in s), None)
+            threat_category = threat_category_pair.split("=")[1] 
             return (threat_category, row["alertHash"])
 
     return ("", "")
