@@ -9,3 +9,4 @@ __pycache__
 *.tgz
 secrets.json
 keys.py
+malicious-smart-contract-ml-py/src/keys.py~
