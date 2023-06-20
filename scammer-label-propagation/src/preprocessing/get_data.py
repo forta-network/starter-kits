@@ -30,8 +30,8 @@ def collect_data_zettablock(central_node):
 
 def get_list_of_addresses_zettablock(central_node, API_key, n_retries=3):
     # Fist step is to query all the addresses that had some interaction with the central node
-    # all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_4afc4b8183174d1dbbef855a0144efd4/graphql"
-    all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_bb1d414ac0ac4d76a1ff1ae2e2b5c3f0/graphql"
+    all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_4afc4b8183174d1dbbef855a0144efd4/graphql"  # 1 year
+    # all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_bb1d414ac0ac4d76a1ff1ae2e2b5c3f0/graphql"  # 6 months
     all_addresses_query = """
     query associatedAddresses($address: String) {
       receiver: records(from_address: $address) {
@@ -64,6 +64,8 @@ def get_list_of_addresses_zettablock(central_node, API_key, n_retries=3):
     
     list_of_addresses = list(set([a['from_address'] for a in response.json()['data']['sender']] + 
                                  [a['to_address'] for a in response.json()['data']['receiver']]))
+    # Central node is not considered in the above query, so we add it manually
+    list_of_addresses += [central_node]
     if len(list_of_addresses) < MIN_NEIGHBORS:
         raise Warning(f'{central_node}:\tNot enough neighbors, skipping')
     if len(list_of_addresses) > MAX_NEIGHBORS:
@@ -76,7 +78,7 @@ def get_erc20_data_zettablock(list_of_addresses, API_key, n_retries=3):
     erc20_url = "https://api.zettablock.com/api/v1/dataset/sq_e0c40a9d7531406fad1deef330c9ec66/graphql"
     erc20_query = """
         query associatedAddresses($address: String!) {
-        receiver: records(from_address: $address) {
+        receiver: records(from_address: $address, limit: 500) {
             data_creation_date
             from_address
             to_address
@@ -84,7 +86,7 @@ def get_erc20_data_zettablock(list_of_addresses, API_key, n_retries=3):
             max_price_in_usd
             n_erc20_transactions_together
         }
-        sender: records(to_address: $address) {
+        sender: records(to_address: $address, limit: 500) {
             data_creation_date
             from_address
             to_address
@@ -154,7 +156,7 @@ def get_eth_data_zettablock(list_of_addresses, API_key, n_retries=3):
     eth_url = "https://api.zettablock.com/api/v1/dataset/sq_d68db0368d1c41da836e423061af5616/graphql"
     eth_query = """
         query associatedAddresses($address: String!) {
-        receiver: records(from_address: $address) {
+        receiver: records(from_address: $address, limit: 500) {
             data_creation_date
             from_address
             to_address
@@ -162,7 +164,7 @@ def get_eth_data_zettablock(list_of_addresses, API_key, n_retries=3):
             max_value_eth
             n_transactions_together
         }
-        sender: records(to_address: $address) {
+        sender: records(to_address: $address, limit: 500) {
             data_creation_date
             from_address
             to_address

@@ -1,4 +1,0 @@
-ERROR: Error: python: Expecting value: line 1 column 1 (char 0)
-ERROR: Error: python: Expecting value: line 1 column 1 (char 0)
-ERROR: Error: python: Extra data: line 1 column 6 (char 5)
-ERROR: Error: python: Expecting value: line 1 column 1 (char 0)
