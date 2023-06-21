@@ -396,7 +396,7 @@ def get_scam_detector_alert_ids(alert_list: list) -> set:
     return scam_detector_alert_ids
 
 
-def emit_combination_or_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
+def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
     findings = []
     global ALERTED_CLUSTERS
     global ALERTED_CLUSTERS_QUEUE_SIZE
@@ -427,36 +427,12 @@ def emit_combination_or_ml_finding(w3, alert_event: forta_agent.alert_event.Aler
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got {len(alert_list)} alerts from dynamo for cluster {cluster}")
 
 
-        # first assess based on combination heuristic
-        # assess whether the alerts map to combinations we would alert on; the focus is on ice phishing since that is a bit mor noisy
-        #is_present = any(alertId_A == alert[1] for alert in alert_list)
-        alert_condition_met_combination = False
-        if any('ICE-PHISHING-PERMITTED-ERC20-TRANSFER' == alert[1] or 'ICE-PHISHING-SUSPICIOUS-TRANSFER' == alert[1] or 'ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS' == alert[1] or 'ICE-PHISHING-HIGH-NUM-ERC721-APPROVALS' == alert[1] or
-               'ICE-PHISHING-ERC20-APPROVAL-FOR-ALL' == alert[1] or 'ICE-PHISHING-ERC721-APPROVAL-FOR-ALL' == alert[1] or 'ICE-PHISHING-ERC1155-APPROVAL-FOR-ALL' == alert[1] for alert in alert_list):
-            if any('SLEEPMINT-3' == alert[1] for alert in alert_list):
-                alert_condition_met_combination = True
-            elif any('MALICIOUS-ACCOUNT-FUNDING' == alert[1] or 'UMBRA-RECEIVE' == alert[1] or 'CEX-FUNDING-1' == alert[1] or 'AK-AZTEC-PROTOCOL-FUNDING' == alert[1] or 'FUNDING-CHANGENOW-NEW-ACCOUNT' == alert[1] or 'FUNDING-TORNADO-CASH' == alert[1]
-                     or 'TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION' == alert[1] or 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH' == alert[1] or 'MALICIOUS-ACCOUNT-FUNDING' == alert[1] for alert in alert_list):
-                alert_condition_met_combination = True
-            elif any('UNVERIFIED-CODE-CONTRACT-CREATION' == alert[1] or 'FLASHBOT-TRANSACTION' == alert[1] for alert in alert_list):
-                alert_condition_met_combination = True
-            elif any('SUSPICIOUS-TOKEN-CONTRACT-CREATION' == alert[1] for alert in alert_list):
-                alert_condition_met_combination = True
-            elif any('AE-MALICIOUS-ADDR' == alert[1] or 'forta-text-messages-possible-hack' == alert[1] for alert in alert_list):
-                alert_condition_met_combination = True
-            elif any('SCAM' in alert[1] for alert in alert_list):
-                alert_condition_met_combination = True
-
-        # second assess based on ML model
-        alert_condition_met_ml = False
+        # assess based on ML model
         feature_vector = build_feature_vector(alert_list, cluster)
         score = get_model_score(feature_vector)
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got score {score} for cluster {cluster}")
         model_threshold = MODEL_ALERT_THRESHOLD_LOOSE if Utils.is_beta() else MODEL_ALERT_THRESHOLD_STRICT
         if score>model_threshold:
-            alert_condition_met_ml = True
-
-        if alert_condition_met_combination or alert_condition_met_ml:
             #since this is a expensive function, will only check if we are about to raise an alert
             if Utils.is_fp(w3, cluster):
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} identified as FP; skipping")
@@ -468,21 +444,13 @@ def emit_combination_or_ml_finding(w3, alert_event: forta_agent.alert_event.Aler
                 unique_alertIds = set(alert[1] for alert in alert_list)
                 unique_alertHashes = set(alert[2] for alert in alert_list)
                 created_at_datetime = datetime.strptime(alert_event.alert.created_at[0:19], "%Y-%m-%dT%H:%M:%S")
-                if alert_condition_met_combination:
-                    if already_alerted(cluster, alert_id, "combination") and not Utils.is_beta():  # alert repeatedly for beta version, but not prod version
-                        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
-                    else:
-                        findings.append(ScamDetectorFinding.scam_finding(block_chain_indexer, forta_explorer, scammer_address_lower, created_at_datetime, created_at_datetime, scammer_contract_addresses, alert_event.alert.addresses, unique_alertIds, alert_id, unique_alertHashes, CHAIN_ID, "combination"))
-                        update_list(ALERTED_CLUSTERS, ALERTED_CLUSTERS_QUEUE_SIZE, cluster, alert_id, "combination")
-                if alert_condition_met_ml:
-                    if already_alerted(cluster, alert_id, "combination") and not Utils.is_beta():  # alert repeatedly for beta version, but not prod version
-                        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
-                    else:
-                        findings.append(ScamDetectorFinding.scam_finding(block_chain_indexer, forta_explorer, scammer_address_lower, created_at_datetime, created_at_datetime, scammer_contract_addresses, alert_event.alert.addresses, unique_alertIds, alert_id, unique_alertHashes, CHAIN_ID, "ml", score, feature_vector))
-                        update_list(ALERTED_CLUSTERS, ALERTED_CLUSTERS_QUEUE_SIZE, cluster, alert_id, "ml")
+                if already_alerted(cluster, alert_id, "ml"):  
+                    logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
+                else:
+                    findings.append(ScamDetectorFinding.scam_finding(block_chain_indexer, forta_explorer, scammer_address_lower, created_at_datetime, created_at_datetime, scammer_contract_addresses, alert_event.alert.addresses, unique_alertIds, alert_id, unique_alertHashes, CHAIN_ID, "ml", score, feature_vector))
+                    update_list(ALERTED_CLUSTERS, ALERTED_CLUSTERS_QUEUE_SIZE, cluster, alert_id, "ml")
                 
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} added to findings. Findings size: {len(findings)}")
-                
 
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - return total findings: {len(findings)}")
     return findings
@@ -705,12 +673,12 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
             elif alert_logic(alert_event, BASE_BOTS) == "PassThrough":
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - is passthrough alert")
                 findings = []
-                findings.extend(emit_combination_or_ml_finding(w3, alert_event)) # pushing passthrough to assess how well we would do with an ML approach; this is more for testing purposes right now
+                findings.extend(emit_ml_finding(w3, alert_event)) # pushing passthrough to assess how well we would do with an ML approach; this is more for testing purposes right now
                 findings.extend(emit_passthrough_finding(w3, alert_event))
                 return findings
             elif alert_logic(alert_event, BASE_BOTS) == "Combination":  
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - is combination alert")
-                return emit_combination_or_ml_finding(w3, alert_event)
+                return emit_ml_finding(w3, alert_event)
             else:
                 logging.warning(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got base bot alert; not part of subscription")
         else:

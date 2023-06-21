@@ -4,11 +4,10 @@
 
 The Scam Detector bot combines past alerts under a common address from a variety of underlying base bots to emit a high precision label on EOAs and contract addresses. 
 
-The Scam Detector bot has four handlers that process alerts differently:
+The Scam Detector bot has three handlers that process alerts differently:
 1. Passthrough - this handler normalizes the alert information from the base bot and emits an label with minimal processing. 
-2. Combination - this handler consumes a set of alerts and then applies rules to determine to emit an label. E.g. ice phishing + tornado cash funding -> ice phishing alert
-3. ML - this handler works similar to the combination handler, but utilizes a supervised machine learning model instead of a manually authored heuristic.
-4. Propagation - this handler propagates labels from another label. E.g. a scammer was identified deployed an social engineering ice phishing contract. A similar contract bot identified a new scammer account deloying a similar contract. 
+2. ML - utilizes a supervised machine learning model taking number of specific alerts observed for a given EOA as input and predicts whether an EOA is a scammer
+3. Propagation - this handler propagates labels from another label. E.g. a scammer was identified deployed an social engineering ice phishing contract. A similar contract bot identified a new scammer account deloying a similar contract. 
 
 In addition, the scam detector can consume manual information from the Forta community to identify scammers. 
 
@@ -25,11 +24,11 @@ The Scam Detector bot emits labels for identified scammer EOAs and contract addr
 - label/entityType - EntityType.ADDRESS
 - label/confidence - a confidence score from 0-1.0 with 1.0 being most confident the label is correct
 - label/remove - a flag indicating whether the label is being added or removed
-- label/label - a string denoting the label that was placed on the entity. It consists of three elements delimited by a forward slash:
-1. scammer-eoa | scammer-contract
-2. threat_category (see below)
-3. handler_type (passhthrough, combination, ml, manual)
+- label/label - a string denoting the label that was placed on the entity. It currently is set to 'scammer'
 - label/metadata/bot_version - version of the bot when the label was added
+- label/metadata/threat_category - (see below)
+- label/metadata/address_type - EOA or contract
+- label/metadata/logic - (passhthrough, ml, manual)
 - label/metadata/threat_description_url - URL that describes the threat_category in more detail
 
 
@@ -71,11 +70,14 @@ In case of false positives are identified, the scam detector will emit a remove 
 Example label/label:
 ```
     'entityType': EntityType.Address,
-    'label': "scammer-contract/ice-phishing/manual",
+    'label': "scammer",
     'entity': address,
     'confidence': 0.8,
     'remove': "false",
     'metadata': {
+      'address_type=contract',
+      'threat_category=ice_phishing',
+      'logic=manual',
       'threat_description_url=https://forta.org/attack#ice-phishing'
     }
 ```
@@ -83,7 +85,7 @@ Example label/label:
 When a false positive is observed, the scam detector will remove the previously set label including removal of derived labels (e.g. a EOA deploying a contract; a similar contract being identified)
 ```
     'entityType': EntityType.Address,
-    'label': "scammer-eoa/ice-phishing/ml",
+    'label': "scammer",
     'entity': address,
     'confidence': 0.8,
     'remove': "true"
