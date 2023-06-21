@@ -217,7 +217,7 @@ class ScamDetectorFinding:
         logging.info(f"Model name: {MODEL_NAME}")
         
         involved_addresses = list(involved_addresses)[0:10]
-        involved_alert_hashes = list(involved_alert_hashes)[0:10]
+        involved_alert_hashes = sorted(list(involved_alert_hashes)[0:10])
 
         attacker_address_md_dict = {"scammer_addresses": scammer_addresses}
         start_date_dict = {"start_date": start_date.strftime("%Y-%m-%d")}
@@ -247,8 +247,8 @@ class ScamDetectorFinding:
                     'metadata': {
                         'address_type': 'EOA',
                         'chain_id': chain_id,
-                        'base_bot_alert_ids': ','.join(list(involved_alert_ids)),
-                        'base_bot_alert_hashes': ','.join(list(involved_alert_hashes)),
+                        'base_bot_alert_ids': ','.join(sorted(list(involved_alert_ids))),
+                        'base_bot_alert_hashes': ','.join(sorted(list(involved_alert_hashes))),
                         'threat_category': threat_category,
                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                         'bot_version': Utils.get_bot_version(),
@@ -275,8 +275,8 @@ class ScamDetectorFinding:
                                     'metadata': {
                                         'address_type': 'contract',
                                         'chain_id': chain_id,
-                                        'base_bot_alert_ids': ','.join(list(involved_alert_ids)),
-                                        'base_bot_alert_hashes': ','.join(list(involved_alert_hashes)),
+                                        'base_bot_alert_ids': ','.join(sorted(list(involved_alert_ids))),
+                                        'base_bot_alert_hashes': ','.join(sorted(list(involved_alert_hashes))),
                                         'deployer_info': f"Deployer {scammer_address} involved in {alert_id} scam; this contract has been associated with this scam.",
                                         'threat_category': threat_category,
                                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
@@ -295,8 +295,8 @@ class ScamDetectorFinding:
                                     'metadata': {
                                         'address_type': 'contract',
                                         'chain_id': chain_id,
-                                        'base_bot_alert_ids': ','.join(list(involved_alert_ids)),
-                                        'base_bot_alert_hashes': ','.join(list(involved_alert_hashes)),
+                                        'base_bot_alert_ids': ','.join(sorted(list(involved_alert_ids))),
+                                        'base_bot_alert_hashes': ','.join(sorted(list(involved_alert_hashes))),
                                         'deployer_info': f"Deployer {scammer_address} involved in {alert_id} scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
                                         'threat_category': ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"),
                                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),

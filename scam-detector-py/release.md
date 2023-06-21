@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## v0.2.10 (June 21st 2023 - beta)
+- remove combination heuristic as ML performs much better
+
 ## v0.2.9 (June 19th 2023 - beta)
 - refactor of label to avoid deduping. Prior to version 0.2.2 a label was either scammer-eoa or scammer-contract with alertId in the metadata giving additional context. Now, the label will represent the high level 'scammer' label 'and additional infromation will be in the metadata.
 - enhance handleFP function to remove specific labels as well as remove labels comprehensively
