@@ -673,7 +673,8 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
             elif alert_logic(alert_event, BASE_BOTS) == "PassThrough":
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - is passthrough alert")
                 findings = []
-                findings.extend(emit_ml_finding(w3, alert_event)) # pushing passthrough to assess how well we would do with an ML approach; this is more for testing purposes right now
+                if Utils.is_beta():
+                    findings.extend(emit_ml_finding(w3, alert_event)) # pushing passthrough to assess how well we would do with an ML approach; this is more for testing purposes right now
                 findings.extend(emit_passthrough_finding(w3, alert_event))
                 return findings
             elif alert_logic(alert_event, BASE_BOTS) == "Combination":  
