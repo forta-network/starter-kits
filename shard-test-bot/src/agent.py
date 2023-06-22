@@ -20,6 +20,7 @@ CHAIN_ID = -1
 BOT_VERSION = "0.0.0"
 
 INITIALIZED = False
+INITIALIZED_CALLED = False
 INITIALIZATION_TIME = datetime.now()
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -91,10 +92,15 @@ def initialize():
     """
     global CHAIN_ID
     global INITIALIZED
+    global INITIALIZED_CALLED
+
+    INITIALIZED_CALLED = True
+
     try:
-        reinitialize()
         global BOT_VERSION
         BOT_VERSION = get_bot_version()
+        
+        reinitialize()
         
         # subscribe to the base bots, FP mitigation and entity clustering bot
         global BASE_BOTS
@@ -160,11 +166,11 @@ def provide_handle_alert(w3):
         if not INITIALIZED:
             time_elapsed = datetime.now() - INITIALIZATION_TIME
             if (time_elapsed > timedelta(minutes=5)):
-                logging.error(f"{BOT_VERSION}: Not initialized handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
+                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
                 sys.exit(1)
             else:
-                logging.warning(f"{BOT_VERSION}: Not initialized handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Returning.")
-                return []
+                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED})  handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Returning.")
+                raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED})  handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Returning.")
             
         findings = detect_scam(w3, alert_event)
         return findings
