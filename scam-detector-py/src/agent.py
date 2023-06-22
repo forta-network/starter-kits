@@ -34,6 +34,7 @@ block_chain_indexer = BlockChainIndexer()
 forta_explorer = FortaExplorer()
 
 INITIALIZED = False
+INITIALIZED_CALLED = False
 INITIALIZATION_TIME = datetime.now()
 CHAIN_ID = -1
 BOT_VERSION = Utils.get_bot_version()
@@ -66,6 +67,9 @@ def initialize():
     this function initializes the state variables that are tracked across tx and blocks
     it is called from test to reset state between tests
     """
+    global INITIALIZED_CALLED
+    INITIALIZED_CALLED = True
+
     alert_config = {}
     global INITIALIZED
 
@@ -981,15 +985,16 @@ def provide_handle_alert(w3):
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logging.debug("handle_alert inner called")
         global INITIALIZED
+        global INITIALIZED_CALLED
         global INITIALIZATION_TIME
         if not INITIALIZED:
             time_elapsed = datetime.now() - INITIALIZATION_TIME
             if (time_elapsed > timedelta(minutes=5)):
-                logging.error(f"{BOT_VERSION}: Not initialized handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
+                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
                 sys.exit(1)
             else:
-                logging.warning(f"{BOT_VERSION}: Not initialized handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Returning.")
-                return []
+                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
+                raise Exception(f"{BOT_VERSION}: Not initialized(initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
 
 
         global FINDINGS_CACHE_ALERT
@@ -1039,15 +1044,16 @@ def provide_handle_block(w3):
     def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
         logging.debug("handle_block with w3 called")
         global INITIALIZED
+        global INITIALIZED_CALLED
         global INITIALIZATION_TIME
         if not INITIALIZED:
             time_elapsed = datetime.now() - INITIALIZATION_TIME
             if (time_elapsed > timedelta(minutes=5)):
-                logging.error(f"{BOT_VERSION}: Not initialized handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
+                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
                 sys.exit(1)
             else:
-                logging.warning(f"{BOT_VERSION}: Not initialized handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Returning.")
-                return []
+                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
+                raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
 
         global FINDINGS_CACHE_BLOCK
         findings = []
@@ -1094,15 +1100,16 @@ def provide_handle_transaction(w3):
     def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
         logging.debug("handle_transaction with w3 called")
         global INITIALIZED
+        global INITIALIZED_CALLED
         global INITIALIZATION_TIME
         if not INITIALIZED:
             time_elapsed = datetime.now() - INITIALIZATION_TIME
             if (time_elapsed > timedelta(minutes=5)):
-                logging.error(f"{BOT_VERSION}: Not initialized handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
+                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
                 sys.exit(1)
             else:
-                logging.warning(f"{BOT_VERSION}: Not initialized handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Returning.")
-                return []
+                logging.warning(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
+                raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
         
         global FINDINGS_CACHE_TRANSACTION
         findings = []
