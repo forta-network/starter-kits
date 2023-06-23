@@ -9,7 +9,7 @@ from forta_agent import get_json_rpc_url, Finding
 from concurrent.futures import ThreadPoolExecutor
 
 from src.main import run_all
-from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, MAX_FINDINGS, HOURS_BEFORE_REANALYZE
+from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, MAX_FINDINGS, HOURS_BEFORE_REANALYZE, PERCENTAGE_ATTACKERS
 from src.storage import get_secrets, dynamo_table
 
 
@@ -48,36 +48,44 @@ def run_all_extended(central_node, alert_event):
             'severity': forta_agent.FindingSeverity.High,
             'type': forta_agent.FindingType.Scam
         }
-    if attackers_df.shape[0] > MAX_FINDINGS:
-        logger.error(f"{central_node}:\tToo many attackers found: {attackers_df.shape[0]}. Labels may be compromised")
-    else:
-        for row_idx in range(attackers_df.shape[0]):
-            attacker_info = attackers_df.iloc[row_idx]
-            logger.info(f'{central_node}:\tNew attacker info: {attacker_info}')
-            metadata = {
-                    'central_node': central_node,
-                    'central_node_alert_id': alert_event.alert.alert_id,
-                    'central_node_alert_name': alert_event.alert.name,
-                    'central_node_alert_hash': alert_event.alert.hash,
-                    'graph_statistics': graph_statistics,
-                    'model_confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
-                }
-            label_dict = {
-                'entity': attacker_info.name,
-                'label': 'scammer-eoa',
-                'confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
-                'entity_type': forta_agent.EntityType.Address,
-                'metadata': metadata
+    logger.info(f"{central_node}:\t{graph_statistics} new attackers found")
+    # if attackers_df.shape[0] > MAX_FINDINGS:
+    #     logger.info(f"{central_node}:\tToo many attackers found: {attackers_df.shape[0]}")
+    if attackers_df.shape[0] >= int(PERCENTAGE_ATTACKERS * graph_statistics['n_nodes']):
+        logger.info(f"{central_node}:\tToo many attackers found in relation to the graph. Lowering confidencce: {attackers_df.shape[0]}")
+        finding_dict['severity'] = forta_agent.FindingSeverity.Medium
+    for row_idx in range(attackers_df.shape[0]):
+        attacker_info = attackers_df.iloc[row_idx]
+        logger.info(f'{central_node}:\tNew attacker info: {attacker_info}')
+        metadata = {
+                'central_node': central_node,
+                'central_node_alert_id': alert_event.alert.alert_id,
+                'central_node_alert_name': alert_event.alert.name,
+                'central_node_alert_hash': alert_event.alert.hash,
+                'graph_statistics': str(graph_statistics),
+                'model_confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
             }
-            finding_dict['labels'] = [forta_agent.Label(label_dict)]
-            finding_dict['metadata'] = metadata
-            finding_dict['description'] = f"{attacker_info.name} marked as scammer by label propagation"
-            all_findings_list.append(Finding(finding_dict))
+        label_dict = {
+            'entity': attacker_info.name,
+            'label': 'scammer-eoa',
+            'confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
+            'entity_type': forta_agent.EntityType.Address,
+            'metadata': metadata
+        }
+        finding_dict['labels'] = [forta_agent.Label(label_dict)]
+        finding_dict['metadata'] = metadata
+        finding_dict['description'] = f"{attacker_info.name} marked as scammer by label propagation"
+        all_findings_list.append(Finding(finding_dict))
     # Prepare the dataset for the global model
     finding_dict_global = finding_dict.copy()
     finding_dict_global['alert_id'] = 'SCAMMER-LABEL-PROPAGATION-2'
     finding_dict_global['name'] = 'scammer-label-propagation-global'
     finding_dict_global['description'] = 'Address marked as scammer by label propagation (global model)'
+    # Restarting severity
+    finding_dict_global['severity'] = forta_agent.FindingSeverity.High
+    if attackers_df_global.shape[0] >= int(PERCENTAGE_ATTACKERS * graph_statistics['n_nodes']):
+        logger.info(f"{central_node}:\tToo many attackers found in relation to the graph for global model. Lowering confidencce: {attackers_df_global.shape[0]}")
+        finding_dict_global['severity'] = forta_agent.FindingSeverity.Medium
     for row_idx in range(attackers_df_global.shape[0]):
         attacker_info = attackers_df_global.iloc[row_idx]
         logger.info(f'{central_node}:\tNew attacker info global: {attacker_info}')
@@ -86,7 +94,7 @@ def run_all_extended(central_node, alert_event):
                 'central_node_alert_id': alert_event.alert.alert_id,
                 'central_node_alert_name': alert_event.alert.name,
                 'central_node_alert_hash': alert_event.alert.hash,
-                'graph_statistics': graph_statistics,
+                'graph_statistics': str(graph_statistics),
                 'model_confidence': str(attacker_info['p_attacker']),
             }
         label_dict = {

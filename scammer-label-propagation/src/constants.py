@@ -22,9 +22,9 @@ SIMULTANEOUS_ADDRESSES = 30
 # Maximum number of simultaneous processes
 N_WORKERS = 8
 # Minimum amount of neighbors to consider an address
-MIN_NEIGHBORS = 10
+MIN_NEIGHBORS = 5
 # Maximum amount of neighbors to consider an address
-MAX_NEIGHBORS = 500
+MAX_NEIGHBORS = 2500
 # Maximum number of findings that can be sent in one handle call
 MAX_FINDINGS = 40
 # Random seed for reproducibility
@@ -33,3 +33,5 @@ SEED = 1993
 HOURS_BEFORE_REANALYZE = 48
 # Path to the model
 MODEL_PATH = 'model.pth'
+# Percentage of nodes that can be labeled as attackers before we bring down the severity
+PERCENTAGE_ATTACKERS = 0.15
