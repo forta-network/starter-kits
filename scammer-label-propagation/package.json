@@ -1,6 +1,6 @@
 {
   "name": "scammer-label-propagation",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Scammer label propagation bot",
   "repository": "https://github.com/forta-network/starter-kits/tree/scammer-label-propagation/scammer-label-propagation",
   "chainIds": [
