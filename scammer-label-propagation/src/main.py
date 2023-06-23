@@ -1,5 +1,6 @@
 import logging
-
+import os
+import pickle
 import numpy as np
 import pandas as pd
 import torch
@@ -35,6 +36,11 @@ def run_all(central_node):
 
     # data = collect_data_parallel_parts(central_node)
     data = collect_data_zettablock(central_node)
+    if not 'production' in os.environ.get('NODE_ENV', ''):
+        data_path = 'data3'
+        node_path = os.path.join(data_path, f'{central_node}.pkl')
+        with open(node_path, 'wb') as f:
+            pickle.dump(data, f)
     all_nodes_dict, node_feature, transactions_overview, edge_indexes, edge_features = prepare_data(data)
     labels_df = download_labels_graphql(all_nodes_dict, central_node)
     np.random.seed(SEED)
@@ -91,7 +97,7 @@ def run_all(central_node):
     results_global_model = results_global_model.loc[attackers_not_contracts_global]
     graph_statistics['n_predicted_attackers_global_model'] = results_global_model.shape[0]
     logger.info(f"{central_node}:\tFinished processing: {results_global_model.shape[0]} attackers found with global model")
-    return filtered_attackers_df, str(graph_statistics), results_global_model
+    return filtered_attackers_df, graph_statistics, results_global_model
 
 
 def is_contract(w3, address) -> bool:

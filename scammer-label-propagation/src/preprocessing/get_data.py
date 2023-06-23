@@ -606,9 +606,9 @@ def get_automatic_labels(all_nodes_dict, transactions_overview, central_node, la
     # Attackers
     attackers_list = labels_df.loc[labels_df['attacker']>=attacker_confidence, 'address'].unique().tolist()
     if len(attackers_list) == 0:
-        raise Warning(f'{central_node}:\tWith current attacker level {attacker_confidence} there are not enough attackers. Go to next address')
+        logger.warning(f'{central_node}:\tWith current attacker level {attacker_confidence} there are not enough attackers. Only global model will work')
     if central_node not in attackers_list:
-        raise Warning(f'{central_node}:\thas less attacker confidence than {attacker_confidence}. Go to next address')
+        logger.warning(f'{central_node}:\thas less attacker confidence than {attacker_confidence}')
     num_attackers = len(attackers_list)
     for attacker in attackers_list:
         automatic_labels[attacker] = 'attacker'
