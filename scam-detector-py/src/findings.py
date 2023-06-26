@@ -10,6 +10,8 @@ from src.constants import CONFIDENCE_MAPPINGS, MODEL_NAME
 
 class ScamDetectorFinding:
 
+    LABEL_VERSION = "V2"
+
     @staticmethod
     def get_threat_description_url(alert_id: str) -> str:
         url = "https://forta.org/attacks"
@@ -132,6 +134,7 @@ class ScamDetectorFinding:
                     'threat_category': threat_category,
                     'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                     'bot_version': Utils.get_bot_version(),
+                    'label_version': ScamDetectorFinding.LABEL_VERSION,
                     'logic': 'propagation'
                 }
             }))
@@ -153,6 +156,7 @@ class ScamDetectorFinding:
                     'threat_category': threat_category,
                     'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                     'bot_version': Utils.get_bot_version(),
+                    'label_version': ScamDetectorFinding.LABEL_VERSION,
                     'logic': 'propagation'
                 }
             }))
@@ -178,6 +182,7 @@ class ScamDetectorFinding:
                             'threat_category': ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"),
                             'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                             'bot_version': Utils.get_bot_version(),
+                            'label_version': ScamDetectorFinding.LABEL_VERSION,
                             'logic': 'propagation'
                         }
                     }))
@@ -252,6 +257,7 @@ class ScamDetectorFinding:
                         'threat_category': threat_category,
                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                         'bot_version': Utils.get_bot_version(),
+                        'label_version': ScamDetectorFinding.LABEL_VERSION,
                         'feature_vector': feature_vector_str,
                         'model_name': MODEL_NAME,
                         'logic': logic
@@ -281,6 +287,7 @@ class ScamDetectorFinding:
                                         'threat_category': threat_category,
                                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                                         'bot_version': Utils.get_bot_version(),
+                                        'label_version': ScamDetectorFinding.LABEL_VERSION,
                                         'feature_vector': feature_vector_str,
                                         'model_name': MODEL_NAME,
                                         'logic': logic
@@ -301,6 +308,7 @@ class ScamDetectorFinding:
                                         'threat_category': ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"),
                                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                                         'bot_version': Utils.get_bot_version(),
+                                        'label_version': ScamDetectorFinding.LABEL_VERSION,
                                         'logic': 'propagation'
                                     }
                                 }))
@@ -362,6 +370,7 @@ class ScamDetectorFinding:
                     'reported_by': reported_by,
                     'threat_category': ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-"+alert_id_threat_category),
                     'bot_version': Utils.get_bot_version(),
+                    'label_version': ScamDetectorFinding.LABEL_VERSION,
                     'logic': 'manual'
                 }
             }))
@@ -380,6 +389,7 @@ class ScamDetectorFinding:
                         'deployer_info': f"Deployer {scammer_address} involved in {'SCAM-DETECTOR-MANUAL-'+alert_id_threat_category} scam; this contract may or may not be related to this particular scam, but was created by the scammer.",
                         'threat_category': ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"),
                         'bot_version': Utils.get_bot_version(),
+                        'label_version': ScamDetectorFinding.LABEL_VERSION,
                         'logic': 'propagation'
                     }
                 }))
@@ -417,6 +427,7 @@ class ScamDetectorFinding:
                     'threat_category': ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"),
                     'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                     'bot_version': Utils.get_bot_version(),
+                    'label_version': ScamDetectorFinding.LABEL_VERSION,
                     'logic': 'propagation'
                 }
             }))
@@ -460,6 +471,7 @@ class ScamDetectorFinding:
                 'threat_category': ScamDetectorFinding.get_threat_category(alert_id),
                 'threat_description_url': original_threat_category,
                 'bot_version': Utils.get_bot_version(),
+                'label_version': ScamDetectorFinding.LABEL_VERSION,
                 'logic': 'propagation'
             }
         }))
@@ -485,6 +497,7 @@ class ScamDetectorFinding:
                         'threat_category': ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"),
                         'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                         'bot_version': Utils.get_bot_version(),
+                        'label_version': ScamDetectorFinding.LABEL_VERSION,
                         'logic': 'propagation'
                     }
                 }))

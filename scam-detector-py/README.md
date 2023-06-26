@@ -152,6 +152,7 @@ When a false positive is observed, the scam detector will remove the previously 
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SCAM-CREATOR-TRANSFER | Combination |
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PULL-SWEEPTOKEN | Passthrough |
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-OPENSEA-PROXY-UPGRADE | Passthrough |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PIG-BUTCHERING | Passthrough |
 | 0x33faef3222e700774af27d0b71076bfa26b8e7c841deb5fb10872a78d1883dba | sleep minting | SLEEPMINT-3 | Combination |
 | 0x47b86137077e18a093653990e80cb887be98e7445291d8cf811d3b2932a3c4d2 | aztec bot | AK-AZTEC-PROTOCOL-DEPOSIT-EVENT | Combination |
 | 0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848 | scammer label propagation | SCAMMER-LABEL-PROPAGATION-2 | PassThrough |
@@ -193,4 +194,6 @@ When a false positive is observed, the scam detector will remove the previously 
 | 0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f | asset drained bot | ASSET-DRAINED | Combination |
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION | Combination |
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE | Combination |
+| 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION && SOFT-RUG-PULL-SUS-POOL-REMOVAL | PassThrough |
 | 0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03 | private key compromise | PKC-2 | PassThrough |
+
