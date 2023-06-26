@@ -753,3 +753,15 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 6/14/23	0x42ba63e3356e63fe5861e49aed9c95feb7237f4f	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
 6/14/23	0xcb6ba52f93e85b1089e2592c35696c1e7111cf85	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
 6/14/23	0xf0002e9a1e9c73f17aa35ab9b62bb7295f8de5fd	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+6/26/23	0x8611a984bbBE7cB07107901407be6BB15BB9Ad1D	https://skynet.certik.com/alerts/security		56	Soft rug pull	
+6/26/23	0x81312D3e749336053f74ECed8d29670B20d13a73	https://skynet.certik.com/alerts/security		1	Ice phishing	@pepecointokens
+6/26/23	0x8C730DeAf137c3676525Db05132DB93ec48C87A2	@CertiKAlert	https://twitter.com/CertiKAlert/status/1673260075715100674?s=20	1	Ice phishing	
+6/26/23	0x12ddBd16175953a8035A009393482DD64849959A	@CertiKAlert	https://twitter.com/CertiKAlert/status/1672507912982257664?s=20	1	Ice phishing	
+6/26/23	0x69810917928B80636178b1BB011c746efe61770D	https://skynet.certik.com/alerts/security/7bb77750-0438-4895-a1a6-c424faf70f49		1	Soft rug pull	Shido Token
+6/26/23	0x0607A52de5c96aF895ab24cd25E6ad1181161ccA	https://skynet.certik.com/alerts/security/7bb77750-0438-4895-a1a6-c424faf70f49		1	Soft rug pull	Shido Token
+6/26/23	0x7ef6E527969054afbc0980E00C51D2E645b4A5ef	https://skynet.certik.com/alerts/security/7bb77750-0438-4895-a1a6-c424faf70f49		1	Soft rug pull	Shido Token
+6/26/23	0xc96d3aA759929f9D09e1935E42207b8D64a804B8	https://skynet.certik.com/alerts/security/7bb77750-0438-4895-a1a6-c424faf70f49		1	Soft rug pull	Shido Token
+6/26/23	0xD4B7Dd5194fE5BF46ABAB33f79CFc1cC8C88a23F	https://skynet.certik.com/alerts/security/7bb77750-0438-4895-a1a6-c424faf70f49		1	Soft rug pull	Shido Token
+6/26/23	0x42beE52C9d7241d40335a3dE08282A505e292054	https://skynet.certik.com/alerts/security/7bb77750-0438-4895-a1a6-c424faf70f49		1	Soft rug pull	Shido Token
+6/26/23	0x3f338086EBF7dCdA95a83E302AF1bB908737400B	@AegisWeb3	https://twitter.com/AegisWeb3/status/1673218376972521472?s=20	56	Hard rug pull	MAV Token
+6/26/23	0x0000553F880fFA3728b290e04E819053A3590000	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1673169055308734471?s=20	1	Ice phishing	
