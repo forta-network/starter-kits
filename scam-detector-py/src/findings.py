@@ -10,7 +10,7 @@ from src.constants import CONFIDENCE_MAPPINGS, MODEL_NAME
 
 class ScamDetectorFinding:
 
-    LABEL_VERSION = "V2"
+    LABEL_VERSION = "2.0.0"
 
     @staticmethod
     def get_threat_description_url(alert_id: str) -> str:
