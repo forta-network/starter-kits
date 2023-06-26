@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## v0.2.11 (June 26th 2023 - beta)
+- added explicit label version to labels; set to 'V2'
+
 ## v0.2.10 (June 21st 2023 - beta)
 - remove combination heuristic as ML performs much better
 

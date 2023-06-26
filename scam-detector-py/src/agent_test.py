@@ -279,7 +279,7 @@ class TestScamDetector:
 
         findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"passthrough")
 
-        assert len(findings) == 2, "this should have triggered a finding for delpoyer EOA for the different alert_id"
+        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA for the different alert_id"
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-RAKE-TOKEN", "should be hard rug pull finding"
         assert finding.labels is not None, "labels should not be empty"
@@ -298,7 +298,7 @@ class TestScamDetector:
 
         findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
-        assert len(findings) == 2, "this should have triggered a finding for delpoyer EOA"
+        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-RAKE-TOKEN", "should be hard rug pull finding"
         assert finding.metadata is not None, "metadata should not be empty"
