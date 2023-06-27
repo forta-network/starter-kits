@@ -1,4 +1,3 @@
-from src.keys import BOT_ID
 from os import environ
 import forta_agent
 from forta_agent import Finding, FindingType, FindingSeverity, get_json_rpc_url, EntityType
@@ -11,6 +10,7 @@ SECRETS_JSON = get_secrets()
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 CHAIN_ID = -1
+BOT_ID = "0xaf9ac4c204eabdd39e9b00f91c8383dc01ef1783e010763cad05cc39e82643bb"
 
 
 def initialize():
