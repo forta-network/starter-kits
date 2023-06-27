@@ -9,14 +9,14 @@ import lime.lime_tabular
 import numpy as np
 
 from src.utils.constants import ANOMALY_THRESHOLD, ERC20_TRANSFER_EVENT, MODEL_FEATURES
-from src.utils.data_processing import get_features
+from src.utils.data_processing import get_features, SECRETS_JSON
 from src.utils.findings import (
     AnomalousTransaction,
     NormalTransaction,
     InvalidModelFeatures,
 )
 from src.utils.logger import logger
-from src.utils.keys import ZETTABLOCK_KEY
+
 
 ML_MODEL = None
 ML_EXPLAINER = None
@@ -36,7 +36,7 @@ def initialize():
     with open("model_explainer.pkl", "rb") as f:
         ML_EXPLAINER = dill.load(f)
     logger.info("Complete loading model explainer")
-    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
 
 def get_explanations(model_input) -> str:
