@@ -181,11 +181,12 @@ class TestAlertCombiner:
                     {"name": "x",
                     "hash": "0xabc",
                     "addresses": [],
+                    "chainId": chain_id,
                     "description": f"{address} description",
                     "alertId": alert_id,
                     "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
                     "source":
-                        {"bot": {'id': bot_id}, "block": {"chainId": chain_id}, 'transactionHash': '0x123'},
+                        {"bot": {'id': bot_id}, "block": {}, 'transactionHash': '0x123'},
                     "metadata": metadata,
                     "labels": labels
                     }
@@ -196,11 +197,12 @@ class TestAlertCombiner:
                     {"name": "x",
                     "hash": "0xabc",
                     "addresses": addresses,
+                    "chainId": chain_id,
                     "description": f"{address} description",
                     "alertId": alert_id,
                     "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
                     "source":
-                        {"bot": {'id': bot_id}, "block": {"chainId": chain_id}, 'transactionHash': '0x123'},
+                        {"bot": {'id': bot_id}, "block": {}, 'transactionHash': '0x123'},
                     "metadata": metadata,
                    
                     }

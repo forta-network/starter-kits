@@ -39,7 +39,7 @@ VICTIMS_KEY = "victims_key"
 
 LUABASE_QUERY_FREQUENCY_IN_HOURS = 4
 
-# for the highly precise bots, we lower our threshold for alerting to 2 stages; anomaly score is ignored
+# for the highly precise bots, we lower our threshold for alerting to 2 stages or 3 individual alerts; anomaly score is ignored
 HIGHLY_PRECISE_BOTS = [("0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", "Preparation"),  # suspicious contract creation ML
                        ("0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6", "AK-ATTACK-SIMULATION-0", "Preparation"),  # attack simulation
                        ("0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2", "SUSPICIOUS-FLASHLOAN-CONTRACT-CREATION", "Preparation"),  # suspicious-flashloan-contract-creation
