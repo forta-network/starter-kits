@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+
+## v0.2.12 (June 26th 2023 - beta)
+- modified zettablock query for deployed contracts to reduce cost
+
 ## v0.2.11 (June 26th 2023 - beta)
 - added explicit label version to labels; set to '2.0.0'
 

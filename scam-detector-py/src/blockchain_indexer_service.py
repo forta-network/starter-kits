@@ -146,7 +146,7 @@ class BlockChainIndexer:
     # Note, this doesnt work well with contracts; caller needs to check whether address is an EOA or not
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
-    def get_contracts(address, chain_id, disable_etherscan=False, disable_zettablock=False) -> set:
+    def get_contracts(address, chain_id, disable_etherscan=False, disable_zettablock=False, start_date_str = '') -> set:
         logging.info(f"get_contracts for {address} on {chain_id} called.")
         contracts = set()
 
@@ -185,9 +185,14 @@ class BlockChainIndexer:
                 if chain_id == 56:
                     table_name = "bsc_mainnet.contract_creations"
 
+                start_date_str2 = start_date_str
+                if start_date_str == '':
+                    start_date = datetime.now() - timedelta(days=90)
+                    start_date_str2 = start_date.strftime("%Y-%m-%d")
                 # address, deployer, transaction_hash
-                query_str = f"""SELECT address, creator_address AS deployer, transaction_hash FROM ethereum_mainnet.contract_creations WHERE LOWER(creator_address) = '{address.lower()}' LIMIT 500"""
+                query_str = f"""SELECT address, creator_address AS deployer, transaction_hash FROM ethereum_mainnet.contract_creations WHERE LOWER(creator_address) = '{address.lower()}' and data_creation_date > DATE('{start_date_str2}') LIMIT 500"""
 
+                
                 csv_str = BlockChainIndexer.sql_to_csv(query_str)
                 data = StringIO(csv_str)
 
