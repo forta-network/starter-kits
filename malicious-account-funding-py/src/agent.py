@@ -11,11 +11,11 @@ import requests
 from web3 import Web3
 
 from src.findings import MaliciousAccountFundingFinding
-from src.keys import BOT_ID
 from src.storage import get_secrets
 
 SECRETS_JSON = get_secrets()
 
+BOT_ID = "0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46"
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
@@ -91,7 +91,8 @@ def detect_funding(
                 transaction_event.transaction.to,
                 from_,
                 malicious_account,
-                CHAIN_ID
+                CHAIN_ID,
+                BOT_ID
             )
         )
 
