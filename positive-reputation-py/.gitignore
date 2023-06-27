@@ -5,3 +5,4 @@ __pycache__
 .pytest_cache
 .env
 api_keys.py
+secrets.json

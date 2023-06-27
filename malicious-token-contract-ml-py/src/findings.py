@@ -1,7 +1,8 @@
 from forta_agent import Finding, FindingType, FindingSeverity
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
-from src.keys import BOT_ID
+BOT_ID = "0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad"
+
 
 class TokenContractFindings:
     def __init__(

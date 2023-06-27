@@ -1,7 +1,7 @@
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
-from src.keys import BOT_ID
+BOT_ID = "0xe04b3fa79bd6bc6168a211bcec5e9ac37d5dd67a41a1884aa6719f8952fbc274"
 
 
 class VictimNotificationFinding:
