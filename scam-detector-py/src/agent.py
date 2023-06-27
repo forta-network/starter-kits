@@ -16,18 +16,18 @@ import forta_agent
 from forta_agent import get_json_rpc_url,  Finding, FindingType, FindingSeverity
 from web3 import Web3
 
-from src.constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_CLUSTERS_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
+from constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_CLUSTERS_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
                        FINDINGS_CACHE_ALERT_KEY, FINDINGS_CACHE_BLOCK_KEY, ALERTED_FP_CLUSTERS_KEY, FINDINGS_CACHE_TRANSACTION_KEY,
                        ALERTED_FP_CLUSTERS_QUEUE_SIZE, CONTRACT_SIMILARITY_BOTS, CONTRACT_SIMILARITY_BOT_THRESHOLDS, EOA_ASSOCIATION_BOTS,
                        EOA_ASSOCIATION_BOT_THRESHOLDS, PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES, POOLCREATED_EVENT_ABI,
                        MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT, MODEL_FEATURES, MODEL_NAME, DEBUG_ALERT_ENABLED)
-from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
-from src.findings import ScamDetectorFinding
-from src.blockchain_indexer_service import BlockChainIndexer
-from src.forta_explorer import FortaExplorer
-from src.base_bot_parser import BaseBotParser
-from src.l2_cache import L2Cache
-from src.utils import Utils
+from storage import s3_client, dynamo_table, get_secrets, bucket_name
+from findings import ScamDetectorFinding
+from blockchain_indexer_service import BlockChainIndexer
+from forta_explorer import FortaExplorer
+from base_bot_parser import BaseBotParser
+from l2_cache import L2Cache
+from utils import Utils
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 block_chain_indexer = BlockChainIndexer()
@@ -111,7 +111,7 @@ def initialize():
         INITIALIZED = True
     except Exception as e:
         logging.error(f"{BOT_VERSION}: Error initializing scam detector bot: {e}")
-        sys.exit(1)
+        raise e
 
     return alert_config
 
@@ -990,11 +990,11 @@ def provide_handle_alert(w3):
         if not INITIALIZED:
             time_elapsed = datetime.now() - INITIALIZATION_TIME
             if (time_elapsed > timedelta(minutes=5)):
-                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
-                sys.exit(1)
-            else:
                 logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
-                raise Exception(f"{BOT_VERSION}: Not initialized(initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
+                raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception")
+            else:
+                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Return empty findings.")
+                return []
 
 
         global FINDINGS_CACHE_ALERT
@@ -1049,11 +1049,11 @@ def provide_handle_block(w3):
         if not INITIALIZED:
             time_elapsed = datetime.now() - INITIALIZATION_TIME
             if (time_elapsed > timedelta(minutes=5)):
-                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
-                sys.exit(1)
-            else:
                 logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
                 raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
+            else:
+                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Return empty finding.")
+                return []
 
         global FINDINGS_CACHE_BLOCK
         findings = []
@@ -1105,11 +1105,11 @@ def provide_handle_transaction(w3):
         if not INITIALIZED:
             time_elapsed = datetime.now() - INITIALIZATION_TIME
             if (time_elapsed > timedelta(minutes=5)):
-                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
-                sys.exit(1)
-            else:
-                logging.warning(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
+                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
                 raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
+            else:
+                logging.warning(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Return empty finding.")
+                return []
         
         global FINDINGS_CACHE_TRANSACTION
         findings = []

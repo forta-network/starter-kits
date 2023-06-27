@@ -1,15 +1,17 @@
 
 from web3 import Web3
 from hexbytes import HexBytes
-from forta_agent import get_labels, Label
+from forta_agent import get_labels, Label, Finding, FindingSeverity, FindingType
 import requests
 import logging
 import io
 import rlp
+import base64
+import gnupg
 import pandas as pd
 import json
 
-from src.constants import TX_COUNT_FILTER_THRESHOLD
+from constants import TX_COUNT_FILTER_THRESHOLD
 
 
 class Utils:
@@ -188,3 +190,21 @@ class Utils:
         address_bytes = bytes.fromhex(address[2:].lower())
         return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
+    gpg = None
+
+    @staticmethod
+    def decrypt_alert(encrypted_finding_base64:str, private_key:str) -> Finding:
+        if Utils.gpg is None:
+            gpg =  gnupg.GPG(gnupghome='.')
+            import_result = gpg.import_keys(private_key)
+            for fingerprint in import_result.fingerprints:
+                gpg.trust_keys(fingerprint, 'TRUST_ULTIMATE')
+    
+        encrypted_finding_ascii = base64.b64decode(encrypted_finding_base64)
+        decrypted_finding_json = gpg.decrypt(encrypted_finding_ascii)
+        finding_dict = json.loads(str(decrypted_finding_json))
+
+        finding_dict['severity'] = FindingSeverity(finding_dict['severity'])
+        finding_dict['type'] = FindingType(finding_dict['type'])
+        
+        return Finding(finding_dict)

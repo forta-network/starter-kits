@@ -10,3 +10,6 @@ __pycache__
 secrets.json
 keys.py
 keys.py~
+pubring.kbx
+pubring.kbx~
+trustdb.gpg

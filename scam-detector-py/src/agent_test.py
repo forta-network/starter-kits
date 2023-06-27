@@ -312,6 +312,34 @@ class TestScamDetector:
                 found_contract = True   
         assert found_contract, "should have found scammer contract"
 
+    def test_detect_blocksec_phishing_unencrypted(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534"
+        alert_id = "Ice Phishing"
+        description = "Token Transfer Phishing Alert: Scammer (0x0000..9000) profited $168.35931259760338 from phishing. In this transaction, the token (QNT) of the user (0xc1c83d16121bad48ce3e431edd031e741aa6b1e6) was transferred to the address (0x0000553f880ffa3728b290e04e819053a3590000), and the target address was labeled as a phishing address. We believe the user was deceived into a token transfer transaction."
+        metadata = {"hash":"0xb5f699cc4d3dba99eba23268aebbcd11384dd33a02f447630116ae4276969f9e","scammer":"0x0000553f880ffa3728b290e04e819053a3590000","victim":"0xc1c83d16121bad48ce3e431edd031e741aa6b1e6"}
+        label = {"entity": "0x0000553f880ffa3728b290e04e819053a3590000","entityType": "ADDRESS","label": "phish","metadata": {},"confidence": 1}
+        labels = [ label ]
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+        assert finding.labels[0].entity == '0x0000553f880ffa3728b290e04e819053a3590000'
+        assert finding.labels[0].label == 'scammer'
+        found_contract = False
+        for label in finding.labels:
+            if label.entity == '0x3eaabef289fdd9072c3ecae94d406c21de881247':
+                assert label.label == 'scammer'
+                found_contract = True   
+        assert found_contract, "should have found scammer contract"
+
     def test_detect_soft_rug_pull(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
