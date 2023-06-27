@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## v0.1.26 (June 27th 2023 - prod)
+- disable allium
+
 ## v0.1.25 (May 16th 2023 - beta; June 1st 2023 - prod)
 - add manual alerting capability
 - restricted the contract similarity bot to only operate on scams where a contract is essential:
