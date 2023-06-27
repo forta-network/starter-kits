@@ -4,7 +4,7 @@ from forta_agent import Finding, FindingType, FindingSeverity, EntityType, Alert
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
 
-from src.keys import BOT_ID
+BOT_ID = "0xf715450e392acb385eabdb8fc94278b3821d2c9a148de777726673895c7283a0"
 
 
 class NegativeReputationFinding:

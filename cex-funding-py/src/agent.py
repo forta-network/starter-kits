@@ -6,13 +6,15 @@ from src.constants import CEXES
 from web3 import Web3
 
 from src.findings import CEXFundingFinding
-from src.keys import ZETTABLOCK_KEY
+from src.storage import get_secrets
+
+SECRETS_JSON = get_secrets()
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 
 def initialize():
-    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
 
 def is_contract(w3, address) -> bool:

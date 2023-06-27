@@ -1,7 +1,7 @@
 from forta_agent import Finding, FindingSeverity, FindingType, EntityType
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
-from src.keys import BOT_ID
+BOT_ID = "0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3"
 
 
 class UnverifiedCodeContractFindings:

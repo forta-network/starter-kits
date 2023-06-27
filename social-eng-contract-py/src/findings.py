@@ -1,7 +1,7 @@
 from forta_agent import Finding, FindingSeverity, FindingType, EntityType
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
-from src.keys import BOT_ID
+BOT_ID = "0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8"
 
 
 class SocialEngContractFindings:

@@ -5,4 +5,4 @@ __pycache__
 .pytest_cache
 malicious_token_model_sighashes_10_29_22.joblib
 malicious_token_model_02_07_23_exp6.joblib
-
+secrets.json

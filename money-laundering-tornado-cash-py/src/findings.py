@@ -1,7 +1,7 @@
 from forta_agent import Finding, FindingType, FindingSeverity, EntityType
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
-from src.keys import BOT_ID
+BOT_ID = "0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2"
 
 
 class MoneyLaunderingTornadoCashFindings:

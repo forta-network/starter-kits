@@ -9,8 +9,10 @@ from hexbytes import HexBytes
 from web3 import Web3
 from src.constants import CONTRACT_QUEUE_SIZE
 from src.findings import SocialEngContractFindings
-from src.keys import ZETTABLOCK_KEY
 from os import environ
+from src.storage import get_secrets
+
+SECRETS_JSON = get_secrets()
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
@@ -36,7 +38,7 @@ def initialize():
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
-    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
 
 def is_contract(w3, address) -> bool:
