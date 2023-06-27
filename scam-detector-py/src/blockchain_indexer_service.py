@@ -11,7 +11,7 @@ import pandas as pd
 import logging
 from datetime import datetime, timedelta
 
-from src.storage import get_secrets
+from storage import get_secrets
 
 class BlockChainIndexer:
 

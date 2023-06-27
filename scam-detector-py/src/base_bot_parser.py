@@ -28,7 +28,14 @@ class BaseBotParser:
                     metadata_obj["address_information"] = row["address_information"]
                     metadata_obj["scammer-contracts"] = BaseBotParser.get_scammer_contract_addresses(w3, alert_event)
                     scammer_addresses[description[loc:42+loc]] = metadata_obj
-
+                elif row['location'] == 'label':
+                    metadata_obj = alert_event.alert.metadata.copy()
+                    label_name = row['metadata_field']
+                    for label in alert_event.alert.labels:
+                        if label.label == label_name and label.entity_type == EntityType.Address:
+                            metadata_obj["address_information"] = row["address_information"]
+                            metadata_obj["scammer-contracts"] = BaseBotParser.get_scammer_contract_addresses(w3, alert_event)
+                            scammer_addresses[label.entity] = metadata_obj
                 elif row['location'] == 'metadata':
                     if row['metadata_field'] in alert_event.alert.metadata.keys():
                         metadata_obj = alert_event.alert.metadata.copy()

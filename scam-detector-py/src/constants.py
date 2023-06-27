@@ -115,7 +115,14 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f", "ASSET-DRAINED", "Combination", ""),
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION", "Combination", ""),
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE", "Combination", ""),
-                ("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-2", "PassThrough", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE")                
+                ("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-2", "PassThrough", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE"),
+                ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "omitted", "Combination", ""),
+                ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Ice Phishing WEB", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),
+                ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Fraudulent-nft-order", "PassThrough", "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER"),
+                ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Ice Phishing", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"), 
+                ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Native Ice Phishing", "PassThrough", "SCAM-DETECTOR-NATIVE-ICE-PHISHING"), 
+                ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Address-poisoning", "PassThrough", "SCAM-DETECTOR-ADDRESS-POISONING"), 
+                 
                 ]
 
 # model information
