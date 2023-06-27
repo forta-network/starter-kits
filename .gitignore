@@ -13,3 +13,5 @@ keys.py~
 pubring.kbx
 pubring.kbx~
 trustdb.gpg
+*.key
+random_seed
