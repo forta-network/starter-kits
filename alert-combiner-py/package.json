@@ -1,6 +1,6 @@
 {
   "name": "attack-detector-feed-beta",
-  "version": "0.3.44",
+  "version": "3.45.0",
   "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/alert-combiner-py",
   "chainIds": [
@@ -26,18 +26,21 @@
     "tx": "forta-agent run --tx",
     "block": "forta-agent run --block",
     "range": "forta-agent run --range",
+    "alert": "forta-agent run --alert",
+    "sequence": "forta-agent run --sequence",
     "file": "forta-agent run --file",
     "publish": "forta-agent publish",
+    "info": "forta-agent info",
+    "logs": "forta-agent logs",
     "push": "forta-agent push",
     "disable": "forta-agent disable",
     "enable": "forta-agent enable",
     "keyfile": "forta-agent keyfile",
-    "test": "python3 -m pytest",
-    "alert": "forta-agent run --alert",
-    "sequence": "forta-agent run --sequence"
+    "stake": "forta-agent stake",
+    "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.29"
+    "forta-agent": "^0.1.32"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"
