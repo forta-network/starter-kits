@@ -1,7 +1,7 @@
 from forta_agent import Finding, FindingType, FindingSeverity, EntityType, Label
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
-from src.keys import BOT_ID
+BOT_ID = "0xabdeff7672e59d53c7702777652e318ada644698a9faf2e7f608ec846b07325b"
 
 
 class MEVAccountFinding:
