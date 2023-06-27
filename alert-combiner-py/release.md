@@ -1,5 +1,9 @@
 # Attack Detector Bot Release Notes
 
+## v0.3.44 (June 27 2023: beta)
+- add date limit on zettablock to obtain contract creation more cheaply
+- small adjustments to high precision logic to also fire if there are more than 1 high precision bot that triggered
+
 ## v0.3.43 (June 12 2023: beta, June 14 2023: prod)
 - moved from allium to zettablock to obtain contract creations
 
