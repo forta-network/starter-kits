@@ -3,10 +3,12 @@ import timeit
 import os
 import io
 import random
+import base64
+import gnupg
 from datetime import datetime
 import pandas as pd
 import numpy as np
-from forta_agent import create_transaction_event, create_alert_event, FindingSeverity, AlertEvent, Label, EntityType
+from forta_agent import create_transaction_event, create_alert_event, FindingSeverity, AlertEvent, Label, EntityType, Finding, FindingType
 import requests
 import agent
 
@@ -24,6 +26,101 @@ block_chain_indexer = BlockChainIndexerMock()
 class TestScamDetector:
 
     @staticmethod
+    def encrypt_alert_event(alert_event: AlertEvent):
+        public_key = """-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+            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
+            =QBhA
+            -----END PGP PUBLIC KEY BLOCK-----
+            """
+        gpg = gnupg.GPG(gnupghome='.')
+        import_result = gpg.import_keys(public_key)
+        fp = ""
+        for fingerprint in import_result.fingerprints:
+            fp = fingerprint
+            gpg.trust_keys(fingerprint, 'TRUST_ULTIMATE')
+
+
+        finding = Finding({
+            'name': alert_event.alert.name,
+            'description': alert_event.alert.description,
+            'alert_id': alert_event.alert.alert_id,
+            'severity': FindingSeverity(alert_event.alert.severity),
+            'type': FindingType(alert_event.alert.finding_type),
+            'metadata': alert_event.alert.metadata,
+            'labels': alert_event.alert.labels,
+        })
+        finding_json = finding.toJson()
+        encrypted_finding = gpg.encrypt(finding_json, fp)
+        encrypted_finding_ascii = str(encrypted_finding)
+        encrypted_finding_base64 = base64.b64encode(encrypted_finding_ascii.encode("utf-8")).decode("utf-8")
+
+        alert_event.alert.name = "omitted"
+        alert_event.alert.description = "omitted"
+        alert_event.alert.alert_id = "omitted"
+        alert_event.alert.severity = FindingSeverity.Unknown
+        alert_event.alert.finding_type = FindingType.Unknown
+        alert_event.alert.metadata = { 'data': encrypted_finding_base64 }
+        alert_event.alert.labels = []
+        return alert_event
+        
+
+    @staticmethod
     def generate_alert(bot_id: str, alert_id: str, description = "", metadata={}, labels=[], transaction_hash = "0x123", alert_hash = '0xabc', timestamp = 0) -> AlertEvent:
         labels_tmp = [] if len(labels) == 0 else labels
         ts = "2022-11-18T03:01:21.457234676Z" if timestamp == 0 else datetime.fromtimestamp(timestamp).strftime("%Y-%m-%dT%H:%M:%S.%f123Z")  # 2022-11-18T03:01:21.457234676Z
@@ -34,6 +131,8 @@ class TestScamDetector:
                    "description": description,
                    "alertId": alert_id,
                    "chainId": 1,
+                   "severity": 2,
+                   "findingType": 2,  
                    "createdAt": ts,
                    "source": {"bot": {'id': bot_id}, "block": {"chainId": 1, 'number': 5},  'transactionHash': transaction_hash},
                    "metadata": metadata,
@@ -325,6 +424,36 @@ class TestScamDetector:
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
 
         findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+        assert finding.labels[0].entity == '0x0000553f880ffa3728b290e04e819053a3590000'
+        assert finding.labels[0].label == 'scammer'
+        found_contract = False
+        for label in finding.labels:
+            if label.entity == '0x3eaabef289fdd9072c3ecae94d406c21de881247':
+                assert label.label == 'scammer'
+                found_contract = True   
+        assert found_contract, "should have found scammer contract"
+
+    def test_detect_blocksec_phishing_encrypted(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534"
+        alert_id = "Ice Phishing"
+        description = "Token Transfer Phishing Alert: Scammer (0x0000..9000) profited $168.35931259760338 from phishing. In this transaction, the token (QNT) of the user (0xc1c83d16121bad48ce3e431edd031e741aa6b1e6) was transferred to the address (0x0000553f880ffa3728b290e04e819053a3590000), and the target address was labeled as a phishing address. We believe the user was deceived into a token transfer transaction."
+        metadata = {"hash":"0xb5f699cc4d3dba99eba23268aebbcd11384dd33a02f447630116ae4276969f9e","scammer":"0x0000553f880ffa3728b290e04e819053a3590000","victim":"0xc1c83d16121bad48ce3e431edd031e741aa6b1e6"}
+        label = {"entity": "0x0000553f880ffa3728b290e04e819053a3590000","entityType": "ADDRESS","label": "phish","metadata": {},"confidence": 1}
+        labels = [ label ]
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
+
+        encrypted_alert_event = TestScamDetector.encrypt_alert_event(alert_event)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, encrypted_alert_event, clear_state_flag=True),"passthrough")
 
         assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
         finding = findings[0]

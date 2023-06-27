@@ -1,7 +1,7 @@
 
 from web3 import Web3
 from hexbytes import HexBytes
-from forta_agent import get_labels, Label, Finding, FindingSeverity, FindingType
+from forta_agent import get_labels, Label, Finding, FindingSeverity, FindingType, AlertEvent
 import requests
 import logging
 import io
@@ -195,16 +195,45 @@ class Utils:
     @staticmethod
     def decrypt_alert(encrypted_finding_base64:str, private_key:str) -> Finding:
         if Utils.gpg is None:
-            gpg =  gnupg.GPG(gnupghome='.')
-            import_result = gpg.import_keys(private_key)
+            Utils.gpg =  gnupg.GPG(gnupghome='.')
+            import_result = Utils.gpg.import_keys(private_key)
             for fingerprint in import_result.fingerprints:
-                gpg.trust_keys(fingerprint, 'TRUST_ULTIMATE')
+                Utils.gpg.trust_keys(fingerprint, 'TRUST_ULTIMATE')
     
         encrypted_finding_ascii = base64.b64decode(encrypted_finding_base64)
-        decrypted_finding_json = gpg.decrypt(encrypted_finding_ascii)
+        decrypted_finding_json = Utils.gpg.decrypt(encrypted_finding_ascii)
         finding_dict = json.loads(str(decrypted_finding_json))
 
         finding_dict['severity'] = FindingSeverity(finding_dict['severity'])
         finding_dict['type'] = FindingType(finding_dict['type'])
         
         return Finding(finding_dict)
+
+    @staticmethod
+    def decrypt_alert_event(alert_event: AlertEvent, private_key:str) -> AlertEvent:
+        if Utils.gpg is None:
+            Utils.gpg =  gnupg.GPG(gnupghome='.')
+            import_result = Utils.gpg.import_keys(private_key)
+            for fingerprint in import_result.fingerprints:
+                Utils.gpg.trust_keys(fingerprint, 'TRUST_ULTIMATE')
+    
+        if alert_event.alert.name == 'omitted' and 'data' in alert_event.alert.metadata.keys():
+            encrypted_finding_base64 = alert_event.alert.metadata['data']
+            encrypted_finding_ascii = base64.b64decode(encrypted_finding_base64)
+            decrypted_finding_json = Utils.gpg.decrypt(encrypted_finding_ascii)
+            finding_dict = json.loads(str(decrypted_finding_json))
+
+            finding_dict['severity'] = FindingSeverity(finding_dict['severity'])
+            finding_dict['type'] = FindingType(finding_dict['type'])
+        
+            finding = Finding(finding_dict)
+
+            alert_event.alert.name = finding.name
+            alert_event.alert.description = finding.description
+            alert_event.alert.severity = FindingSeverity(finding.severity)
+            alert_event.alert.finding_type = FindingType(finding.type)
+            alert_event.alert.metadata = finding.metadata
+            alert_event.alert.alert_id = finding.alert_id
+            alert_event.alert.labels = finding.labels
+        
+        return alert_event

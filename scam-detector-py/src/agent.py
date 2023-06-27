@@ -49,6 +49,7 @@ MODEL = None
 
 s3 = None
 dynamo = None
+secrets = None
 item_id_prefix = ""
 
 root = logging.getLogger()
@@ -121,6 +122,7 @@ def reinitialize():
     global BOT_VERSION
     global s3
     global dynamo
+    global secrets 
 
     try:
         # initialize dynamo DB
@@ -637,6 +639,7 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
     global CHAIN_ID
     global ALERTED_CLUSTERS
     global BASE_BOTS
+    global secrets
 
     
     findings = []
@@ -653,6 +656,9 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
         if chain_id == CHAIN_ID:
             # got alert from the right chain
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - received alert for proper chain {CHAIN_ID}")
+
+            private_key = secrets['decryption_key']
+            alert_event = Utils.decrypt_alert_event(alert_event, private_key)
 
             # TODO - change to using dynamo as the bot shards
             # update entity clusters
