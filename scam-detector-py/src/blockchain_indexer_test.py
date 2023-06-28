@@ -5,7 +5,7 @@ class TestBlockChainIndexer:
     def test_get_contract_deployments_has_zettablock(self):
         contract_deployer_address = '0xb2698c2d99ad2c302a95a8db26b08d17a77cedd4'  # euler finance exploiter
         deployed_contract = '0x036cec1a199234fc02f72d29e596a09440825f1c'  # euler finance exploiter contract
-        contract_addresses = BlockChainIndexer.get_contracts(contract_deployer_address, 1, disable_etherscan=True, disable_zettablock=False, start_date_str = '2022-01-01')
+        contract_addresses = BlockChainIndexer.get_contracts(contract_deployer_address, 1, disable_etherscan=True, disable_zettablock=False)
         assert len(contract_addresses) > 0, "should be greater than 0"
         assert deployed_contract in contract_addresses, "should be in list"
 

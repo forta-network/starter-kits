@@ -416,7 +416,7 @@ class TestScamDetector:
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534"
-        alert_id = "Ice Phishing"
+        alert_id = "Ice-phishing"
         description = "Token Transfer Phishing Alert: Scammer (0x0000..9000) profited $168.35931259760338 from phishing. In this transaction, the token (QNT) of the user (0xc1c83d16121bad48ce3e431edd031e741aa6b1e6) was transferred to the address (0x0000553f880ffa3728b290e04e819053a3590000), and the target address was labeled as a phishing address. We believe the user was deceived into a token transfer transaction."
         metadata = {"hash":"0xb5f699cc4d3dba99eba23268aebbcd11384dd33a02f447630116ae4276969f9e","scammer":"0x0000553f880ffa3728b290e04e819053a3590000","victim":"0xc1c83d16121bad48ce3e431edd031e741aa6b1e6"}
         label = {"entity": "0x0000553f880ffa3728b290e04e819053a3590000","entityType": "ADDRESS","label": "phish","metadata": {},"confidence": 1}
@@ -444,7 +444,7 @@ class TestScamDetector:
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534"
-        alert_id = "Ice Phishing"
+        alert_id = "Ice-phishing-web"
         description = "Token Transfer Phishing Alert: Scammer (0x0000..9000) profited $168.35931259760338 from phishing. In this transaction, the token (QNT) of the user (0xc1c83d16121bad48ce3e431edd031e741aa6b1e6) was transferred to the address (0x0000553f880ffa3728b290e04e819053a3590000), and the target address was labeled as a phishing address. We believe the user was deceived into a token transfer transaction."
         metadata = {"hash":"0xb5f699cc4d3dba99eba23268aebbcd11384dd33a02f447630116ae4276969f9e","scammer":"0x0000553f880ffa3728b290e04e819053a3590000","victim":"0xc1c83d16121bad48ce3e431edd031e741aa6b1e6"}
         label = {"entity": "0x0000553f880ffa3728b290e04e819053a3590000","entityType": "ADDRESS","label": "phish","metadata": {},"confidence": 1}

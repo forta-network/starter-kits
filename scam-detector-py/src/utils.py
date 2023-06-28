@@ -11,7 +11,7 @@ import gnupg
 import pandas as pd
 import json
 
-from constants import TX_COUNT_FILTER_THRESHOLD
+from src.constants import TX_COUNT_FILTER_THRESHOLD
 
 
 class Utils:

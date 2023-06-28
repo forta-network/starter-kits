@@ -5,8 +5,8 @@ from datetime import datetime
 import requests
 import logging
 
-from utils import Utils
-from constants import CONFIDENCE_MAPPINGS, MODEL_NAME
+from src.utils import Utils
+from src.constants import CONFIDENCE_MAPPINGS, MODEL_NAME
 
 class ScamDetectorFinding:
 
