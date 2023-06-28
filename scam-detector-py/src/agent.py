@@ -16,18 +16,18 @@ import forta_agent
 from forta_agent import get_json_rpc_url,  Finding, FindingType, FindingSeverity
 from web3 import Web3
 
-from constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_CLUSTERS_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
+from src.constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_CLUSTERS_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
                        FINDINGS_CACHE_ALERT_KEY, FINDINGS_CACHE_BLOCK_KEY, ALERTED_FP_CLUSTERS_KEY, FINDINGS_CACHE_TRANSACTION_KEY,
                        ALERTED_FP_CLUSTERS_QUEUE_SIZE, CONTRACT_SIMILARITY_BOTS, CONTRACT_SIMILARITY_BOT_THRESHOLDS, EOA_ASSOCIATION_BOTS,
-                       EOA_ASSOCIATION_BOT_THRESHOLDS, PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES, POOLCREATED_EVENT_ABI,
+                       EOA_ASSOCIATION_BOT_THRESHOLDS, PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES, POOLCREATED_EVENT_ABI, ENCRYPTED_BOTS,
                        MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT, MODEL_FEATURES, MODEL_NAME, DEBUG_ALERT_ENABLED)
-from storage import s3_client, dynamo_table, get_secrets, bucket_name
-from findings import ScamDetectorFinding
-from blockchain_indexer_service import BlockChainIndexer
-from forta_explorer import FortaExplorer
-from base_bot_parser import BaseBotParser
-from l2_cache import L2Cache
-from utils import Utils
+from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
+from src.findings import ScamDetectorFinding
+from src.blockchain_indexer_service import BlockChainIndexer
+from src.forta_explorer import FortaExplorer
+from src.base_bot_parser import BaseBotParser
+from src.l2_cache import L2Cache
+from src.utils import Utils
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 block_chain_indexer = BlockChainIndexer()
@@ -200,9 +200,7 @@ def put_entity_cluster(alert_created_at_str: str, address: str, cluster: str):
     logging.debug(f"putting entity clustering alert for {address} in dynamo DB")
     alert_created_at = datetime.strptime(alert_created_at_str[0:19], "%Y-%m-%dT%H:%M:%S").timestamp()
     logging.debug(f"alert_created_at: {alert_created_at}")
-    shard = Utils.get_shard(CHAIN_ID, alert_created_at)
-    logging.debug(f"shard: {shard}")
-    itemId = f"{item_id_prefix}|{CHAIN_ID}|{shard}|entity_cluster|{address}"
+    itemId = f"{item_id_prefix}|{CHAIN_ID}|entity_cluster|{address}"
     logging.debug(f"itemId: {itemId}")
     sortId = f"{address}"
     logging.debug(f"sortId: {sortId}")
@@ -226,19 +224,18 @@ def put_entity_cluster(alert_created_at_str: str, address: str, cluster: str):
         logging.info(f"Successfully put alert in dynamoDB: {response}")
         return
 
-# put in item alerts per cluster by shard id
+# put in item alerts per cluster
 # note, given sort key is part of the key, alerts with different hashes will result in different entries
 # whereas alerts with the same hash will be overwritten
 def put_alert(alert_event: forta_agent.alert_event.AlertEvent, cluster: str):
     global CHAIN_ID
+    global BOT_VERSION
 
     logging.debug(f"putting alert {alert_event.alert_hash} in dynamo DB")
     alert_created_at_str = alert_event.alert.created_at
     alert_created_at = datetime.strptime(alert_created_at_str[0:19], "%Y-%m-%dT%H:%M:%S").timestamp()
     logging.debug(f"alert_created_at: {alert_created_at}")
-    shard = Utils.get_shard(CHAIN_ID, alert_created_at)
-    logging.debug(f"shard: {shard}")
-    itemId = f"{item_id_prefix}|{CHAIN_ID}|{shard}|alert|{cluster}"
+    itemId = f"{item_id_prefix}|{CHAIN_ID}|alert|{cluster}"
     logging.debug(f"itemId: {itemId}")
     sortId = f"{alert_event.alert.source.bot.id}|{alert_event.alert.alert_id}|{alert_event.alert_hash}"
     logging.debug(f"sortId: {sortId}")
@@ -270,51 +267,53 @@ def read_entity_clusters(address: str) -> dict:
     global CHAIN_ID
 
     entity_clusters = dict()
-    for shard in range(Utils.get_total_shards(CHAIN_ID)):
-        itemId = f"{item_id_prefix}|{CHAIN_ID}|{shard}|entity_cluster|{address}"
-        logging.debug(f"Reading entity clusters for address {address} from shard {shard}, itemId {itemId}")
-        logging.debug(f"Dynamo : {dynamo}")
-        response = dynamo.query(KeyConditionExpression='itemId = :id',
-                                ExpressionAttributeValues={
-                                    ':id': itemId
-                                }
-                                )
+    itemId = f"{item_id_prefix}|{CHAIN_ID}|entity_cluster|{address}"
+    logging.debug(f"Reading entity clusters for address {address} from itemId {itemId}")
+    logging.debug(f"Dynamo : {dynamo}")
+    response = dynamo.query(KeyConditionExpression='itemId = :id',
+                            ExpressionAttributeValues={
+                                ':id': itemId
+                            }
+                            )
 
-        # Print retrieved item
-        items = response.get('Items', [])
-        logging.debug(f"Items retrieved: {len(items)}")
-        for item in items:
-            logging.debug(f"Item retrieved: {item}")
-            entity_clusters[address] = item["cluster"]
+    # Print retrieved item
+    items = response.get('Items', [])
+    logging.debug(f"Items retrieved: {len(items)}")
+    for item in items:
+        logging.debug(f"Item retrieved: {item}")
+        entity_clusters[address] = item["cluster"]
     logging.info(f"Read entity clusters for address {address}. Retrieved {len(entity_clusters)} alert_clusters.")
     return entity_clusters
 
 def read_alerts(cluster: str) -> list:
     global CHAIN_ID
+    global BOT_VERSION
 
     logging.debug(f"Reading alerts for cluster {cluster}")
     alert_items = []
-    for shard in range(Utils.get_total_shards(CHAIN_ID)):
-        itemId = f"{item_id_prefix}|{CHAIN_ID}|{shard}|alert|{cluster}"
-        logging.debug(f"Reading alerts for cluster {cluster} from shard {shard}, itemId {itemId}")
-        logging.debug(f"Dynamo : {dynamo}")
-        response = dynamo.query(KeyConditionExpression='itemId = :id',
-                                ExpressionAttributeValues={
-                                    ':id': itemId
-                                }
-                                )
+    itemId = f"{item_id_prefix}|{CHAIN_ID}|alert|{cluster}"
+    logging.debug(f"Reading alerts for cluster {cluster} from itemId {itemId}")
+    logging.debug(f"Dynamo : {dynamo}")
+    response = dynamo.query(KeyConditionExpression='itemId = :id',
+                            ExpressionAttributeValues={
+                                ':id': itemId
+                            }
+                            )
 
-        # Print retrieved item
-        items = response.get('Items', [])
-        logging.debug(f"Items retrieved: {len(items)}")
-        for item in items:
-            logging.debug(f"Item retrieved: {item}")
-            alert_items.append((item["botId"], item["alertId"], item["alertHash"]))
-    logging.info(f"Read alerts for cluster {cluster}. Retrieved {len(alert_items)} alerts.")
+    # Print retrieved item
+    items = response.get('Items', [])
+    logging.debug(f"Items retrieved: {len(items)}")
+    for item in items:
+        logging.debug(f"Item retrieved: {item}")
+        alert_items.append((item["botId"], item["alertId"], item["alertHash"]))
+
+    logging.info(f"{BOT_VERSION}: Read alerts for cluster {cluster}. Retrieved {len(alert_items)} alerts.")
     return alert_items
 
 # alerts are tuples of (botId, alertId, alertHash)
 def build_feature_vector(alerts: list, cluster: str) -> pd.DataFrame: 
+    global BOT_VERSION
+
     df_feature_vector = pd.DataFrame(columns=MODEL_FEATURES)
     df_feature_vector.loc[0] = np.zeros(len(MODEL_FEATURES))
 
@@ -374,9 +373,11 @@ def build_feature_vector(alerts: list, cluster: str) -> pd.DataFrame:
 
 def get_model_score(df_feature_vector: pd.DataFrame) -> float:
     global MODEL
-    logging.debug(f"Feature vector: {df_feature_vector.loc[0]}")
+    global BOT_VERSION
 
+    logging.debug(f"Feature vector: {df_feature_vector.loc[0]}")
     predictions_proba = MODEL.predict_proba(df_feature_vector)[:, 1]
+
     return predictions_proba[0]
 
 
@@ -410,14 +411,17 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
     global CHAIN_ID
     global BOT_VERSION
 
+    start_time = time.time()
+
     scammer_addresses_dict = BaseBotParser.get_scammer_addresses(w3, alert_event)
-    logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got base bot alert (combination); extracted {len(scammer_addresses_dict.keys())} scammer addresses.")
+    logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got base bot alert (combination); extracted {len(scammer_addresses_dict.keys())} scammer addresses. Processing took {time.time() - start_time} seconds.")
     for scammer_address in scammer_addresses_dict.keys():
         scammer_address_lower = scammer_address.lower()
         scammer_contract_addresses = scammer_addresses_dict[scammer_address]['scammer-contracts'] if 'scammer-contracts' in scammer_addresses_dict[scammer_address] else set()
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got scammer address {scammer_address_lower}")
         cluster = scammer_address_lower
         entity_cluster = read_entity_clusters(scammer_address_lower)
+        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - read {len(entity_cluster.keys())} clusters for scammer address {scammer_address_lower}. Processing took {time.time() - start_time} seconds.")
         if scammer_address_lower in entity_cluster.keys():
             cluster = entity_cluster[scammer_address_lower]
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got alert for cluster {cluster}")
@@ -425,18 +429,20 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
         if Utils.is_contract(w3, cluster):
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} is contract, skipping")
             continue
-        
+        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - {scammer_address_lower} is not a contract. Processing took {time.time() - start_time} seconds.")
+
         put_alert(alert_event, cluster)
+        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - put alert into dynamo for cluster {cluster}. Processing took {time.time() - start_time} seconds.")
 
         # get all alerts from dynamo for the cluster
         alert_list = read_alerts(cluster)  # list of tuple of (botId, alertId, alertHash)
-        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got {len(alert_list)} alerts from dynamo for cluster {cluster}")
+        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got {len(alert_list)} alerts from dynamo for cluster {cluster}. Processing took {time.time() - start_time} seconds.")
 
 
         # assess based on ML model
         feature_vector = build_feature_vector(alert_list, cluster)
         score = get_model_score(feature_vector)
-        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got score {score} for cluster {cluster}")
+        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got score {score} for cluster {cluster}. Processing took {time.time() - start_time} seconds.")
         model_threshold = MODEL_ALERT_THRESHOLD_LOOSE if Utils.is_beta() else MODEL_ALERT_THRESHOLD_STRICT
         if score>model_threshold:
             #since this is a expensive function, will only check if we are about to raise an alert
@@ -444,7 +450,7 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} identified as FP; skipping")
                 continue
 
-            logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
+            logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters. Processing took {time.time() - start_time} seconds.")
             for alert_id in get_scam_detector_alert_ids(alert_list):
 
                 unique_alertIds = set(alert[1] for alert in alert_list)
@@ -458,7 +464,7 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
                 
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} added to findings. Findings size: {len(findings)}")
 
-    logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - return total findings: {len(findings)}")
+    logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - return total findings: {len(findings)}. Processing took {time.time() - start_time} seconds.")
     return findings
 
 def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
@@ -644,7 +650,7 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
     
     findings = []
     try:
-        start = time.time()
+        start_all = time.time()
 
         if CHAIN_ID == -1:
             reinitialize()
@@ -657,10 +663,13 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
             # got alert from the right chain
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - received alert for proper chain {CHAIN_ID}")
 
-            private_key = secrets['decryption_key']
-            alert_event = Utils.decrypt_alert_event(alert_event, private_key)
+            # decrypt the alert if needed
+            if alert_event.bot_id in ENCRYPTED_BOTS.keys() and alert_event.name == 'omitted':
+                decryption_key_name = ENCRYPTED_BOTS[alert_event.bot_id]
+                if decryption_key_name in secrets['decryptionKeys']:
+                    private_key = secrets['decryptionKeys'][decryption_key_name]
+                    alert_event = Utils.decrypt_alert_event(alert_event, private_key)
 
-            # TODO - change to using dynamo as the bot shards
             # update entity clusters
             if in_list(alert_event, ENTITY_CLUSTER_BOTS):
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} is entity cluster alert")
@@ -675,28 +684,36 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
             # for combination base bots store in dynamo; then query dynamo for the cluster (this will pull all alerts from multiple shards), build feature vector and then evaluate detection heuristic
             
             if in_list(alert_event, CONTRACT_SIMILARITY_BOTS):
+                start = time.time()
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} is contract similarity alert")
-                return emit_contract_similarity_finding(w3, alert_event)
+                findings.extend(emit_contract_similarity_finding(w3, alert_event))
+                logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} is contract similarity alert. Processing took {time.time() - start} seconds.")
             elif in_list(alert_event, EOA_ASSOCIATION_BOTS):
+                start = time.time()
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} is eoa association alert")
-                return emit_eoa_association_finding(w3, alert_event)
+                findings.extend(emit_eoa_association_finding(w3, alert_event))
+                logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} is eoa association alert. Processing took {time.time() - start} seconds.")
             elif alert_logic(alert_event, BASE_BOTS) == "PassThrough":
+                start = time.time()
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - is passthrough alert")
                 findings = []
-                if Utils.is_beta():
-                    findings.extend(emit_ml_finding(w3, alert_event)) # pushing passthrough to assess how well we would do with an ML approach; this is more for testing purposes right now
+                # if Utils.is_beta():
+                #     findings.extend(emit_ml_finding(w3, alert_event)) # pushing passthrough to assess how well we would do with an ML approach; this is more for testing purposes right now
                 findings.extend(emit_passthrough_finding(w3, alert_event))
-                return findings
+                logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - is passthrough alert. Processing took {time.time() - start} seconds.")
+                
             elif alert_logic(alert_event, BASE_BOTS) == "Combination":  
+                start = time.time()
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - is combination alert")
-                return emit_ml_finding(w3, alert_event)
+                findings.extend(emit_ml_finding(w3, alert_event))
+                logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - is combination alert. Processing took {time.time() - start} seconds.")
             else:
                 logging.warning(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got base bot alert; not part of subscription")
         else:
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - wrong chain {chain_id} for bot {CHAIN_ID}")
 
-        end = time.time()
-        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.alert_id} {alert_event.chain_id} processing took {end - start} seconds")
+        end_all = time.time()
+        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.alert_id} {alert_event.chain_id} processing took {end_all - start_all} seconds")
     except BaseException as e:
         logging.warning(f"{BOT_VERSION}: alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e} - {traceback.format_exc()}")
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):

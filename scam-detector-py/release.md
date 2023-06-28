@@ -1,5 +1,14 @@
 # Scam Detector Bot Release Notes
 
+## v2.14.0 (June 28th 2023 - beta)
+- integrated blocksec bots (addresses only)
+- disabled running ML algo on passthrough alerts (this was enabled on beta for testing purposes)
+
+## v2.13.2 (June 28th 2023 - beta)
+- revamped version to match semantic versioning format
+- added perf related logging
+- removed shard from dynamo queries which were unnecessary; this is speeding up processing of the bot
+
 ## v0.2.13 (June 26th 2023 - beta)
 - updated sdk to 0.1.33
 
