@@ -1,9 +1,9 @@
 import time
 from forta_agent import  create_alert_event, create_block_event
-import agent
+import src.agent as agent
 import json
 import unittest
-from constants import N_WORKERS
+from src.constants import N_WORKERS
 
 
 class TestScammerLabelPropagationAgent(unittest.TestCase):
@@ -190,7 +190,9 @@ class TestScammerLabelPropagationAgent(unittest.TestCase):
             findings += agent.handle_block(block_event)
     
     def test_run_all_extended(self):
-        central_node = '0xfa080f371f2b9986dfd0a692da4da343178233d0'
+        # central_node = '0x29488E5fD6bF9B3cc98A9d06A25204947ccCBE4D'  # 0x29488E5fD6bF9B3cc98A9d06A25204947ccCBE4D
+        central_node = '0x63605e53d422c4f1ac0e01390ac59aaf84c44a51'
+        # central_node = '0xb547CF047D7ecD65e199c9c77f1938a95da5dc61'  # 0x29488E5fD6bF9B3cc98A9d06A25204947ccCBE4D
         alert = {"alert":
                  {"name": "x",
                  "hash": "0xabc",
