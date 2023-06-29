@@ -76,59 +76,6 @@ class BlockChainIndexer:
         raise Exception("Chain ID not supported")
     
     @staticmethod
-    def sql_to_csv(querystr: str) -> str:
-        headers = {
-            "accept": "application/json",
-            "content-type": "application/json",
-            # credentials
-            "X-API-KEY": BlockChainIndexer.get_zettablock_api_key()
-        }
-
-        data_lake_query_endpoint = "https://api.zettablock.com/api/v1/databases/AwsDataCatalog/queries"
-
-        # specify how long you want to cache the result
-        query = {"query":querystr, "resultCacheExpireMillis": 86400000}
-
-        # Create a query with SQL statement, and get query id
-        res = requests.post(data_lake_query_endpoint, headers=headers, data=json.dumps(query))
-
-        if res.status_code == 200:
-            query_id = res.json()['id']
-
-            data_lake_submission_endpoints = f'https://api.zettablock.com/api/v1/queries/{query_id}/trigger'
-            res = requests.post(data_lake_submission_endpoints, headers=headers, data='{}')
-
-            if res.status_code == 200:
-                # Check status using queryrun id
-                queryrun_id = res.json()['queryrunId']
-
-                def get_response(queryrun_id):
-                    import time
-                    i = 1
-                    queryrun_status_endpoint = f'https://api.zettablock.com/api/v1/queryruns/{queryrun_id}/status'
-                    while True:
-                        res = requests.get(queryrun_status_endpoint, headers=headers)
-                        state = json.loads(res.text)['state']
-                        if state == 'SUCCEEDED' or state == 'FAILED':
-                            return state
-                        time.sleep(i)
-                        i += 1
-            
-                if get_response(queryrun_id) == 'SUCCEEDED':
-                    # Fetch result from queryrun id
-                    params = {'includeColumnName': 'true'}
-                    queryrun_result_endpoint = f'https://api.zettablock.com/api/v1/stream/queryruns/{queryrun_id}/result'
-                    # if the result is huge, consider using stream and write to a file
-                    res = requests.get(queryrun_result_endpoint, headers=headers, params=params)
-                    return res.text
-                else:
-                    raise ConnectionError(f"Execution of zettablock query {querystr} failed.")
-            else:
-                raise ConnectionError(f"Execution of zettablock query {querystr} failed with {res.status_code}")
-        else:
-            raise ConnectionError(f"Execution of zettablock query {querystr} failed with {res.status_code}")
-
-    @staticmethod
     def calc_contract_address(address, nonce) -> str:
         """
         this function calculates the contract address from sender/nonce
@@ -142,7 +89,7 @@ class BlockChainIndexer:
     # Note, this doesnt work well with contracts; caller needs to check whether address is an EOA or not
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
-    def get_contracts(address, chain_id, disable_etherscan=False, disable_zettablock=False, start_date_str = '') -> set:
+    def get_contracts(address, chain_id, disable_etherscan=False, disable_zettablock=False) -> set:
         logging.info(f"get_contracts for {address} on {chain_id} called.")
         contracts = set()
 
@@ -175,26 +122,43 @@ class BlockChainIndexer:
         if not disable_zettablock and chain_id in [1, 137, 56]:
             logging.info(f"get_contracts from zettablock for {address} on {chain_id}.")
             try:
-                table_name = "ethereum_mainnet.contract_creations"
+                endpoint = "https://api.zettablock.com/api/v1/dataset/sq_5e4eb6ce5eef480ab538ca9440ada71c/graphql"
                 if chain_id == 137:
-                    table_name = "polygon_mainnet.contract_creations"
+                    endpoint = "https://api.zettablock.com/api/v1/dataset/sq_0d59b127946d49c58959d6ee5b4e69d0/graphql"
                 if chain_id == 56:
-                    table_name = "bsc_mainnet.contract_creations"
+                    endpoint = "https://api.zettablock.com/api/v1/dataset/sq_b0a854fc15f94594a4abfb1e62ea8e74/graphql"
 
-                start_date_str2 = start_date_str
-                if start_date_str == '':
-                    start_date = datetime.now() - timedelta(days=90)
-                    start_date_str2 = start_date.strftime("%Y-%m-%d")
-                # address, deployer, transaction_hash
-                query_str = f"""SELECT address, creator_address AS deployer, transaction_hash FROM ethereum_mainnet.contract_creations WHERE LOWER(creator_address) = '{address.lower()}' and data_creation_date > DATE('{start_date_str2}') LIMIT 500"""
+                query = f"""
+                    {{records(
+                        filter: {{
+                                deployer: {{
+                                    eq: "{address.lower()}"
+                                }}
+                            }}
+                        ) {{
+                            address
+                            deployer
+                            transaction_hash
+                        }}
+                    }}
+                    """
 
-                csv_str = BlockChainIndexer.sql_to_csv(query_str)
-                data = StringIO(csv_str)
+                headers = {
+                    "accept": "application/json",
+                    "X-API-KEY": BlockChainIndexer.get_zettablock_api_key()
+                }
+                #headers = {'authorization': 'Basic Y2lyY2xldXNlcjE6Q2Frc1Nuc2RCbnNaYWYxMl8xMDE3'}
+                data = {'query': query}
 
-                # Read the data into a DataFrame
-                df = pd.read_csv(data)
-                for index, row in df.iterrows():
-                    contracts.add(row["address"].lower())
+                res = requests.post(endpoint, headers=headers, data=json.dumps(data))
+                if res.status_code == 200:
+                    resjson = json.loads(res.text)
+                    records = resjson['data']['records']
+                    df = pd.DataFrame(records, columns=['address', 'deployer', 'transaction_hash'])
+                    for index, row in df.iterrows():
+                        contracts.add(row["address"].lower())
+                else:
+                    logging.warning(f"Error getting contract on zettablock for {address}, {chain_id} {res.status_code} {res.text}")
 
             except Exception as e:
                 logging.warning(f"Error getting contract on zettablock for {address}, {chain_id} {e}")
