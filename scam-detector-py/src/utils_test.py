@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from forta_agent import get_json_rpc_url, FindingSeverity
 from web3 import Web3
 from utils import Utils
@@ -76,24 +77,13 @@ class TestUtils:
         assert contract_address == "0x728ad672409DA288cA5B9AA85D1A55b803bA97D7", "should be the same contract address"
 
     def test_decrypt_alert(self):
-        private_key = """-----BEGIN PGP PRIVATE KEY BLOCK-----
-
-            lFgEZJIQ9hYJKwYBBAHaRw8BAQdAY6YD5hXuNB7oimaPkIELdzQk6VYmvLHxdqJO
-            1UoQd2gAAP0dVkKilX6K3FRvJHYW2kXgtJ3dZsSc402A6o5mb8x75xJetB10ZXN0
-            Ym90IDxjaHJpc3RpYW5AZm9ydGEub3JnPoiZBBMWCgBBFiEEjF1uj3b2d/+HmkTI
-            qEvWFEVu298FAmSSEPYCGwMFCQPCZwAFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcC
-            F4AACgkQqEvWFEVu2990yQD/UU67YegN3k20JjnqMpW0aNigcf5kTzIn9FcrU6MC
-            iDoBAOElTXMmnt9oZs6dQpYLlSZzC/CI8H6zHSSs6Nlcc8QCnF0EZJIQ9hIKKwYB
-            BAGXVQEFAQEHQCTiGxlIkqUmKp7jmbF9UFucNYTq+iBfpnYWwWYTBssJAwEIBwAA
-            /1dqhB72vIyb8i1Fcfx4jCMRIs+CwJ2AlGFhmxQa84HQEPeIfgQYFgoAJhYhBIxd
-            bo929nf/h5pEyKhL1hRFbtvfBQJkkhD2AhsMBQkDwmcAAAoJEKhL1hRFbtvfG5QB
-            APGHT9livgHLS7Oxnh6Au7z2JY7xn+c6f4stenK61YWzAQCinZ7aWt++joCS5N0A
-            wZDC9xAZrMkN9JqSM6HfyEhSBg==
-            =ao/0
-            -----END PGP PRIVATE KEY BLOCK-----
-            """
-        
-        encrypted_finding_base64 = "LS0tLS1CRUdJTiBQR1AgTUVTU0FHRS0tLS0tCgpoRjREWWlMaW5IS2xIQ0FTQVFkQVZHWDRBWCtVMTR1NkVDK3VRczYxbjA5QmRDUjd6WiszekNpVy9EVTNwV0l3CnJrMTg2VGFkTzFLTWdTUUx1YWRIcEtHd201QUlJZFRvdHN2K0NYTGdHd0pRK3lpQUZvckxLd1dyR3lvNUtDdngKMHNBREFUS2IwYkhxWVVYMUE4U0NLdVE2ZjY0Mmd2dVltanhCUXFRd1ZWenFscEY1VHEyT3Rmdi9JMDhxUElObAprN2Z3RjRKcUVjaFlncVYrRkhHb2h6NzZRYXYzNVpOLzhvbXpZbjN5WTF2RUdtR3pMRnQ5TGxUTFpIRys5NVc0ClNXR1pmZklXUDFJczFSTXBCNXBIOWxVai9hTGRUQzY5dHNnTHp5UUtuWDU3WXBnWjUyeHhFQ2hWRGthbWZzVU0KdXMwN1ZmNVpuQWdoQ3JyZVRjalYvVFU3WUZYN2NTR3pZQkRzZFFEV2V1ZE1FVzZ4T2xYQkJWV2JFSEplNGlXcwppbVRxWmZITwo9SHBMMwotLS0tLUVORCBQR1AgTUVTU0FHRS0tLS0tCg=="
+        private_key = ""
+        with open("secrets.json") as f:
+            secrets_json = json.load(f)
+            if "BLOCKSEC" in secrets_json['decryptionKeys']:
+                private_key = secrets_json['decryptionKeys']["BLOCKSEC"]
+             
+        encrypted_finding_base64 = "-----BEGIN PGP MESSAGE-----\n\nwV4Dsrw6yC2ErRsSAQdAH4G1wHZ51oEkY1qabIqDgy2fCO4tyPQQ8lTkUx2U\n8yUw7PknK6WzKO08VAzP5ME6s9uDOyhDg7A7rn2h4Sx1yW3sv264/r2yiKAq\nWJK+fIdd0sD5AaVkIyGWLhBnLBe+UYVhcYPh+6ynB1Vm2rh4l/qndcgIex6d\nTb/uriimCuMSZvUM4EfPzEZ1R/v0I//ryOJESS8PespcuczAQTYfwNUFXLKb\nGIhvjLwtwAeqOMnnukWFK3VGx8FodPEGjpVHGKP6tetY40np4saorsflamhu\nGI+mPOxm/5jc+r1D0zVVcjPNQ7n2rgr/PKhdiNwlkbK123HAvSIfDMxMeBs0\npD8T9LABU3P4wR2MGw6t0935o1tKUf0MiymSpsxqjrhrYsGBcIaMtomLO9eM\nFLs1/cLG8g5DQlcz3zkTFtcPHSt7mh4rio9en8a4ZzXoUiRhbD6DSFXsnuEt\n7VZ0UnTVES6J+YfUFiMTiFhXwZ07xxMWn8/LNfJUa2ADSIBpFOM6uVslhwxo\nuU0l29Sm09EWa0MXTf3Qo73VbzVb1NpwwwSeIUN/e3QbtE/udgeWhrwQXk91\nw25m1GSQCnO2oWenRSudvbbbir9Ew3kCi9aosOPM9iMCNk2HUGtS7FpRAz2A\nQwoNV2WOIR01VVDjdnguF/JKaeMrBqTOEqlqIqH60haJ1ct9wfjidoqBaA0V\n=YuOS\n-----END PGP MESSAGE-----\n"
         decrypted_finding = Utils.decrypt_alert(encrypted_finding_base64, private_key)
-        assert decrypted_finding.description == "Random value: 2.1856566476463613e-05"
-        assert decrypted_finding.severity == FindingSeverity.Low
+        assert decrypted_finding.description == "Ice phishing report."
+        assert decrypted_finding.severity == FindingSeverity.Critical
