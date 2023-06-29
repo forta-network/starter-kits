@@ -221,13 +221,19 @@ class Utils:
         if Utils.gpg is None:
             Utils.gpg =  gnupg.GPG(gnupghome='.')
             import_result = Utils.gpg.import_keys(private_key)
+            if len(import_result.fingerprints) == 0:
+                logging.info("Imported no private key into GPG")
+    
             for fingerprint in import_result.fingerprints:
                 Utils.gpg.trust_keys(fingerprint, 'TRUST_ULTIMATE')
+                logging.info(f"Imported private key {fingerprint} into GPG")
     
         if alert_event.alert.name == 'omitted' and 'data' in alert_event.alert.metadata.keys():
             encrypted_finding_ascii = alert_event.alert.metadata['data']
+            logging.info(f"Decrypting finding. Data length: {len(encrypted_finding_ascii)}. Private key length {len(private_key)}")
             
             decrypted_finding_json = Utils.gpg.decrypt(encrypted_finding_ascii)
+            logging.info(f"Decrypted finding. Data length: {len(str(decrypted_finding_json))}")
             finding_dict = json.loads(str(decrypted_finding_json))
 
             finding_dict['severity'] = FindingSeverity(finding_dict['severity'])
