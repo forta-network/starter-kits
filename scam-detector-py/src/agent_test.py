@@ -108,14 +108,13 @@ class TestScamDetector:
         finding_json = finding.toJson()
         encrypted_finding = gpg.encrypt(finding_json, fp)
         encrypted_finding_ascii = str(encrypted_finding)
-        encrypted_finding_base64 = base64.b64encode(encrypted_finding_ascii.encode("utf-8")).decode("utf-8")
 
         alert_event.alert.name = "omitted"
         alert_event.alert.description = "omitted"
         alert_event.alert.alert_id = "omitted"
         alert_event.alert.severity = FindingSeverity.Unknown
         alert_event.alert.finding_type = FindingType.Unknown
-        alert_event.alert.metadata = { 'data': encrypted_finding_base64 }
+        alert_event.alert.metadata = { 'data': encrypted_finding_ascii }
         alert_event.alert.labels = []
         return alert_event
         

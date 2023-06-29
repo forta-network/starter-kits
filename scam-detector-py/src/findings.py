@@ -10,7 +10,7 @@ from src.constants import CONFIDENCE_MAPPINGS, MODEL_NAME
 
 class ScamDetectorFinding:
 
-    LABEL_VERSION = "2.0.0"
+    LABEL_VERSION = "2.1.0"
 
     @staticmethod
     def get_threat_description_url(alert_id: str) -> str:
@@ -224,7 +224,7 @@ class ScamDetectorFinding:
         url = metadata['URL'] if 'URL' in metadata.keys() else ""
         url_scan_url = metadata['detail'] if ('detail' in metadata.keys() and 'URL' in metadata.keys()) else ""
 
-        involved_addresses = list(involved_addresses)[0:10]
+        involved_addresses = list(involved_addresses)[0:10] if involved_addresses is not None else []
         involved_alert_hashes = sorted(list(involved_alert_hashes)[0:10])
 
         attacker_address_md_dict = {"scammer_addresses": scammer_addresses}

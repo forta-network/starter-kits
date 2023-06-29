@@ -193,19 +193,26 @@ class Utils:
     gpg = None
 
     @staticmethod
-    def decrypt_alert(encrypted_finding_base64:str, private_key:str) -> Finding:
+    def decrypt_alert(encrypted_finding_ascii:str, private_key:str) -> Finding:
         if Utils.gpg is None:
             Utils.gpg =  gnupg.GPG(gnupghome='.')
             import_result = Utils.gpg.import_keys(private_key)
             for fingerprint in import_result.fingerprints:
                 Utils.gpg.trust_keys(fingerprint, 'TRUST_ULTIMATE')
     
-        encrypted_finding_ascii = base64.b64decode(encrypted_finding_base64)
         decrypted_finding_json = Utils.gpg.decrypt(encrypted_finding_ascii)
         finding_dict = json.loads(str(decrypted_finding_json))
 
         finding_dict['severity'] = FindingSeverity(finding_dict['severity'])
         finding_dict['type'] = FindingType(finding_dict['type'])
+        finding_dict['alert_id'] = finding_dict['alertId']
+
+        labels_new = []
+        labels = finding_dict['labels']
+        for label in labels:
+            if label['entity'] != '':
+                labels_new.append(label)
+        finding_dict['labels'] = labels_new
         
         return Finding(finding_dict)
 
@@ -218,13 +225,21 @@ class Utils:
                 Utils.gpg.trust_keys(fingerprint, 'TRUST_ULTIMATE')
     
         if alert_event.alert.name == 'omitted' and 'data' in alert_event.alert.metadata.keys():
-            encrypted_finding_base64 = alert_event.alert.metadata['data']
-            encrypted_finding_ascii = base64.b64decode(encrypted_finding_base64)
+            encrypted_finding_ascii = alert_event.alert.metadata['data']
+            
             decrypted_finding_json = Utils.gpg.decrypt(encrypted_finding_ascii)
             finding_dict = json.loads(str(decrypted_finding_json))
 
             finding_dict['severity'] = FindingSeverity(finding_dict['severity'])
             finding_dict['type'] = FindingType(finding_dict['type'])
+            finding_dict['alert_id'] = finding_dict['alertId']
+
+            labels_new = []
+            labels = finding_dict['labels']
+            for label in labels:
+                if label['entity'] != '':
+                    labels_new.append(label)
+            finding_dict['labels'] = labels_new
         
             finding = Finding(finding_dict)
 
