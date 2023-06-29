@@ -1,5 +1,8 @@
 # Attack Detector Bot Release Notes
 
+## v3.46.0 (June 29 2023: beta, June 29 2023: prod)
+- additional FP mitigation around scammers
+
 ## v3.45.2 (June 29 2023: beta, June 29 2023: prod)
 - updated SDK to version 0.1.33
 
