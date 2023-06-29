@@ -1,6 +1,6 @@
 {
   "name": "attack-detector-feed-beta",
-  "version": "3.45.2",
+  "version": "3.46.0",
   "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/alert-combiner-py",
   "chainIds": [
