@@ -32,6 +32,7 @@ def get_list_of_addresses_zettablock(central_node, API_key, n_retries=3):
     # Fist step is to query all the addresses that had some interaction with the central node
     all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_4afc4b8183174d1dbbef855a0144efd4/graphql"  # 1 year
     # all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_bb1d414ac0ac4d76a1ff1ae2e2b5c3f0/graphql"  # 6 months
+    # all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_1e1871c668514f47900937484d974d68/graphql"  # new 6 months
     all_addresses_query = """
     query associatedAddresses($address: String) {
       receiver: records(from_address: $address) {
