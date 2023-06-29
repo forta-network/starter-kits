@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## v2.15.0 (June 28th 2023 - beta)
+- added Urls to scam detector
+
 ## v2.14.0 (June 28th 2023 - beta)
 - integrated blocksec bots (addresses only)
 - disabled running ML algo on passthrough alerts (this was enabled on beta for testing purposes)

@@ -10,6 +10,42 @@ class BaseBotParser:
     BASEBOT_PARSING_CONFIG_DF = pd.read_csv('basebot_parsing_config.csv')
 
     @staticmethod
+    def get_scammer_urls(w3, alert_event: forta_agent.alert_event.AlertEvent) -> dict:
+        scammer_urls = dict()
+       
+                    
+        for index, row in BaseBotParser.BASEBOT_PARSING_CONFIG_DF.iterrows():
+            #  bot_id,alert_id,location,attacker_address_location_in_description,metadata_field,address_information
+            #  address information is to further differentiate one type of address vs the other from the same bot alert (e.g. address-poisioning vs address-posioner)
+
+            if row['bot_id'] == alert_event.bot_id and row['alert_id'] in alert_event.alert_id and row["type"] == 'url':
+                if row['location'] == 'description':
+                    metadata_obj = alert_event.alert.metadata.copy()
+                    description = alert_event.alert.description.lower()
+                    loc = int(row["attacker_address_location_in_description"])
+                    metadata_obj["address_information"] = row["address_information"]
+                    for url in re.findall(r"(?:(?:https?|ftp)://)?[\w\-]+(?:\.[\w\-]+)+[\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#]", description):
+                        metadata_obj["address_information"] = row["address_information"]
+                        scammer_urls[url.lower()] = metadata_obj
+                elif row['location'] == 'label':
+                    metadata_obj = alert_event.alert.metadata.copy()
+                    label_name = row['metadata_field']
+                    for label in alert_event.alert.labels:
+                        if label.label == label_name and label.entity_type == EntityType.Address:
+                            metadata_obj["address_information"] = row["address_information"]
+                            scammer_urls[label.entity] = metadata_obj
+                elif row['location'] == 'metadata':
+                    if row['metadata_field'] in alert_event.alert.metadata.keys():
+                        metadata_obj = alert_event.alert.metadata.copy()
+                        metadata = metadata_obj[row["metadata_field"]]
+                        for url in re.findall(r"(?:(?:https?|ftp)://)?[\w\-]+(?:\.[\w\-]+)+[\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#]", metadata):
+                            metadata_obj["address_information"] = row["address_information"]
+                            scammer_urls[url.lower()] = metadata_obj
+            
+        return scammer_urls
+    
+
+    @staticmethod
     def get_scammer_addresses(w3, alert_event: forta_agent.alert_event.AlertEvent) -> dict:
         scammer_addresses = dict()
        

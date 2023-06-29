@@ -2,12 +2,12 @@
 
 ## Description
 
-The Scam Detector bot combines past alerts under a common address from a variety of underlying base bots to emit a high precision label on EOAs and contract addresses. 
+The Scam Detector bot combines past alerts under a common address/ web sites from a variety of underlying base bots to emit a high precision label on URLs, EOAs and contract addresses. 
 
 The Scam Detector bot has three handlers that process alerts differently:
-1. Passthrough - this handler normalizes the alert information from the base bot and emits an label with minimal processing. 
-2. ML - utilizes a supervised machine learning model taking number of specific alerts observed for a given EOA as input and predicts whether an EOA is a scammer
-3. Propagation - this handler propagates labels from another label. E.g. a scammer was identified deployed an social engineering ice phishing contract. A similar contract bot identified a new scammer account deloying a similar contract. 
+1. Passthrough - this handler normalizes the alert information from the base bot and emits an label with minimal processing. (both addresses and URLs)
+2. ML - utilizes a supervised machine learning model taking number of specific alerts observed for a given EOA as input and predicts whether an EOA is a scammer (addresses only)
+3. Propagation - this handler propagates labels from another label. E.g. a scammer was identified deployed an social engineering ice phishing contract. A similar contract bot identified a new scammer account deloying a similar contract. (addresses only)
 
 In addition, the scam detector can consume manual information from the Forta community to identify scammers. 
 
@@ -19,15 +19,15 @@ Which base bots are used by which handler is documented in the base bot table be
 
 ## Labels
 
-The Scam Detector bot emits labels for identified scammer EOAs and contract addresses. The label will contain the following information:
-- label/entity - the address (either EOA or contract address)
-- label/entityType - EntityType.ADDRESS
+The Scam Detector bot emits labels for identified scammer EOAs and contract addresses and Urls. The label will contain the following information:
+- label/entity - the address (either EOA or contract address) or Url
+- label/entityType - EntityType.ADDRESS or EntityType.Url
 - label/confidence - a confidence score from 0-1.0 with 1.0 being most confident the label is correct
 - label/remove - a flag indicating whether the label is being added or removed
 - label/label - a string denoting the label that was placed on the entity. It currently is set to 'scammer'
 - label/metadata/bot_version - version of the bot when the label was added
 - label/metadata/threat_category - (see below)
-- label/metadata/address_type - EOA or contract
+- label/metadata/address_type - EOA or contract (addresses only)
 - label/metadata/logic - (passhthrough, ml, manual)
 - label/metadata/threat_description_url - URL that describes the threat_category in more detail
 
@@ -52,10 +52,11 @@ Threat categories are as follows:
 - scammer-deployed-contract - When a known scammer deploys a contract
 
 
-Additional informaiton can be found on the label for provenance purposes:
+Additional information can be found on the label for provenance purposes:
 - source/transactionHash - the hash of the transaction that the scam detector processed when emitting the label. Either source/transactionHash, source/block.numer or source/alertHash needs to be set.
 - source/block.number - the number of the block that the scam detector processed when emitting the label. Either source/transactionHash, source/block.numer or source/alertHash needs to be set.
 - source/alertHash - the hash of the alert that the scam detector processed when emitting the label. Either source/transactionHash, source/block.numer or source/alertHash needs to be set.
+- source_urlScanUrl - a url of the url scan that shows screenshots, html, etc
 - base_bot_alert_ids - if one or more alerts were processed by the scam detector, this field contains the alert_ids of those alerts.
 - base_bot_alert_hashes - if one or more alerts were processed by the scam detector, this field contains the alert_hashes of those alerts.
 - deployer_info - if the label is a contract, this field provides additional information of the deployer.
@@ -63,7 +64,7 @@ Additional informaiton can be found on the label for provenance purposes:
 - associated_scammer - an associated scammer comes into play for propagation alerts. This field contains the scammer entity from which the label was propagated from.
 - associated_scammer_contract - an associated scammer comes into play for propagation alerts. If a contract was involved, this field contains the scammer contract address from which the label was propagated from.      
 - associated_scammer_threat_categories - an associated scammer comes into play for propagation alerts. It contains all the threat categories associated with the original scammer.
-- associated_scammer_threat_categories - an associated scammer comes into play for propagation alerts. It contains all alert_hashes with the original scammer.
+- associated_scammer_alert_hashes - an associated scammer comes into play for propagation alerts. It contains all alert_hashes with the original scammer.
 
 In case of false positives are identified, the scam detector will emit a remove label.
 
