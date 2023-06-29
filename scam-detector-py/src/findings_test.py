@@ -17,7 +17,7 @@ class TestScamFindings:
     def test_get_threat_description_url(self):
         assert ScamDetectorFinding.get_threat_description_url("SCAM-DETECTOR-ICE-PHISHING") == "https://forta.org/attacks#ice-phishing"
 
-    def test_scam_finding(self):
+    def test_scam_finding_no_url(self):
         start_date = datetime(2021, 1, 1)
         end_date = datetime(2021, 1, 2)
         involved_addresses = [EOA_ADDRESS_SMALL_TX, CONTRACT]
@@ -26,8 +26,9 @@ class TestScamFindings:
         hashes = ["0xabc"]
         chain_id = 1
         scammer_contract_addresses = { CONTRACT }
+        metadata = {}
 
-        finding = ScamDetectorFinding.scam_finding(block_chain_indexer, forta_explorer, EOA_ADDRESS_SMALL_TX, start_date, end_date, scammer_contract_addresses, involved_addresses, involved_alerts, alert_id, hashes, chain_id, "passthrough")
+        finding = ScamDetectorFinding.scam_finding(block_chain_indexer, forta_explorer, EOA_ADDRESS_SMALL_TX, start_date, end_date, scammer_contract_addresses, involved_addresses, involved_alerts, alert_id, hashes, metadata, chain_id, "passthrough")
         assert finding.alert_id == alert_id
         assert finding.severity == FindingSeverity.Critical
         assert finding.type == FindingType.Scam
@@ -68,6 +69,109 @@ class TestScamFindings:
         assert finding.labels[1].metadata["base_bot_alert_hashes"] == "0xabc"
         assert finding.labels[1].metadata["threat_description_url"] == ScamDetectorFinding.get_threat_description_url(alert_id)
 
+    def test_scam_finding_with_url(self):
+        start_date = datetime(2021, 1, 1)
+        end_date = datetime(2021, 1, 2)
+        involved_addresses = [EOA_ADDRESS_SMALL_TX, CONTRACT]
+        involved_alerts = ["ICE-PHISHING"]
+        alert_id = "SCAM-DETECTOR-ICE-PHISHING"
+        hashes = ["0xabc"]
+        chain_id = 1
+        scammer_contract_addresses = { CONTRACT }
+        metadata = {'scammer': EOA_ADDRESS_SMALL_TX, 'URL': 'withdraw-llido.com', 'detail': 'https://urlscan.io/result/1870a15b-2b37-4980-9968-ac8a01e083f9/', 'transaction': ''}
+        
+
+        finding = ScamDetectorFinding.scam_finding(block_chain_indexer, forta_explorer, EOA_ADDRESS_SMALL_TX, start_date, end_date, scammer_contract_addresses, involved_addresses, involved_alerts, alert_id, hashes, metadata, chain_id, "passthrough")
+        assert finding.alert_id == alert_id
+        assert finding.severity == FindingSeverity.Critical
+        assert finding.type == FindingType.Scam
+        assert finding.name == f'Scam detector identified an EOA with past alerts mapping to scam behavior'
+        assert finding.description == f"{EOA_ADDRESS_SMALL_TX} (on URL withdraw-llido.com) likely involved in a scam ({alert_id}, passthrough)"
+        assert finding.metadata is not None
+        assert finding.labels is not None
+        assert finding.metadata["start_date"] == "2021-01-01"
+        assert finding.metadata["end_date"] == "2021-01-02"
+        assert finding.metadata["involved_addresses_1"] == EOA_ADDRESS_SMALL_TX
+        assert finding.metadata["involved_addresses_2"] == CONTRACT
+        assert finding.metadata["involved_alert_id_1"] == "ICE-PHISHING"
+        assert finding.metadata["involved_alert_hashes_1"] == "0xabc"
+        assert finding.metadata["scammer_addresses"] == EOA_ADDRESS_SMALL_TX
+        assert finding.metadata["url_scan_url"] == 'https://urlscan.io/result/1870a15b-2b37-4980-9968-ac8a01e083f9/'
+        assert finding.metadata["logic"] == "passthrough"
+        assert len(finding.labels) == 3
+
+  
+        assert finding.labels[0].entity_type == EntityType.Address
+        assert finding.labels[0].entity == EOA_ADDRESS_SMALL_TX
+        assert finding.labels[0].label == "scammer"
+        assert finding.labels[0].confidence == 0.75
+        assert finding.labels[0].metadata["address_type"] == "EOA"
+        assert finding.labels[0].metadata["logic"] == "passthrough"
+        assert finding.labels[0].metadata["threat_category"] == "ice-phishing"
+        assert finding.labels[0].metadata["base_bot_alert_ids"] == "ICE-PHISHING"
+        assert finding.labels[0].metadata["base_bot_alert_hashes"] == "0xabc"
+        assert finding.labels[0].metadata["threat_description_url"] == ScamDetectorFinding.get_threat_description_url(alert_id)
+
+        assert finding.labels[1].entity_type == EntityType.Address
+        assert finding.labels[1].entity == CONTRACT
+        assert finding.labels[1].label == "scammer"
+        assert finding.labels[1].confidence == 0.675
+        assert finding.labels[1].metadata["address_type"] == "contract"
+        assert finding.labels[1].metadata["threat_category"] == "ice-phishing"
+        assert finding.labels[1].metadata["logic"] == "passthrough"
+        assert finding.labels[1].metadata["base_bot_alert_ids"] == "ICE-PHISHING"
+        assert finding.labels[1].metadata["base_bot_alert_hashes"] == "0xabc"
+        assert finding.labels[1].metadata["threat_description_url"] == ScamDetectorFinding.get_threat_description_url(alert_id)
+
+        assert finding.labels[2].entity_type == EntityType.Url
+        assert finding.labels[2].entity == "withdraw-llido.com"
+        assert finding.labels[2].label == "scammer"
+        assert finding.labels[2].confidence == 0.75
+        assert finding.labels[2].metadata["threat_category"] == "ice-phishing"
+        assert finding.labels[2].metadata["logic"] == "passthrough"
+        assert finding.labels[2].metadata["base_bot_alert_ids"] == "ICE-PHISHING"
+        assert finding.labels[2].metadata["base_bot_alert_hashes"] == "0xabc"
+        assert finding.labels[2].metadata["threat_description_url"] == ScamDetectorFinding.get_threat_description_url(alert_id)
+        assert finding.labels[2].metadata["source_url_scan_url"] == 'https://urlscan.io/result/1870a15b-2b37-4980-9968-ac8a01e083f9/'
+
+    def test_scam_finding_only_url(self):
+        start_date = datetime(2021, 1, 1)
+        end_date = datetime(2021, 1, 2)
+        involved_addresses = []
+        involved_alerts = ["ICE-PHISHING"]
+        alert_id = "SCAM-DETECTOR-ICE-PHISHING"
+        hashes = ["0xabc"]
+        chain_id = 1
+        scammer_contract_addresses = {  }
+        metadata = {'scammer': '', 'URL': 'withdraw-llido.com', 'detail': 'https://urlscan.io/result/1870a15b-2b37-4980-9968-ac8a01e083f9/', 'transaction': ''}
+        
+
+        finding = ScamDetectorFinding.scam_finding(block_chain_indexer, forta_explorer, "", start_date, end_date, scammer_contract_addresses, involved_addresses, involved_alerts, alert_id, hashes, metadata, chain_id, "passthrough")
+        assert finding.alert_id == alert_id
+        assert finding.severity == FindingSeverity.Critical
+        assert finding.type == FindingType.Scam
+        assert finding.name == f'Scam detector identified an URL with past alerts mapping to scam behavior'
+        assert finding.description == f"URL withdraw-llido.com likely involved in a scam ({alert_id}, passthrough)"
+        assert finding.metadata is not None
+        assert finding.labels is not None
+        assert finding.metadata["start_date"] == "2021-01-01"
+        assert finding.metadata["end_date"] == "2021-01-02"
+        assert finding.metadata["involved_alert_id_1"] == "ICE-PHISHING"
+        assert finding.metadata["involved_alert_hashes_1"] == "0xabc"
+        assert finding.metadata["url_scan_url"] == 'https://urlscan.io/result/1870a15b-2b37-4980-9968-ac8a01e083f9/'
+        assert finding.metadata["logic"] == "passthrough"
+        assert len(finding.labels) == 1
+
+        assert finding.labels[0].entity_type == EntityType.Url
+        assert finding.labels[0].entity == "withdraw-llido.com"
+        assert finding.labels[0].label == "scammer"
+        assert finding.labels[0].confidence == 0.75
+        assert finding.labels[0].metadata["threat_category"] == "ice-phishing"
+        assert finding.labels[0].metadata["logic"] == "passthrough"
+        assert finding.labels[0].metadata["base_bot_alert_ids"] == "ICE-PHISHING"
+        assert finding.labels[0].metadata["base_bot_alert_hashes"] == "0xabc"
+        assert finding.labels[0].metadata["threat_description_url"] == ScamDetectorFinding.get_threat_description_url(alert_id)
+        assert finding.labels[0].metadata["source_url_scan_url"] == 'https://urlscan.io/result/1870a15b-2b37-4980-9968-ac8a01e083f9/'
 
 
         

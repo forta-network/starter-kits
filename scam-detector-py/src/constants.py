@@ -17,7 +17,7 @@ FINDINGS_CACHE_TRANSACTION_KEY = "findings_cache_transaction_key"
 FINDINGS_CACHE_ALERT_KEY = "findings_cache_alert_key"
 
 ALERTED_CLUSTERS_KEY = "alerted_clusters_per_alert_id_key"
-ALERTED_CLUSTERS_QUEUE_SIZE = 250000
+ALERTED_ENTITIES_QUEUE_SIZE = 250000
 ALERTED_FP_CLUSTERS_KEY = "alerted_fp_addresses_per_alert_id_key"
 ALERTED_FP_CLUSTERS_QUEUE_SIZE = 10000
 

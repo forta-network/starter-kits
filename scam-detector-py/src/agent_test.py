@@ -312,6 +312,33 @@ class TestScamDetector:
         assert finding.labels is not None, "labels should not be empty"
 
 
+
+    def test_ice_phishing_url(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534"
+        alert_id = "Ice-phishing-web"
+        description = "description"
+        metadata = {'scammer': '', 'URL': 'withdraw-llido.com', 'detail': 'https://urlscan.io/result/1870a15b-2b37-4980-9968-ac8a01e083f9/', 'transaction': ''}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding for the URL"
+        finding = findings[0]
+        assert finding.description == "URL withdraw-llido.com likely involved in a scam (SCAM-DETECTOR-ICE-PHISHING, passthrough)"
+        assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+
+        assert len(finding.labels) == 1, "should have one label"
+        assert finding.labels[0].entity_type == EntityType.Url, "should be URL label"
+        assert finding.labels[0].entity == "withdraw-llido.com"
+        assert finding.labels[0].metadata['chain_id'] == -1, "should be chain agnostic given we only have the URL and no scammer or tx"
+
+
+
     def test_detect_hard_rug_pull(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
@@ -619,32 +646,32 @@ class TestScamDetector:
         
         bot_id = "0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560"
         alert_id = "NEW-SCAMMER-CONTRACT-CODE-HASH"
-        description = "0xb48b5b285ecda25e4e06614db34f19ac59ece577 likely involved in a scam (SCAM-DETECTOR-SIMILAR-CONTRACT, propagation)"
+        description = "0xd359b4058cfbc9a5ef2889bc484cbbffbe3fa254f6f36845be6a4f5618531bd5 (NEW-SCAMMER-CONTRACT-CODE-HASH)"
 
-        metadata = {"alert_hash":"0x57e0151973e453af21de041ac0ed5bea06f8167da6cfb38240939d6d3b3fd201","new_scammer_contract_address":"0x43abdc640427091f6ce16f68c92775f0c3b4e43b","new_scammer_eoa":"0xb48b5b285ecda25e4e06614db34f19ac59ece577","scammer_contract_address":"0x2874a919b86b7f49f1fa3b53a2a61800a29a6a3b","scammer_eoa":"0xba412a06bb5222861f825363112d452cb4bf1164","similarity_hash":"8b2a9102c1ae5826271f6cf8c5bac3cfd49c524c0838458fa122d0fde374e359","similarity_score":"0.9804986119270325"}
+        metadata = {"alert_hash":"0xcfc5f89ac8c801901724621470fb7e3efec1b0cb5e1af625b82d587b788cdc86","new_scammer_contract_address":"0xfe551e214563283c8ab5df967d7d69f630b64079","new_scammer_eoa":"0xa4f58353711f9f29b483fe41be8f0dcc893d9f8a","scammer_contract_address":"0x200c5fa46720e40c375dd276a816da905b19081e","scammer_eoa":"0x43cf4c4759ebe43aa6e21e13ece8546dcfcb728c","similarity_hash":"20d794469ef5c3f5937d8b2ad1505e57a97b6fa0205b9fba965d71e9a4f66ea6","similarity_score":"0.9768354296684265"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
         findings = agent.detect_scam(w3, alert_event, True)
 
         assert len(findings) == 1, "this should have triggered a finding"
         assert findings[0].alert_id == "SCAM-DETECTOR-SIMILAR-CONTRACT"
-        assert findings[0].metadata['scammer_address'] == "0xb48b5b285ecda25e4e06614db34f19ac59ece577", "metadata should not be empty"
-        assert findings[0].metadata['scammer_contract_address'] == "0x43abdc640427091f6ce16f68c92775f0c3b4e43b", "metadata should not be empty"
-        assert findings[0].metadata['existing_scammer_address'] == "0xba412a06bb5222861f825363112d452cb4bf1164", "metadata should not be empty"
-        assert findings[0].metadata['existing_scammer_contract_address'] == "0x2874a919b86b7f49f1fa3b53a2a61800a29a6a3b", "metadata should not be empty"
-        assert findings[0].metadata['similarity_score'] == "0.9804986119270325", "metadata should not be empty"
-        assert findings[0].metadata['involved_threat_categories'] == "rake-token", "metadata should not be empty"
-        assert findings[0].metadata['involved_alert_hash_1'] == "0x57e0151973e453af21de041ac0ed5bea06f8167da6cfb38240939d6d3b3fd201", "metadata should not be empty"
+        assert findings[0].metadata['scammer_address'] == "0xa4f58353711f9f29b483fe41be8f0dcc893d9f8a", "metadata should not be empty"
+        assert findings[0].metadata['scammer_contract_address'] == "0xfe551e214563283c8ab5df967d7d69f630b64079", "metadata should not be empty"
+        assert findings[0].metadata['existing_scammer_address'] == "0x43cf4c4759ebe43aa6e21e13ece8546dcfcb728c", "metadata should not be empty"
+        assert findings[0].metadata['existing_scammer_contract_address'] == "0x200c5fa46720e40c375dd276a816da905b19081e", "metadata should not be empty"
+        assert findings[0].metadata['similarity_score'] == "0.9768354296684265", "metadata should not be empty"
+        assert findings[0].metadata['involved_threat_categories'] == "soft-rug-pull", "metadata should not be empty"
+        assert findings[0].metadata['involved_alert_hash_1'] == "0xcfc5f89ac8c801901724621470fb7e3efec1b0cb5e1af625b82d587b788cdc86", "metadata should not be empty"
 
         assert findings[0].labels is not None, "labels should not be empty"
         label = findings[0].labels[0]
-        assert label.entity == "0xb48b5b285ecda25e4e06614db34f19ac59ece577", "entity should be attacker address"
-        assert label.label == "similar-contract", "entity should labeled as scam"
+        assert label.entity == "0xa4f58353711f9f29b483fe41be8f0dcc893d9f8a", "entity should be attacker address"
+        assert label.label == "scammer", "entity should labeled as scam"
         assert label.confidence == 0.4, "entity should labeled with 0.7 confidence"
 
         label = findings[0].labels[1]
-        assert label.entity == "0x43abdc640427091f6ce16f68c92775f0c3b4e43b", "entity should be attacker address"
-        assert label.label == "similar-contract", "entity should labeled as scam"
+        assert label.entity == "0xfe551e214563283c8ab5df967d7d69f630b64079", "entity should be attacker address"
+        assert label.label == "scammer", "entity should labeled as scam"
         assert label.confidence == 0.4, "entity should labeled with 0.7 confidence"
 
     def test_put_entity_cluster(self):
@@ -715,7 +742,6 @@ class TestScamDetector:
                 assert findings[0].metadata["reported_by"] == "@CertiKAlert https://twitter.com/CertiKAlert/status/1640288904317378560?s=20"
 
 
-    #TODO once deployed and those labels with new format coming in
     def test_scammer_contract_deployment(self):
         agent.clear_state()
         agent.initialize()
@@ -724,8 +750,8 @@ class TestScamDetector:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
-                'from': '0x9e187687cea757a65c7438f8cbfc3afa732dffc5',
-                'nonce': 9,
+                'from': '0x58fECB05dc3827257f5Abd2b6C985D0ff0F4d0Ad',
+                'nonce': 0,
             },
             'block': {
                 'number': 0
@@ -737,7 +763,7 @@ class TestScamDetector:
 
         assert len(findings) == 1, "this should have triggered a finding"
         assert findings[0].alert_id == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
-        assert findings[0].metadata["scammer_contract_address"] == "0xa781690be56b721a61336b5ec5d904417cdab626".lower(), "wrong scammer_contract"
+        assert findings[0].metadata["scammer_contract_address"] == "0x16110b84fbc144f3879cbd4f201e724c79fbb52d".lower(), "wrong scammer_contract"
 
     #TODO once deployed and those labels with new format coming in
     def test_scammer_contract_deployment_indirect(self):
@@ -748,17 +774,17 @@ class TestScamDetector:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
-                'from': "0x9e187687cea757a65c7438f8cbfc3afa732dffc5",
+                'from': "0x58fECB05dc3827257f5Abd2b6C985D0ff0F4d0Ad",
                 'to': "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
-                'nonce': 9,
+                'nonce': 0,
             },
             'block': {
                 'number': 0
             },
             'logs': [
                     {'address': "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f".lower(),
-                    'topics': ["0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9","0x0000000000000000000000008fcbeec40e6926a79c60946544b371773cfa0e78", "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"],
-                    'data': f"0x0000000000000000000000002091a6f364e1ea474be9333c6fa3a23ecd604d66000000000000000000000000000000000000000000000000000000000002d7c7"
+                    'topics': ["0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9","0x00000000000000000000000016110b84fbc144f3879cbd4f201e724c79fbb52d", "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"],
+                    'data': f"0x00000000000000000000000080a8b0ced96a8eacf0bd6c08c121aaf1a6e2b62000000000000000000000000000000000000000000000000000000000000322c6"
                  }
             ],
             'receipt': {
@@ -769,7 +795,7 @@ class TestScamDetector:
 
         assert len(findings) == 1, "this should have triggered a finding"
         assert findings[0].alert_id == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
-        assert findings[0].metadata["scammer_contract_address"] == "0x2091a6f364e1ea474be9333c6fa3a23ecd604d66".lower(), "wrong scammer_contract"
+        assert findings[0].metadata["scammer_contract_address"] == "0x80a8b0cEd96a8EaCF0bd6C08C121Aaf1a6E2B620".lower(), "wrong scammer_contract"
 
     def test_detect_eoa_association(self):
         agent.initialize()
