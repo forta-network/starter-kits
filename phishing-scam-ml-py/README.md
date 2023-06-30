@@ -49,6 +49,10 @@ The model was evaluated against the test set from the [Kaggle competition](https
 
 **ML Features**
 
+
+<img src="./feature_importance.png" alt="Model Feature Importance" width="700"/>
+
+
 * to_friends: EOAs’ first-degree neighbors who received a transaction from the EOAs
 * from_friends: EOAs’ first-degree neighbors who sent a transaction to the EOAs
 
@@ -101,7 +105,6 @@ $ npm run tx 0x76cbb86df35211d606df4f1abaaef10f908503dcf5e17b97569861714ddec319
     "scammer": "0x0000000f7e71bfbcdae6d29aa49ed557afaef9d2",
     "feature_generation_time": 1.13021675,
     "prediction_time": 2.705141125,
-    "feature_0_eoa": "0x0000000f7e71bfbcdae6d29aa49ed557afaef9d2",
     "feature_1_from_address_count_unique_ratio": 0.9454545454545454,
     "feature_2_from_address_nunique": 52,
     "feature_3_in_block_number_std": 54089.239054963116,
