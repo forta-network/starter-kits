@@ -1,0 +1,8 @@
+forta_agent>=0.1.17
+setuptools>=61.3.1
+scikit-learn==1.0.2
+sklearn
+cachetools>=5.2.0
+lightgbm==3.3.5
+imbalanced_learn==0.10.1
+backoff>=2.2.1
