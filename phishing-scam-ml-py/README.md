@@ -21,7 +21,7 @@ EasyEnsemble is an ensemble of weak learners that uses undersampling to improve 
 
 This machine learning model was trained to detect phishing scammers. The model outputs a prediction score between 0 and 1 (inclusive). Scores closer to 1 indicate that the address is most likely a phishing scammer. A threshold variable called `MODEL_THRESHOLD` is set to only consider alerting phishing scammers if the prediction score exceeds the specified threshold. If the threshold is exceeded, the analyzed address is considered a phishing scammer. The metadata will output model predictions as string labels `PHISHING_SCAMMER` and `NORMAL` for human readability.
 
-The model detected TODO% of TODO known scam addresses with `MODEL_THRESHOLD=0.5`, including 5 of the following known phishing scammer addresses:
+The model detected 157 of **861** known scam addresses with `MODEL_THRESHOLD=0.5`, including 5 of the following known phishing scammer addresses:
 
 * (DETECTED) [0x00000000e1a1a7883c90afc22f106f78084ebbfe](https://etherscan.io/address/0x00000000e1a1a7883c90afc22f106f78084ebbfe), # Fake_Phishing76195
 * (DETECTED) [0x0000000dc3d9e17e3449e59bb75cb4005ee8aa7f](https://etherscan.io/address/0x0000000dc3d9e17e3449e59bb75cb4005ee8aa7f), # Fake_Phishing65917
