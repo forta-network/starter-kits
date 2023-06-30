@@ -47,6 +47,29 @@ The model was evaluated against the test set from the [Kaggle competition](https
 * Recall: `0.44`
 * F1-score: `0.54`
 
+**ML Features**
+
+* to_friends: EOAs’ first-degree neighbors who received a transaction from the EOAs
+* from_friends: EOAs’ first-degree neighbors who sent a transaction to the EOAs
+
+1. 'in_block_number_std': standard deviation of incoming transaction block number
+2. 'from_address_nunique': unique number of from addresses
+3. 'from_address_count_unique_ratio': unique # of from addresses / total # of from addresses
+4. 'from_out_min_std': minimum of from friends' standard deviation outgoing transaction values
+5. 'from_out_block_std_median': median of from friends'standard deviation of outgoing transaction block number
+6. 'to_in_min_min': minimum of to friends' minimum incoming transaction value
+7. 'to_in_sum_min': sum of to friends' minimum incoming transaction value
+8. 'to_in_sum_median': sum of to friends' median incoming transaction value
+9. 'to_in_block_std_median': median of to friends' std incoming block number
+10. 'from_in_min_std': minimum of from friends' standard deviation of incoming transaction values
+11. 'from_in_block_timespan_median': median of from friends' incoming transaction time spans
+12. 'to_out_min_std': minimum of to friends' standard deviation of outgoing transaction values
+13. 'total_time': last tx time - first tx time
+14. 'in_ratio': minimum incoming eth / maximum incoming eth
+15. 'ratio_from_address_nunique': unique # of from addresses / (total num transactions)
+16. 'to_in_sum_median_ratio': 'to_in_sum_median' / total sum of incoming and outgoing value
+
+
 ## Supported Chains
 
 - Ethereum
