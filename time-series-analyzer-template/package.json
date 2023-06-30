@@ -1,6 +1,6 @@
 {
   "name": "time-series-analyzer-template",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Forta detection bot template that allows to turn a noisy alert time series into a more precice alert.",
   "chainIds": [
     1
@@ -22,7 +22,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.4"
+    "forta-agent": "^0.1.33"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"
