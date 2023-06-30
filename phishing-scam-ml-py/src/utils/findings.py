@@ -3,7 +3,7 @@ from forta_agent import Finding, FindingType, FindingSeverity
 
 from src.utils.constants import MODEL_CREATED_TIMESTAMP, MODEL_THRESHOLD
 
-BOT_ID = ""
+BOT_ID = "0x4ca56cfab479c4d41cf382383f6932f4bd8bfc6428bdeba82b634f7bf83ad333"
 
 
 class EoaFinding:

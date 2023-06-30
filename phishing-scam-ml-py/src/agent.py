@@ -70,6 +70,7 @@ def check_scammer(address: str, eoa_stats: dict, chain_id: str):
                 {
                     f"feature_{idx}_{name}": value
                     for idx, (name, value) in enumerate(model_features.items())
+                    if name in MODEL_FEATURES
                 }
             )
             return EoaScammer(metadata, address, labels, chain_id).emit_finding()

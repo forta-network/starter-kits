@@ -89,7 +89,7 @@ def get_from_out_stats(addresses):
     df = pd.DataFrame(data).fillna(0)
 
     min_std = np.min(df["from_out_std_val"])
-    block_std_median = np.std(df["from_out_median_block"])
+    block_std_median = np.median(df["from_out_std_block"])
 
     return min_std, block_std_median
 
@@ -116,7 +116,7 @@ def get_to_in_stats(addresses, total_eth):
         sum_median=sum_median,
         sum_median_ratio=(sum_median / total_eth),
         min_min=np.min(df["to_in_min_val"]),
-        block_std_median=np.std(df["to_in_median_block"]),
+        block_std_median=np.median(df["to_in_std_block"]),
     )
 
     return stats
