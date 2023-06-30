@@ -1,6 +1,6 @@
 {
   "name": "forta-usdt-usdc-blacklist-events",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "This agent detects addresses getting added to/removed from USDT/USDC Token Contracts' blacklists.",
   "scripts": {
     "start": "npm run start:dev",
@@ -20,7 +20,7 @@
   "dependencies": {
     "bignumber.js": "^9.0.2",
     "bot-alert-rate": "^0.0.4",
-    "forta-agent": "^0.1.1"
+    "forta-agent": "^0.1.33"
   },
   "devDependencies": {
     "eslint": "^7.32.0",
