@@ -1,16 +1,19 @@
 import ast
 import re
-import json
 from os import environ
 from functools import lru_cache
 from timeit import default_timer as timer
 
 import backoff
+from expiringdict import ExpiringDict
 import requests
 import pandas as pd
 import numpy as np
 
 from src.utils.logger import logger
+from src.utils.storage import get_secrets
+
+query_id_cache = ExpiringDict(max_len=10, max_age_seconds=1800)
 
 
 @lru_cache(maxsize=1_000_000)
@@ -31,8 +34,18 @@ def zettablock_api(url: str, query: str, addresses: str):
     return data
 
 
+def get_query_id(query_name):
+    if query_name in query_id_cache:
+        return query_id_cache[query_name]
+    secrets = get_secrets()
+    query_id_cache[query_name] = secrets["queryIds"][query_name]
+    return query_id_cache[query_name]
+
+
 def get_eoa_tx_stats(addresses):
-    url = "https://api.zettablock.com/api/v1/dataset/sq_7d0c8c9821f04d528dd498bdecd3964a/graphql"
+    url = (
+        f"https://api.zettablock.com/api/v1/dataset/{get_query_id('EOA_STATS')}/graphql"
+    )
 
     query = "query($addresses: [String!]!) {   records(filter: { eoa: { in: $addresses } }) {     eoa,     num_transactions,     total_time,     total_outgoing_value,     total_incoming_value,     in_ratio,     from_address_nunique,     from_address_count_unique_ratio,     ratio_from_address_nunique,     in_block_number_std,     unique_from_friends,     unique_to_friends   } }"
 
@@ -50,7 +63,7 @@ def get_from_in_stats(addresses):
     if len(addresses) == 0:
         return min_std, median_timespan
 
-    url = "https://api.zettablock.com/api/v1/dataset/sq_8f4f68c2751341a3abc91638b7d6f370/graphql"
+    url = f"https://api.zettablock.com/api/v1/dataset/{get_query_id('FROM_IN')}/graphql"
 
     query = "query($addresses: [String!]!) {records(filter: { eoa: { in: $addresses } }) {eoa, from_in_std_val, from_in_timespan }}"
     data = zettablock_api(url, query, ",".join(addresses))
@@ -67,7 +80,9 @@ def get_from_out_stats(addresses):
     if len(addresses) == 0:
         return min_std, block_std_median
 
-    url = "https://api.zettablock.com/api/v1/dataset/sq_a98987daaad6473486a56ae00f01d672/graphql"
+    url = (
+        f"https://api.zettablock.com/api/v1/dataset/{get_query_id('FROM_OUT')}/graphql"
+    )
 
     query = "query($addresses: [String!]!) {records(filter: { eoa: { in: $addresses } }) {eoa, from_out_median_block, from_out_std_val}}"
     data = zettablock_api(url, query, ",".join(addresses))
@@ -89,7 +104,7 @@ def get_to_in_stats(addresses, total_eth):
             block_std_median=0.0,
         )
 
-    url = "https://api.zettablock.com/api/v1/dataset/sq_bf3afb7a98b04322b9d06818debae25c/graphql"
+    url = f"https://api.zettablock.com/api/v1/dataset/{get_query_id('TO_IN')}/graphql"
 
     query = "query($addresses: [String!]!) {records(filter: { eoa: { in: $addresses } }) {eoa, to_in_min_val, to_in_median_val, to_in_median_block }}"
     data = zettablock_api(url, query, ",".join(addresses))
@@ -113,7 +128,7 @@ def get_to_out_stats(addresses):
     if len(addresses) == 0:
         return min_std
 
-    url = "https://api.zettablock.com/api/v1/dataset/sq_5be5add0c20742949c83cbb6f027a62f/graphql"
+    url = f"https://api.zettablock.com/api/v1/dataset/{get_query_id('TO_OUT')}/graphql"
 
     query = "query($addresses: [String!]!) {records(filter: { eoa: { in: $addresses } }) {eoa, to_out_std_val }}"
     data = zettablock_api(url, query, ",".join(addresses))

@@ -6,3 +6,4 @@ cachetools>=5.2.0
 lightgbm==3.3.5
 imbalanced_learn==0.10.1
 backoff>=2.2.1
+ExpiringDict>=1.2.2
