@@ -692,9 +692,11 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
 
             # decrypt the alert if needed
             if alert_event.bot_id in ENCRYPTED_BOTS.keys() and alert_event.name == 'omitted':
+                logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - decrypting alert event.") 
                 decryption_key_name = ENCRYPTED_BOTS[alert_event.bot_id]
                 if decryption_key_name in secrets['decryptionKeys']:
                     private_key = secrets['decryptionKeys'][decryption_key_name]
+                    logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - decrypting alert. Private key length for {decryption_key_name}: {len(private_key)}")
                     alert_event = Utils.decrypt_alert_event(alert_event, private_key)
 
             # update entity clusters

@@ -219,6 +219,8 @@ class Utils:
     @staticmethod
     def decrypt_alert_event(alert_event: AlertEvent, private_key:str) -> AlertEvent:
         if Utils.gpg is None:
+            logging.info("Importing private keys into GPG")
+    
             Utils.gpg =  gnupg.GPG(gnupghome='.')
             import_result = Utils.gpg.import_keys(private_key)
             if len(import_result.fingerprints) == 0:
@@ -234,27 +236,28 @@ class Utils:
             
             decrypted_finding_json = Utils.gpg.decrypt(encrypted_finding_ascii)
             logging.info(f"Decrypted finding. Data length: {len(str(decrypted_finding_json))}")
-            finding_dict = json.loads(str(decrypted_finding_json))
+            if len(str(decrypted_finding_json)) > 0:
+                finding_dict = json.loads(str(decrypted_finding_json))
 
-            finding_dict['severity'] = FindingSeverity(finding_dict['severity'])
-            finding_dict['type'] = FindingType(finding_dict['type'])
-            finding_dict['alert_id'] = finding_dict['alertId']
+                finding_dict['severity'] = FindingSeverity(finding_dict['severity'])
+                finding_dict['type'] = FindingType(finding_dict['type'])
+                finding_dict['alert_id'] = finding_dict['alertId']
 
-            labels_new = []
-            labels = finding_dict['labels']
-            for label in labels:
-                if label['entity'] != '':
-                    labels_new.append(label)
-            finding_dict['labels'] = labels_new
-        
-            finding = Finding(finding_dict)
+                labels_new = []
+                labels = finding_dict['labels']
+                for label in labels:
+                    if label['entity'] != '':
+                        labels_new.append(label)
+                finding_dict['labels'] = labels_new
+            
+                finding = Finding(finding_dict)
 
-            alert_event.alert.name = finding.name
-            alert_event.alert.description = finding.description
-            alert_event.alert.severity = FindingSeverity(finding.severity)
-            alert_event.alert.finding_type = FindingType(finding.type)
-            alert_event.alert.metadata = finding.metadata
-            alert_event.alert.alert_id = finding.alert_id
-            alert_event.alert.labels = finding.labels
+                alert_event.alert.name = finding.name
+                alert_event.alert.description = finding.description
+                alert_event.alert.severity = FindingSeverity(finding.severity)
+                alert_event.alert.finding_type = FindingType(finding.type)
+                alert_event.alert.metadata = finding.metadata
+                alert_event.alert.alert_id = finding.alert_id
+                alert_event.alert.labels = finding.labels
         
         return alert_event
