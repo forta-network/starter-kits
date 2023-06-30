@@ -1,6 +1,6 @@
 {
   "name": "forta-sanctioned-address-bot",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Forta Sanctioned Addresses Bot",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
@@ -22,7 +22,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.3"
+    "forta-agent": "^0.1.33"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"
