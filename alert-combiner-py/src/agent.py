@@ -465,7 +465,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                         for bot_id, alert_id, s in HIGHLY_PRECISE_BOTS:
                             if bot_id == '0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac':  # temp hot fix for FP; awaiting FP mitigation from basebot (https://github.com/NethermindEth/forta-starter-kits/issues/59)
                                 highly_precise_bot_alerts = alert_data[(alert_data['bot_id'] == bot_id) & (alert_data['alert_id'] == alert_id)]
-                                if len(highly_precise_bot_alerts) > 0 and highly_precise_bot_alerts['anomaly_score'].max() > 0.7:
+                                if len(highly_precise_bot_alerts) > 0 and highly_precise_bot_alerts['anomaly_score'].max() > 0.5:
                                     logging.info(f"Large profit anomaly score not anomalous enough ({highly_precise_bot_alerts['anomaly_score'].max()}) for inclusion in high precision count; skipping ...")
                                     continue
 
