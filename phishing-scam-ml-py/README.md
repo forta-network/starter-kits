@@ -21,13 +21,11 @@ EasyEnsemble is an ensemble of weak learners that uses undersampling to improve 
 
 This machine learning model was trained to detect phishing scammers. The model outputs a prediction score between 0 and 1 (inclusive). Scores closer to 1 indicate that the address is most likely a phishing scammer. A threshold variable called `MODEL_THRESHOLD` is set to only consider alerting phishing scammers if the prediction score exceeds the specified threshold. If the threshold is exceeded, the analyzed address is considered a phishing scammer. The metadata will output model predictions as string labels `PHISHING_SCAMMER` and `NORMAL` for human readability.
 
-The model detected 157 of **861** known scam addresses with `MODEL_THRESHOLD=0.5`, including 5 of the following known phishing scammer addresses:
+The model detected 43 of **80** known scam addresses with `MODEL_THRESHOLD=0.5`, including 3 of the following known phishing scammer addresses:
 
-* (DETECTED) [0x00000000e1a1a7883c90afc22f106f78084ebbfe](https://etherscan.io/address/0x00000000e1a1a7883c90afc22f106f78084ebbfe), # Fake_Phishing76195
-* (DETECTED) [0x0000000dc3d9e17e3449e59bb75cb4005ee8aa7f](https://etherscan.io/address/0x0000000dc3d9e17e3449e59bb75cb4005ee8aa7f), # Fake_Phishing65917
-* (DETECTED) [0x0000000f7e71bfbcdae6d29aa49ed557afaef9d2](https://etherscan.io/address/0x0000000f7e71bfbcdae6d29aa49ed557afaef9d2), # Fake_Phishing76593
-* (DETECTED) [0x00c69f9421a1d58601a61275799cc2aeb443acc8](https://etherscan.io/address/0x00c69f9421a1d58601a61275799cc2aeb443acc8), # Fake_Phishing66311
-* (DETECTED) [0xc6f5341d0cfea47660985b1245387ebc0dbb6a12](https://etherscan.io/address/0xc6f5341d0cfea47660985b1245387ebc0dbb6a12), # Fake_Phishing65972
+* [0x00000000e1a1a7883c90afc22f106f78084ebbfe](https://etherscan.io/address/0x00000000e1a1a7883c90afc22f106f78084ebbfe) # Fake_Phishing76195
+* [0xc6f5341d0cfea47660985b1245387ebc0dbb6a12](https://etherscan.io/address/0xc6f5341d0cfea47660985b1245387ebc0dbb6a12) # Fake_Phishing65972
+* [0x2d12bd467ff3f6422dfbcad01342e1410cfc8ee8](https://etherscan.io/address/0x2d12bd467ff3f6422dfbcad01342e1410cfc8ee8) # [The scam detector feed](https://explorer.forta.network/bot/0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23) also identified this address as a native ice phishing scammer.
 
 **What features were used?**
 
@@ -47,6 +45,20 @@ The model was evaluated against the test set from the [Kaggle competition](https
 * Recall: `0.44`
 * F1-score: `0.54`
 
+The model did well on a dataset of recent scams from May and June of 2023.
+It identified **54%** of known scams with **88%** precision.
+
+```
+               precision    recall  f1-score   support
+
+       normal       0.49      0.85      0.62        41
+phishing-scam       0.88      0.54      0.67        80
+
+     accuracy                           0.64       121
+    macro avg       0.68      0.70      0.64       121
+ weighted avg       0.74      0.64      0.65       121
+ ```
+
 **ML Features**
 
 
@@ -56,22 +68,22 @@ The model was evaluated against the test set from the [Kaggle competition](https
 * to_friends: EOAs’ first-degree neighbors who received a transaction from the EOAs
 * from_friends: EOAs’ first-degree neighbors who sent a transaction to the EOAs
 
-1. 'in_block_number_std': standard deviation of incoming transaction block number
-2. 'from_address_nunique': unique number of from addresses
-3. 'from_address_count_unique_ratio': unique # of from addresses / total # of from addresses
-4. 'from_out_min_std': minimum of from friends' standard deviation outgoing transaction values
-5. 'from_out_block_std_median': median of from friends'standard deviation of outgoing transaction block number
-6. 'to_in_min_min': minimum of to friends' minimum incoming transaction value
-7. 'to_in_sum_min': sum of to friends' minimum incoming transaction value
-8. 'to_in_sum_median': sum of to friends' median incoming transaction value
-9. 'to_in_block_std_median': median of to friends' std incoming block number
-10. 'from_in_min_std': minimum of from friends' standard deviation of incoming transaction values
-11. 'from_in_block_timespan_median': median of from friends' incoming transaction time spans
-12. 'to_out_min_std': minimum of to friends' standard deviation of outgoing transaction values
-13. 'total_time': last tx time - first tx time
-14. 'in_ratio': minimum incoming eth / maximum incoming eth
-15. 'ratio_from_address_nunique': unique # of from addresses / (total num transactions)
-16. 'to_in_sum_median_ratio': 'to_in_sum_median' / total sum of incoming and outgoing value
+1. `in_block_number_std`: standard deviation of incoming transaction block number
+2. `from_address_nunique`: unique number of from addresses
+3. `from_address_count_unique_ratio`: unique # of from addresses / total # of from addresses
+4. `from_out_min_std`: minimum of from friends` standard deviation outgoing transaction values
+5. `from_out_block_std_median`: median of from friends`standard deviation of outgoing transaction block number
+6. `to_in_min_min`: minimum of to friends` minimum incoming transaction value
+7. `to_in_sum_min`: sum of to friends` minimum incoming transaction value
+8. `to_in_sum_median`: sum of to friends` median incoming transaction value
+9. `to_in_block_std_median`: median of to friends` std incoming block number
+10. `from_in_min_std`: minimum of from friends` standard deviation of incoming transaction values
+11. `from_in_block_timespan_median`: median of from friends` incoming transaction time spans
+12. `to_out_min_std`: minimum of to friends` standard deviation of outgoing transaction values
+13. `total_time`: last tx time - first tx time
+14. `in_ratio`: minimum incoming eth / maximum incoming eth
+15. `ratio_from_address_nunique`: unique # of from addresses / (total num transactions)
+16. `to_in_sum_median_ratio`: `to_in_sum_median` / total sum of incoming and outgoing value
 
 
 ## Supported Chains
@@ -92,35 +104,35 @@ The model was evaluated against the test set from the [Kaggle competition](https
 ### Phishing Scammer Alert Example
 
 ```bash
-$ npm run tx 0x76cbb86df35211d606df4f1abaaef10f908503dcf5e17b97569861714ddec319
-
-1 findings for transaction 0x76cbb86df35211d606df4f1abaaef10f908503dcf5e17b97569861714ddec319 {
+$ npm run tx 0x3dd20a427489cec65c333cfdbc9d76c8533b57e9735961bead79a9d6729c3dd1
+...
+1 findings for transaction 0x3dd20a427489cec65c333cfdbc9d76c8533b57e9735961bead79a9d6729c3dd1 {
   "name": "Phishing Scammer Detected",
-  "description": "0x0000000f7e71bfbcdae6d29aa49ed557afaef9d2 has been identified as a phishing scammer",
+  "description": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12 has been identified as a phishing scammer",
   "alertId": "EOA-PHISHING-SCAMMER",
   "protocol": "ethereum",
   "severity": "Critical",
   "type": "Suspicious",
   "metadata": {
-    "scammer": "0x0000000f7e71bfbcdae6d29aa49ed557afaef9d2",
-    "feature_generation_time": 1.13021675,
-    "prediction_time": 2.705141125,
-    "feature_1_from_address_count_unique_ratio": 0.9454545454545454,
-    "feature_2_from_address_nunique": 52,
-    "feature_3_in_block_number_std": 54089.239054963116,
-    "feature_4_in_ratio": 0.00006925193467425777,
-    "feature_5_ratio_from_address_nunique": 0.8253968253968254,
-    "feature_6_total_time": 5009544,
+    "scammer": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
+    "feature_generation_time_sec": 55.393977834,
+    "prediction_time_sec": 3.258650750000001,
+    "feature_1_from_address_count_unique_ratio": 0.8977777777777778,
+    "feature_2_from_address_nunique": 202,
+    "feature_3_in_block_number_std": 103944.45395073255,
+    "feature_4_in_ratio": 0.0000027220471162690886,
+    "feature_5_ratio_from_address_nunique": 0.6824324324324325,
+    "feature_6_total_time": 9495012,
     "feature_7_from_in_min_std": 0,
-    "feature_8_from_in_block_timespan_median": 7899468,
+    "feature_8_from_in_block_timespan_median": 477557,
     "feature_9_from_out_min_std": 0,
-    "feature_10_from_out_block_std_median": 189179.11864268433,
-    "feature_11_to_in_sum_min": 0.04000200000000074,
-    "feature_12_to_in_sum_median": 0.5418970128273422,
-    "feature_13_to_in_sum_median_ratio": 0.011575035930428634,
+    "feature_10_from_out_block_std_median": 166256.50317778645,
+    "feature_11_to_in_sum_min": 48516.30387100715,
+    "feature_12_to_in_sum_median": 196337.4491312858,
+    "feature_13_to_in_sum_median_ratio": 5190.0165806816785,
     "feature_14_to_in_min_min": 1e-18,
-    "feature_15_to_in_block_std_median": 167757.5668731518,
-    "feature_16_to_out_min_std": 1.4317874777547817,
+    "feature_15_to_in_block_std_median": 236914.9074575176,
+    "feature_16_to_out_min_std": 0,
     "anomaly_score": 1,
     "model_version": "1678286940",
     "model_threshold": 0.5
@@ -129,9 +141,9 @@ $ npm run tx 0x76cbb86df35211d606df4f1abaaef10f908503dcf5e17b97569861714ddec319
   "labels": [
     {
       "entityType": "Address",
-      "entity": "0x0000000f7e71bfbcdae6d29aa49ed557afaef9d2",
+      "entity": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
       "label": "scammer-eoa",
-      "confidence": 0.786,
+      "confidence": 0.659,
       "remove": false,
       "metadata": {}
     }
