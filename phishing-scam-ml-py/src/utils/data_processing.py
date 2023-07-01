@@ -51,10 +51,13 @@ def get_eoa_tx_stats(addresses):
 
     data = zettablock_api(url, query, ",".join(addresses))
     df = pd.DataFrame(data).fillna(0)
-    df["unique_to_friends"] = df["unique_to_friends"].tolist()
-    df["unique_from_friends"] = df["unique_from_friends"].tolist()
+    eoas = []
+    if len(df) > 0:
+        df["unique_to_friends"] = df["unique_to_friends"].tolist()
+        df["unique_from_friends"] = df["unique_from_friends"].tolist()
+        eoas = df["eoa"].tolist()
 
-    return df, df["eoa"].tolist()
+    return df, eoas
 
 
 def get_from_in_stats(addresses):
