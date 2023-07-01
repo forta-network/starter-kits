@@ -4,9 +4,7 @@ from timeit import default_timer as timer
 
 import forta_agent
 from forta_agent import get_json_rpc_url, EntityType
-from imblearn.ensemble import EasyEnsembleClassifier
-import lightgbm as lgb
-import numpy as np
+
 import pandas as pd
 from web3 import Web3
 
