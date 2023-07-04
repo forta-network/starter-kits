@@ -1,57 +1,36 @@
+"""Forta agent scanning for batched transactions"""
+
+from web3 import Web3
 from forta_agent import Finding, FindingType, FindingSeverity
 
-ERC20_TRANSFER_EVENT = '{"name":"Transfer","type":"event","anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}]}'
-TETHER_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
-TETHER_DECIMALS = 6
-findings_count = 0
+import constants
+import disperse
+import findings
+import multisend
 
+ADDRESS_TO_NAME = {
+    disperse.ADDRESS.lower(): 'Disperse',
+    multisend.ADDRESS.lower(): 'Multisend'}
 
-def handle_transaction(transaction_event):
-    findings = []
+def handle_transaction_factory(w3: Web3, token: str=constants.TOKEN):
+    _parsers = {
+        disperse.ADDRESS.lower(): disperse.parse_transaction_input_factory(w3=w3, token=token),
+        multisend.ADDRESS.lower(): multisend.parse_transaction_input_factory(w3=w3, token=token)}
 
-    # limiting this agent to emit only 5 findings so that the alert feed is not spammed
-    global findings_count
-    if findings_count >= 5:
-        return findings
+    def _handle_transaction(transaction_event):
+        _findings = []
+        _from = transaction_event['from_'].lower()
+        _to = transaction_event['to'].lower()
+        _data = transaction_event['data']
+        _wrapped_tx = []
+        
+        if _to in _parsers:
+            _wrapped_tx = _parsers[_to](_data)
+            if _wrapped_tx:
+                _findings.append(findings.FormatBatchTxFinding(origin=_from, contract=ADDRESS_TO_NAME[_to], transactions=_wrapped_tx, chain_id=w3.eth.chain_id))
 
-    # filter the transaction logs for any Tether transfers
-    tether_transfer_events = transaction_event.filter_log(
-        ERC20_TRANSFER_EVENT, TETHER_ADDRESS)
+        return _findings
 
-    for transfer_event in tether_transfer_events:
-        # extract transfer event arguments
-        to = transfer_event['args']['to']
-        from_ = transfer_event['args']['from']
-        value = transfer_event['args']['value']
-        # shift decimals of transfer value
-        normalized_value = value / 10 ** TETHER_DECIMALS
+    return _handle_transaction
 
-        # if more than 10,000 Tether were transferred, report it
-        if normalized_value > 10000:
-            findings.append(Finding({
-                'name': 'High Tether Transfer',
-                'description': f'High amount of USDT transferred: {normalized_value}',
-                'alert_id': 'FORTA-1',
-                'severity': FindingSeverity.Low,
-                'type': FindingType.Info,
-                'metadata': {
-                    'to': to,
-                    'from': from_,
-                }
-            }))
-            findings_count += 1
-
-    return findings
-
-# def initialize():
-#     # do some initialization on startup e.g. fetch data
-
-# def handle_block(block_event):
-#     findings = []
-#     # detect some block condition
-#     return findings
-
-# def handle_alert(alert_event):
-#     findings = []
-#     # detect some alert condition
-#     return findings
+handle_transaction = handle_transaction_factory(w3=Web3(Web3.HTTPProvider(get_json_rpc_url())))
