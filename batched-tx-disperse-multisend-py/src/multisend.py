@@ -3,11 +3,15 @@
 from json import loads
 from web3 import Web3
 
-from constants import TOKEN
+from src.constants import TOKEN
+
+# CONSTANTS ###################################################################
 
 ADDRESS = Web3.toChecksumAddress('0x22bc0693163ec3cee5ded3c2ee55ddbcb2ba9bbe')
 ABI = loads('[{"inputs":[{"internalType":"address[]","name":"recipients","type":"address[]"},{"internalType":"uint256[]","name":"values","type":"uint256[]"}],"name":"multisendEther","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"contract IERC20","name":"token","type":"address"},{"internalType":"address[]","name":"recipients","type":"address[]"},{"internalType":"uint256[]","name":"values","type":"uint256[]"}],"name":"multisendToken","outputs":[],"stateMutability":"nonpayable","type":"function"}]')
 METHODS = ['multisendToken']
+
+# SCANNER #####################################################################
 
 def parse_transaction_input_factory(w3: Web3, token: str=TOKEN):
     _contract = w3.eth.contract(address=ADDRESS, abi=ABI)

@@ -3,10 +3,10 @@
 from web3 import Web3
 from forta_agent import Finding, FindingType, FindingSeverity
 
-import constants
-import disperse
-import findings
-import multisend
+import src.constants as constants
+import src.disperse as disperse
+import src.findings as findings
+import src.multisend as multisend
 
 ADDRESS_TO_NAME = {
     disperse.ADDRESS.lower(): 'Disperse',
