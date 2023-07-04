@@ -56,6 +56,7 @@ The agent behaviour can be verified with the following transactions:
 [x] metrics
 [x] disperse
 [x] multisend
+[ ] discuss: ignore ETH? / severity level / metadata
 [ ] options / CLI flags? (filters: address = token / eth / amount / from, default = all / any)
 [ ] limit to 30 alerts / days => less than 1000 / month
 [ ] [review](https://github.com/forta-network/bot-review-checklist)

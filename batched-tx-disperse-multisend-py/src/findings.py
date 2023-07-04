@@ -1,5 +1,7 @@
 from forta_agent import Finding, FindingType, FindingSeverity, EntityType, Label
 
+# TEMPLATE ####################################################################
+
 def FormatBatchTxFinding(origin: str, contract: str, transactions: list, chain_id: int) -> Finding:
     _labels = [Label({
         'entityType': EntityType.Address,
