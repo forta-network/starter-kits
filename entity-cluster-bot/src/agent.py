@@ -304,7 +304,7 @@ class EntityClusterAgent:
             except Exception as e:
                 diagram = f"There was an error creating the diagram: {e}"
 
-        alert_id = 'PERF-ENTITY-CLUSTER'
+        alert_id = 'ENTITY-CLUSTER'
         anomality_score = 0
         try:
             anomality_score = calculate_alert_rate(
