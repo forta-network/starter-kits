@@ -24,7 +24,7 @@ def parse_transaction_input_factory(w3: Web3, token: str=TOKEN):
             _fn = ''
             _args = {}
         if _fn in METHODS: # only consider ERC20 transactions
-            if token in _args.get('token', ''): # works also when there's no filter on the token, IE token = ''
+            if token.lower() in _args.get('token', '').lower(): # works also when there's no filter on the token, IE token = ''
                 _txs = list(zip(_args.get('recipients', []), _args.get('values', [])))
         return _txs
     return _parse
