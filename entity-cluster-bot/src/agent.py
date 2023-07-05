@@ -1,335 +1,363 @@
 import logging
 import sys
 from datetime import datetime, timedelta
+import json
+import base64
+
 
 import forta_agent
 import networkx as nx
 import rlp
-import requests
 from forta_agent import Finding, FindingSeverity, FindingType, get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 from bot_alert_rate import calculate_alert_rate, ScanCountType
-import pickle
-import os
+
+import cProfile
+import pstats
+
+try:
+    from src.keys import ZETTABLOCK_KEY
+    from src.keys import BOT_ID
+    from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, DYNAMO_TABLE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING
+    from src.persistance import DynamoPersistance
+
+except ModuleNotFoundError:
+    from keys import ZETTABLOCK_KEY
+    from keys import BOT_ID
+    from constants import MAX_AGE_IN_DAYS, MAX_NONCE, DYNAMO_TABLE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING
+    from persistance import DynamoPersistance
+
 
 from os import environ
 
-from src.storage import get_secrets
 from dotenv import load_dotenv
 load_dotenv()
 
-SECRETS_JSON = get_secrets()
-BOT_ID = "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9"
 
-from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, ALERTED_ADDRESSES_KEY, FINDINGS_CACHE_KEY, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE
+web3 = Web3(Web3.HTTPProvider(get_json_rpc_url(), request_kwargs={'timeout': HTTP_RPC_TIMEOUT}))
 
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
-
-TC_FUNDING_ADDRESSES = []
 FINDINGS_CACHE = []
-ALERTED_ADDRESSES = []
-GRAPH = nx.DiGraph()
-MUTEX = False
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(BOTNAME)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
-DATABASE = "https://research.forta.network/database/bot/"
 ERC20_TRANSFER_EVENT = '{"name":"Transfer","type":"event","anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}]}'
 
-
-def initialize():
-    """
-    this function initializes the state variables that are tracked across tx and blocks
-    it is called from test to reset state between tests
-    """
-    global ALERTED_ADDRESSES
-    alerted_address = load(ALERTED_ADDRESSES_KEY)
-    ALERTED_ADDRESSES = [] if alerted_address is None else list(alerted_address)
-
-    global FINDINGS_CACHE
-    findings_cache = load(FINDINGS_CACHE_KEY)
-    FINDINGS_CACHE = [] if findings_cache is None else findings_cache
-
-    global GRAPH
-    graph = load(GRAPH_KEY)
-    GRAPH = nx.DiGraph() if graph is None else nx.DiGraph(graph)
-
-    global CHAIN_ID
-    CHAIN_ID = web3.eth.chain_id
-
-    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
-
-
-
-def persist(obj: object, key: str):
-    if os.environ.get('LOCAL_NODE') is None:
-        logging.info(f"Persisting {key} using API")
-        bytes = pickle.dumps(obj)
-        token = forta_agent.fetch_jwt({})
-
-        headers = {"Authorization": f"Bearer {token}"}
-        res = requests.post(f"{DATABASE}{key}", data=bytes, headers=headers)
-        logging.info(f"Persisting {key} to database. Response: {res}")
-        return
-    else:
-        logging.info(f"Persisting {key} locally")
-        pickle.dump(obj, open(key, "wb"))
-
-
-def load(key: str) -> object:
-    if os.environ.get('LOCAL_NODE') is None:
-        logging.info(f"Loading {key} using API")
-        token = forta_agent.fetch_jwt({})
-        logging.info("Fetched token")
-        logging.info(token)
-        headers = {"Authorization": f"Bearer {token}"}
-        res = requests.get(f"{DATABASE}{key}", headers=headers)
-        logging.info(f"Loaded {key}. Response: {res}")
-        if res.status_code==200 and len(res.content) > 0:
-            return pickle.loads(res.content)
-        else:
-            logging.info(f"{key} does not exist")
-    else:
-        # load locally
-        logging.info(f"Loading {key} locally")
-        if os.path.exists(key):
-            return pickle.load(open(key, "rb"))
-        else:
-            logging.info(f"File {key} does not exist")
-    return None
-
-
-def add_address(w3, address):
-    global GRAPH
-
-    if address is None:
-        return
-
-    if "00000000" in address:
-        return
-
-    checksum_address = Web3.toChecksumAddress(address)
-    if w3.eth.get_transaction_count(checksum_address) <= MAX_NONCE:
-        if checksum_address in GRAPH.nodes:
-            GRAPH.nodes[checksum_address]["last_seen"] = datetime.now()
-            logging.info(f"Updated address {checksum_address} last_seen in graph. Graph size is still {len(GRAPH.nodes)}")
-        else:
-            GRAPH.add_node(checksum_address, last_seen=datetime.now())
-            logging.info(f"Added address {checksum_address} to graph. Graph size is now {len(GRAPH.nodes)}")
-
-
-def prune_graph():
-    global GRAPH
-
-    #  looks at each node in the graph and assesses how old it is
-    #  if its older than MAX_AGE_IN_DAYS, it will be removed from the graph
-    #  note, if the nonce is larger than MAX_NONCE, it will not be removed from the graph
-    #  as the nonce is only assessed when the node is created
-
-    nodes_to_remove = set()
-    for node in GRAPH.nodes:
-        if datetime.now() - GRAPH.nodes[node]["last_seen"] > timedelta(days=MAX_AGE_IN_DAYS):
-            nodes_to_remove.add(node)
-
-    for node in nodes_to_remove:
-        GRAPH.remove_node(node)
-        logging.info(f"Removed address {node} from graph. Graph size is now {len(GRAPH.nodes)}")
-
-
-def add_directed_edge(w3, from_, to):
-    global GRAPH
-
-    if from_ is None or to is None:
-        return
-
-    if Web3.toChecksumAddress(from_) in GRAPH.nodes and Web3.toChecksumAddress(to) in GRAPH.nodes:
-        GRAPH.add_edges_from([(Web3.toChecksumAddress(from_), Web3.toChecksumAddress(to))])
-        logging.info(f"Added edge from address {from_} to {to}.")
-
-
-def calc_contract_address(w3, address, nonce) -> str:
-    """
-    this function calculates the contract address from sender/nonce
-    :return: contract address: str
-    """
-
-    address_bytes = bytes.fromhex(address[2:].lower())
-    return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:]).lower()
-
-
-def is_contract(w3, address) -> bool:
-    """
-    this function determines whether address is a contract
-    :return: is_contract: bool
-    """
-    if address is None:
+class ContextFilter(logging.Filter):
+    def filter(self, record):
+        record.BOTNAME = 'unknown'
         return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
-    return code != HexBytes('0x')
+handler.addFilter(ContextFilter())
+
+class EntityClusterAgent:
+
+    GRAPH = nx.DiGraph()
+    persistance: DynamoPersistance = None
+    tx_counter = 0
+    tx_save_step = 1
+    contract_cache =[]
+    previous_shared_graphs = []
+    chain_id = None
 
 
-def cluster_entities(w3, transaction_event) -> list:
-    findings = []
-
-    add_address(w3, transaction_event.transaction.from_)
-    add_address(w3, transaction_event.transaction.to)
-
-    #  add contract node if it is a contract creation transaction
-    if transaction_event.transaction.to is None:
-        contract_address = calc_contract_address(w3, transaction_event.transaction.from_, transaction_event.transaction.nonce)
-        add_address(w3, contract_address)
-
-    prune_graph()
-
-    #  add edges for each native transfer
-    if transaction_event.transaction.value > 0:
-        logging.info(f"Observing native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
-        if not is_contract(w3, transaction_event.transaction.to) and not is_contract(w3, transaction_event.transaction.from_):
-            add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
-            finding = create_finding(transaction_event.transaction.from_)
-            if finding is not None:
-                findings.append(finding)
-
-    #  add edges for large native transfers; will treat as bidirectional transfer
-    if transaction_event.transaction.value > ONE_WAY_WEI_TRANSFER_THRESHOLD:
-        logging.info(f"Observing large native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
-        if not is_contract(w3, transaction_event.transaction.to) and not is_contract(w3, transaction_event.transaction.from_):
-            add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
-            add_directed_edge(w3, transaction_event.transaction.to, transaction_event.transaction.from_)
-
-            finding = create_finding(transaction_event.transaction.from_)
-            if finding is not None:
-                findings.append(finding)
-
-    #  add edges for small native transfers, new accounts
-    if w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.from_), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE and w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE:
-        if transaction_event.transaction.value < NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD:
-            logging.info(f"Observing small native transfer of value {transaction_event.transaction.value} from new EOA {transaction_event.transaction.from_} to new EOA {transaction_event.transaction.to}")
-            if not is_contract(w3, transaction_event.transaction.to) and not is_contract(w3, transaction_event.transaction.from_):
-                add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
-                add_directed_edge(w3, transaction_event.transaction.to, transaction_event.transaction.from_)
-
-                finding = create_finding(transaction_event.transaction.from_)
-                if finding is not None:
-                    findings.append(finding)
-
-    #  add edges for ERC20 transfers
-    transfer_events = transaction_event.filter_log(ERC20_TRANSFER_EVENT)
-    for transfer_event in transfer_events:
-        # extract transfer event arguments
-        if transfer_event['args']['value'] > 0:
-            logging.info(f"Observing ERC-20 transfer of value {transfer_event['args']['value']} from {transfer_event['args']['from']} to {transfer_event['args']['to']}")
-            if not is_contract(w3, transfer_event['args']['to']) and not is_contract(w3, transfer_event['args']['from']):
-                add_directed_edge(w3, transfer_event['args']['from'], transfer_event['args']['to'])
-                finding = create_finding(transfer_event['args']['from'])
-                if finding is not None:
-                    findings.append(finding)
-
-    # add edges for contract creations
-    if transaction_event.transaction.to is None:
-        logging.info(f"Observing contract creation from {transaction_event.transaction.from_}: {contract_address}")
-        contract_address = calc_contract_address(w3, transaction_event.transaction.from_, transaction_event.transaction.nonce)
-        add_directed_edge(w3, transaction_event.transaction.from_, contract_address)
-        add_directed_edge(w3, contract_address, transaction_event.transaction.from_)
-        finding = create_finding(transaction_event.transaction.from_)
-        if finding is not None:
-            findings.append(finding)
-
-    return findings
+    def __init__(self, a_persistance: DynamoPersistance, tx_save_step = 1, chain_id = 1):
+        self.persistance = a_persistance
+        class ContextFilter(logging.Filter):
+            def filter(self, record):
+                if a_persistance.name:
+                    record.BOTNAME = a_persistance.name
+                else:
+                    record.BOTNAME = 'unknown'
+                return True
+        handler.addFilter(ContextFilter())
+        self.chain_id = chain_id
+        logging.info(f"Run initialize chain: {self.chain_id}")
+        self.tx_save_step = tx_save_step
+        self.GRAPH = nx.DiGraph()
+        environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+        
 
 
-def filter_edge(n1, n2):
-    # filters for bidirectional edges
-    if [n2, n1] in GRAPH.edges:
-        return True
-    return False
+    def load(self, key: str) -> object:
+        return self.persistance.load(key)
+
+    def add_address(self, address):
+        if address is None:
+            return
+
+        if "00000000" in address:
+            return
+
+        checksum_address = Web3.toChecksumAddress(address)
+        if checksum_address in self.GRAPH.nodes:
+            self.GRAPH.nodes[checksum_address]["last_seen"] = datetime.now()
+            logging.info(f"Updated address {checksum_address} last_seen in graph. Graph size is still {len(self.GRAPH.nodes)}")
+        else:
+            self.GRAPH.add_node(checksum_address, last_seen=datetime.now())
+            logging.info(f"Added address {checksum_address} to graph. Graph size is now {len(self.GRAPH.nodes)}")
+
+    def is_address_belong_max_transactions(self, w3, address):
+        if address is None:
+            return False
+
+        if "00000000" in address:
+            return False
+        
+        checksum_address = Web3.toChecksumAddress(address)
+        return w3.eth.get_transaction_count(checksum_address) <= MAX_NONCE
+
+    def prune_graph(a_graph):
+        #  looks at each node in the graph and assesses how old it is
+        #  if its older than MAX_AGE_IN_DAYS, it will be removed from the graph
+        #  note, if the nonce is larger than MAX_NONCE, it will not be removed from the graph
+        #  as the nonce is only assessed when the node is created
+
+        nodes_to_remove = set()
+        for node in a_graph.nodes:
+            if datetime.now() - a_graph.nodes[node]["last_seen"] > timedelta(days=MAX_AGE_IN_DAYS):
+                nodes_to_remove.add(node)
+
+        for node in nodes_to_remove:
+            a_graph.remove_node(node)
+            logging.info(f"Removed address {node} from graph. Graph size is now {len(a_graph.nodes)}")
 
 
-def create_finding(from_) -> Finding:
-    filtered_graph = nx.subgraph_view(GRAPH, filter_edge=filter_edge)
-    undirected_graph = filtered_graph.to_undirected()
+    def add_directed_edge(self, w3, from_, to):
 
-    #  find all connected components
-    connected_components = list(nx.connected_components(undirected_graph))
+        if from_ is None or to is None:
+            return
 
-    #  find the connected component that contains the from_ address
-    for component in connected_components:
-        if Web3.toChecksumAddress(from_) in component and len(component) > 1:
-            if component not in FINDINGS_CACHE:
-                FINDINGS_CACHE.append(component)
+        if Web3.toChecksumAddress(from_) in self.GRAPH.nodes and Web3.toChecksumAddress(to) in self.GRAPH.nodes:
+            self.GRAPH.add_edges_from([(Web3.toChecksumAddress(from_), Web3.toChecksumAddress(to))])
+            logging.info(f"Added edge from address {from_} to {to}.")
 
-                if len(FINDINGS_CACHE) > 10000:
-                    FINDINGS_CACHE.pop(0)
 
-                return Finding(
-                    {
-                        "name": "Entity identified",
-                        "description": f"Entity of size {len(component)} has been identified. Transaction from {from_} created this entity.",
-                        "alert_id": "ENTITY-CLUSTER",
-                        "type": FindingType.Info,
-                        "severity": FindingSeverity.Info,
-                        "metadata": {
-                            "anomaly_score": calculate_alert_rate(
-                                CHAIN_ID,
+    def calc_contract_address(self, address, nonce) -> str:
+        """
+        this function calculates the contract address from sender/nonce
+        :return: contract address: str
+        """
+
+        address_bytes = bytes.fromhex(address[2:].lower())
+        return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:]).lower()
+
+
+    def is_contract(self, w3, address) -> bool:
+        """
+        this function determines whether address is a contract
+        :return: is_contract: bool
+        """
+        if address is None:
+            return True
+        
+        checksum_address = Web3.toChecksumAddress(address)
+        if checksum_address in self.contract_cache:
+            logging.info(f"Using cache for is contract for contract {checksum_address}")
+            return True
+        code = w3.eth.get_code(checksum_address)
+        if code != HexBytes('0x'):
+            self.contract_cache.append(checksum_address)
+            if len(self.contract_cache) > 10000:
+                self.contract_cache.pop(0)
+            return True
+        else:
+            return False
+
+
+    def cluster_entities(self, w3, transaction_event) -> list:
+        findings = []
+        if (transaction_event.transaction.to is None) or (transaction_event.transaction.value > 0) or (transaction_event.filter_log(ERC20_TRANSFER_EVENT)):
+
+            EntityClusterAgent.prune_graph(self.GRAPH)
+
+            #  add edges for each native transfer
+            if transaction_event.transaction.value > 0:
+                logging.info(f"Observing native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
+                if not self.is_contract(w3, transaction_event.transaction.to) and not self.is_contract(w3, transaction_event.transaction.from_):
+                        if self.is_address_belong_max_transactions(w3, transaction_event.transaction.from_) and self.is_address_belong_max_transactions(w3, transaction_event.transaction.to):
+                            self.add_address(transaction_event.transaction.from_)
+                            self.add_address(transaction_event.transaction.to)
+                            self.add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
+                            finding = self.create_finding(transaction_event.transaction.from_, "Trigger by a bi directional transfer")
+                            if finding is not None:
+                                findings.append(finding)
+
+            #  add edges for large native transfers; will treat as bidirectional transfer
+            if transaction_event.transaction.value > ONE_WAY_WEI_TRANSFER_THRESHOLD:
+                logging.info(f"Observing large native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
+                if not self.is_contract(w3, transaction_event.transaction.to) and not self.is_contract(w3, transaction_event.transaction.from_):
+                    if self.is_address_belong_max_transactions(w3, transaction_event.transaction.from_) and self.is_address_belong_max_transactions(w3, transaction_event.transaction.to):
+                        self.add_address(transaction_event.transaction.from_)
+                        self.add_address(transaction_event.transaction.to)
+                        self.add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
+                        self.add_directed_edge(w3, transaction_event.transaction.to, transaction_event.transaction.from_)
+
+                        finding = self.create_finding(transaction_event.transaction.from_, "Trigger by a large native transaction")
+                        if finding is not None:
+                            findings.append(finding)
+
+            #  add edges for small native transfers, new accounts
+            # For perfomance it check first the threshould, then if contract that could be cached, the NEW_FUNDED_MAX_NONCE and then it won't check MAX_NONCE as we assume that always NEW_FUNDED_MAX_NONCE <= MAX_NONCE
+            if transaction_event.transaction.value < NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD:
+                if not self.is_contract(w3, transaction_event.transaction.to) and not self.is_contract(w3, transaction_event.transaction.from_):
+                    if w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.from_), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE and w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE:
+                        if self.is_address_belong_max_transactions(w3, transaction_event.transaction.from_) and self.is_address_belong_max_transactions(w3, transaction_event.transaction.to):
+                            logging.info(f"Observing small native transfer of value {transaction_event.transaction.value} from new EOA {transaction_event.transaction.from_} to new EOA {transaction_event.transaction.to}")
+                            self.add_address(transaction_event.transaction.from_)
+                            self.add_address(transaction_event.transaction.to)
+                            self.add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
+                            self.add_directed_edge(w3, transaction_event.transaction.to, transaction_event.transaction.from_)
+                            finding = self.create_finding(transaction_event.transaction.from_, "Trigger by a small transfer to new accounts")
+                            if finding is not None:
+                                findings.append(finding)
+
+            #  add edges for ERC20 transfers
+            transfer_events = transaction_event.filter_log(ERC20_TRANSFER_EVENT)
+            for transfer_event in transfer_events:
+                # extract transfer event arguments
+                if transfer_event['args']['value'] > 0:
+                    erc20_from = transfer_event['args']['from']
+                    erc20_to = transfer_event['args']['to']
+                    logging.info(f"Observing ERC-20 transfer of value {transfer_event['args']['value']} from {erc20_from} to {erc20_to}")
+                    if not self.is_contract(w3, erc20_to) and not self.is_contract(w3, erc20_from):
+                        if self.is_address_belong_max_transactions(w3, erc20_to) and self.is_address_belong_max_transactions(w3, erc20_from):
+                            self.add_address(erc20_from)
+                            self.add_address(erc20_to)
+                            self.add_directed_edge(w3, erc20_from, erc20_to)
+                            finding = self.create_finding(erc20_from, "triger by bi directional ERC20 transfer")
+                            if finding is not None:
+                                findings.append(finding)
+
+            # add edges for contract creations
+            if transaction_event.transaction.to is None:
+                contract_address = self.calc_contract_address(transaction_event.transaction.from_, transaction_event.transaction.nonce)
+                logging.info(f"Observing contract creation from {transaction_event.transaction.from_}: {contract_address}")
+                if self.is_address_belong_max_transactions(w3, transaction_event.transaction.from_):
+                    self.add_address(transaction_event.transaction.from_)
+                    self.add_address(contract_address)
+                    self.add_directed_edge(w3, transaction_event.transaction.from_, contract_address)
+                    self.add_directed_edge(w3, contract_address, transaction_event.transaction.from_)
+                    finding = self.create_finding(transaction_event.transaction.from_, "Trigger by a contract creation")
+                    if finding is not None:
+                        findings.append(finding)
+
+            self.tx_counter = self.tx_counter + 1
+            if self.tx_counter >= self.tx_save_step:
+                self.persist_state()
+                self.tx_counter = 0
+                logging.info(f"Persist at {self.tx_save_step} tx")
+
+        return findings
+ 
+
+    def filter_edge(a_graph):
+        def f(n1, n2):
+            # filters for bidirectional edges
+            if [n2, n1] in a_graph.edges:
+                return True
+            return False
+        return f
+
+    def create_finding(self, from_, message) -> Finding:
+        shared_graph = self.persistance.graph_cache
+        # Add all nodes and all edges to the shared cached graph to have a updated graph with the delta + shared
+        shared_graph.update(self.GRAPH)
+        filtered_graph = nx.subgraph_view(shared_graph, filter_edge=EntityClusterAgent.filter_edge(shared_graph))
+        checksum_addr = Web3.toChecksumAddress(from_)
+
+        ############################################
+        # Uncomment to view graph in cytoscape viewer
+        ##########################################
+        # ego_g = nx.ego_graph(filtered_graph, Web3.toChecksumAddress("0xc7081c60da6eb75e6f2a4a55c33580f0fee8d7da"), 100)
+        # c=0
+        # for node in ego_g:
+        #     ego_g.nodes[node]['last_seen'] = str(ego_g.nodes[node]['last_seen'])
+        #     c=c+1
+        # print(f"graph n {c}")
+        # nx.write_graphml(ego_g, f"cytoscape.xml")
+
+
+        # uses ego graph where the from address is the ego node and look for all his alters up to level 100
+        # https://networkx.org/documentation/stable/auto_examples/drawing/plot_ego_graph.html
+
+        
+        ego_g = nx.ego_graph(filtered_graph, Web3.toChecksumAddress(checksum_addr), 100)
+        nodes = list(ego_g.nodes)
+        n_nodes = len(nodes)
+
+        diagram = "Too big or small for a diagram"
+        if 8 <= n_nodes and n_nodes <= 16:
+            try:
+                ego_for_json = ego_g.copy()
+                for n in ego_for_json:
+                    ego_for_json.nodes[n]["name"] = n
+                    ego_for_json.nodes[n]['last_seen'] = str(ego_for_json.nodes[n]['last_seen'])
+                link_data = nx.json_graph.node_link_data(ego_for_json)
+                diagram = base64.b64encode(json.dumps(link_data).encode()).decode()
+            except Exception as e:
+                diagram = f"There was an error creating the diagram: {e}"
+
+        alert_id = 'PERF-ENTITY-CLUSTER'
+        anomality_score = 0
+        try:
+            anomality_score = calculate_alert_rate(
+                                self.chain_id,
                                 BOT_ID,
-                                "ENTITY-CLUSTER",
+                                alert_id,
                                 ScanCountType.TRANSFER_COUNT,
-                            ),
-                            "entity_addresses": list(component)
-                        }
+                            )
+        except Exception as e:
+            logging.error(f"Error doing calculate_alert_rate  {e}, default to {anomality_score}")
+
+        #  find the connected component that contains the from_ address
+        if checksum_addr in nodes and n_nodes > 1:
+            return Finding(
+                {
+                    "name": "Entity identified",
+                    "description": f"Entity of size {n_nodes} has been identified. Transaction from {from_} created this entity. {message}",
+                    "alert_id": alert_id,
+                    "type": FindingType.Info,
+                    "severity": FindingSeverity.Info,
+                    "metadata": {
+                        "entity_addresses": nodes,
+                        "diagram": diagram,
+                        "anomaly_score": anomality_score
                     }
-                )
+                }
+            )
 
 
-def query_alerts(w3, aq):
-    while(True):
-        global TC_FUNDING_ADDRESSES
-        logging.info("Querying tc funding alerts...")
-        TC_FUNDING_ADDRESSES = aq.get_tc_funding_addresses(w3.eth.chain_id)
-        logging.info(f"Got {len(TC_FUNDING_ADDRESSES)} tc funding addresses")
+
+    def provide_handle_transaction(self, w3, transaction_event):
+        # to save stats of a transaction processing, can be seen with viewers that help a lot to see where the time is being spent.
+        if PROFILING:
+            with cProfile.Profile() as profile:
+                f = self.cluster_entities(w3, transaction_event)
+            
+            with open('profiling_stats.txt', 'w') as stream:
+                stats = pstats.Stats(profile, stream=stream)
+                stats.strip_dirs()
+                stats.sort_stats('time')
+                stats.dump_stats('entity_cluster_prof_stats')
+                stats.print_stats()
+            return f
+        else:
+            return self.cluster_entities(w3, transaction_event)
 
 
-def query_alerts_background(w3, aq):
-    while(True):
-        query_alerts_background(w3, aq)
+    def real_handle_transaction(self, transaction_event):
+        return self.provide_handle_transaction(web3, transaction_event)
 
+    def persist_state(self):
+        self.persistance.persist(self.GRAPH, GRAPH_KEY, EntityClusterAgent.prune_graph)
 
-def provide_handle_transaction(w3):
-    def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
-        return cluster_entities(w3, transaction_event)
-
-    return handle_transaction
-
-
-real_handle_transaction = provide_handle_transaction(web3)
-
-def persist_state():
-    global GRAPH
-    global ALERTED_ADDRESSES
-    global FINDINGS_CACHE
-
-    persist(GRAPH, GRAPH_KEY)
-    persist(FINDINGS_CACHE, FINDINGS_CACHE_KEY)
-    persist(ALERTED_ADDRESSES, ALERTED_ADDRESSES_KEY)
-    logging.info(f"Persisted bot state.")
-
-def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
-    logging.info(f"Handling block {block_event.block_number}.")
-
-    if block_event.block_number % 240 == 0:
-        logging.info(f"Persisting block {block_event.block_number}.")
-        persist_state()
-
-    findings = []
-    return findings
-
+entity_cluster_agent =  EntityClusterAgent(DynamoPersistance(DYNAMO_TABLE, web3.eth.chain_id), TX_SAVE_STEP, web3.eth.chain_id)
 def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
-    return real_handle_transaction(transaction_event)
+    return entity_cluster_agent.real_handle_transaction(transaction_event)
