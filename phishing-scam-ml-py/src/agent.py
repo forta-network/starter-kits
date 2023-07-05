@@ -4,9 +4,8 @@ from timeit import default_timer as timer
 
 import forta_agent
 from forta_agent import get_json_rpc_url, EntityType
-from imblearn.ensemble import EasyEnsembleClassifier
-import lightgbm as lgb
-import numpy as np
+from hexbytes import HexBytes
+
 import pandas as pd
 from web3 import Web3
 
@@ -33,6 +32,17 @@ def initialize():
     logger.info("Complete loading model")
 
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
+
+
+def is_eoa(w3, address) -> bool:
+    """
+    this function determines whether address is an eoa
+    :return: is_eoa: bool
+    """
+    if address is None:
+        return False
+    code = w3.eth.get_code(Web3.toChecksumAddress(address))
+    return code == HexBytes("0x")
 
 
 def get_prediction(features) -> tuple:
@@ -85,27 +95,29 @@ def detect_eoa_phishing_scammer(w3, transaction_event):
         # check if to or from is a phishing scammer
         to_address = transaction_event.to
         from_address = transaction_event.from_
-        timestamp = transaction_event.timestamp
 
-        eoa_stats, eoa_lst = get_eoa_tx_stats([to_address, from_address])
+        if is_eoa(w3, to_address):
+            eoa_stats, eoa_lst = get_eoa_tx_stats([to_address])
 
-        if to_address in eoa_lst:
-            finding = check_scammer(
-                to_address,
-                eoa_stats=eoa_stats[eoa_stats["eoa"] == to_address],
-                chain_id=w3.eth.chainId,
-            )
-            if finding:
-                findings.append(finding)
+            if to_address in eoa_lst:
+                finding = check_scammer(
+                    to_address,
+                    eoa_stats=eoa_stats[eoa_stats["eoa"] == to_address],
+                    chain_id=w3.eth.chainId,
+                )
+                if finding:
+                    findings.append(finding)
 
-        if from_address in eoa_lst:
-            finding = check_scammer(
-                from_address,
-                eoa_stats=eoa_stats[eoa_stats["eoa"] == from_address],
-                chain_id=w3.eth.chainId,
-            )
-            if finding:
-                findings.append(finding)
+        if is_eoa(w3, from_address):
+            eoa_stats, eoa_lst = get_eoa_tx_stats([from_address])
+            if from_address in eoa_lst:
+                finding = check_scammer(
+                    from_address,
+                    eoa_stats=eoa_stats[eoa_stats["eoa"] == from_address],
+                    chain_id=w3.eth.chainId,
+                )
+                if finding:
+                    findings.append(finding)
 
     return findings
 
