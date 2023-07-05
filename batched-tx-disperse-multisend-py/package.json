@@ -1,8 +1,8 @@
 {
-  "name": "forta-agent-starter",
-  "version": "0.0.1",
-  "description": "Forta Agent Python starter project",
-  "repository": "https://github.com/forta-network/forta-bot-sdk/tree/master/starter-project",
+  "name": "batched-tx-bot",
+  "version": "0.1.0",
+  "description": "Bot scanning for ERC20 transfers batched in a single transaction",
+  "repository": "https://github.com/forta-network/starter-kits/tree/main//batched-tx-disperse-multisend-py",
   "chainIds": [
     1
   ],

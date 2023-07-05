@@ -11,14 +11,15 @@ The ETH transfers are ignored.
 
 ## Supported Chains
 
-- Ethereum
-- List any other chains this agent can support e.g. BSC
+The bot is specific to the contracts [`Disperse`][etherscan-contract-disperse] and [`Multisend`][etherscan-contract-multisend].
 
-## Usage
+So it runs on a single chain:
+
+- Ethereum
 
 ## Alerts
 
-Describe each of the type of alerts fired by this agent
+The bot only emits `info` alerts:
 
 - `BATCHED-ERC20-TX`:
   - Fired when a transaction calls either:
@@ -38,9 +39,11 @@ The code is bundled in a Docker container.
 
 ## Tests
 
+The test can be run with `python -m pytest`.
+
 ### Data
 
-The agent behaviour can be verified with the following transactions:
+The agent behaviour can be verified on the following transactions:
 
 - ETH transactions:
   - Disperse: [0xa7f0f0470e9be92b10c57273087cef31774c1284acf3d3b56e3e92c504437fb4][etherscan-tx-disperse-eth]
@@ -56,17 +59,21 @@ The agent behaviour can be verified with the following transactions:
 [x] metrics
 [x] disperse
 [x] multisend
-[ ] discuss: ignore ETH? / severity level / metadata
+[ ] discuss: ignore ETH? / severity level / metadata / labels (origin?) / chains?
 [ ] options / CLI flags? (filters: address = token / eth / amount / from, default = all / any)
-[ ] limit to 30 alerts / days => less than 1000 / month
-[ ] [review](https://github.com/forta-network/bot-review-checklist)
-[ ] chain agents
-[ ] sharding
-[ ] generic
+[ ] limit to 30 alerts / days => less than 1000 / month?
+[x] [review](https://github.com/forta-network/bot-review-checklist)
+[x] chain agents
 
 ## Metrics
 
-Signatures:
+The bot looks for transactions to the following contract:
+
+- Ethereum:
+  - Disperse: [`0xd152f549545093347a162dce210e7293f1452150`][etherscan-contract-disperse]
+  - Multisend: [`0x22bc0693163ec3cee5ded3c2ee55ddbcb2ba9bbe`][etherscan-contract-multisend]
+
+And checks whether specific functions are called by their signature:
 
 - `Disperse.disperseEther`: `0xe63d38ed`
 - `Disperse.disperseToken`: `0xc73a2d60`
@@ -84,10 +91,3 @@ The web app for Disperse never uses `disperseTokenSimple`: custom calls to this 
 [etherscan-tx-multisend-token]: https://etherscan.io/tx/0x78b093c64e09cb7a3ce6bad2480549b058550faa5ba21be7c19ad732dc761fc5
 [phalcon-disperse-token]: https://explorer.phalcon.xyz/tx/eth/0x2e311b6e9c842e4ec06712cad2acb6be9d6eec341c348a7dc3aac51ec9a8426c
 [phalcon-multisend-token]: https://explorer.phalcon.xyz/tx/eth/0x78b093c64e09cb7a3ce6bad2480549b058550faa5ba21be7c19ad732dc761fc5
-
-
-```js
-const _abi = {name: 'multisendEther', type: 'function', inputs: [{type: 'address[]', name: 'recipients'}, {type: 'uint256[]', name: 'values'}]};
-const _args = [['0x33d73cc0e060939476a10e47b86a4568c7dcf261', '0x3d02b87ae906f1d6f130832f67e5c10c9f869205', '0xe1c35a5edff5a5fc92b294289a1ea00a2db1659f'], ['0xb1a2bc2ec5', '0xb1a2bc2ec5', '0xb1a2bc2ec5']];
-web3.eth.abi.encodeFunctionCall(_abi, _args);
-```
