@@ -1,6 +1,6 @@
 # Scam Detector Bot Release Notes
 
-## v2.15.3 (June 29th 2023 - beta)
+## v2.15.3 (June 29th 2023 - beta, July 5th prod (without private key compromise))
 - added Urls to scam detector
 - added some additional logging around decryption function
 
