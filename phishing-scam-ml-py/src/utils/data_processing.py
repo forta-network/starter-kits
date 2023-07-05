@@ -51,10 +51,13 @@ def get_eoa_tx_stats(addresses):
 
     data = zettablock_api(url, query, ",".join(addresses))
     df = pd.DataFrame(data).fillna(0)
-    df["unique_to_friends"] = df["unique_to_friends"].tolist()
-    df["unique_from_friends"] = df["unique_from_friends"].tolist()
+    eoas = []
+    if len(df) > 0:
+        df["unique_to_friends"] = df["unique_to_friends"].tolist()
+        df["unique_from_friends"] = df["unique_from_friends"].tolist()
+        eoas = df["eoa"].tolist()
 
-    return df, df["eoa"].tolist()
+    return df, eoas
 
 
 def get_from_in_stats(addresses):
@@ -84,7 +87,7 @@ def get_from_out_stats(addresses):
         f"https://api.zettablock.com/api/v1/dataset/{get_query_id('FROM_OUT')}/graphql"
     )
 
-    query = "query($addresses: [String!]!) {records(filter: { eoa: { in: $addresses } }) {eoa, from_out_median_block, from_out_std_val}}"
+    query = "query($addresses: [String!]!) {records(filter: { eoa: { in: $addresses } }) {eoa, from_out_std_block, from_out_std_val}}"
     data = zettablock_api(url, query, ",".join(addresses))
     df = pd.DataFrame(data).fillna(0)
 
@@ -106,7 +109,7 @@ def get_to_in_stats(addresses, total_eth):
 
     url = f"https://api.zettablock.com/api/v1/dataset/{get_query_id('TO_IN')}/graphql"
 
-    query = "query($addresses: [String!]!) {records(filter: { eoa: { in: $addresses } }) {eoa, to_in_min_val, to_in_median_val, to_in_median_block }}"
+    query = "query($addresses: [String!]!) {records(filter: { eoa: { in: $addresses } }) {eoa, to_in_min_val, to_in_median_val, to_in_std_block }}"
     data = zettablock_api(url, query, ",".join(addresses))
     df = pd.DataFrame(data).fillna(0)
 
