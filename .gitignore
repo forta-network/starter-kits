@@ -10,8 +10,8 @@ __pycache__
 secrets.json
 keys.py
 keys.py~
-pubring.kbx
-pubring.kbx~
-trustdb.gpg
+*.kbx
+*.kbx~
+*.gpg
+.gitignore
 *.key
-random_seed

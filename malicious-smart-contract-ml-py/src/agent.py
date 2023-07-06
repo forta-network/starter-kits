@@ -19,8 +19,9 @@ from src.utils import (
     is_contract,
 )
 
-from src.keys import ZETTABLOCK_KEY
+from src.storage import get_secrets
 
+SECRETS_JSON = get_secrets()
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 ML_MODEL = None
@@ -38,7 +39,7 @@ def initialize():
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
-    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
 
 def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:

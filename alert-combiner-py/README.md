@@ -30,7 +30,7 @@ As such, this feed combines previously raised alerts under the initiating addres
 
 2. Heuristic Approach utilizing highly precise alert from a subset of the base bots (currently the ML contract model bot and the attack simulation bot)
    1. Alert Criteria
-    - a highly precise alert is emitted plus one more additional alert is emitted for a common cluster (a set of addresses clustered by the cluster entity bot)
+    - a highly precise alert is emitted plus one more additional alert from different stage or 1 more alerts from different highly precise bots is emitted for a common cluster (a set of addresses clustered by the cluster entity bot)
     - is not part of a FP mitigation alert
     - is not part of an end user attack alert
    2. Example 

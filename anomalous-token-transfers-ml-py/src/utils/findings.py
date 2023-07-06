@@ -2,7 +2,7 @@ from bot_alert_rate import calculate_alert_rate, ScanCountType
 from forta_agent import Finding, FindingType, FindingSeverity
 
 from src.utils.constants import MODEL_CREATED_TIMESTAMP, ANOMALY_THRESHOLD
-from src.utils.keys import BOT_ID
+BOT_ID = "0x2e51c6a89c2dccc16a813bb0c3bf3bbfe94414b6a0ea3fc650ad2a59e148f3c8"
 
 
 class TokenTransfersTxFinding:

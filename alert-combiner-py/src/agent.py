@@ -3,6 +3,7 @@ import sys
 import threading
 from datetime import datetime, timedelta
 
+import traceback
 import forta_agent
 import pandas as pd
 import time
@@ -19,7 +20,7 @@ from src.constants import (ENTITY_CLUSTERS_MAX_QUEUE_SIZE, FP_CLUSTERS_QUEUE_MAX
                            FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE,
                            MIN_ALERTS_COUNT, ALERTS_DATA_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY,
                            VICTIMS_KEY, VICTIM_QUEUE_MAX_SIZE, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS, DEFAULT_ANOMALY_SCORE, HIGHLY_PRECISE_BOTS,
-                           ALERTED_CLUSTERS_FP_MITIGATED_KEY, END_USER_ATTACK_BOTS, END_USER_ATTACK_CLUSTERS_KEY, END_USER_ATTACK_CLUSTERS_QUEUE_MAX_SIZE)
+                           ALERTED_CLUSTERS_FP_MITIGATED_KEY, END_USER_ATTACK_BOTS, END_USER_ATTACK_CLUSTERS_KEY, END_USER_ATTACK_CLUSTERS_QUEUE_MAX_SIZE, POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD)
 from src.L2Cache import L2Cache
 from src.blockchain_indexer_service import BlockChainIndexer
 
@@ -166,7 +167,7 @@ def get_pot_attacker_addresses(alert_event: forta_agent.alert_event.AlertEvent) 
         logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} - Analysing {len(pot_attacker_addresses)} pot attacker addresses obtained from labels and metadata")
 
     except Exception as e:
-        logging.warning(f"alert {alert_event.alert_hash} {alert_event.alert_id} - Exception in get_pot_attacker_addresses from labels: {e}")
+        logging.warning(f"alert {alert_event.alert_hash} {alert_event.alert_id} - Exception in get_pot_attacker_addresses from labels: {e} {traceback.format_exc()}")
 
     if len(pot_attacker_addresses) == 0:
         logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} - No attack labels in alert. Using addresses field.")
@@ -290,6 +291,11 @@ def get_end_user_attack_addresses(alert_event: forta_agent.alert_event.AlertEven
     #0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4,SOFT-RUG-PULL-,metadata,,deployer,
     #0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11,RAKE-TOKEN-CONTRACT-1,metadata,,attackerRakeTokenDeployer,
     #0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11,RAKE-TOKEN-CONTRACT-1,metadata,,attacker_rake_token_deployer,
+    #0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127,IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR,eoa,metadata,,newTokenDeployer,
+    #0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127,IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR,eoa,metadata,,new_token_deployer,
+    #0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1,*,eoa,metadata,,attackerAddress,
+    #0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1,*,eoa,metadata,,attacker_address,
+    #0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1,*,eoa,metadata,,deployer,
     if alert_event.bot_id == '0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15':  # hard rug pull
         if alert_event.alert.metadata.get('attacker_deployer_address') is not None:
             addresses.add(alert_event.alert.metadata['attacker_deployer_address'].lower())
@@ -297,12 +303,24 @@ def get_end_user_attack_addresses(alert_event: forta_agent.alert_event.AlertEven
             addresses.add(alert_event.alert.metadata['attacker_deployer_address'].lower())
     elif alert_event.bot_id == '0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4':  # soft rug pull
         if alert_event.alert.metadata.get('deployer') is not None:
-            addresses.add(alert_event.alert.metadata['deployer'].lower())
+            addresses.add(alert_event.alert.metadata['deployer'].lower().replace('"', ''))
     elif alert_event.bot_id == '0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11':
         if alert_event.alert.metadata.get('attackerRakeTokenDeployer') is not None:
             addresses.add(alert_event.alert.metadata['attackerRakeTokenDeployer'].lower())
         if alert_event.alert.metadata.get('attacker_rake_token_deployer') is not None:
             addresses.add(alert_event.alert.metadata['attacker_rake_token_deployer'].lower())
+    elif alert_event.bot_id == '0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127':
+        if alert_event.alert.metadata.get('newTokenDeployer') is not None:
+            addresses.add(alert_event.alert.metadata['newTokenDeployer'].lower())
+        if alert_event.alert.metadata.get('new_token_deployer') is not None:
+            addresses.add(alert_event.alert.metadata['new_token_deployer'].lower())
+    elif alert_event.bot_id == '0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1':
+        if alert_event.alert.metadata.get('attackerAddress') is not None:
+            addresses.add(alert_event.alert.metadata['attackerAddress'].lower().replace('"', ''))
+        if alert_event.alert.metadata.get('attacker_address') is not None:
+            addresses.add(alert_event.alert.metadata['attacker_address'].lower().replace('"', ''))
+        if alert_event.alert.metadata.get('deployer') is not None:
+            addresses.add(alert_event.alert.metadata['deployer'].lower().replace('"', ''))
 
     return list(addresses)
 
@@ -329,7 +347,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
     try:
         start = time.time()
 
-        chain_id = int(alert_event.alert.source.block.chain_id) if alert_event.alert.source.block.chain_id is not None else int(alert_event.chain_id)
+        chain_id = int(alert_event.chain_id)
         if chain_id == CHAIN_ID or (CHAIN_ID in [10, 42161] and chain_id == 1):
             logging.info(f"alert {alert_event.alert_hash} received for proper chain {chain_id}")
 
@@ -441,25 +459,32 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                         logging.info(f"alert {alert_event.alert_hash} - alert data size for cluster {cluster} now (after date pruning): {len(alert_data)}")
 
                         # 3. contains highly precise bot
-                        contains_highly_precise_bot = False
+                        highly_precise_bot_alert_id_count = 0
+                        highly_precise_bot_ids = set()
                         uniq_bot_alert_ids = alert_data[['bot_id', 'alert_id']].drop_duplicates(inplace=False)
                         for bot_id, alert_id, s in HIGHLY_PRECISE_BOTS:
+                            if bot_id == '0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac':  # temp hot fix for FP; awaiting FP mitigation from basebot (https://github.com/NethermindEth/forta-starter-kits/issues/59)
+                                highly_precise_bot_alerts = alert_data[(alert_data['bot_id'] == bot_id) & (alert_data['alert_id'] == alert_id)]
+                                if len(highly_precise_bot_alerts) > 0 and highly_precise_bot_alerts['anomaly_score'].max() > 0.5:
+                                    logging.info(f"Large profit anomaly score not anomalous enough ({highly_precise_bot_alerts['anomaly_score'].max()}) for inclusion in high precision count; skipping ...")
+                                    continue
+
                             if len(uniq_bot_alert_ids[(uniq_bot_alert_ids['bot_id'] == bot_id) & (uniq_bot_alert_ids['alert_id'] == alert_id)]) > 0:
-                                contains_highly_precise_bot = True
-                                break
+                                highly_precise_bot_alert_id_count += 1
+                                highly_precise_bot_ids.add(bot_id)
 
                         # analyze ALERT_DATA to see whether conditions are met to generate a finding
                         # 1. Have to have at least MIN_ALERTS_COUNT bots reporting alerts
-                        if len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT or contains_highly_precise_bot:
+                        if len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT or highly_precise_bot_alert_id_count>0:
                             # 2. Have to have overall anomaly score of less than ANOMALY_SCORE_THRESHOLD
                             anomaly_scores_by_stages = alert_data[['stage', 'anomaly_score']].drop_duplicates(inplace=False)
                             anomaly_scores = anomaly_scores_by_stages.groupby('stage').min()
                             anomaly_score = anomaly_scores['anomaly_score'].prod()
-                            logging.info(f"alert {alert_event.alert_hash} - Have sufficient number of alerts for {cluster}. Overall anomaly score is {anomaly_score}, {len(anomaly_scores)} stages.")
+                            logging.info(f"alert {alert_event.alert_hash} - Have sufficient number of alerts for {cluster}. Overall anomaly score is {anomaly_score}, {len(anomaly_scores)} stages, {highly_precise_bot_alert_id_count} highly precise bot alert ids, {len(highly_precise_bot_ids)} highly precise bot ids.")
                             logging.info(f"alert {alert_event.alert_hash} - {cluster} anomaly scores {anomaly_scores}.")
 
-                            if anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE or len(anomaly_scores) == 4 or (contains_highly_precise_bot and len(anomaly_scores)>1):
-                                logging.info(f"alert {alert_event.alert_hash} - Overall anomaly score for {cluster} is below threshold, 4 stages, or highly precise bot with 2 stages have been observed. Unless FP mitigation kicks in, will raise finding.")
+                            if anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE or len(anomaly_scores) == 4 or (highly_precise_bot_alert_id_count>0 and len(anomaly_scores)>1) or (len(highly_precise_bot_ids)>1):
+                                logging.info(f"alert {alert_event.alert_hash} - Overall anomaly score for {cluster} is below threshold, 4 stages, or highly precise bot with 2 stages have been observed or two highly precise bots have been observed. Unless FP mitigation kicks in, will raise finding.")
                                 if CHAIN_ID in [10, 42161] and alert_data[alert_data['chain_id'] == CHAIN_ID].empty:
                                     logging.info(f"No alert on chain {CHAIN_ID} for {cluster}. Wont raise finding")
                                     continue
@@ -482,7 +507,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                                     logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
                                     fp_mitigated = True
 
-                                if is_polygon_validator(w3, cluster, alert_event.alert.source.block.number):
+                                if (CHAIN_ID == 137 and len(alert_data) > POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD) or is_polygon_validator(w3, cluster, alert_event.alert.source.block.number):
                                     logging.info(f"alert {alert_event.alert_hash} - {cluster} is polygon validator. Wont raise finding")
                                     fp_mitigated = True
 
@@ -499,7 +524,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                                     victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                                     update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
                                     findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
-                                elif not end_user_attack and not fp_mitigated and (contains_highly_precise_bot and len(anomaly_scores) > 1) and cluster not in ALERTED_CLUSTERS_STRICT:
+                                elif not end_user_attack and not fp_mitigated and ((highly_precise_bot_alert_id_count > 0 and len(anomaly_scores) > 1) or (len(highly_precise_bot_ids)>1)) and cluster not in ALERTED_CLUSTERS_STRICT:
                                     logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
                                     victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                                     update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
@@ -514,12 +539,12 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                                     victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                                     update_list(ALERTED_CLUSTERS_LOOSE, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
                                     findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-4", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
-                                elif not end_user_attack and fp_mitigated and (cluster not in ALERTED_CLUSTERS_FP_MITIGATED) and (((len(anomaly_scores) == 4) and cluster not in ALERTED_CLUSTERS_STRICT) or ((contains_highly_precise_bot and len(anomaly_scores) > 1) and cluster not in ALERTED_CLUSTERS_STRICT) or ((len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT and anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT) and cluster not in ALERTED_CLUSTERS_STRICT)
+                                elif not end_user_attack and fp_mitigated and (cluster not in ALERTED_CLUSTERS_FP_MITIGATED) and (((len(anomaly_scores) == 4) and cluster not in ALERTED_CLUSTERS_STRICT) or ((highly_precise_bot_alert_id_count > 0 and len(anomaly_scores) > 1) and cluster not in ALERTED_CLUSTERS_STRICT) or (len(highly_precise_bot_ids)>1) or ((len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT and anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT) and cluster not in ALERTED_CLUSTERS_STRICT)
                                                                                          or ((len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT  and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE) and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT)):
                                     victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                                     update_list(ALERTED_CLUSTERS_FP_MITIGATED, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
                                     findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Info, "ATTACK-DETECTOR-5", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
-                                elif end_user_attack and not fp_mitigated and (cluster not in ALERTED_CLUSTERS_FP_MITIGATED) and (((len(anomaly_scores) == 4) and cluster not in ALERTED_CLUSTERS_STRICT) or ((contains_highly_precise_bot and len(anomaly_scores) > 1) and cluster not in ALERTED_CLUSTERS_STRICT) or ((len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT and anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT) and cluster not in ALERTED_CLUSTERS_STRICT)
+                                elif end_user_attack and not fp_mitigated and (cluster not in ALERTED_CLUSTERS_FP_MITIGATED) and (((len(anomaly_scores) == 4) and cluster not in ALERTED_CLUSTERS_STRICT) or ((highly_precise_bot_alert_id_count > 0 and len(anomaly_scores) > 1) and cluster not in ALERTED_CLUSTERS_STRICT) or (len(highly_precise_bot_ids)>1) or ((len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT and anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT) and cluster not in ALERTED_CLUSTERS_STRICT)
                                                                                          or ((len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT  and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE) and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT)):
                                     victim_address, victim_name, victim_metadata = get_victim_info(alert_data, VICTIMS)
                                     update_list(ALERTED_CLUSTERS_FP_MITIGATED, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
@@ -528,7 +553,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                                     logging.info(f"alert {alert_event.alert_hash} - Not raising finding for {cluster}. Already alerted.")
 
             except Exception as e:
-                logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
+                logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e} {traceback.format_exc()}")
         else:
             logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
             raise AssertionError(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
@@ -536,7 +561,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
         end = time.time()
         logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} {alert_event.chain_id} processing took {end - start} seconds")
     except Exception as e:
-        logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e}")
+        logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e} {traceback.format_exc()}")
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
             logging.info(f"alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
             raise e

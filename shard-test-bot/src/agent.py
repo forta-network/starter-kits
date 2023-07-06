@@ -2,17 +2,26 @@ import logging
 import sys
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 import forta_agent
 from forta_agent import get_json_rpc_url, EntityType, Finding, FindingType, FindingSeverity, Label, EntityType
 from web3 import Web3
 
+from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
 from src.constants import (BASE_BOTS)
+
+s3 = None
+dynamo = None
+item_id_prefix = ""
 
 CHAIN_ID = -1
 BOT_VERSION = "0.0.0"
+
+INITIALIZED = False
+INITIALIZED_CALLED = False
+INITIALIZATION_TIME = datetime.now()
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 root = logging.getLogger()
@@ -46,12 +55,24 @@ def get_bot_version() -> str:
     return package["version"]
 
 
-def initialize():
-    """
-    this function initializes the state variables that are tracked across tx and blocks
-    it is called from test to reset state between tests
-    """
+
+def reinitialize():
     global CHAIN_ID
+    global BOT_VERSION
+    global s3
+    global dynamo
+
+    try:
+        # initialize dynamo DB
+        if dynamo is None:
+            secrets = get_secrets()
+            s3 = s3_client(secrets)
+            dynamo = dynamo_table(secrets)
+            logging.info(f"{BOT_VERSION}: Initialized dynamo DB successfully.")
+    except Exception as e:
+        logging.error(f"{BOT_VERSION}: Error initializing dynamo DB: {e}")
+        raise e
+        
     try:
         if CHAIN_ID == -1:
             chain_id_temp = os.environ.get('FORTA_CHAIN_ID')
@@ -59,23 +80,43 @@ def initialize():
                 CHAIN_ID = web3.eth.chain_id
             else:
                 CHAIN_ID = int(chain_id_temp)
-        logging.info(f"Set chain id to {CHAIN_ID}")
+        logging.info(f"{BOT_VERSION}: Set chain id to {CHAIN_ID}")
     except Exception as e:
-        logging.error(f"Error getting chain id: {e}")
+        logging.error(f"{BOT_VERSION}: Error getting chain id: {e}")
         raise e
-    
-    global BOT_VERSION
-    BOT_VERSION = get_bot_version()
-    
-    # subscribe to the base bots, FP mitigation and entity clustering bot
-    global BASE_BOTS
-    subscription_json = []
-    for botId, alertId, alert_logic, target_alert_id in BASE_BOTS:
-        subscription_json.append({"botId": botId, "alertId": alertId, "chainId": CHAIN_ID})
 
-    alert_config = {"alertConfig": {"subscriptions": subscription_json}}
-    logging.info(f"Initializing scam detector bot. Subscribed to bots successfully: {alert_config}")
-    logging.info(f"Initialized scam detector bot.")
+def initialize():
+    """
+    this function initializes the state variables that are tracked across tx and blocks
+    it is called from test to reset state between tests
+    """
+    global CHAIN_ID
+    global INITIALIZED
+    global INITIALIZED_CALLED
+
+    INITIALIZED_CALLED = True
+
+    try:
+        global BOT_VERSION
+        BOT_VERSION = get_bot_version()
+        
+        reinitialize()
+        
+        # subscribe to the base bots, FP mitigation and entity clustering bot
+        global BASE_BOTS
+        subscription_json = []
+        for botId, alertId, alert_logic, target_alert_id in BASE_BOTS:
+            subscription_json.append({"botId": botId, "alertId": alertId, "chainId": CHAIN_ID})
+
+        alert_config = {"alertConfig": {"subscriptions": subscription_json}}
+        logging.info(f"Initializing shard test bot. Subscribed to bots successfully: {alert_config}")
+        logging.info(f"Initialized shard test bot.")
+        INITIALIZED = True
+
+    except Exception as e:
+        logging.error(f"{BOT_VERSION}: Error initializing shard test bot: {e}")
+        sys.exit(1)
+
     return alert_config
 
 
@@ -119,6 +160,18 @@ def provide_handle_alert(w3):
 
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logging.debug("handle_alert inner called")
+
+        global INITIALIZED
+        global INITIALIZATION_TIME
+        if not INITIALIZED:
+            time_elapsed = datetime.now() - INITIALIZATION_TIME
+            if (time_elapsed > timedelta(minutes=5)):
+                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Exiting.")
+                sys.exit(1)
+            else:
+                logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED})  handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Returning.")
+                raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED})  handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Returning.")
+            
         findings = detect_scam(w3, alert_event)
         return findings
 

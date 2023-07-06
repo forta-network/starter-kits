@@ -14,6 +14,8 @@ END_USER_ATTACK_CLUSTERS_QUEUE_MAX_SIZE=100000
 
 DEFAULT_ANOMALY_SCORE = 0.001  # used if anomaly score is less or eq than 0
 
+POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD = 40  # assume validator if alert count is larger than this threshold on polygon as the topic analysis seems unreliable
+
 ENTITY_CLUSTER_BOT = "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9"
 ENTITY_CLUSTER_BOT_ALERT_ID = "ENTITY-CLUSTER"
 
@@ -37,17 +39,20 @@ VICTIMS_KEY = "victims_key"
 
 LUABASE_QUERY_FREQUENCY_IN_HOURS = 4
 
-# for the highly precise bots, we lower our threshold for alerting to 2 stages; anomaly score is ignored
+# for the highly precise bots, we lower our threshold for alerting to 2 stages or 3 individual alerts; anomaly score is ignored
 HIGHLY_PRECISE_BOTS = [("0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", "Preparation"),  # suspicious contract creation ML
                        ("0xe8527df509859e531e58ba4154e9157eb6d9b2da202516a66ab120deabd3f9f6", "AK-ATTACK-SIMULATION-0", "Preparation"),  # attack simulation
                        ("0xda967b32461c6cd3280a49e8b5ff5b7486dbd130f3a603089ed4a6e3b03070e2", "SUSPICIOUS-FLASHLOAN-CONTRACT-CREATION", "Preparation"),  # suspicious-flashloan-contract-creation
-                       ("0xb31f0db68c5231bad9c00877a3141da353970adcc14e1efe5b14c4d2d93c787f", "AK-ATTACK-SIMULATION-0", "Preparation")  # attack simulation targeted
+                       ("0xb31f0db68c5231bad9c00877a3141da353970adcc14e1efe5b14c4d2d93c787f", "AK-ATTACK-SIMULATION-0", "Preparation"),  # attack simulation targeted
+                       ("0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac", "LARGE-PROFIT", "Exploitation"),  # large profit
                        ]
 
 # will filter EOAs associated with alerts from end user attack bots (will emit those as ATTACK-DETECTOR-6 alertId (beta only))
-END_USER_ATTACK_BOTS = ["0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15",  # soft rug pull
-                        "0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4",  # hard rug pull
+END_USER_ATTACK_BOTS = ["0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15",  # hard rug pull
+                        "0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4",  # soft rug pull
                         "0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11",  # rake token
+                        "0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127",  # impersonating token contract
+                        "0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1",  # soft rug pull
                         ]
 END_USER_ATTACK_CLUSTERS_KEY="end_user_attack_clusters_key"
 
@@ -79,7 +84,6 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x55636f5577694c83b84b0687eb77863850c50bd9f6072686c8463a0cbc5566e0", "FLASHLOAN-ATTACK-WITH-HIGH-PROFIT", "Exploitation"),  # Flashloan Detection Bot
              ("0x2c8452ff81b4fa918a8df4441ead5fedd1d4302d7e43226f79cb812ea4962ece", "HIGH-MINT-VALUE", "Exploitation"),  # Large Mint Borrow Volume Anomaly Detection
              ("0x2c8452ff81b4fa918a8df4441ead5fedd1d4302d7e43226f79cb812ea4962ece", "HIGH-BORROW-VALUE", "Exploitation"),  # Large Mint Borrow Volume Anomaly Detection
-             ("0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127", "IMPERSONATED-TOKEN-DEPLOYMENT", "Preparation"),  # Token Impersonation
              ("0x0f21668ebd017888e7ee7dd46e9119bdd2bc7f48dbabc375d96c9b415267534c", "SMART-PRICE-CHANGES", "Exploitation"),  # Smart Price Change Bot
              ("0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", "Exploitation"),  # Flashbot
              ("0xfcf3ee41d04eee52f7944387010bc8aa6f22d54c36576c9a05db7e6cafda41f9", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: polygon (ether) - Ethereum Mainnet

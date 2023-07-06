@@ -1,6 +1,6 @@
   {
   "name": "shard-test-bot",
-  "version": "0.0.11",
+  "version": "0.0.13",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/scam-detector-py",
   "description": "sharding testing bot",
   "chainIds": [
@@ -32,7 +32,7 @@
 
   },
   "dependencies": {
-    "forta-agent": "^0.1.29"
+    "forta-agent": "^0.1.33"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"
