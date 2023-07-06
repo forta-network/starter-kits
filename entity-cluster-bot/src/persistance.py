@@ -1,31 +1,30 @@
 import logging
 import pickle
-import os
 import sys
-import forta_agent
 from datetime import datetime
 import bz2
 import networkx as nx
 import time
-
-
-from boto3.dynamodb.conditions import Key, Attr
+import boto3
+from boto3.dynamodb.conditions import Key
+import random
+import string
 
 
 try:
-    from src.keys import AWS_ACCESS_KEY
-    from src.keys import AWS_SECRET_KEY
     from src.constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION
     from src.dyndbmutex import DynamoDbMutex
+    from src.storage import get_secrets
 except ModuleNotFoundError:
-    from keys import AWS_ACCESS_KEY
-    from keys import AWS_SECRET_KEY
     from constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION
     from dyndbmutex import DynamoDbMutex
+    from storage import get_secrets
 
 
+SECRETS_JSON = get_secrets()
+AWS_ACCESS_KEY = SECRETS_JSON['aws']['ACCESS_KEY']
+AWS_SECRET_KEY = SECRETS_JSON['aws']['SECRET_KEY']
 
-import boto3
 session = boto3.Session(
     aws_access_key_id=AWS_ACCESS_KEY,
     aws_secret_access_key=AWS_SECRET_KEY,
@@ -42,8 +41,6 @@ s3 = boto3.client(
     region_name= S3_REGION
 )
 
-import random
-import string
 
 class DynamoPersistance:
     name = None

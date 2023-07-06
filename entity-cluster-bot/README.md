@@ -100,11 +100,22 @@ Keep them as low as possible, here a template:
     ]
 }
 
-Credential should be in keys.py
+Credential should be in secret.json, a template to start could be:
 
-AWS_ACCESS_KEY=
-AWS_SECRET_KEY=
+{   
+    "apiKeys": {
+      "ZETTABLOCK": ""
+    },
+    "aws": {
+      "ACCESS_KEY": "",
+      "SECRET_KEY": ""
+    },
+    "botId": ""
+}
 
+ZETTABLOCK for alert stats
+AWS.* infrastructure
+botId is the string that is generated when you deploy a bot for first time.
 
 
 ## RPC Timeout

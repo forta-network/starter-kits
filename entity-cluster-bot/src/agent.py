@@ -3,8 +3,6 @@ import sys
 from datetime import datetime, timedelta
 import json
 import base64
-
-
 import forta_agent
 import networkx as nx
 import rlp
@@ -12,32 +10,31 @@ from forta_agent import Finding, FindingSeverity, FindingType, get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 from bot_alert_rate import calculate_alert_rate, ScanCountType
-
 import cProfile
 import pstats
-
-try:
-    from src.keys import ZETTABLOCK_KEY
-    from src.keys import BOT_ID
-    from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, DYNAMO_TABLE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING
-    from src.persistance import DynamoPersistance
-
-except ModuleNotFoundError:
-    from keys import ZETTABLOCK_KEY
-    from keys import BOT_ID
-    from constants import MAX_AGE_IN_DAYS, MAX_NONCE, DYNAMO_TABLE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING
-    from persistance import DynamoPersistance
-
-
 from os import environ
 
 from dotenv import load_dotenv
 load_dotenv()
 
+try:
+    from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, DYNAMO_TABLE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING
+    from src.persistance import DynamoPersistance
+    from src.storage import get_secrets
+
+except ModuleNotFoundError:
+    from constants import MAX_AGE_IN_DAYS, MAX_NONCE, DYNAMO_TABLE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING
+    from persistance import DynamoPersistance
+    from storage import get_secrets
+
+
+
+SECRETS_JSON = get_secrets()
+ZETTABLOCK_KEY = SECRETS_JSON['apiKeys']['ZETTABLOCK']
+BOT_ID = SECRETS_JSON['botId']
+
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url(), request_kwargs={'timeout': HTTP_RPC_TIMEOUT}))
-
-FINDINGS_CACHE = []
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
