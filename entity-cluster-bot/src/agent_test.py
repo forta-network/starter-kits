@@ -6,7 +6,7 @@ import networkx as nx
 
 from web3 import Web3
 from web3_mock import CONTRACT, EOA_ADDRESS_LARGE_TX, EOA_ADDRESS_NEW, EOA_ADDRESS_OLD, EOA_ADDRESS_SMALL_TX, EOA_ADDRESS_FUNDED_NEW, EOA_ADDRESS_FUNDED_OLD, EOA_ADDRESS_FUNDER_NEW, EOA_ADDRESS_FUNDER_OLD, Web3Mock
-from constants import ALERTED_ADDRESSES_KEY, FINDINGS_CACHE_KEY, GRAPH_KEY
+from constants import ALERTED_ADDRESSES_KEY, GRAPH_KEY
 from forta_agent import get_alerts, get_json_rpc_url
 import timeit
 
@@ -24,7 +24,6 @@ class TestEntityClusterBot:
     def test_prune_graph_age(self):
         #  create a graph with some addresses which are older and newer than MAX_AGE_IN_DAYS
         #  assert that the old ones are removed and the new ones are not
-        TestEntityClusterBot.remove_persistent_state()
         entity_cluster_agent = EntityClusterAgent(DynamoPersistance())
 
         entity_cluster_agent.add_address(EOA_ADDRESS_NEW)
@@ -39,19 +38,17 @@ class TestEntityClusterBot:
 
     def test_add_address_discard(self):
         #  calls address on address with too large of a nonce
-        TestEntityClusterBot.remove_persistent_state()
         agent = EntityClusterAgent(DynamoPersistance())
         if agent.is_address_belong_max_transactions(w3, EOA_ADDRESS_LARGE_TX):
-            agent.add_address(w3, EOA_ADDRESS_LARGE_TX)
+            agent.add_address(EOA_ADDRESS_LARGE_TX)
 
         assert len(agent.GRAPH.nodes) == 0, "Address shouldnt have been added to graph. Its nonce is too large"
 
     def test_add_address_valid(self):
         #  calls address on address with appropriate nonce
-        TestEntityClusterBot.remove_persistent_state()
         agent = EntityClusterAgent(DynamoPersistance())
-
-        agent.add_address(EOA_ADDRESS_SMALL_TX)
+        if agent.is_address_belong_max_transactions(w3, EOA_ADDRESS_SMALL_TX):
+            agent.add_address(EOA_ADDRESS_SMALL_TX)
 
         assert len(agent.GRAPH.nodes) == 1, "Address should have been added to graph. Its nonce is within range"
 
@@ -66,7 +63,6 @@ class TestEntityClusterBot:
 
 
     def test_add_directed_edges_without_add(self):
-        TestEntityClusterBot.remove_persistent_state()
         agent = EntityClusterAgent(DynamoPersistance())
 
         agent.add_directed_edge(w3, EOA_ADDRESS_NEW, EOA_ADDRESS_OLD)
@@ -74,7 +70,6 @@ class TestEntityClusterBot:
         assert len(agent.GRAPH.nodes) == 0, "No addresses were added initially, so should be empty"
 
     def test_add_directed_edges_with_add(self):
-        TestEntityClusterBot.remove_persistent_state()
         agent = EntityClusterAgent(DynamoPersistance())
 
         agent.add_address(EOA_ADDRESS_NEW)
@@ -85,7 +80,6 @@ class TestEntityClusterBot:
         assert len(agent.GRAPH.edges) == 1, "Edge should exist"
 
     def test_filter_edge(self):
-        TestEntityClusterBot.remove_persistent_state()
         agent = EntityClusterAgent(DynamoPersistance())
 
         agent.add_address(EOA_ADDRESS_NEW)

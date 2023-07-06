@@ -8,14 +8,17 @@ from boto3.dynamodb.conditions import Attr
 
 try:
     from src.storage import get_secrets
-    from src.constants import  DYNAMO_MUTEX_TABLE_NAME
+    from src.constants import  DYNAMODB_PRIMARY_KEY, DYNAMODB_TTL_KEY
 except ModuleNotFoundError:
-    from constants import  DYNAMO_MUTEX_TABLE_NAME
+    from constants import  DYNAMODB_PRIMARY_KEY, DYNAMODB_TTL_KEY
     from storage import get_secrets
 
 SECRETS_JSON = get_secrets()
 AWS_ACCESS_KEY = SECRETS_JSON['aws']['ACCESS_KEY']
 AWS_SECRET_KEY = SECRETS_JSON['aws']['SECRET_KEY']
+BOT_ID = SECRETS_JSON['botId']
+PRIMARY_PREFIX = f"{BOT_ID}|entity-cluster"
+
 
 
 logger = logging.getLogger('dyndbmutex')
@@ -29,7 +32,6 @@ def setup_logging():
     logger.addHandler(ch)
 
 
-DEFAULT_MUTEX_TABLE_NAME = DYNAMO_MUTEX_TABLE_NAME
 NO_HOLDER = '__empty__'
 TWO_DAYS_IN_MINUTES = 2*24*60
 
@@ -44,73 +46,19 @@ def timestamp_millis():
 
 class MutexTable:
 
-    def __init__(self, region_name='us-west-2', ttl_minutes=TWO_DAYS_IN_MINUTES):
-        endpoint_url = os.environ.get("DYNAMO_DB_URL", None)
+    def __init__(self, table_name, region_name='us-west-2', ttl_minutes=TWO_DAYS_IN_MINUTES):
         self.dbresource = boto3.resource('dynamodb', region_name=region_name, aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
-        self.dbclient = boto3.client('dynamodb', region_name=region_name, aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
-        self.table_name = os.environ.get('DD_MUTEX_TABLE_NAME', DEFAULT_MUTEX_TABLE_NAME)
+        self.table_name = table_name
         logger.info("Mutex table name is " + self.table_name)
         self.ttl_minutes = ttl_minutes
         self.get_table()
 
     def get_table(self):
-        try:
-            self.dbclient.describe_table(TableName=self.table_name)
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == 'ResourceNotFoundException':
-                return self.create_table()
-            else:
-                raise
-        else:
-            return self.dbresource.Table(self.table_name)
-
-    def delete_table(self):
-        self.dbclient.delete_table(TableName=self.table_name)
-        logger.info("Deleted table " + self.table_name)
+        return self.dbresource.Table(self.table_name)
 
     def get_lock(self, lockname):
-        return self.get_table().get_item(Key={'lockname': lockname})
+        return self.get_table().get_item(Key={DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{lockname}"})
 
-    def create_table(self):
-        try:
-            table = self.dbresource.create_table(
-                TableName=self.table_name,
-                KeySchema=[
-                    {
-                        'AttributeName': 'lockname',
-                        'KeyType': 'HASH'  # Partition key
-                    },
-                ],
-                AttributeDefinitions=[
-                    {
-                        'AttributeName': 'lockname',
-                        'AttributeType': 'S'
-                    },
-                ],
-                ProvisionedThroughput={
-                    'ReadCapacityUnits': 2,
-                    'WriteCapacityUnits': 2
-                }
-            )
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == 'ResourceInUseException':
-                logger.debug("Table already exists", exc_info=e)
-            else:
-                raise
-        else:
-            logger.debug("Called create_table")
-            table.wait_until_exists()
-            logger.info("Created table " + self.table_name)
-            try:
-                self.dbclient.update_time_to_live(
-                TableName=self.table_name,
-                TimeToLiveSpecification={
-                 'Enabled': True,
-                 'AttributeName': 'ttl'
-                })
-            except botocore.exceptions.ClientError as e:
-                logger.error("Error setting TTL on table", exc_info=e)
-            return table
 
     def write_lock_item(self, lockname, caller, waitms):
         expire_ts = timestamp_millis() + waitms
@@ -120,13 +68,13 @@ class MutexTable:
         try:
             self.get_table().put_item(
                 Item={
-                    'lockname': lockname,
+                    DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{lockname}",
                     'expire_ts': expire_ts,
                     'holder': caller,
-                    'ttl': ttl
+                    DYNAMODB_TTL_KEY: ttl
                 },
                 # TODO: adding Attr("holder").eq(caller) should make it re-entrant
-                ConditionExpression=Attr("holder").eq(NO_HOLDER) | Attr('lockname').not_exists()
+                ConditionExpression=Attr("holder").eq(NO_HOLDER) | Attr(DYNAMODB_PRIMARY_KEY).not_exists()
             )
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
@@ -141,11 +89,11 @@ class MutexTable:
         try:
             self.get_table().put_item(
                 Item={
-                    'lockname': lockname,
+                    DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{lockname}",
                     'expire_ts': 0,
                     'holder': NO_HOLDER
                 },
-                ConditionExpression=Attr("holder").eq(caller) | Attr('lockname').not_exists()
+                ConditionExpression=Attr("holder").eq(caller) | Attr(DYNAMODB_PRIMARY_KEY).not_exists()
             )
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
@@ -162,11 +110,11 @@ class MutexTable:
         try:
             self.get_table().put_item(
                 Item={
-                    'lockname': lockname,
+                    DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{lockname}",
                     'expire_ts': 0,
                     'holder': NO_HOLDER
                 },
-                ConditionExpression=Attr("expire_ts").lt(now) | Attr('lockname').not_exists()
+                ConditionExpression=Attr("expire_ts").lt(now) | Attr(DYNAMODB_PRIMARY_KEY).not_exists()
             )
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
@@ -179,14 +127,14 @@ class MutexTable:
 
 class DynamoDbMutex:
 
-    def __init__(self, name, holder=None,
+    def __init__(self, name, table_name, holder=None,
                  timeoutms=10 * 1000, region_name='us-west-2', ttl_minutes=TWO_DAYS_IN_MINUTES):
         if holder is None:
             holder = str(uuid.uuid4())
         self.lockname = name
         self.holder = holder
         self.timeoutms = timeoutms
-        self.table = MutexTable(region_name=region_name, ttl_minutes=ttl_minutes)
+        self.table = MutexTable(table_name, region_name=region_name, ttl_minutes=ttl_minutes)
         self.locked = False
 
     def lock(self):
@@ -214,8 +162,3 @@ class DynamoDbMutex:
 
     def get_raw_lock(self):
         return self.table.get_lock(self.lockname)
-
-    @staticmethod
-    def delete_table(region_name='us-west-2'):
-        table = MutexTable(region_name)
-        table.delete_table()
