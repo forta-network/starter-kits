@@ -39,7 +39,7 @@ Capacity: 1 write, 1 read
 
 
 ### DYNAMO_MUTEX_TABLE_NAME = 'FortaEntityClusterMutex'
-Stores and manages the mutex, one per chain. 
+Stores and manages the mutex. There is one registry per chain, 7 at the moment.
 The mutex also has a expire time of 10s at application level and a dynamo ttl at infrastructure level to avoid the mutex being lock if an intance is shutdown in the forta network. 
 The Mutex only use dynamo write capacity
 Definition:
