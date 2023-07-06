@@ -20,6 +20,16 @@ def calculate_edge_properties(edge, node_feature) -> list:
     :return: list of the properties of the edge
     """
     np.seterr(invalid='ignore')  # For this function, ignore dividing by 0 as we will clean after
+    # this is to make sure that dividing by 0 gives inf/nan
+    edge['n_transactions_together'] = np.float64(edge['n_transactions_together'])
+    edge['max_value_together_eth'] = np.float64(edge['max_value_together_eth'])
+    edge['avg_value_together_eth'] = np.float64(edge['avg_value_together_eth'])
+    edge['total_value_together'] = np.float64(edge['total_value_together'])
+    edge['n_transactions_together_erc20'] = np.float64(edge['n_transactions_together_erc20'])
+    edge['max_usd_together_erc20'] = np.float64(edge['max_usd_together_erc20'])
+    edge['avg_usd_together_erc20'] = np.float64(edge['avg_usd_together_erc20'])
+    edge['total_usd_together_erc20'] = np.float64(edge['total_usd_together_erc20'])
+
     # ETH information
     from_n_p_out_eth = edge.n_transactions_together / node_feature.loc[
         edge.from_address, 'n_transactions_out_eth']
@@ -55,10 +65,13 @@ def calculate_edge_properties(edge, node_feature) -> list:
     from_total_p_in_erc20 = edge.total_usd_together_erc20 / node_feature.loc[
         edge.to_address, 'total_usd_in_erc20']
     np.seterr(invalid='warn')  # set warnings for dividing by 0 again
-    return [from_n_p_out_eth, from_max_p_out_eth, from_avg_p_out_eth, from_total_p_out_eth, 
+    to_return = [from_n_p_out_eth, from_max_p_out_eth, from_avg_p_out_eth, from_total_p_out_eth, 
             from_n_p_in_eth, from_max_p_in_eth, from_avg_p_in_eth, from_total_p_in_eth,
             from_n_p_out_erc20, from_max_p_out_erc20, from_avg_p_out_erc20, from_total_p_out_erc20,
             from_n_p_in_erc20, from_max_p_in_erc20, from_avg_p_in_erc20, from_total_p_in_erc20]
+    # Replace inf with nan
+    to_return = [np.nan if np.isinf(x) else x for x in to_return]
+    return to_return
 
 
 def format_empty_values(data_in: dict) -> dict:
