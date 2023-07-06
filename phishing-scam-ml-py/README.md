@@ -117,6 +117,7 @@ $ npm run tx 0x3dd20a427489cec65c333cfdbc9d76c8533b57e9735961bead79a9d6729c3dd1
     "scammer": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
     "feature_generation_time_sec": 55.393977834,
     "prediction_time_sec": 3.258650750000001,
+    "model_score": 0.659,
     "feature_1_from_address_count_unique_ratio": 0.8977777777777778,
     "feature_2_from_address_nunique": 202,
     "feature_3_in_block_number_std": 103944.45395073255,

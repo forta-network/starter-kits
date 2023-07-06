@@ -75,6 +75,7 @@ def check_scammer(address: str, eoa_stats: dict, chain_id: str):
                 "scammer": address,
                 "feature_generation_time_sec": feature_generation_time,
                 "prediction_time_sec": pred_response_time,
+                "model_score": round(model_score, 3),
             }
             metadata.update(
                 {
