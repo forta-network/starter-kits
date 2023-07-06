@@ -136,6 +136,7 @@ bot_id,alert_id,type,location,attacker_address_location_in_description,metadata_
 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534,Ice-phishing,eoa,label,,phish,
 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534,Native-ice-phishing,eoa,label,,phish,
 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534,Address-poisoning,eoa,label,,phish,
+0x4ca56cfab479c4d41cf382383f6932f4bd8bfc6428bdeba82b634f7bf83ad333,EOA-PHISHING-SCAMMER,eoa,label,,scammer-eoa,
 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534,Ice-phishing-web,url,metadata,,URL,
 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534,Ice-phishing-web,url,metadata,,url,
 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0,NIP-5,contract,metadata,,address,
