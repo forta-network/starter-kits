@@ -27,6 +27,7 @@ class TestScamDetector:
 
     @staticmethod
     def encrypt_alert_event(alert_event: AlertEvent):
+        # test key
         public_key = """-----BEGIN PGP PUBLIC KEY BLOCK-----
 
             mQINBGNuq/cBEACn9J0mlaYdLX8tpxZzUKYiRCZCcd8zz4/tjv8GaHCoRhCCwVbv
@@ -1027,3 +1028,58 @@ class TestScamDetector:
         sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
         sorted_fp_labels = list(sorted_fp_labels)
         assert len(sorted_fp_labels) == 4, "should have four FP labels; one for each EOA and contract"
+
+
+    def test_detect_ice_phishing_ml(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x4ca56cfab479c4d41cf382383f6932f4bd8bfc6428bdeba82b634f7bf83ad333"
+        alert_id = "EOA-PHISHING-SCAMMER"
+        description = "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12 has been identified as a phishing scammer"
+        metadata = {
+            "scammer": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
+            "feature_generation_time_sec": 55.393977834,
+            "prediction_time_sec": 3.258650750000001,
+            "feature_1_from_address_count_unique_ratio": 0.8977777777777778,
+            "feature_2_from_address_nunique": 202,
+            "feature_3_in_block_number_std": 103944.45395073255,
+            "feature_4_in_ratio": 0.0000027220471162690886,
+            "feature_5_ratio_from_address_nunique": 0.6824324324324325,
+            "feature_6_total_time": 9495012,
+            "feature_7_from_in_min_std": 0,
+            "feature_8_from_in_block_timespan_median": 477557,
+            "feature_9_from_out_min_std": 0,
+            "feature_10_from_out_block_std_median": 166256.50317778645,
+            "feature_11_to_in_sum_min": 48516.30387100715,
+            "feature_12_to_in_sum_median": 196337.4491312858,
+            "feature_13_to_in_sum_median_ratio": 5190.0165806816785,
+            "feature_14_to_in_min_min": 1e-18,
+            "feature_15_to_in_block_std_median": 236914.9074575176,
+            "feature_16_to_out_min_std": 0,
+            "anomaly_score": 1,
+            "model_version": "1678286940",
+            "model_threshold": 0.5,
+            "model_score": 0.659,
+        }
+        label = {
+            "entityType": "Address",
+            "entity": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
+            "label": "scammer-eoa",
+            "confidence": 0.659,
+            "remove": False,
+            "metadata": {}
+            }
+        labels = [ label ]
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+        assert finding.labels[0].entity == '0xc6f5341d0cfea47660985b1245387ebc0dbb6a12'
+        assert finding.labels[0].label == 'scammer'
+        assert finding.labels[0].confidence == 0.659

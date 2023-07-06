@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## v2.16.0 (July 6th 2023 - beta)
+- incorporate new [ice phishing machine learning model](https://explorer.forta.network/bot/0x4ca56cfab479c4d41cf382383f6932f4bd8bfc6428bdeba82b634f7bf83ad333)
+
 ## v2.15.3 (June 29th 2023 - beta, July 5th prod (without private key compromise))
 - added Urls to scam detector
 - added some additional logging around decryption function

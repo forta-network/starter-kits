@@ -242,6 +242,9 @@ class ScamDetectorFinding:
         confidence = CONFIDENCE_MAPPINGS[threat_category]
         if logic == "ml" and score != 0.0:
             confidence = score
+        elif metadata is not None and 'model_score' in metadata.keys():
+            confidence = metadata['model_score']
+
         confidence_dict = {"confidence": confidence}
         feature_vector_dict = {"feature_vector": feature_vector_str}
         model_name_dict = {"model_name": MODEL_NAME}

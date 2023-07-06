@@ -203,5 +203,6 @@ When a false positive is observed, the scam detector will remove the previously 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Ice-phishing | PassThrough | 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Native-ice-phishing | PassThrough | 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Address-poisoning | PassThrough | 
+| 0x4ca56cfab479c4d41cf382383f6932f4bd8bfc6428bdeba82b634f7bf83ad333 | Ice Phishing ML Model | EOA-PHISHING-SCAMMER | PassThrough |
 
 
