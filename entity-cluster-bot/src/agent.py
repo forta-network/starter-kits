@@ -13,12 +13,14 @@ from bot_alert_rate import calculate_alert_rate, ScanCountType
 import pickle
 import os
 
-from src.keys import ZETTABLOCK_KEY
 from os import environ
 
-from src.keys import BOT_ID
+from src.storage import get_secrets
 from dotenv import load_dotenv
 load_dotenv()
+
+SECRETS_JSON = get_secrets()
+BOT_ID = "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9"
 
 from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, ALERTED_ADDRESSES_KEY, FINDINGS_CACHE_KEY, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE
 
@@ -63,7 +65,7 @@ def initialize():
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
-    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
 
 

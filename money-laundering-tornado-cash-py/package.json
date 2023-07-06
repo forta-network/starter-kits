@@ -1,6 +1,6 @@
 {
   "name": "money-laundering-tornado-cash",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Money Laundering Tornado Cash Bot",
   "chainIds": [
     1, 56, 137, 42161, 10
@@ -22,7 +22,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.17"
+    "forta-agent": "^0.1.33"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

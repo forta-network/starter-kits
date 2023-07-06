@@ -11,8 +11,10 @@ from src.utils.constants import (
     ETHERSCAN_ENDPOINT,
 )
 
-from src.utils.keys import ETHPLORER_KEY, ETHERSCAN_KEYS
 from src.utils.logger import logger
+from src.storage import get_secrets
+
+SECRETS_JSON = get_secrets()
 
 
 # Retry if etherscan api response status is not ok = 0.
@@ -38,7 +40,7 @@ def get_first_tx_timestamp(address) -> int:
     """Gets address's first tx timestamp from Etherscan in unix."""
     first_tx_timestamp = -1
     data = {}
-    api_key = ETHERSCAN_KEYS[randint(0, 1)]
+    api_key = SECRETS_JSON['apiKeys']['ETHERSCAN'][randint(0, 1)]
     addr_first_tx_endpoint = f"{ETHERSCAN_ENDPOINT}&address={address}&apikey={api_key}"
     try:
         r = get_first_tx(addr_first_tx_endpoint)
@@ -70,7 +72,7 @@ def get_account_active_period(address, recent_tx_timestamp) -> float:
 def get_token_info(token_address) -> tuple:
     """Get token name, symbol, and decimals from Ethplorer API."""
     token_info_endpoint = (
-        f"{ETHPLORER_ENDPOINT}/getTokenInfo/{token_address}?apiKey={ETHPLORER_KEY}"
+        f"{ETHPLORER_ENDPOINT}/getTokenInfo/{token_address}?apiKey={SECRETS_JSON['apiKeys']['ETHPLORER']}"
     )
     data = {}
     try:

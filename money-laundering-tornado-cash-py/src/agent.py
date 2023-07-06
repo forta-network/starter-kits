@@ -14,7 +14,9 @@ from src.constants import (BLOCK_RANGE, TORNADO_CASH_ACCOUNTS_QUEUE_SIZE,
                            TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_ETH,
                            TORNADO_CASH_TRANSFER_COUNT_THRESHOLD_MATIC)
 from src.findings import MoneyLaunderingTornadoCashFindings
-from src.keys import ZETTABLOCK_KEY
+from src.storage import get_secrets
+
+SECRETS_JSON = get_secrets()
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
@@ -48,7 +50,7 @@ def initialize():
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
-    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
 
 def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:

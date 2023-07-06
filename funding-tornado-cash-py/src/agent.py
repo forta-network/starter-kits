@@ -8,7 +8,9 @@ from web3 import Web3
 
 from src.constants import TORNADO_CASH_ADDRESSES, TORNADO_CASH_WITHDRAW_TOPIC, TORNADO_CASH_ADDRESSES_HIGH
 from src.findings import FundingTornadoCashFindings
-from src.keys import ZETTABLOCK_KEY
+from src.storage import get_secrets
+
+SECRETS_JSON = get_secrets()
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
@@ -33,7 +35,7 @@ def initialize():
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
-    environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
 
 def detect_funding(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
@@ -51,8 +53,7 @@ def detect_funding(w3, transaction_event: forta_agent.transaction_event.Transact
             #  0x000000000000000000000000a1b4355ae6b39bb403be1003b7d0330c811747db1bc589946f7bfca3950776b499ff5d952768ad0b644c71c5c4a209c04ec2b2a2000000000000000000000000000000000000000000000000003ce4ceb6836660
             to_address = Web3.toChecksumAddress(log.data[26:66])
 
-            transaction_count = w3.eth.get_transaction_count(to_address) if CHAIN_ID == 56 else w3.eth.get_transaction_count(
-                to_address, block_identifier=transaction_event.block_number)
+            transaction_count = w3.eth.get_transaction_count(to_address, block_identifier=transaction_event.block_number)
 
             if (transaction_count == 0):
                 logging.info(
@@ -67,8 +68,7 @@ def detect_funding(w3, transaction_event: forta_agent.transaction_event.Transact
         if (log.address.lower() in TORNADO_CASH_ADDRESSES_HIGH[w3.eth.chain_id] and TORNADO_CASH_WITHDRAW_TOPIC in log.topics):
             #  0x000000000000000000000000a1b4355ae6b39bb403be1003b7d0330c811747db1bc589946f7bfca3950776b499ff5d952768ad0b644c71c5c4a209c04ec2b2a2000000000000000000000000000000000000000000000000003ce4ceb6836660
             to_address = Web3.toChecksumAddress(log.data[26:66])
-            transaction_count = w3.eth.get_transaction_count(to_address) if CHAIN_ID == 56 else w3.eth.get_transaction_count(
-                to_address, block_identifier=transaction_event.block_number)
+            transaction_count = w3.eth.get_transaction_count(to_address, block_identifier=transaction_event.block_number)
 
             if (transaction_count < 500):
                 logging.info(
