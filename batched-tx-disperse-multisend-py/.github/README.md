@@ -70,17 +70,6 @@ The agent behaviour can be verified on the following transactions:
   - Disperse: [0x2e311b6e9c842e4ec06712cad2acb6be9d6eec341c348a7dc3aac51ec9a8426c][etherscan-tx-disperse-token]
   - Multisend: [0x78b093c64e09cb7a3ce6bad2480549b058550faa5ba21be7c19ad732dc761fc5][etherscan-tx-multisend-token]
 
-## Todo
-
-[x] data
-[x] custom alerts
-[x] metrics
-[x] disperse
-[x] multisend
-[x] discuss: ignore ETH? / severity level / metadata / labels (origin?) / chains?
-[x] [review](https://github.com/forta-network/bot-review-checklist)
-[x] chain agents
-
 ## Metrics
 
 The bot looks for transactions to the following contract:
