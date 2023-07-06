@@ -38,7 +38,7 @@ def matching_token_filter_parser(w3):
 
 def test_does_not_throw_on_random_data(base_parser):
     _r = base_parser(TRANSACTION_INPUTS['random-data'])
-    assert len(_r) == 2 # valid output
+    assert len(_r) == 3 # valid output
     assert len(_r[0]) == 0 # no token identified
     assert len(_r[1]) == 0 # no transfers
 
@@ -46,7 +46,7 @@ def test_does_not_throw_on_random_data(base_parser):
 
 def test_parses_recipients_and_values_from_batch_eth_transaction(base_parser):
     _r = base_parser(TRANSACTION_INPUTS['disperse-eth'])
-    assert len(_r) == 2 # valid output
+    assert len(_r) == 3 # valid output
     assert len(_r[0]) == 0 # no token identified, since ETH is native
     assert len(_r[1]) > 0 # found batched transfers
 
@@ -54,7 +54,7 @@ def test_parses_recipients_and_values_from_batch_eth_transaction(base_parser):
 
 def test_parses_recipients_and_values_from_batch_erc20_transaction(base_parser):
     _r = base_parser(TRANSACTION_INPUTS['disperse-token'])
-    assert len(_r) == 2 # valid output
+    assert len(_r) == 3 # valid output
     assert len(_r[0]) > 0 # found an ERC20 token
     assert len(_r[1]) > 0 # found batched transfers
 
@@ -62,12 +62,12 @@ def test_parses_recipients_and_values_from_batch_erc20_transaction(base_parser):
 
 def test_removes_findings_that_dont_match_token_filter(random_token_filter_parser):
     _r = random_token_filter_parser(TRANSACTION_INPUTS['disperse-token'])
-    assert len(_r) == 2 # valid output
+    assert len(_r) == 3 # valid output
     assert len(_r[0]) > 0 # found an ERC20 token
     assert len(_r[1]) == 0 # no transfers for the target token
 
 def test_keeps_findings_that_match_token_filter(matching_token_filter_parser):
     _r = matching_token_filter_parser(TRANSACTION_INPUTS['disperse-token'])
-    assert len(_r) == 2 # valid output
+    assert len(_r) == 3 # valid output
     assert len(_r[0]) > 0 # token match
     assert len(_r[1]) > 0 # transfers for the target token
