@@ -7,15 +7,15 @@ import os
 from boto3.dynamodb.conditions import Attr
 
 try:
-    from src.keys import AWS_ACCESS_KEY
-    from src.keys import AWS_SECRET_KEY
-    from src.constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, DYNAMO_MUTEX_TABLE_NAME
+    from src.storage import get_secrets
+    from src.constants import  DYNAMO_MUTEX_TABLE_NAME
 except ModuleNotFoundError:
-    from keys import AWS_ACCESS_KEY
-    from keys import AWS_SECRET_KEY
-    from constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, DYNAMO_MUTEX_TABLE_NAME
+    from constants import  DYNAMO_MUTEX_TABLE_NAME
+    from storage import get_secrets
 
-
+SECRETS_JSON = get_secrets()
+AWS_ACCESS_KEY = SECRETS_JSON['aws']['ACCESS_KEY']
+AWS_SECRET_KEY = SECRETS_JSON['aws']['SECRET_KEY']
 
 
 logger = logging.getLogger('dyndbmutex')
