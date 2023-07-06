@@ -1,8 +1,16 @@
 from forta_agent import Finding, FindingType, FindingSeverity, EntityType, Label
 
+# CONSTANTS ###################################################################
+
+NATIVE_TOKENS = {
+    1: 'ETH',
+}
+
 # TEMPLATE ####################################################################
 
-def FormatBatchTxFinding(origin: str, contract: str, transactions: list, chain_id: int) -> Finding:
+def FormatBatchTxFinding(origin: str, contract: str, token: str, transactions: list, chain_id: int) -> Finding:
+    _type = 'ERC20' if token else NATIVE_TOKENS.get(chain_id, 'ETH')
+
     _labels = [Label({
         'entityType': EntityType.Address,
         'label': "benign",
@@ -11,9 +19,9 @@ def FormatBatchTxFinding(origin: str, contract: str, transactions: list, chain_i
         'metadata': {'chain_id': chain_id}})]
 
     _finding = Finding({
-        'name': f'Batch ERC20 transaction',
-        'description': f'{origin} is transfering ERC20s in batch from the {contract} contract',
-        'alert_id': 'BATCHED-ERC20-TX',
+        'name': f'Batch {_type} transaction',
+        'description': f'{origin} is transfering {_type} in batch from the {contract} contract',
+        'alert_id': f'BATCHED-{_type}-TX',
         'type': FindingType.Info,
         'severity': FindingSeverity.Info,
         'metadata': {

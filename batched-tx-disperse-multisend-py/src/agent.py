@@ -17,6 +17,7 @@ ADDRESS_TO_NAME = {
 # SCANNER #####################################################################
 
 def handle_transaction_factory(w3: Web3, token: str=constants.TOKEN):
+    _chain_id = w3.eth.chain_id
     _parsers = {
         disperse.ADDRESS.lower(): disperse.parse_transaction_input_factory(w3=w3, token=token),
         multisend.ADDRESS.lower(): multisend.parse_transaction_input_factory(w3=w3, token=token)}
@@ -29,13 +30,14 @@ def handle_transaction_factory(w3: Web3, token: str=constants.TOKEN):
         _wrapped_tx = []
         
         if _to in _parsers:
-            _wrapped_tx = _parsers[_to](_data)
+            _token, _wrapped_tx = _parsers[_to](_data)
             if _wrapped_tx:
                 _findings.append(findings.FormatBatchTxFinding(
                     origin=_from,
                     contract=ADDRESS_TO_NAME[_to],
+                    token=_token,
                     transactions=_wrapped_tx,
-                    chain_id=w3.eth.chain_id))
+                    chain_id=_chain_id))
 
         return _findings
 
