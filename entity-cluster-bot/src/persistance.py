@@ -59,7 +59,7 @@ class DynamoPersistance:
         self.name = ''.join(random.choices(string.ascii_lowercase, k=5))
         self.chain_id = chain_id
         self.table = dynamodb.Table(table)
-        self.mutex = DynamoDbMutex(f"graph/{self.chain_id}", table, self.name, region_name=DYNAMO_REGION, ttl_minutes=15, timeoutms=MUTEX_TIMEOUT_MILLIS)
+        self.mutex = DynamoDbMutex(f"mutex|{self.chain_id}", table, self.name, region_name=DYNAMO_REGION, ttl_minutes=15, timeoutms=MUTEX_TIMEOUT_MILLIS)
         print(f"chain id {self.chain_id}  - name {self.name} - dynamo table:  {table} ")
         self.graph_cache = self.load(GRAPH_KEY)
         if not self.graph_cache:
@@ -88,7 +88,7 @@ class DynamoPersistance:
                     self.table.put_item(
                         Item={
                                 DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{key}",
-                                DYNAMODB_SORT_KEY: f"{self.chain_id}|shared_graph",
+                                DYNAMODB_SORT_KEY: f"shared_graph|{self.chain_id}",
                                 'updated': datetime.now().isoformat(),
                                 'sizeKB': str(c_size), 
                                 's3_key': s3_key
@@ -114,7 +114,7 @@ class DynamoPersistance:
         response = self.table.get_item(
             Key={
                 DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{key}",
-                DYNAMODB_SORT_KEY: f"{self.chain_id}|shared_graph"
+                DYNAMODB_SORT_KEY: f"shared_graph|{self.chain_id}"
             }
         )
         if "Item" in response:

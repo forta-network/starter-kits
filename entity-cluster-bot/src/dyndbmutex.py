@@ -8,16 +8,16 @@ from boto3.dynamodb.conditions import Attr
 
 try:
     from src.storage import get_secrets
-    from src.constants import  DYNAMODB_PRIMARY_KEY, DYNAMODB_TTL_KEY
+    from src.constants import  DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY, DYNAMODB_TTL_KEY
 except ModuleNotFoundError:
-    from constants import  DYNAMODB_PRIMARY_KEY, DYNAMODB_TTL_KEY
+    from constants import  DYNAMODB_PRIMARY_KEY,DYNAMODB_SORT_KEY, DYNAMODB_TTL_KEY
     from storage import get_secrets
 
 SECRETS_JSON = get_secrets()
 AWS_ACCESS_KEY = SECRETS_JSON['aws']['ACCESS_KEY']
 AWS_SECRET_KEY = SECRETS_JSON['aws']['SECRET_KEY']
 BOT_ID = SECRETS_JSON['botId']
-PRIMARY_PREFIX = f"{BOT_ID}|entity-cluster"
+PRIMARY = f"{BOT_ID}|entity-cluster|mutex"
 
 
 
@@ -57,7 +57,7 @@ class MutexTable:
         return self.dbresource.Table(self.table_name)
 
     def get_lock(self, lockname):
-        return self.get_table().get_item(Key={DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{lockname}"})
+        return self.get_table().get_item(Key={DYNAMODB_PRIMARY_KEY: PRIMARY, DYNAMODB_SORT_KEY: lockname})
 
 
     def write_lock_item(self, lockname, caller, waitms):
@@ -68,7 +68,8 @@ class MutexTable:
         try:
             self.get_table().put_item(
                 Item={
-                    DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{lockname}",
+                    DYNAMODB_PRIMARY_KEY: PRIMARY,
+                    DYNAMODB_SORT_KEY: lockname,
                     'expire_ts': expire_ts,
                     'holder': caller,
                     DYNAMODB_TTL_KEY: ttl
@@ -89,7 +90,8 @@ class MutexTable:
         try:
             self.get_table().put_item(
                 Item={
-                    DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{lockname}",
+                    DYNAMODB_PRIMARY_KEY: PRIMARY,
+                    DYNAMODB_SORT_KEY: lockname,
                     'expire_ts': 0,
                     'holder': NO_HOLDER
                 },
@@ -110,7 +112,8 @@ class MutexTable:
         try:
             self.get_table().put_item(
                 Item={
-                    DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{lockname}",
+                    DYNAMODB_PRIMARY_KEY: PRIMARY,
+                    DYNAMODB_SORT_KEY: lockname,
                     'expire_ts': 0,
                     'holder': NO_HOLDER
                 },

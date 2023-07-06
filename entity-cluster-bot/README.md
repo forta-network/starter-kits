@@ -27,31 +27,23 @@ Each instance updates the shared graoh every TX_SAVE_STEP
 
 ## Infrastructure
 
-The bot needs 2 dynamo tables and one s3 bucket.  the dynamodb and the s3 can be in different region, so is better to look for the cheapest regions at the moment before deploy.
+The bot needs 1 dynamo table and 1 s3 bucket.  the dynamodb and the s3 can be in different region, so is better to look for the cheapest regions at the moment before deploy.
 
-### DYNAMO_TABLE= "FORTA-ENTITY-CLUSTER"
-It store the metadata of the graph
-Definition:
-Table class: DynamoDB standard
-Partition Key: p(String)
-Sort Key: s(String)
-Capacity: 1 write, 1 read
-
-
-### DYNAMO_MUTEX_TABLE_NAME = 'FortaEntityClusterMutex'
-Stores and manages the mutex. There is one registry per chain, 7 at the moment.
+### DYNAMO_TABLE= "prod-research-bot-data"
+It store the metadata of the shared graph and also manage the mutex (There is one registry per chain, 7 at the moment)
 The mutex also has a expire time of 10s at application level and a dynamo ttl at infrastructure level to avoid the mutex being lock if an intance is shutdown in the forta network. 
 The Mutex only use dynamo write capacity
+
 Definition:
 Table class: DynamoDB standard
-Partition Key: lockname (String)
-Sort Key: -
+Partition Key: itemId(String)
+Sort Key: sortKey(String)
 ttl feature: on
-ttl name field: ttl
-Capacity: 1 write, 1 read
+ttl name field: expiresAt
+Capacity: 2 write, 2 read
 
 
-### S3_BUCKET= "fortaentitycluster"
+### S3_BUCKET= "prod-research-bot-data"
 S3 bucket to store the shared graph, one chared graph per chain.
 Definition:
 Just the standard s3
@@ -62,8 +54,7 @@ Each instance updates the graph every TX_SAVE_STEP, asking for the mutex, saving
 instances "knows what is hapening in the other" but there are more operation over the infrastructure so the cost are higher. By design there is a relationship betweeen cost and accuracy. 
 
 Having a TX_SAVE_STEP = 150*6 (that are around 1 block of ethereum in every 10s, that is around a minute) the cost are:
-DYNAMO_TABLE 0.65 USD/Month (1 write capacity, 1 read capacity) 
-DYNAMO_MUTEX_TABLE_NAME 0.65 USD/Month (1 write capacity, 1 read capacity) 
+DYNAMO_TABLE 0.65 USD/Month (2 write capacity, 2 read capacity) 
 S3_BUCKET 0.3 USD/Month
 Total: 1.6 USD/Month 
 
