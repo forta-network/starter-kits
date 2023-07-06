@@ -516,6 +516,9 @@ def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
     all_nodes_list = list(all_nodes_dict.keys())
     all_labels = []
     for i in range(int(len(all_nodes_list) / SIMULTANEOUS_ADDRESSES) + 1):
+        # This happens if the length of all_nodes_list is a multiple of SIMULTANEOUS_ADDRESSES
+        if len(all_nodes_list[(i * SIMULTANEOUS_ADDRESSES):((i + 1) * SIMULTANEOUS_ADDRESSES)]) == 0:
+            continue
         # We query first the potential attackers.
         query_variables = {
             "labelsInput": {
