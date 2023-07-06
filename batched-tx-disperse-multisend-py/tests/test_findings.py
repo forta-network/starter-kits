@@ -20,7 +20,7 @@ def test_format():
 	assert len(_f.description) > 0
 	assert len(_f.alert_id) > 0
 	assert _f.type == forta_agent.FindingType.Info
-	assert _f.severity == forta_agent.FindingSeverity.Info
+	assert _f.severity == forta_agent.FindingSeverity.Info or forta_agent.FindingSeverity.Low
 
 # IDS #########################################################################
 

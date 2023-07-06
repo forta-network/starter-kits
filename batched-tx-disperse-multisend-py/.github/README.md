@@ -23,7 +23,7 @@ The bot only emits `info` alerts:
   - Fired when a transaction calls either:
     - `disperseToken`, `disperseTokenSimple` from the [`Disperse` contract][etherscan-contract-disperse]
     - or `multisendToken` from the [`Multisend` contract][etherscan-contract-multisend]
-  - Severity is always set to "info"
+  - Severity is "low" in case of a manual call, otherwise it is set to "info" (call via the web app)
   - Type is always set to "info"
   - Labels:
     - the origin address of the transaction
