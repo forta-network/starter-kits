@@ -12,11 +12,11 @@ import string
 
 
 try:
-    from src.constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION
+    from src.constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION, DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY
     from src.dyndbmutex import DynamoDbMutex
     from src.storage import get_secrets
 except ModuleNotFoundError:
-    from constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION
+    from constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION, DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY
     from dyndbmutex import DynamoDbMutex
     from storage import get_secrets
 
@@ -24,6 +24,8 @@ except ModuleNotFoundError:
 SECRETS_JSON = get_secrets()
 AWS_ACCESS_KEY = SECRETS_JSON['aws']['ACCESS_KEY']
 AWS_SECRET_KEY = SECRETS_JSON['aws']['SECRET_KEY']
+BOT_ID = SECRETS_JSON['botId']
+
 
 session = boto3.Session(
     aws_access_key_id=AWS_ACCESS_KEY,
@@ -41,6 +43,9 @@ s3 = boto3.client(
     region_name= S3_REGION
 )
 
+# {botId}|entity-cluster|{key}|{chainId}
+PRIMARY_PREFIX = f"{BOT_ID}|entity-cluster"
+
 
 class DynamoPersistance:
     name = None
@@ -54,7 +59,7 @@ class DynamoPersistance:
         self.name = ''.join(random.choices(string.ascii_lowercase, k=5))
         self.chain_id = chain_id
         self.table = dynamodb.Table(table)
-        self.mutex = DynamoDbMutex(f"graph/{self.chain_id}", self.name, region_name="us-west-1", ttl_minutes=15, timeoutms=MUTEX_TIMEOUT_MILLIS)
+        self.mutex = DynamoDbMutex(f"graph/{self.chain_id}", table, self.name, region_name=DYNAMO_REGION, ttl_minutes=15, timeoutms=MUTEX_TIMEOUT_MILLIS)
         print(f"chain id {self.chain_id}  - name {self.name} - dynamo table:  {table} ")
         self.graph_cache = self.load(GRAPH_KEY)
         if not self.graph_cache:
@@ -78,12 +83,12 @@ class DynamoPersistance:
                     c = bz2.compress(bytes)
                     c_size =  self.bytes_to_kb(c)
                     print(f"Persisting with MUTEX {key}/{self.chain_id} using API. Size:: {size} KB and compress {c_size} KB. {str(obj)}")
-                    s3_key = f"sub_graph/{self.chain_id}/{self.table.table_name}_SHARED_GRAPH"
+                    s3_key = f"{BOT_ID}/sub_graph/{self.chain_id}/{self.table.table_name}_SHARED_GRAPH"
                     s3.put_object(Body=c, Bucket=S3_BUCKET, Key=s3_key)
                     self.table.put_item(
                         Item={
-                                'p': f"{key}/{self.chain_id}",
-                                's': "shared_graph",
+                                DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{key}",
+                                DYNAMODB_SORT_KEY: f"{self.chain_id}|shared_graph",
                                 'updated': datetime.now().isoformat(),
                                 'sizeKB': str(c_size), 
                                 's3_key': s3_key
@@ -108,8 +113,8 @@ class DynamoPersistance:
         logging.info(f"Loading {key}/{self.chain_id} using API")
         response = self.table.get_item(
             Key={
-                'p': f"{key}/{self.chain_id}",
-                's': "shared_graph"
+                DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{key}",
+                DYNAMODB_SORT_KEY: f"{self.chain_id}|shared_graph"
             }
         )
         if "Item" in response:
@@ -127,19 +132,19 @@ class DynamoPersistance:
         while True:
             if lastEvaluatedKey == None:
                 response = self.table.query(
-                    KeyConditionExpression=Key('p').eq(f"{GRAPH_KEY}/{self.chain_id}")
+                    KeyConditionExpression=Key(DYNAMODB_PRIMARY_KEY).eq(f"{PRIMARY_PREFIX}|{GRAPH_KEY}")
                 )
             else:
                 response = self.table.query(
-                    KeyConditionExpression=Key('p').eq(f"{GRAPH_KEY}/{self.chain_id}"),
+                    KeyConditionExpression=Key(DYNAMODB_PRIMARY_KEY).eq(f"{PRIMARY_PREFIX}|{GRAPH_KEY}"),
                     ExclusiveStartKey=lastEvaluatedKey
                 )
 
             
             items = response['Items']
             for a_item in items:
-                self.table.delete_item(Key={'p': a_item['p'], 's': a_item['s']})
-                print("delete for " + a_item['s'])
+                self.table.delete_item(Key={DYNAMODB_PRIMARY_KEY: a_item[DYNAMODB_PRIMARY_KEY], DYNAMODB_SORT_KEY: a_item[DYNAMODB_SORT_KEY]})
+                print("delete for " + a_item[DYNAMODB_SORT_KEY])
 
             # Set our lastEvlauatedKey to the value for next operation,
             # else, there's no more results and we can exit
