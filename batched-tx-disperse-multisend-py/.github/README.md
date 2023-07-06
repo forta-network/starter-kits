@@ -7,8 +7,6 @@ Although they are useful to reduce gas fees by sending transactions in batches, 
 
 The goal of this bot is to alert when someone is using any of these apps in order to send native tokens or any other ERC-20 token.
 
-The ETH transfers are ignored.
-
 ## Supported Chains
 
 The bot is specific to the contracts [`Disperse`][etherscan-contract-disperse] and [`Multisend`][etherscan-contract-multisend].
@@ -32,6 +30,26 @@ The bot only emits `info` alerts:
   - Metadata:
     - `transactions`: the serialized list of arguments for each transaction, IE a list of `(recipient, value)` tuples
     - `count`: the number of transfers contained in the batch
+- `BATCHED-ETH-TX`:
+  - Fired when a transaction calls either:
+    - `disperseEther` from the [`Disperse` contract][etherscan-contract-disperse]
+    - or `multisendEther` from the [`Multisend` contract][etherscan-contract-multisend]
+  - Severity is always set to "info"
+  - Type is always set to "info"
+  - Labels:
+    - the origin address of the transaction
+  - Metadata:
+    - `transactions`: the serialized list of arguments for each transaction, IE a list of `(recipient, value)` tuples
+    - `count`: the number of transfers contained in the batch
+
+## Configuration
+
+The file [`constants.py`](src/constants.py) contains filtering options.
+
+- `TOKEN`:
+  - should be either the empty string `''` or an address like `'0x767fe9edc9e0df98e07454847909b5e959d7ca0e'`
+  - if empty the agent reports all findings
+  - otherwise it will only report transfers batched for a specific ERC20 token
 
 ## Deployment
 
@@ -59,9 +77,7 @@ The agent behaviour can be verified on the following transactions:
 [x] metrics
 [x] disperse
 [x] multisend
-[ ] discuss: ignore ETH? / severity level / metadata / labels (origin?) / chains?
-[ ] options / CLI flags? (filters: address = token / eth / amount / from, default = all / any)
-[ ] limit to 30 alerts / days => less than 1000 / month?
+[x] discuss: ignore ETH? / severity level / metadata / labels (origin?) / chains?
 [x] [review](https://github.com/forta-network/bot-review-checklist)
 [x] chain agents
 
