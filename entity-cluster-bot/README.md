@@ -53,10 +53,6 @@ Just the standard s3
 Each instance updates the graph every TX_SAVE_STEP, asking for the mutex, saving metadata, reading from s3,  writing in s3 and releasing the mutex all these operations cost $$$. The lower the TX_SAVE_STEP, the more accurate the alert are as the 
 instances "knows what is hapening in the other" but there are more operation over the infrastructure so the cost are higher. By design there is a relationship betweeen cost and accuracy. 
 
-Having a TX_SAVE_STEP = 150*6 (that are around 1 block of ethereum in every 10s, that is around a minute) the cost are:
-DYNAMO_TABLE 0.65 USD/Month (2 write capacity, 2 read capacity) 
-S3_BUCKET 0.3 USD/Month
-Total: 1.6 USD/Month 
 
 ### IAM permission
 
