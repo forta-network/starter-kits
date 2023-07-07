@@ -31,7 +31,7 @@ def run_all_extended(central_node, alert_event):
     try:
         attackers_df, graph_statistics, attackers_df_global = run_all(central_node)
     except Warning as w:
-        logger.warning(f"{central_node}:\tWarning running run_all in a thread: {w}", exc_info=True)
+        logger.warning(f"{central_node}:\tWarning running run_all in a thread: {w}")
         return []
     except Exception as e:
         logger.error(f"{central_node}:\tError running run_all in a thread: {e}", exc_info=True)
@@ -171,18 +171,20 @@ def provide_handle_alert(w3):
             logger.debug(f"Address poisoning. Addresses: {';'.join([label.entity for label in alert_event.alert.labels])}")
             return []
         for label in alert_event.alert.labels:
-            if label.confidence >= ATTACKER_CONFIDENCE and label.entity_type == forta_agent.EntityType.Address:
+            # if label.confidence >= ATTACKER_CONFIDENCE and label.entity_type == forta_agent.EntityType.Address:
+            if label.confidence >= ATTACKER_CONFIDENCE and label.metadata['address_type'] == 'EOA':
+                logger.info(f"Entity:{label.entity};\tConfidence:{label.confidence};\tMetadata:{label.metadata};\tLabel:{label.label};\tEntityType:{label.entity_type}")
                 list_of_addresses.append(label.entity)
         list_of_addresses = list(set(list_of_addresses))
         for address in list_of_addresses:
             n_times_already_analyzed = get_address_from_dynamo(address)
             # It doesn't need to run more than 3 times accross instances, and it doesn't need to run if it is already running
             if n_times_already_analyzed < 3 and address not in global_futures.keys():
-                logger.debug(f"Adding address {address} to the pool")
+                logger.info(f"Adding address {address} to the pool. It has been analyzed {n_times_already_analyzed} times in the last {HOURS_BEFORE_REANALYZE} hours")
                 put_address_in_dynamo(address)
                 global_futures[address] = executor.submit(run_all_extended, address, alert_event)
             else:
-                logger.debug(f"Address {address} already analyzed {n_times_already_analyzed} times in the last {HOURS_BEFORE_REANALYZE} hours. Skipping")
+                logger.info(f"Address {address} already analyzed {n_times_already_analyzed} times in the last {HOURS_BEFORE_REANALYZE} hours. Skipping")
         logger.info(f"Alert {alert_event.alert.alert_id}:\t{time.time() - t:.10f} s. {len(list_of_addresses)} addresses: {';'.join(list_of_addresses)}")
         return []
 
