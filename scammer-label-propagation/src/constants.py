@@ -25,6 +25,8 @@ N_WORKERS = 8
 MIN_NEIGHBORS = 5
 # Maximum amount of neighbors to consider an address
 MAX_NEIGHBORS = 2500
+# Maximum number of neighbors to use the individual model (it takes long, a low number improves performance)
+MAX_NEIGHBORS_INDIVIDUAL_MODEL = 150
 # Maximum number of findings that can be sent in one handle call
 MAX_FINDINGS = 40
 # Random seed for reproducibility
