@@ -1,3 +1,4 @@
+BOT_ID = "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9"
 MAX_NONCE = 500
 MAX_AGE_IN_DAYS = 7
 ONE_WAY_WEI_TRANSFER_THRESHOLD = 50000000000000000000  # 50 ETH
@@ -12,7 +13,7 @@ S3_BUCKET= "prod-research-bot-data"
 S3_REGION="us-east-1"
 
 DYNAMO_TABLE= "prod-research-bot-data"
-DEV_DYNAMO_TABLE= "prod-research-bot-data"
+DEV_DYNAMO_TABLE= "dev-prod-research-bot-data"
 DYNAMO_REGION="us-east-1"
 DYNAMODB_PRIMARY_KEY = 'itemId'
 DYNAMODB_SORT_KEY = 'sortKey'

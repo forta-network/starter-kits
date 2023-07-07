@@ -12,11 +12,11 @@ import string
 
 
 try:
-    from src.constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION, DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY
+    from src.constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION, DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY, BOT_ID
     from src.dyndbmutex import DynamoDbMutex
     from src.storage import get_secrets
 except ModuleNotFoundError:
-    from constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION, DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY
+    from constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION, DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY, BOT_ID
     from dyndbmutex import DynamoDbMutex
     from storage import get_secrets
 
@@ -24,7 +24,6 @@ except ModuleNotFoundError:
 SECRETS_JSON = get_secrets()
 AWS_ACCESS_KEY = SECRETS_JSON['aws']['ACCESS_KEY']
 AWS_SECRET_KEY = SECRETS_JSON['aws']['SECRET_KEY']
-BOT_ID = SECRETS_JSON['botId']
 
 
 session = boto3.Session(

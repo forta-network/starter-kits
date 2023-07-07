@@ -97,12 +97,10 @@ Credential should be in secret.json, a template to start could be:
       "ACCESS_KEY": "",
       "SECRET_KEY": ""
     },
-    "botId": ""
 }
 
 ZETTABLOCK for alert stats
 AWS.* infrastructure
-botId is the string that is generated when you deploy a bot for first time.
 
 
 ## RPC Timeout

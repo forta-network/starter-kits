@@ -8,15 +8,14 @@ from boto3.dynamodb.conditions import Attr
 
 try:
     from src.storage import get_secrets
-    from src.constants import  DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY, DYNAMODB_TTL_KEY
+    from src.constants import  DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY, DYNAMODB_TTL_KEY, BOT_ID
 except ModuleNotFoundError:
-    from constants import  DYNAMODB_PRIMARY_KEY,DYNAMODB_SORT_KEY, DYNAMODB_TTL_KEY
+    from constants import  DYNAMODB_PRIMARY_KEY,DYNAMODB_SORT_KEY, DYNAMODB_TTL_KEY, BOT_ID
     from storage import get_secrets
 
 SECRETS_JSON = get_secrets()
 AWS_ACCESS_KEY = SECRETS_JSON['aws']['ACCESS_KEY']
 AWS_SECRET_KEY = SECRETS_JSON['aws']['SECRET_KEY']
-BOT_ID = SECRETS_JSON['botId']
 PRIMARY = f"{BOT_ID}|entity-cluster|mutex"
 
 

@@ -18,12 +18,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 try:
-    from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, DYNAMO_TABLE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING
+    from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, DYNAMO_TABLE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING, BOT_ID
     from src.persistance import DynamoPersistance
     from src.storage import get_secrets
 
 except ModuleNotFoundError:
-    from constants import MAX_AGE_IN_DAYS, MAX_NONCE, DYNAMO_TABLE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING
+    from constants import MAX_AGE_IN_DAYS, MAX_NONCE, DYNAMO_TABLE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING, BOT_ID
     from persistance import DynamoPersistance
     from storage import get_secrets
 
@@ -31,7 +31,6 @@ except ModuleNotFoundError:
 
 SECRETS_JSON = get_secrets()
 ZETTABLOCK_KEY = SECRETS_JSON['apiKeys']['ZETTABLOCK']
-BOT_ID = SECRETS_JSON['botId']
 
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url(), request_kwargs={'timeout': HTTP_RPC_TIMEOUT}))
