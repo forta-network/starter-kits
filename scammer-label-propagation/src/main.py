@@ -9,7 +9,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 
 from src.constants import (ATTACKER_CONFIDENCE, MIN_FOLDS_ATTACKER, N_FOLDS,
-                           PREDICTED_ATTACKER_CONFIDENCE, VICTIM_SAMPLING, SEED)
+                           PREDICTED_ATTACKER_CONFIDENCE, VICTIM_SAMPLING, SEED, MAX_NEIGHBORS_INDIVIDUAL_MODEL)
 from src.model.aux import cross_entropy_masked
 from src.model.model import ModelAttention, ModelAttentionMultiHead
 from src.model.train import prepare_graph_and_train, prepare_graph_and_predict
@@ -44,36 +44,44 @@ def run_all(central_node):
     all_nodes_dict, node_feature, transactions_overview, edge_indexes, edge_features = prepare_data(data)
     labels_df = download_labels_graphql(all_nodes_dict, central_node)
     np.random.seed(SEED)
-    all_results = []
-    for _ in range(N_FOLDS):
-        labels_torch, automatic_labels = get_automatic_labels(
-            all_nodes_dict, transactions_overview, central_node, labels_df,
-            attacker_confidence=ATTACKER_CONFIDENCE, victim_sampling=VICTIM_SAMPLING)
-        
-        model, predictions_every_ten, _ = prepare_graph_and_train(
-            node_feature, edge_indexes, edge_features, model_type, loss_function, labels_torch)
-        all_results.append({'automatic_labels': automatic_labels, 'model': model,
-                            'predictions_every_ten': predictions_every_ten[-1]})
-    n_predicted_attacker = torch.sum(torch.stack(
-        [torch.argmax(all_results[i]['predictions_every_ten'], axis=1) for i in range(len(all_results))], axis=1), axis=1) # type: ignore
-    mean_probs = torch.mean(torch.stack([all_results[i]['predictions_every_ten'] for i in range(len(all_results))]), axis=0) # type: ignore
-    all_results_df = pd.DataFrame(
-        {'n_predicted_attacker': n_predicted_attacker, 'mean_probs_victim': mean_probs[:, 0], 
-         'mean_probs_attacker': mean_probs[:, 1]},
-         index=all_results[0]['automatic_labels'].keys())
-    all_attackers_df = all_results_df[all_results_df['n_predicted_attacker']>= MIN_FOLDS_ATTACKER]
-    original_attackers = [address for address, label in automatic_labels.items() if label == 'attacker']
-    # Filtering for the ones that were originally not attackers
-    filtered_attackers_df = all_attackers_df.loc[~all_attackers_df.index.isin(original_attackers)]
-    # filtering for the average prediction confidence
-    filtered_attackers_df = filtered_attackers_df[filtered_attackers_df['mean_probs_attacker'] >= PREDICTED_ATTACKER_CONFIDENCE]
-    # Missing checking which of those are contracts
     web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
-    attackers_not_contracts = []
-    for address in list(filtered_attackers_df.index):
-        if not is_contract(web3, address):
-            attackers_not_contracts.append(address)
-    filtered_attackers_df = filtered_attackers_df.loc[attackers_not_contracts]
+    if len(all_nodes_dict) >= MAX_NEIGHBORS_INDIVIDUAL_MODEL:
+        logger.info(f"{central_node}:\tToo many neighbors for individual model ({len(all_nodes_dict)}), using only global model")
+        filtered_attackers_df = pd.DataFrame(columns=['n_predicted_attacker', 'mean_probs_victim', 'mean_probs_attacker'])
+        labels_torch, automatic_labels = get_automatic_labels(
+                all_nodes_dict, transactions_overview, central_node, labels_df,
+                attacker_confidence=ATTACKER_CONFIDENCE, victim_sampling=VICTIM_SAMPLING)
+        original_attackers = [address for address, label in automatic_labels.items() if label == 'attacker']
+    else:
+        all_results = []
+        for _ in range(N_FOLDS):
+            labels_torch, automatic_labels = get_automatic_labels(
+                all_nodes_dict, transactions_overview, central_node, labels_df,
+                attacker_confidence=ATTACKER_CONFIDENCE, victim_sampling=VICTIM_SAMPLING)
+            
+            model, predictions_every_ten, _ = prepare_graph_and_train(
+                node_feature, edge_indexes, edge_features, model_type, loss_function, labels_torch)
+            all_results.append({'automatic_labels': automatic_labels, 'model': model,
+                                'predictions_every_ten': predictions_every_ten[-1]})
+        n_predicted_attacker = torch.sum(torch.stack(
+            [torch.argmax(all_results[i]['predictions_every_ten'], axis=1) for i in range(len(all_results))], axis=1), axis=1) # type: ignore
+        mean_probs = torch.mean(torch.stack([all_results[i]['predictions_every_ten'] for i in range(len(all_results))]), axis=0) # type: ignore
+        all_results_df = pd.DataFrame(
+            {'n_predicted_attacker': n_predicted_attacker, 'mean_probs_victim': mean_probs[:, 0], 
+            'mean_probs_attacker': mean_probs[:, 1]},
+            index=all_results[0]['automatic_labels'].keys())
+        all_attackers_df = all_results_df[all_results_df['n_predicted_attacker']>= MIN_FOLDS_ATTACKER]
+        original_attackers = [address for address, label in automatic_labels.items() if label == 'attacker']
+        # Filtering for the ones that were originally not attackers
+        filtered_attackers_df = all_attackers_df.loc[~all_attackers_df.index.isin(original_attackers)]
+        # filtering for the average prediction confidence
+        filtered_attackers_df = filtered_attackers_df[filtered_attackers_df['mean_probs_attacker'] >= PREDICTED_ATTACKER_CONFIDENCE]
+        # Missing checking which of those are contracts
+        attackers_not_contracts = []
+        for address in list(filtered_attackers_df.index):
+            if not is_contract(web3, address):
+                attackers_not_contracts.append(address)
+        filtered_attackers_df = filtered_attackers_df.loc[attackers_not_contracts]
     # filtered_attackers_df.to_csv(f'results/{central_node}.csv')  # write down for debugging
     logger.debug(filtered_attackers_df)
     logger.info(f"{central_node}:\tFinished processing: {filtered_attackers_df.shape[0]} attackers found")
