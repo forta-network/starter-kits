@@ -1,264 +1,252 @@
-echo 'output.txt' > zeara_binance.txt
-echo zeara: 0x72cc2423dd614c6c6c3a66132b32d548f762cde37faf57ddfe044be1c495a5a1
-npm run alert 0x72cc2423dd614c6c6c3a66132b32d548f762cde37faf57ddfe044be1c495a5a1 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x5269934f1b706f1a8155fd7a99d39636e0d3958e27d1845c4ae727e3477d0274
-npm run alert 0x5269934f1b706f1a8155fd7a99d39636e0d3958e27d1845c4ae727e3477d0274 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x2a95eabd3c3c941a43bb9b16ca5c3df5227b4d2e2762e6481d077b87ecf3d6cd
-npm run alert 0x2a95eabd3c3c941a43bb9b16ca5c3df5227b4d2e2762e6481d077b87ecf3d6cd >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x5b3dc9f666cf40894a2ad6b45bd9d7a3dffe2e3b767bf795e1e6393f95d965f9
-npm run alert 0x5b3dc9f666cf40894a2ad6b45bd9d7a3dffe2e3b767bf795e1e6393f95d965f9 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x367092a35c2e52c69883196b3529c00e18346ba0975cee4fd42ecc0586ec3b1e
-npm run alert 0x367092a35c2e52c69883196b3529c00e18346ba0975cee4fd42ecc0586ec3b1e >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x2fc9ac0ec500745063a2312a819d25cc8827e0485ac854462a799c42830ddf99
-npm run alert 0x2fc9ac0ec500745063a2312a819d25cc8827e0485ac854462a799c42830ddf99 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0xcedb4c3db6f0fb21ccab6dfa125b65f95a63a106b5cbec4f8415ad382c4311c6
-npm run alert 0xcedb4c3db6f0fb21ccab6dfa125b65f95a63a106b5cbec4f8415ad382c4311c6 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0xa9e1669a7823f032c46a0b81f8cfb7c3bda1370bf74a453be43d547bb54e7c8f
-npm run alert 0xa9e1669a7823f032c46a0b81f8cfb7c3bda1370bf74a453be43d547bb54e7c8f >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0xa871727c9659d8768783a82114293310cde1fcde7260cf6c9bffb6dc725eb794
-npm run alert 0xa871727c9659d8768783a82114293310cde1fcde7260cf6c9bffb6dc725eb794 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0xd23b510bd5e92ba66519b51423e7f93cac5ac4a4eeca12b1b9fc1b87de35b8eb
-npm run alert 0xd23b510bd5e92ba66519b51423e7f93cac5ac4a4eeca12b1b9fc1b87de35b8eb >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x5fdd8a944a2bbd29b7c028eb94cbc2581bad0b4347ee2bd9d43f2d6443e91a98
-npm run alert 0x5fdd8a944a2bbd29b7c028eb94cbc2581bad0b4347ee2bd9d43f2d6443e91a98 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x55c5eb6a52289820d556b7384e843fbfd1f49da2bc63e7ead1fac6cc27bca163
-npm run alert 0x55c5eb6a52289820d556b7384e843fbfd1f49da2bc63e7ead1fac6cc27bca163 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x96f97fca969735e0063a645ccec3d71ba6a70bc823d2f62918d89173bd4a31c7
-npm run alert 0x96f97fca969735e0063a645ccec3d71ba6a70bc823d2f62918d89173bd4a31c7 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x7466ad534c481f1388adaf70ee72281e9f5e4fc135793f2c84a382cb08e844d8
-npm run alert 0x7466ad534c481f1388adaf70ee72281e9f5e4fc135793f2c84a382cb08e844d8 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x4f06477dc13c885834286e162dc1cf53e51b9097a0b8089125a4d7f837495198
-npm run alert 0x4f06477dc13c885834286e162dc1cf53e51b9097a0b8089125a4d7f837495198 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0xebb4105750ec9d804fc0ae9a711bd0e6e402dbae5270129a9a3513cda2d3bb00
-npm run alert 0xebb4105750ec9d804fc0ae9a711bd0e6e402dbae5270129a9a3513cda2d3bb00 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x4b0c4bca1e19550b143db1ca5b661ffdd0b96c3e0c05d10282fce0d823b52375
-npm run alert 0x4b0c4bca1e19550b143db1ca5b661ffdd0b96c3e0c05d10282fce0d823b52375 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x3c5cef3aa5c0e5df84aeeb95688c12104edce9837299562b4be3c044713a518e
-npm run alert 0x3c5cef3aa5c0e5df84aeeb95688c12104edce9837299562b4be3c044713a518e >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0xe3edd859ca9e95c3a0388c58ddcc0047094da75bcc5f2cf495baad20a38d7fea
-npm run alert 0xe3edd859ca9e95c3a0388c58ddcc0047094da75bcc5f2cf495baad20a38d7fea >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x9a81492760a2a2a72a9ae7242c0a3412fd6f9f016f80cadcd88fbefed2a6feaa
-npm run alert 0x9a81492760a2a2a72a9ae7242c0a3412fd6f9f016f80cadcd88fbefed2a6feaa >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x726cc37076f35bc3bf4e834370229fcaeaa56805f649e00f585a149ce1517a1b
-npm run alert 0x726cc37076f35bc3bf4e834370229fcaeaa56805f649e00f585a149ce1517a1b >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x38ebf9d80e98810c2dca7e39e10bc51d9c50d6bf3c19b1145952df99a34986d3
-npm run alert 0x38ebf9d80e98810c2dca7e39e10bc51d9c50d6bf3c19b1145952df99a34986d3 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0xcb59d94a8d04d612fc528214be4ca95dd8b2bfffc326e2bbc065416d087dd1a1
-npm run alert 0xcb59d94a8d04d612fc528214be4ca95dd8b2bfffc326e2bbc065416d087dd1a1 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0xb78d88a482857cae67361149758a89674e862045943dc9c9c46de25e988edaac
-npm run alert 0xb78d88a482857cae67361149758a89674e862045943dc9c9c46de25e988edaac >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0xb73d79c094217df009a6c9377457b3544a1fb9e7b0212995bd0f5b487023fcc8
-npm run alert 0xb73d79c094217df009a6c9377457b3544a1fb9e7b0212995bd0f5b487023fcc8 >> zeara_binance.txt 2>> zeara_binance_error.txt
-echo zeara: 0x5deb55d1dfbb7f004cb1a0078c2bc684f93070c28fd9ed4802285882f6606f8a
-npm run alert 0x5deb55d1dfbb7f004cb1a0078c2bc684f93070c28fd9ed4802285882f6606f8a >> zeara_binance.txt 2>> zeara_binance_error.txt
-grep 'ERROR'  zeara_binance.txt >  zeara_binance_debug.txt
-grep 'WARN'  zeara_binance.txt >>  zeara_binance_debug.txt
-grep 'adding cluster mapping'  zeara_binance.txt >>  zeara_binance_debug.txt
-grep 'adding FP mitigation cluster'  zeara_binance.txt >>  zeara_binance_debug.txt
-grep 'anomaly'  zeara_binance.txt >>  zeara_binance_debug.txt
-grep 'likely involved in an attack'  zeara_binance.txt >>  zeara_binance_results.txt
-grep 'ATTACK-DETECTOR'  zeara_binance.txt >>  zeara_binance_results.txt
-echo 'output.txt' > bunnyprotocol_binance.txt
-echo bunnyprotocol: 0x3b16972d478d8e413f4c648ca7a7fb1a8d91a78deb0be973670d32af30a248b1
-npm run alert 0x3b16972d478d8e413f4c648ca7a7fb1a8d91a78deb0be973670d32af30a248b1 >> bunnyprotocol_binance.txt 2>> bunnyprotocol_binance_error.txt
-echo bunnyprotocol: 0x09ee2871303c4302acf4d61e3010d015c3af61545440048ccd8ac49f41dc819e
-npm run alert 0x09ee2871303c4302acf4d61e3010d015c3af61545440048ccd8ac49f41dc819e >> bunnyprotocol_binance.txt 2>> bunnyprotocol_binance_error.txt
-echo bunnyprotocol: 0xe14d5b9d91b8879d233b30ad77e7a202b0ff8252305a030980343c145b05cb63
-npm run alert 0xe14d5b9d91b8879d233b30ad77e7a202b0ff8252305a030980343c145b05cb63 >> bunnyprotocol_binance.txt 2>> bunnyprotocol_binance_error.txt
-echo bunnyprotocol: 0xe148ab53b7c4d3840b836c3237d8f68415e5965f176dbdb48ae10a80ee4c0630
-npm run alert 0xe148ab53b7c4d3840b836c3237d8f68415e5965f176dbdb48ae10a80ee4c0630 >> bunnyprotocol_binance.txt 2>> bunnyprotocol_binance_error.txt
-echo bunnyprotocol: 0x8dcb177c1ca4838d870402492abe37211740407b5335829688d664b0500d3cdc
-npm run alert 0x8dcb177c1ca4838d870402492abe37211740407b5335829688d664b0500d3cdc >> bunnyprotocol_binance.txt 2>> bunnyprotocol_binance_error.txt
-echo bunnyprotocol: 0x6067ac4b1738bfd120d1e96dab588178c4771e1f75c933757a3ba0ef7404c6c2
-npm run alert 0x6067ac4b1738bfd120d1e96dab588178c4771e1f75c933757a3ba0ef7404c6c2 >> bunnyprotocol_binance.txt 2>> bunnyprotocol_binance_error.txt
-grep 'ERROR'  bunnyprotocol_binance.txt >  bunnyprotocol_binance_debug.txt
-grep 'WARN'  bunnyprotocol_binance.txt >>  bunnyprotocol_binance_debug.txt
-grep 'adding cluster mapping'  bunnyprotocol_binance.txt >>  bunnyprotocol_binance_debug.txt
-grep 'adding FP mitigation cluster'  bunnyprotocol_binance.txt >>  bunnyprotocol_binance_debug.txt
-grep 'anomaly'  bunnyprotocol_binance.txt >>  bunnyprotocol_binance_debug.txt
-grep 'likely involved in an attack'  bunnyprotocol_binance.txt >>  bunnyprotocol_binance_results.txt
-grep 'ATTACK-DETECTOR'  bunnyprotocol_binance.txt >>  bunnyprotocol_binance_results.txt
-echo 'output.txt' > babydoge2_binance.txt
-echo babydoge2: 0x1c0c388436a19b8d2e8fe570d7c48660fbf3d837a1d3e4267d3e3498d8c058c1
-npm run alert 0x1c0c388436a19b8d2e8fe570d7c48660fbf3d837a1d3e4267d3e3498d8c058c1 >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0xef0218d5e7a45b25248eeba3378c170ba1787f0288fda52b69c68ed4324739dc
-npm run alert 0xef0218d5e7a45b25248eeba3378c170ba1787f0288fda52b69c68ed4324739dc >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0xb61e71da4e17ba571cc0b11790bc6346fc6cb44be6e6c147f577297bafa4bd47
-npm run alert 0xb61e71da4e17ba571cc0b11790bc6346fc6cb44be6e6c147f577297bafa4bd47 >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0x651d2f72fa56e1878381be2cdeb31d2b82c5690aa098dbd528292de36009c873
-npm run alert 0x651d2f72fa56e1878381be2cdeb31d2b82c5690aa098dbd528292de36009c873 >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0x3aae29eec562af06f508e5949475d892cd5f14a507f22bceff3a2b1c7f073d5e
-npm run alert 0x3aae29eec562af06f508e5949475d892cd5f14a507f22bceff3a2b1c7f073d5e >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0x1521817fb699a54bfb541b3ad2564eac542284a400817fb4780b6776c5466f7e
-npm run alert 0x1521817fb699a54bfb541b3ad2564eac542284a400817fb4780b6776c5466f7e >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0x8f5aedf1a59aaa32c1e36bc49b6a876032d7620f476728d8bae9111bc049ba97
-npm run alert 0x8f5aedf1a59aaa32c1e36bc49b6a876032d7620f476728d8bae9111bc049ba97 >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0x8e7942cd18aeab598b1c03963f778f1f4b3d04a52cb1f20debf347570fda3cef
-npm run alert 0x8e7942cd18aeab598b1c03963f778f1f4b3d04a52cb1f20debf347570fda3cef >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0x9ffe09da71adb5e47f665a5114353814cced88eedfcdba9c71be1aed8add77f6
-npm run alert 0x9ffe09da71adb5e47f665a5114353814cced88eedfcdba9c71be1aed8add77f6 >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0xf3c91db0451efe4028249938b7aa4a3e555b9ba996be615ab5be3a202b7ab9e7
-npm run alert 0xf3c91db0451efe4028249938b7aa4a3e555b9ba996be615ab5be3a202b7ab9e7 >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0x56fce43f1a5247730702cb112fb033ea62b1b3eca9787ed09ac13bf906da52b0
-npm run alert 0x56fce43f1a5247730702cb112fb033ea62b1b3eca9787ed09ac13bf906da52b0 >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0x4d00824efbcdf39ac38b622eac4fd5f2b7255733bb33f6f0c133b76149c72007
-npm run alert 0x4d00824efbcdf39ac38b622eac4fd5f2b7255733bb33f6f0c133b76149c72007 >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0xdd51f9c5fc6eb1aaee7922682b63e5a8dd41184e7688eaac219b30edb9e82ecc
-npm run alert 0xdd51f9c5fc6eb1aaee7922682b63e5a8dd41184e7688eaac219b30edb9e82ecc >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0xa5068c6d1d8efc314f4667d10f5d3593976ebc06b5be1690749619852c6847c3
-npm run alert 0xa5068c6d1d8efc314f4667d10f5d3593976ebc06b5be1690749619852c6847c3 >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0xd329e62630f01f846648f27b3ebe8b9892510ddd0d9a5fab8d2443d2634ef92d
-npm run alert 0xd329e62630f01f846648f27b3ebe8b9892510ddd0d9a5fab8d2443d2634ef92d >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0xb21db9fd351a80859b617bebd539f7d15e7e13d13e00d5225d1c6763245a989e
-npm run alert 0xb21db9fd351a80859b617bebd539f7d15e7e13d13e00d5225d1c6763245a989e >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0x0ddd0716f7c1c064254cdb578186232cf30d889832f5a9c8751d55f7b7cb0e1e
-npm run alert 0x0ddd0716f7c1c064254cdb578186232cf30d889832f5a9c8751d55f7b7cb0e1e >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-echo babydoge2: 0x3c9e7cb39852abc32cf367f33bfa41bc0d7e210bc17150ce57f9a369cdb60081
-npm run alert 0x3c9e7cb39852abc32cf367f33bfa41bc0d7e210bc17150ce57f9a369cdb60081 >> babydoge2_binance.txt 2>> babydoge2_binance_error.txt
-grep 'ERROR'  babydoge2_binance.txt >  babydoge2_binance_debug.txt
-grep 'WARN'  babydoge2_binance.txt >>  babydoge2_binance_debug.txt
-grep 'adding cluster mapping'  babydoge2_binance.txt >>  babydoge2_binance_debug.txt
-grep 'adding FP mitigation cluster'  babydoge2_binance.txt >>  babydoge2_binance_debug.txt
-grep 'anomaly'  babydoge2_binance.txt >>  babydoge2_binance_debug.txt
-grep 'likely involved in an attack'  babydoge2_binance.txt >>  babydoge2_binance_results.txt
-grep 'ATTACK-DETECTOR'  babydoge2_binance.txt >>  babydoge2_binance_results.txt
-echo 'output.txt' > Shido1_binance.txt
-echo Shido1: 0xddbe9a45c39f28abb382a641111874d2d42981b1c7b75befe42c46708ed5a1e1
-npm run alert 0xddbe9a45c39f28abb382a641111874d2d42981b1c7b75befe42c46708ed5a1e1 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xee35456d368d92c74cf87ee17c1bf3fb87abf17a14182bbe4a74b16ab7fea64d
-npm run alert 0xee35456d368d92c74cf87ee17c1bf3fb87abf17a14182bbe4a74b16ab7fea64d >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x28e51fa6c5f3c4c619d12d988bcd35ad148abe27c1e51de10be6e3ad248db3a1
-npm run alert 0x28e51fa6c5f3c4c619d12d988bcd35ad148abe27c1e51de10be6e3ad248db3a1 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xf45f3a43f37f114a0e328fd964d915fdac1d75a4c366bbb1ca6aa1005afe294d
-npm run alert 0xf45f3a43f37f114a0e328fd964d915fdac1d75a4c366bbb1ca6aa1005afe294d >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x7087a9a4ef649cfcfb0fa1736cd9398f0518e858dc5f54bf81b4411c9048925c
-npm run alert 0x7087a9a4ef649cfcfb0fa1736cd9398f0518e858dc5f54bf81b4411c9048925c >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x479d84c6d68e1afde0afd78f18d8087c4af0d2c5896a27bd0de43c8bb39c29dd
-npm run alert 0x479d84c6d68e1afde0afd78f18d8087c4af0d2c5896a27bd0de43c8bb39c29dd >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x2a69bb6508140e4f0e6bf85404ddc6c4c4c9812979d5faa3d89c0e3c06b2ac99
-npm run alert 0x2a69bb6508140e4f0e6bf85404ddc6c4c4c9812979d5faa3d89c0e3c06b2ac99 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xbe0ab939fb7036e7bdd5563be68e3b485eff9c9355f7b7518eb3f620091ec155
-npm run alert 0xbe0ab939fb7036e7bdd5563be68e3b485eff9c9355f7b7518eb3f620091ec155 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x8e907eba3420c6d0ebc1e0957b70142c94b91dabe7b7093a347437e13ebed2c0
-npm run alert 0x8e907eba3420c6d0ebc1e0957b70142c94b91dabe7b7093a347437e13ebed2c0 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x53dcf8c1ce2ba0bd63fab4048a1f316c1489b419e206da98314c4d8a1b98b487
-npm run alert 0x53dcf8c1ce2ba0bd63fab4048a1f316c1489b419e206da98314c4d8a1b98b487 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x340a2887fffdea84d3ebef47ed576e2b7ec8b0e2ba91838351544d099eeb9e28
-npm run alert 0x340a2887fffdea84d3ebef47ed576e2b7ec8b0e2ba91838351544d099eeb9e28 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x154bd20533cf8c6e87980c9b40dfac34e41dc6146ef0b15beefec2ca64ed906b
-npm run alert 0x154bd20533cf8c6e87980c9b40dfac34e41dc6146ef0b15beefec2ca64ed906b >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xfbb4c3d0eae6415cac4b2cd3ebf559e03390f3ad2568afce7b662188bcace5d9
-npm run alert 0xfbb4c3d0eae6415cac4b2cd3ebf559e03390f3ad2568afce7b662188bcace5d9 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xf54500a40038c5406e0479f89091bb86a5f5b84e9475ff6b80693b9070d7d19f
-npm run alert 0xf54500a40038c5406e0479f89091bb86a5f5b84e9475ff6b80693b9070d7d19f >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xf29aff4ed42edfac0a5c2f0dad7b22e55b8b21b69915f1f2b158c34cff4f445d
-npm run alert 0xf29aff4ed42edfac0a5c2f0dad7b22e55b8b21b69915f1f2b158c34cff4f445d >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x7f4375df11ff24b3349175461c636ecdf5aede09600f73dcc60ec834e77c580d
-npm run alert 0x7f4375df11ff24b3349175461c636ecdf5aede09600f73dcc60ec834e77c580d >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x90dddeddeef27509f5002f11bd21d175a4de7921cd0ea7b7ad837200827fafd0
-npm run alert 0x90dddeddeef27509f5002f11bd21d175a4de7921cd0ea7b7ad837200827fafd0 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x75957f6266acd40fddb3b56778478fec576574a01d00230b383c2348b99cfead
-npm run alert 0x75957f6266acd40fddb3b56778478fec576574a01d00230b383c2348b99cfead >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x6f8e1701c1479d05617e01fa878336f0222a92363da7c361d81d9e5e204b716a
-npm run alert 0x6f8e1701c1479d05617e01fa878336f0222a92363da7c361d81d9e5e204b716a >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x3bae6b3b61df4c763a4cc5a244cf1ffa84d575bc0fc653cb5e4a8befab5ea184
-npm run alert 0x3bae6b3b61df4c763a4cc5a244cf1ffa84d575bc0fc653cb5e4a8befab5ea184 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xb718a2556b635ab46695e680327ec1bbeb35726784d6022804560dd04b27158e
-npm run alert 0xb718a2556b635ab46695e680327ec1bbeb35726784d6022804560dd04b27158e >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x960834caaefa686ecdc7a1295dea48cc06439d9df0c7eecfceb4051002e6d734
-npm run alert 0x960834caaefa686ecdc7a1295dea48cc06439d9df0c7eecfceb4051002e6d734 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x277538c67da7e34a0fb610d5be76a56afd511d9e8fa83cfc8c6750f907cc2e44
-npm run alert 0x277538c67da7e34a0fb610d5be76a56afd511d9e8fa83cfc8c6750f907cc2e44 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xa5651d43798dd9fdadf1a84abafb249c8161b853176e807e8d01eabc7a2ce6a0
-npm run alert 0xa5651d43798dd9fdadf1a84abafb249c8161b853176e807e8d01eabc7a2ce6a0 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x8621b4fcdc81d83c3485bd21736988d765c2431c35ad82e2847e589a8ed0418f
-npm run alert 0x8621b4fcdc81d83c3485bd21736988d765c2431c35ad82e2847e589a8ed0418f >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x515de95a5dfd070dad8bb20611427ef8aca1f8fdf310a599e6cda5ba7f9f1a13
-npm run alert 0x515de95a5dfd070dad8bb20611427ef8aca1f8fdf310a599e6cda5ba7f9f1a13 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xd36ec0efa474af29a64709d76726cc54e1427dcfb7e9cba7b2f2e4a52aa33771
-npm run alert 0xd36ec0efa474af29a64709d76726cc54e1427dcfb7e9cba7b2f2e4a52aa33771 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x7a6bdf4ad77e75b00e09eef722a307cc88df1a97ee746fd423dc9e77b5994baf
-npm run alert 0x7a6bdf4ad77e75b00e09eef722a307cc88df1a97ee746fd423dc9e77b5994baf >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x38528a989929872d17504bbbd700f425da56f133ba01132c8bb6aebf8c8e27c6
-npm run alert 0x38528a989929872d17504bbbd700f425da56f133ba01132c8bb6aebf8c8e27c6 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xd97a7b485c80f0ad5a5a23dcaa558a57283e198cc988149f95c99164cc434ed9
-npm run alert 0xd97a7b485c80f0ad5a5a23dcaa558a57283e198cc988149f95c99164cc434ed9 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xbcba7c57bd03a700de0fbdb188fde806342cc6734d7dfa1f8adf338c97526095
-npm run alert 0xbcba7c57bd03a700de0fbdb188fde806342cc6734d7dfa1f8adf338c97526095 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x8ed6f7a4261d9487a137781b68694c91a92cb678af1b63e4f8142849c3788fad
-npm run alert 0x8ed6f7a4261d9487a137781b68694c91a92cb678af1b63e4f8142849c3788fad >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x6fbbd67cc863abdba23df58c303787f9dbcac3443a01290929c1fe853ab018cb
-npm run alert 0x6fbbd67cc863abdba23df58c303787f9dbcac3443a01290929c1fe853ab018cb >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x4702cd40c9b68a3f7e44ed96f350ad44f4c2f816f5243f27c684bea6947fd01e
-npm run alert 0x4702cd40c9b68a3f7e44ed96f350ad44f4c2f816f5243f27c684bea6947fd01e >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x063ab8b150b0c3600d238a5163d390d87aa0ce584ea9771f08713983c6c34d67
-npm run alert 0x063ab8b150b0c3600d238a5163d390d87aa0ce584ea9771f08713983c6c34d67 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x04645914a3c73154f5ea93b118e99e53e92d7fd635fd9870b25d289766e9d892
-npm run alert 0x04645914a3c73154f5ea93b118e99e53e92d7fd635fd9870b25d289766e9d892 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x01a6b758ec8d6693b0a37e001c8d25b638920f3e6fe8b28d7d9ff93098c2309a
-npm run alert 0x01a6b758ec8d6693b0a37e001c8d25b638920f3e6fe8b28d7d9ff93098c2309a >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x0022ce8fd4d1009f03e13785e702cc515239125a66778e24ae3e1d060d3c930e
-npm run alert 0x0022ce8fd4d1009f03e13785e702cc515239125a66778e24ae3e1d060d3c930e >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xb052d9dce63678b6511a5397bff96e8861be587d0575405004719a637338c31b
-npm run alert 0xb052d9dce63678b6511a5397bff96e8861be587d0575405004719a637338c31b >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x207b71d4d314f8474ebedce46961cadc7cac8d6a967ca854dc448012e70f28dd
-npm run alert 0x207b71d4d314f8474ebedce46961cadc7cac8d6a967ca854dc448012e70f28dd >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x0fbaa32cef772e6ba97ff77b079cdb4b5534a0ce00676c0be7c296ae9bc07239
-npm run alert 0x0fbaa32cef772e6ba97ff77b079cdb4b5534a0ce00676c0be7c296ae9bc07239 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xd3d74a78644cad84a7b90ec1596cdd6ce9fed568a1291ed23952eff694a14e07
-npm run alert 0xd3d74a78644cad84a7b90ec1596cdd6ce9fed568a1291ed23952eff694a14e07 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x359b303fcd07d88edabf337344d9880a19fd087f442c1e132a4c4061e642d745
-npm run alert 0x359b303fcd07d88edabf337344d9880a19fd087f442c1e132a4c4061e642d745 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x082aa6beec998f2ab8467a70fd7dfeab8cc8adc41a946f105dbf74ba536eca36
-npm run alert 0x082aa6beec998f2ab8467a70fd7dfeab8cc8adc41a946f105dbf74ba536eca36 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0xb0f29971d6ee5a08ef19c85f8412df7287a3af23c3d73af5723b4c20ed238497
-npm run alert 0xb0f29971d6ee5a08ef19c85f8412df7287a3af23c3d73af5723b4c20ed238497 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x916f9255912b2c318706e9456b320bc06d20471da8bfbef85435e2e7d83cd30c
-npm run alert 0x916f9255912b2c318706e9456b320bc06d20471da8bfbef85435e2e7d83cd30c >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x43c1bdd6109cf31c12f11a186217e5a841aeddc3fc750a78e354ce1e2671ea6c
-npm run alert 0x43c1bdd6109cf31c12f11a186217e5a841aeddc3fc750a78e354ce1e2671ea6c >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x3bdd40f96a176af1ef36eee278630fcbb996c38b68711aafb19a15694f5690ce
-npm run alert 0x3bdd40f96a176af1ef36eee278630fcbb996c38b68711aafb19a15694f5690ce >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x9d183fbc2dbc356514fe9247fd5917d4a57afda41b4058f4aaf053884082fcf5
-npm run alert 0x9d183fbc2dbc356514fe9247fd5917d4a57afda41b4058f4aaf053884082fcf5 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x7e94942c85d0219c74c44915acc69a60c873bab129e0ad61c19c46a33b1351a1
-npm run alert 0x7e94942c85d0219c74c44915acc69a60c873bab129e0ad61c19c46a33b1351a1 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x582fcb4c33790fe9986a86d694ee7585df35e54811a6fab3c577905db70c567f
-npm run alert 0x582fcb4c33790fe9986a86d694ee7585df35e54811a6fab3c577905db70c567f >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x9a0a37ff64904afad37d6b613b9de7b1efbede6e84b4914edcd2d72e97a5af5b
-npm run alert 0x9a0a37ff64904afad37d6b613b9de7b1efbede6e84b4914edcd2d72e97a5af5b >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-echo Shido1: 0x28ad9a03b5476dd45a0b1dce07ec5867844f97beef4b012cd4c27ae2e617bfa6
-npm run alert 0x28ad9a03b5476dd45a0b1dce07ec5867844f97beef4b012cd4c27ae2e617bfa6 >> Shido1_binance.txt 2>> Shido1_binance_error.txt
-grep 'ERROR'  Shido1_binance.txt >  Shido1_binance_debug.txt
-grep 'WARN'  Shido1_binance.txt >>  Shido1_binance_debug.txt
-grep 'adding cluster mapping'  Shido1_binance.txt >>  Shido1_binance_debug.txt
-grep 'adding FP mitigation cluster'  Shido1_binance.txt >>  Shido1_binance_debug.txt
-grep 'anomaly'  Shido1_binance.txt >>  Shido1_binance_debug.txt
-grep 'likely involved in an attack'  Shido1_binance.txt >>  Shido1_binance_results.txt
-grep 'ATTACK-DETECTOR'  Shido1_binance.txt >>  Shido1_binance_results.txt
-echo 'output.txt' > Shido2_binance.txt
-echo Shido2: 0xddbe9a45c39f28abb382a641111874d2d42981b1c7b75befe42c46708ed5a1e1
-npm run alert 0xddbe9a45c39f28abb382a641111874d2d42981b1c7b75befe42c46708ed5a1e1 >> Shido2_binance.txt 2>> Shido2_binance_error.txt
-echo Shido2: 0x90dddeddeef27509f5002f11bd21d175a4de7921cd0ea7b7ad837200827fafd0
-npm run alert 0x90dddeddeef27509f5002f11bd21d175a4de7921cd0ea7b7ad837200827fafd0 >> Shido2_binance.txt 2>> Shido2_binance_error.txt
-echo Shido2: 0x75957f6266acd40fddb3b56778478fec576574a01d00230b383c2348b99cfead
-npm run alert 0x75957f6266acd40fddb3b56778478fec576574a01d00230b383c2348b99cfead >> Shido2_binance.txt 2>> Shido2_binance_error.txt
-echo Shido2: 0x6f8e1701c1479d05617e01fa878336f0222a92363da7c361d81d9e5e204b716a
-npm run alert 0x6f8e1701c1479d05617e01fa878336f0222a92363da7c361d81d9e5e204b716a >> Shido2_binance.txt 2>> Shido2_binance_error.txt
-echo Shido2: 0x3bae6b3b61df4c763a4cc5a244cf1ffa84d575bc0fc653cb5e4a8befab5ea184
-npm run alert 0x3bae6b3b61df4c763a4cc5a244cf1ffa84d575bc0fc653cb5e4a8befab5ea184 >> Shido2_binance.txt 2>> Shido2_binance_error.txt
-echo Shido2: 0xb718a2556b635ab46695e680327ec1bbeb35726784d6022804560dd04b27158e
-npm run alert 0xb718a2556b635ab46695e680327ec1bbeb35726784d6022804560dd04b27158e >> Shido2_binance.txt 2>> Shido2_binance_error.txt
-echo Shido2: 0x960834caaefa686ecdc7a1295dea48cc06439d9df0c7eecfceb4051002e6d734
-npm run alert 0x960834caaefa686ecdc7a1295dea48cc06439d9df0c7eecfceb4051002e6d734 >> Shido2_binance.txt 2>> Shido2_binance_error.txt
-echo Shido2: 0x277538c67da7e34a0fb610d5be76a56afd511d9e8fa83cfc8c6750f907cc2e44
-npm run alert 0x277538c67da7e34a0fb610d5be76a56afd511d9e8fa83cfc8c6750f907cc2e44 >> Shido2_binance.txt 2>> Shido2_binance_error.txt
-echo Shido2: 0x9a0a37ff64904afad37d6b613b9de7b1efbede6e84b4914edcd2d72e97a5af5b
-npm run alert 0x9a0a37ff64904afad37d6b613b9de7b1efbede6e84b4914edcd2d72e97a5af5b >> Shido2_binance.txt 2>> Shido2_binance_error.txt
-grep 'ERROR'  Shido2_binance.txt >  Shido2_binance_debug.txt
-grep 'WARN'  Shido2_binance.txt >>  Shido2_binance_debug.txt
-grep 'adding cluster mapping'  Shido2_binance.txt >>  Shido2_binance_debug.txt
-grep 'adding FP mitigation cluster'  Shido2_binance.txt >>  Shido2_binance_debug.txt
-grep 'anomaly'  Shido2_binance.txt >>  Shido2_binance_debug.txt
-grep 'likely involved in an attack'  Shido2_binance.txt >>  Shido2_binance_results.txt
-grep 'ATTACK-DETECTOR'  Shido2_binance.txt >>  Shido2_binance_results.txt
+echo 'output.txt' > Biswap_binance.txt
+echo Biswap: 0xb2a78e470d34a7ce338925f1b6d99b14e075aa69501b8416566986fdf3aee0d4
+npm run alert 0xb2a78e470d34a7ce338925f1b6d99b14e075aa69501b8416566986fdf3aee0d4 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x5a1ea09a8c7b468fbb78d4066ae607b894bedf139490842976d96a761b8a1c9b
+npm run alert 0x5a1ea09a8c7b468fbb78d4066ae607b894bedf139490842976d96a761b8a1c9b >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x577328575861979d6a7f4fba21b671e15175887a5aba05a6c8e38daeb862ec13
+npm run alert 0x577328575861979d6a7f4fba21b671e15175887a5aba05a6c8e38daeb862ec13 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xb7ad21cd73da322ba7150b652e89e143f0073b71a8078d1db80a2155911fa743
+npm run alert 0xb7ad21cd73da322ba7150b652e89e143f0073b71a8078d1db80a2155911fa743 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x8ef72556530d9fc048c72e448f9eaf03b43c6ece55ba4d09ad23d51f05fc50e5
+npm run alert 0x8ef72556530d9fc048c72e448f9eaf03b43c6ece55ba4d09ad23d51f05fc50e5 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x8e0ecc439e7371da08a921c25793264f465fa049f32fb759d9d756c95147200f
+npm run alert 0x8e0ecc439e7371da08a921c25793264f465fa049f32fb759d9d756c95147200f >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xda8055e2728d6dfde5b994a4d9d29e1336f0de9cb62cb09a8efb5e723fc1f6de
+npm run alert 0xda8055e2728d6dfde5b994a4d9d29e1336f0de9cb62cb09a8efb5e723fc1f6de >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x81085333ca15dab981dcc1af09a3b9cb7cbd494f495c4cdc78ee8a1595ce9153
+npm run alert 0x81085333ca15dab981dcc1af09a3b9cb7cbd494f495c4cdc78ee8a1595ce9153 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x71361e73f4585bf8bec9acafc8733fe7a54858f9031dd49cc3e6f08892c3ad86
+npm run alert 0x71361e73f4585bf8bec9acafc8733fe7a54858f9031dd49cc3e6f08892c3ad86 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x38f306b889e17413b67c40ed37a5032af9c5edc2c9e11ff59e82cfb97f6146e9
+npm run alert 0x38f306b889e17413b67c40ed37a5032af9c5edc2c9e11ff59e82cfb97f6146e9 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x018bba072fae5e7ae289622f8595541916835af95f7169ed4b38eaae0d8979e6
+npm run alert 0x018bba072fae5e7ae289622f8595541916835af95f7169ed4b38eaae0d8979e6 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xc170621cf1ff72ac443eca721c5b998ef6be7a17962c5d52665af8c7e89cb143
+npm run alert 0xc170621cf1ff72ac443eca721c5b998ef6be7a17962c5d52665af8c7e89cb143 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xdf24e5b129b1335b8dde9fb726c3d5a05168fe0fee72e48a35ca62ea18c19b3f
+npm run alert 0xdf24e5b129b1335b8dde9fb726c3d5a05168fe0fee72e48a35ca62ea18c19b3f >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xd5499796cf80360a8d282faebc0342de364b49e9fb11f53df4978e3061afbba5
+npm run alert 0xd5499796cf80360a8d282faebc0342de364b49e9fb11f53df4978e3061afbba5 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x840f3537003629d728abd9d1d3d81cd134d980f1ce8cfaeda1c13418d5480f4b
+npm run alert 0x840f3537003629d728abd9d1d3d81cd134d980f1ce8cfaeda1c13418d5480f4b >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x2752989d2b92163f817c09c4730825de46ebe1e6a8644e531565d9e93f3af392
+npm run alert 0x2752989d2b92163f817c09c4730825de46ebe1e6a8644e531565d9e93f3af392 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x17b7bcbd153a9977476b30e8fc5baffeeab556c2610ea831a4cced42b8bcf8b5
+npm run alert 0x17b7bcbd153a9977476b30e8fc5baffeeab556c2610ea831a4cced42b8bcf8b5 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xbef27e428952ec7a10fb9fd94c155e0b598ee80bc80469a051208015fb63e383
+npm run alert 0xbef27e428952ec7a10fb9fd94c155e0b598ee80bc80469a051208015fb63e383 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xb9439dba1f2fe5ae108f60a539f2933c14f0521a9f755a248bd8ff0106c8b6c8
+npm run alert 0xb9439dba1f2fe5ae108f60a539f2933c14f0521a9f755a248bd8ff0106c8b6c8 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x934a9acff440fc90f285cadc94492f0e4da1e5a61779de2e5f51b158750b9773
+npm run alert 0x934a9acff440fc90f285cadc94492f0e4da1e5a61779de2e5f51b158750b9773 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x5a8d0954c4f44f5b56f13dd5a8677ecf6c3408531e06b7830b21c4a643a0cd32
+npm run alert 0x5a8d0954c4f44f5b56f13dd5a8677ecf6c3408531e06b7830b21c4a643a0cd32 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xe5c7891eddb974970d764fa849b30010fbf600fa6b0d7a394aa483b22e20ef34
+npm run alert 0xe5c7891eddb974970d764fa849b30010fbf600fa6b0d7a394aa483b22e20ef34 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xb53135f68b96bce52f67e9fbe8d49f58d0e4b15263e0edcd0cc8fe8af634c097
+npm run alert 0xb53135f68b96bce52f67e9fbe8d49f58d0e4b15263e0edcd0cc8fe8af634c097 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xdf6d99020fc65945dcf84f0990d8287b0cf0518f706849264cf8d640f79d4371
+npm run alert 0xdf6d99020fc65945dcf84f0990d8287b0cf0518f706849264cf8d640f79d4371 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xc46ee73daed6ed421eb4da3c0b04dc37ba909e76cfc573b1bb84d6fd4ac3c76d
+npm run alert 0xc46ee73daed6ed421eb4da3c0b04dc37ba909e76cfc573b1bb84d6fd4ac3c76d >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x6d78fa7e1c8255428245d0841fe5c49bd44989bf077db06fc4d1917249d1b41b
+npm run alert 0x6d78fa7e1c8255428245d0841fe5c49bd44989bf077db06fc4d1917249d1b41b >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x380b420fca97fe0c8e06c1721e53cfa10971f96cd87c453989dfd53037bbce59
+npm run alert 0x380b420fca97fe0c8e06c1721e53cfa10971f96cd87c453989dfd53037bbce59 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x0b0169d2bb1ea49522fdf65d842d3eb5134a4e8bd328b2199e8ab25cbdb58e82
+npm run alert 0x0b0169d2bb1ea49522fdf65d842d3eb5134a4e8bd328b2199e8ab25cbdb58e82 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x82b4c66c96a6c8bb0c519e22aac4e031e1d81b60aeceeea6004b525fb8510136
+npm run alert 0x82b4c66c96a6c8bb0c519e22aac4e031e1d81b60aeceeea6004b525fb8510136 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xe5ad27bb0531d7689873fe54ca0c00930ec698479eb6efda225e9976015abfe1
+npm run alert 0xe5ad27bb0531d7689873fe54ca0c00930ec698479eb6efda225e9976015abfe1 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xab241b0994f67b9c7d56a575c4f2a6c912f62d4a21cf0acdca1dbcdfbd64cc9e
+npm run alert 0xab241b0994f67b9c7d56a575c4f2a6c912f62d4a21cf0acdca1dbcdfbd64cc9e >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x8f6f7bab3f0affbbc044e978aa043ef4feaf6f1ca9d580687cadb1420400dee2
+npm run alert 0x8f6f7bab3f0affbbc044e978aa043ef4feaf6f1ca9d580687cadb1420400dee2 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x7f199b3b3cee815f428a25666bf521c9f41038337700bc033ea89aacd960ae32
+npm run alert 0x7f199b3b3cee815f428a25666bf521c9f41038337700bc033ea89aacd960ae32 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xfa5be5a3be88e0b4946a6bb3639c4e50a303014f8a9c2cb399ce8eacbd0c73af
+npm run alert 0xfa5be5a3be88e0b4946a6bb3639c4e50a303014f8a9c2cb399ce8eacbd0c73af >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xf0897daf66aa31bfb92d4799d6bfd14187745964836fd8f60b34af984972845f
+npm run alert 0xf0897daf66aa31bfb92d4799d6bfd14187745964836fd8f60b34af984972845f >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x0929ec7835e9d4ff7e8a4f60d769efa6cef2af53df224586c77b81b862d3ea8d
+npm run alert 0x0929ec7835e9d4ff7e8a4f60d769efa6cef2af53df224586c77b81b862d3ea8d >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x066505171639ecb34c3b69fe75bbd7cc53a39b0965e857f6aa7eeae12fe49af6
+npm run alert 0x066505171639ecb34c3b69fe75bbd7cc53a39b0965e857f6aa7eeae12fe49af6 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x7f0c83290df66d54fb803b25620135109018010c4f3cc6e8d8d4f1690659a0cc
+npm run alert 0x7f0c83290df66d54fb803b25620135109018010c4f3cc6e8d8d4f1690659a0cc >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x59d7263a9be60559fd5ff8d145fde466614a5db9688c4906fbe44ab227fbe5e4
+npm run alert 0x59d7263a9be60559fd5ff8d145fde466614a5db9688c4906fbe44ab227fbe5e4 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x5f5769f94e90c963503bcc9f3dc582e87703fd14d72b0a8cc92975352fe91d11
+npm run alert 0x5f5769f94e90c963503bcc9f3dc582e87703fd14d72b0a8cc92975352fe91d11 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x59eb34bcf74394966cf802c97343f92b2b2a9ef68271cb5d685de64413616d9c
+npm run alert 0x59eb34bcf74394966cf802c97343f92b2b2a9ef68271cb5d685de64413616d9c >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x265b5863912e1bf0c1f545af6c9941d71ba10376c7e1e25b16793ec92a79a853
+npm run alert 0x265b5863912e1bf0c1f545af6c9941d71ba10376c7e1e25b16793ec92a79a853 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xd26156e2e664eb22845823bdc72482392ed2f7af292b480caaaee8d791fe34c4
+npm run alert 0xd26156e2e664eb22845823bdc72482392ed2f7af292b480caaaee8d791fe34c4 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x5cde45d4f586b4f453a71c011d3f26a8c88c73f044c178c8e4bcf214254f204f
+npm run alert 0x5cde45d4f586b4f453a71c011d3f26a8c88c73f044c178c8e4bcf214254f204f >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xe4dde91875eacd34872cbb00dbeb8192c4efbda09e9eebe9f6e97691735dce9a
+npm run alert 0xe4dde91875eacd34872cbb00dbeb8192c4efbda09e9eebe9f6e97691735dce9a >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xe49e84e407814f259ba7ceba8f140ffb6738a8410c5f15fe443e972847be6ee1
+npm run alert 0xe49e84e407814f259ba7ceba8f140ffb6738a8410c5f15fe443e972847be6ee1 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x4fd0aff032982dc9bd346393dade4e29d76f14951274624792d3e596d0dba36d
+npm run alert 0x4fd0aff032982dc9bd346393dade4e29d76f14951274624792d3e596d0dba36d >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xecd2437988bd34dc83047f2a6da83ad01a41bb3f1464f6d72520250ebd9889a1
+npm run alert 0xecd2437988bd34dc83047f2a6da83ad01a41bb3f1464f6d72520250ebd9889a1 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x54a4bf9e24e22d88c8f213ee6aa0d992a0c9a022060cf1ff539654a7a60aa549
+npm run alert 0x54a4bf9e24e22d88c8f213ee6aa0d992a0c9a022060cf1ff539654a7a60aa549 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x57ee65828c0fee7bc4e17e958b9c6a6836618accdd132c0876d724bf39ed5edd
+npm run alert 0x57ee65828c0fee7bc4e17e958b9c6a6836618accdd132c0876d724bf39ed5edd >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x1f87262c799eb28df0ddeef2fce7ec8f4c7e9b7560a15af70285769a8132f7f5
+npm run alert 0x1f87262c799eb28df0ddeef2fce7ec8f4c7e9b7560a15af70285769a8132f7f5 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x0f1eb58d6ac9f63ea85650fabddb6aa694fad7543e014759b0b3e4db70c58c75
+npm run alert 0x0f1eb58d6ac9f63ea85650fabddb6aa694fad7543e014759b0b3e4db70c58c75 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x550594fb3a184b6dca048d73cccb83077e44b6a6aaa6cc2a9c4596930d9cd3e4
+npm run alert 0x550594fb3a184b6dca048d73cccb83077e44b6a6aaa6cc2a9c4596930d9cd3e4 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xc9c101c2a901d2ec853c91455b39a101ed059234a8afa539d582dc1cff855752
+npm run alert 0xc9c101c2a901d2ec853c91455b39a101ed059234a8afa539d582dc1cff855752 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xa3141001c65a74a0eaa210541f3ab819eb8b7625616f6d342eb5b1dcb3eb937d
+npm run alert 0xa3141001c65a74a0eaa210541f3ab819eb8b7625616f6d342eb5b1dcb3eb937d >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x7fb43d6f35a08ad782aaa02d74b80f840290c45d9f75b4f3974750d989148f61
+npm run alert 0x7fb43d6f35a08ad782aaa02d74b80f840290c45d9f75b4f3974750d989148f61 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x261e48d3bd73383b12cf6f586af0f60f267dc1deefb34088d3cc16e2eb132148
+npm run alert 0x261e48d3bd73383b12cf6f586af0f60f267dc1deefb34088d3cc16e2eb132148 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x1841aed3b85359f427517fd367923f49e1e75f7335374901521cfcc9a5476980
+npm run alert 0x1841aed3b85359f427517fd367923f49e1e75f7335374901521cfcc9a5476980 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xfccf67afd9a4c14c1735b02a7c2c0874170a716a3238c7b577d7a3968b8b2d39
+npm run alert 0xfccf67afd9a4c14c1735b02a7c2c0874170a716a3238c7b577d7a3968b8b2d39 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xe9b431a3bcbc391d1a0483c089d189a595955ff9178a27f517d7fed6c78faa36
+npm run alert 0xe9b431a3bcbc391d1a0483c089d189a595955ff9178a27f517d7fed6c78faa36 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xe8b55e3594d84979f106e08fdd28cbed4ef852f1b580a29842b2c8eccf92299f
+npm run alert 0xe8b55e3594d84979f106e08fdd28cbed4ef852f1b580a29842b2c8eccf92299f >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x9a0349653db9ae3a6d3835d74a7662fbfe4cf6b89cd72176533c4e8cc73a9d34
+npm run alert 0x9a0349653db9ae3a6d3835d74a7662fbfe4cf6b89cd72176533c4e8cc73a9d34 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x5975996e2d6695dc35887ca7a5dc571bdb72511300215fa6ed8a67f0e6ebdcaf
+npm run alert 0x5975996e2d6695dc35887ca7a5dc571bdb72511300215fa6ed8a67f0e6ebdcaf >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xb18d46859046958dd39df6ba0e9a228265ecb3b8f101908246e7a6205afb93be
+npm run alert 0xb18d46859046958dd39df6ba0e9a228265ecb3b8f101908246e7a6205afb93be >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x9931d2db6fbeea0169db7335b02a2d5242de2410e84d4a725725678fac48a8db
+npm run alert 0x9931d2db6fbeea0169db7335b02a2d5242de2410e84d4a725725678fac48a8db >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x65eea7262d82cf4d91695125c2283ae980eac2cdb1fc34834fc2677d3c030470
+npm run alert 0x65eea7262d82cf4d91695125c2283ae980eac2cdb1fc34834fc2677d3c030470 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x61854a49478453b9de011436c8f6cdfada95f2c765597900b58d082c41e4922e
+npm run alert 0x61854a49478453b9de011436c8f6cdfada95f2c765597900b58d082c41e4922e >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x56957cb078ddae660cbcaaf5138f19fa7fbe1d406c041cbe34c9af403c5dcc75
+npm run alert 0x56957cb078ddae660cbcaaf5138f19fa7fbe1d406c041cbe34c9af403c5dcc75 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xd9a8e003e6cb01d4f8760aefdada85275cdfcf8159a7df14e9425be42c66e6bb
+npm run alert 0xd9a8e003e6cb01d4f8760aefdada85275cdfcf8159a7df14e9425be42c66e6bb >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x992a32ddd5e1351c9f99e3453718ca9f33f31f2f8939cea74f5e8642553aae1c
+npm run alert 0x992a32ddd5e1351c9f99e3453718ca9f33f31f2f8939cea74f5e8642553aae1c >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x6cbe28430f8e55280689b9107dfe6be96e601f088f061aa582418126c60d8aa2
+npm run alert 0x6cbe28430f8e55280689b9107dfe6be96e601f088f061aa582418126c60d8aa2 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x3331315cf2f005dae54a1f9ae120f4e23bcb51b6ab662cd4c79b7df3ec948213
+npm run alert 0x3331315cf2f005dae54a1f9ae120f4e23bcb51b6ab662cd4c79b7df3ec948213 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x1d3437718fa1a4744e3cd1838572ef9e69fa37cb478087acf13a8891e52be39b
+npm run alert 0x1d3437718fa1a4744e3cd1838572ef9e69fa37cb478087acf13a8891e52be39b >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x1144658ee3f5c9a41e3cd5ffe1dd98270bc2d524efe91b3f0615f099c9e8cded
+npm run alert 0x1144658ee3f5c9a41e3cd5ffe1dd98270bc2d524efe91b3f0615f099c9e8cded >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x01da3a944a8b374b3f697b596cae80eaf77a9d729bbc8db7eb3ef7d0b8035043
+npm run alert 0x01da3a944a8b374b3f697b596cae80eaf77a9d729bbc8db7eb3ef7d0b8035043 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xfd1f1684d3bfa1729f3da04d423557a45d7fa1f5663c835931ef07c8817e79b0
+npm run alert 0xfd1f1684d3bfa1729f3da04d423557a45d7fa1f5663c835931ef07c8817e79b0 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xd09e3e175459620661255384c74a6e3d7c32c2ddd25366b389f885bae6f236ec
+npm run alert 0xd09e3e175459620661255384c74a6e3d7c32c2ddd25366b389f885bae6f236ec >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xbae26a3afbf12491932e3e4af4afdd8a8e1fb18e9f9ceb585266d0170076a73f
+npm run alert 0xbae26a3afbf12491932e3e4af4afdd8a8e1fb18e9f9ceb585266d0170076a73f >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x41d614d046cd4b6d60d3d83c8e21a6f4d899408a1475ce34ed2c27e62537a72a
+npm run alert 0x41d614d046cd4b6d60d3d83c8e21a6f4d899408a1475ce34ed2c27e62537a72a >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x3da59b3a52956db29497f2c25de052bd998614ff86c148b7b21976aa94b91e2e
+npm run alert 0x3da59b3a52956db29497f2c25de052bd998614ff86c148b7b21976aa94b91e2e >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x143631e8fd9ce303d6cb03b32e5dcfc38bff2a15a87c3f03d7b50d3704ec74b0
+npm run alert 0x143631e8fd9ce303d6cb03b32e5dcfc38bff2a15a87c3f03d7b50d3704ec74b0 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xba824026393b11953038eea0a5221c23790faa5be05ea3e2f1b2bcfa4062234f
+npm run alert 0xba824026393b11953038eea0a5221c23790faa5be05ea3e2f1b2bcfa4062234f >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x448b7d9c717c44cc0f241bd802a97b1e956d40235c7ba77a142610599861b29a
+npm run alert 0x448b7d9c717c44cc0f241bd802a97b1e956d40235c7ba77a142610599861b29a >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x1dcc272dccc1c5981e2ea2ee2428065ea8b911640b8fecfc125f4f43f62692e6
+npm run alert 0x1dcc272dccc1c5981e2ea2ee2428065ea8b911640b8fecfc125f4f43f62692e6 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x1aef86be578729a63435410ca0e49d52fd488140955f211e4b2220adc2c18ebe
+npm run alert 0x1aef86be578729a63435410ca0e49d52fd488140955f211e4b2220adc2c18ebe >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xcb492f8fa5d63a251b9be7430026c56de2d9a095bda94e628a238e8c80781c68
+npm run alert 0xcb492f8fa5d63a251b9be7430026c56de2d9a095bda94e628a238e8c80781c68 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x31dfe67af6d88ed307c76ff8ea93edee6a949895c22272cd8d60b4a97f15951f
+npm run alert 0x31dfe67af6d88ed307c76ff8ea93edee6a949895c22272cd8d60b4a97f15951f >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x08e4fcb334e309e387d8b41e63cad94ace67462c31a3b2537e05069f25f75577
+npm run alert 0x08e4fcb334e309e387d8b41e63cad94ace67462c31a3b2537e05069f25f75577 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xeb66328054da25bda7742fdcbded1bddf8e97619bdfd423bbaa4c5c8b79a291d
+npm run alert 0xeb66328054da25bda7742fdcbded1bddf8e97619bdfd423bbaa4c5c8b79a291d >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x9026fc3b2c6c9382283c272a5dc4a2a202ff8418c7acbd99f2b200ed187a428b
+npm run alert 0x9026fc3b2c6c9382283c272a5dc4a2a202ff8418c7acbd99f2b200ed187a428b >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x11c1b447f25adbc379b801ba95309204530a47573d791c2724bda3ae969781c9
+npm run alert 0x11c1b447f25adbc379b801ba95309204530a47573d791c2724bda3ae969781c9 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x1a8058deabef9f115c078de7a838618b56b79c2be8864a5d68bc2ca328144768
+npm run alert 0x1a8058deabef9f115c078de7a838618b56b79c2be8864a5d68bc2ca328144768 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x778155a970630c710f349cefe5b54f5f23c46f380b349d2271e3552e3e43690c
+npm run alert 0x778155a970630c710f349cefe5b54f5f23c46f380b349d2271e3552e3e43690c >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x57589e0a441e86cd847eec6084e48d877ca27ad5864f8fdfd5f9664adcf0c089
+npm run alert 0x57589e0a441e86cd847eec6084e48d877ca27ad5864f8fdfd5f9664adcf0c089 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x9b184085e3c4fc98301a45671062ce64d6502f57e53fdee613c93abe76f64ba0
+npm run alert 0x9b184085e3c4fc98301a45671062ce64d6502f57e53fdee613c93abe76f64ba0 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xd4f8abcd63c5978b94b052469b9cfdf51140ab1f273ea25748329d2fe6ebbd4e
+npm run alert 0xd4f8abcd63c5978b94b052469b9cfdf51140ab1f273ea25748329d2fe6ebbd4e >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xaf004a3efe1d1716507007cd9864949b1ea3eca7b39f5b28e90bfdf5a1784c57
+npm run alert 0xaf004a3efe1d1716507007cd9864949b1ea3eca7b39f5b28e90bfdf5a1784c57 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x49e11364ff6ac45cb2028385aeafb4751f338f6fdc68a18d0ea29d9389f09fd7
+npm run alert 0x49e11364ff6ac45cb2028385aeafb4751f338f6fdc68a18d0ea29d9389f09fd7 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x09a4893dd26a1fefe9cded4ac34a4a4af3f8a197aabaf54518c34df938d42c97
+npm run alert 0x09a4893dd26a1fefe9cded4ac34a4a4af3f8a197aabaf54518c34df938d42c97 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xf74ecefd493cbe94d7b6eec7386933eab2af763aa31fdf4bccc84c88fe60ed01
+npm run alert 0xf74ecefd493cbe94d7b6eec7386933eab2af763aa31fdf4bccc84c88fe60ed01 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xf0fc1a1c5155e46919c9194527616f9f07b2171586d4d1d2a3f122e2d739560c
+npm run alert 0xf0fc1a1c5155e46919c9194527616f9f07b2171586d4d1d2a3f122e2d739560c >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x21892d730d2facea14039861b648bf37ca216accab06b5ef01b107484e412532
+npm run alert 0x21892d730d2facea14039861b648bf37ca216accab06b5ef01b107484e412532 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xddceab76fdb908e7a8655bc7536ec1565cb83cdf34776ea8a1d1de95a6daebcc
+npm run alert 0xddceab76fdb908e7a8655bc7536ec1565cb83cdf34776ea8a1d1de95a6daebcc >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xc4d7989556133e4038d4bc5b2a444cf06b8346e1fffde272e2c7d7504aa83d0b
+npm run alert 0xc4d7989556133e4038d4bc5b2a444cf06b8346e1fffde272e2c7d7504aa83d0b >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x9c7bbeb86023090be73bf27d955da333557054172ea147b30243f17b160025a2
+npm run alert 0x9c7bbeb86023090be73bf27d955da333557054172ea147b30243f17b160025a2 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xc170dc099451e12be2c779aaa5c138b94e92a00cca603a85f3b61046584acaf8
+npm run alert 0xc170dc099451e12be2c779aaa5c138b94e92a00cca603a85f3b61046584acaf8 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x3005e949d62cbd2fbbea4630a556407f855af61e898d96a5822ec25ceba82cad
+npm run alert 0x3005e949d62cbd2fbbea4630a556407f855af61e898d96a5822ec25ceba82cad >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x2a310667c74b1f87c9aee8af21473cb2e0cefe6135a0d08d8e66d2528f436997
+npm run alert 0x2a310667c74b1f87c9aee8af21473cb2e0cefe6135a0d08d8e66d2528f436997 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xb8e176340ac2e3c335c620e5dd9dcf244da31c9dbaff0dc552774823b70d8f11
+npm run alert 0xb8e176340ac2e3c335c620e5dd9dcf244da31c9dbaff0dc552774823b70d8f11 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xa3d31d200c128f7d6eeb88243f1ba8797374caa94f6d7ceb961378f151a62bfa
+npm run alert 0xa3d31d200c128f7d6eeb88243f1ba8797374caa94f6d7ceb961378f151a62bfa >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xec07b8acc19055b908b1528af65fdb86ec1eb3d13353d5dd23bcd65e3260e0e7
+npm run alert 0xec07b8acc19055b908b1528af65fdb86ec1eb3d13353d5dd23bcd65e3260e0e7 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xda52f2a02e8339bfae8aeadf51ee6ac4a8622a44fbf3f655da09e6f5355b3eee
+npm run alert 0xda52f2a02e8339bfae8aeadf51ee6ac4a8622a44fbf3f655da09e6f5355b3eee >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xd0de3628fcaf93f48589d697b31ae304a573d351c5c5cddc36e42e8466ae16a0
+npm run alert 0xd0de3628fcaf93f48589d697b31ae304a573d351c5c5cddc36e42e8466ae16a0 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x2c18b9eeaa4043ae2cbf087a8aab9c56bd8267f8f828e29de25d59c954c6df80
+npm run alert 0x2c18b9eeaa4043ae2cbf087a8aab9c56bd8267f8f828e29de25d59c954c6df80 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xb62cfbd942c45851f1cb6351b17e860955c5fa0362f2f5ea90976a71dc0da5af
+npm run alert 0xb62cfbd942c45851f1cb6351b17e860955c5fa0362f2f5ea90976a71dc0da5af >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xacd1805d20f6b685cc662a0ccdf92c7e9beefc22c12329ea655a1e4ea352b85e
+npm run alert 0xacd1805d20f6b685cc662a0ccdf92c7e9beefc22c12329ea655a1e4ea352b85e >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x3f228d63821e5615296084b0b7ec8135e813c4ab8f6d228a94c5f488e007e318
+npm run alert 0x3f228d63821e5615296084b0b7ec8135e813c4ab8f6d228a94c5f488e007e318 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x59b430e04247227c01f8dfeae46647d91cf351c0d231bbafde405b3340ff7b08
+npm run alert 0x59b430e04247227c01f8dfeae46647d91cf351c0d231bbafde405b3340ff7b08 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0xa430c8e523eb9865dc37505686f3cf69271fefd37fcea6e802a372935f2da512
+npm run alert 0xa430c8e523eb9865dc37505686f3cf69271fefd37fcea6e802a372935f2da512 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x4aabebd067b7f7e7991593fad8cd7d818fc1e724c3b6bd2b5e597df5d555dfc7
+npm run alert 0x4aabebd067b7f7e7991593fad8cd7d818fc1e724c3b6bd2b5e597df5d555dfc7 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x1499987cd7055a67836d0e4fda068718d360ec55fb35892d22d5b42e1677dde1
+npm run alert 0x1499987cd7055a67836d0e4fda068718d360ec55fb35892d22d5b42e1677dde1 >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+echo Biswap: 0x51fde991df88f9aefa603255d93787c679e436b6cc23663c85306c3e12b342be
+npm run alert 0x51fde991df88f9aefa603255d93787c679e436b6cc23663c85306c3e12b342be >> Biswap_binance.txt 2>> Biswap_binance_error.txt
+grep 'ERROR'  Biswap_binance.txt >  Biswap_binance_debug.txt
+grep 'WARN'  Biswap_binance.txt >>  Biswap_binance_debug.txt
+grep 'adding cluster mapping'  Biswap_binance.txt >>  Biswap_binance_debug.txt
+grep 'adding FP mitigation cluster'  Biswap_binance.txt >>  Biswap_binance_debug.txt
+grep 'anomaly'  Biswap_binance.txt >>  Biswap_binance_debug.txt
+grep 'likely involved in an attack'  Biswap_binance.txt >>  Biswap_binance_results.txt
+grep 'ATTACK-DETECTOR'  Biswap_binance.txt >>  Biswap_binance_results.txt
