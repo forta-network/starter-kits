@@ -1,4 +1,5 @@
 from forta_agent import create_transaction_event
+import random
 
 import agent
 from web3_mock import Web3Mock, EOA_ADDRESS_NEW, EOA_ADDRESS_OLD
@@ -10,10 +11,13 @@ blockexplorer = BlockExplorerMock(1)
 
 class TestPositiveReputation:
     def test_initialize(self):
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
         agent.initialize()
         assert True, "Bot didnt successfully initialize"
 
     def test_detect_positive_reputation(self):
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
         agent.initialize()
         tx_event = create_transaction_event({
             'transaction': {
@@ -35,6 +39,7 @@ class TestPositiveReputation:
         assert len(findings) == 1, "Bot didnt successfully detect positive reputation"
 
     def test_detect_positive_reputation_cache(self):
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
         agent.initialize()
         tx_event = create_transaction_event({
             'transaction': {
@@ -59,6 +64,7 @@ class TestPositiveReputation:
         assert len(findings) == 0, "Bot should not have emitted an alert again"
 
     def test_detect_positive_reputation_too_new(self):
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
         agent.initialize()
         tx_event = create_transaction_event({
             'transaction': {

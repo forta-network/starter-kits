@@ -4,3 +4,4 @@ pandas>=1.4.2
 requests>=2.27.1
 python-dotenv>=0.20.0
 bot-alert-rate>=0.0.4
+boto3>=1.26.96
