@@ -5,8 +5,8 @@ from datetime import datetime
 import requests
 import logging
 
-from src.utils import Utils
-from src.constants import CONFIDENCE_MAPPINGS, MODEL_NAME
+from utils import Utils
+from constants import CONFIDENCE_MAPPINGS, MODEL_NAME
 
 class ScamDetectorFinding:
 
@@ -389,6 +389,9 @@ class ScamDetectorFinding:
             'metadata': {},
             'labels': labels
         })
+
+
+    
 
 
     @staticmethod

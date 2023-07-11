@@ -336,4 +336,11 @@ class TestScamFindings:
         assert finding.labels[1].metadata['associated_scammer_alert_hashes'] == original_alert_hash
         assert finding.labels[1].metadata['deployer_info'] == f"Deployer {EOA_ADDRESS_SMALL_TX} associated with a scammer {EOA_ADDRESS_LARGE_TX}; this contract may or may not be related to this particular scam, but was created by the scammer."
 
-
+    def test_debug_error(self):
+        finding = ScamDetectorFinding.alert_error("description", "source", "stacktrace")
+        assert finding.description == "description"
+        assert finding.alert_id == "DEBUG-ERROR"
+        assert finding.severity == FindingSeverity.Info
+        assert finding.name == "Scam detector encountered a recoverable error."
+        assert finding.metadata['error_source'] == "source"
+        assert finding.metadata['error_stacktrace'] == "stacktrace"
