@@ -1,4 +1,4 @@
-"""Test the transaction parsing for the Disperse contract"""
+"""Test the selectors & signatures wordlist for the batching method."""
 
 import pytest
 
