@@ -22,8 +22,8 @@ except ModuleNotFoundError:
 
 
 SECRETS_JSON = get_secrets()
-AWS_ACCESS_KEY = SECRETS_JSON['aws']['ACCESS_KEY']
-AWS_SECRET_KEY = SECRETS_JSON['aws']['SECRET_KEY']
+AWS_ACCESS_KEY = SECRETS_JSON['aws']['accessKey']
+AWS_SECRET_KEY = SECRETS_JSON['aws']['secretKey']
 
 
 session = boto3.Session(
