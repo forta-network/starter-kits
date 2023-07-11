@@ -95,9 +95,8 @@ def detect_eoa_phishing_scammer(w3, transaction_event):
     value = transaction_event.transaction.value
 
     if value > 0:
-        # check if to or from is a phishing scammer
+        # check if to is a phishing scammer
         to_address = transaction_event.to
-        from_address = transaction_event.from_
 
         if is_eoa(w3, to_address):
             to_address_start = timer()
@@ -115,22 +114,24 @@ def detect_eoa_phishing_scammer(w3, transaction_event):
             response_time = round(to_address_end - to_address_start, 3)
             logger.info(f"Finding generation time for {to_address}: {response_time}sec")
 
-        if is_eoa(w3, from_address):
-            from_address_start = timer()
-            eoa_stats, eoa_lst = get_eoa_tx_stats([from_address])
-            if from_address in eoa_lst:
-                finding = check_scammer(
-                    from_address,
-                    eoa_stats=eoa_stats[eoa_stats["eoa"] == from_address],
-                    chain_id=w3.eth.chainId,
-                )
-                if finding:
-                    findings.append(finding)
-            from_address_end = timer()
-            response_time = round(from_address_end - from_address_start, 3)
-            logger.info(
-                f"Finding generation time for {from_address}: {response_time}sec"
-            )
+        # TODO: check if from is a phishing scammer
+        # TODO: commented out for now because it goes over the bot time out limit
+        # if is_eoa(w3, from_address):
+        #     from_address_start = timer()
+        #     eoa_stats, eoa_lst = get_eoa_tx_stats([from_address])
+        #     if from_address in eoa_lst:
+        #         finding = check_scammer(
+        #             from_address,
+        #             eoa_stats=eoa_stats[eoa_stats["eoa"] == from_address],
+        #             chain_id=w3.eth.chainId,
+        #         )
+        #         if finding:
+        #             findings.append(finding)
+        #     from_address_end = timer()
+        #     response_time = round(from_address_end - from_address_start, 3)
+        #     logger.info(
+        #         f"Finding generation time for {from_address}: {response_time}sec"
+        #     )
 
     return findings
 
