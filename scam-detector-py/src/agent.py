@@ -16,18 +16,18 @@ import forta_agent
 from forta_agent import get_json_rpc_url,  Finding, FindingType, FindingSeverity
 from web3 import Web3
 
-from src.constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_ENTITIES_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
+from constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_ENTITIES_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
                        FINDINGS_CACHE_ALERT_KEY, FINDINGS_CACHE_BLOCK_KEY, ALERTED_FP_CLUSTERS_KEY, FINDINGS_CACHE_TRANSACTION_KEY,
                        ALERTED_FP_CLUSTERS_QUEUE_SIZE, CONTRACT_SIMILARITY_BOTS, CONTRACT_SIMILARITY_BOT_THRESHOLDS, EOA_ASSOCIATION_BOTS,
                        EOA_ASSOCIATION_BOT_THRESHOLDS, PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES, POOLCREATED_EVENT_ABI, ENCRYPTED_BOTS,
                        MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT, MODEL_FEATURES, MODEL_NAME, DEBUG_ALERT_ENABLED)
-from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
-from src.findings import ScamDetectorFinding
-from src.blockchain_indexer_service import BlockChainIndexer
-from src.forta_explorer import FortaExplorer
-from src.base_bot_parser import BaseBotParser
-from src.l2_cache import L2Cache
-from src.utils import Utils
+from storage import s3_client, dynamo_table, get_secrets, bucket_name
+from findings import ScamDetectorFinding
+from blockchain_indexer_service import BlockChainIndexer
+from forta_explorer import FortaExplorer
+from base_bot_parser import BaseBotParser
+from l2_cache import L2Cache
+from utils import Utils
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 block_chain_indexer = BlockChainIndexer()
@@ -1112,6 +1112,11 @@ def provide_handle_block(w3):
         findings = []
         dt = datetime.fromtimestamp(block_event.block.timestamp)
         logging.info(f"{BOT_VERSION}: handle block called with block timestamp {dt}")
+        
+        logging.info(f"{BOT_VERSION}: Handle block called. Adding {Utils.ERROR_CACHE.len()} error findings.")
+        findings.extend(Utils.ERROR_CACHE.get_all())
+        Utils.ERROR_CACHE.clear()
+        
         if dt.minute == 0:  # every hour
             logging.info(f"{BOT_VERSION}: Handle block on the hour was called. Findings cache for blocks size: {len(FINDINGS_CACHE_BLOCK)}")
             fp_findings = emit_new_fp_finding(w3)                        

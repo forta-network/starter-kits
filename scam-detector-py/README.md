@@ -92,6 +92,9 @@ When a false positive is observed, the scam detector will remove the previously 
     'remove': "true"
 ```
 
+## Error handling
+The scam detector passes unrecoverable errors to the scan node, which cause a restart. These errors are visible in the scam detector logs. Recoverable errors or temporary errors are emitted through a special DEBUG-ERROR finding. These DEBUG-ERROR findings can be analyzed through the graphQL API. 
+
 ## Base Bots Utilized By Scam Detector
 
 | BotID | Name | AlertId | Alert Logic |
