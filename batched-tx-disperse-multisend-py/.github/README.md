@@ -2,7 +2,7 @@
 
 ## Description
 
-Disperse / Multisend are apps used to distribute ERC-20 to multiple addresses in one transaction.
+Disperse / Multisend are apps used to distribute tokens to multiple addresses in one transaction.
 Although they are useful to reduce gas fees by sending transactions in batches, many use them as part of their scam schemes. 
 
 The goal of this bot is to alert when someone is using any of these apps in order to send native tokens or any other ERC-20 token.
@@ -14,6 +14,12 @@ The bot is specific to the contracts [`Disperse`][etherscan-contract-disperse] a
 So it runs on a single chain:
 
 - Ethereum
+
+## Filtering & Edge Cases
+
+- using batching to perform a single transfer
+- no input => airdrop
+- no token => native
 
 ## Alerts
 
