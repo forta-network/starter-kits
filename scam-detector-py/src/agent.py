@@ -444,6 +444,7 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
         score = get_model_score(feature_vector)
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got score {score} for cluster {cluster}. Processing took {time.time() - start_time} seconds.")
         model_threshold = MODEL_ALERT_THRESHOLD_LOOSE if Utils.is_beta() else MODEL_ALERT_THRESHOLD_STRICT
+        logging.info(f"{BOT_VERSION}: model threshold {model_threshold}.")
         if score>model_threshold:
             #since this is a expensive function, will only check if we are about to raise an alert
             if Utils.is_fp(w3, cluster):
