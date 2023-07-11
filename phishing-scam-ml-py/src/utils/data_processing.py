@@ -17,7 +17,7 @@ from src.utils.storage import get_secrets
 
 query_id_cache = ExpiringDict(max_len=10, max_age_seconds=1800)
 
-MAX_ADDRESSES_PER_QUERY = 100
+MAX_ADDRESSES_PER_QUERY = 110
 
 
 @lru_cache(maxsize=1_000_000)
