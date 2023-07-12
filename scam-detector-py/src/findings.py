@@ -4,9 +4,10 @@ from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
 from datetime import datetime
 import requests
 import logging
+import traceback
 
-from utils import Utils
-from constants import CONFIDENCE_MAPPINGS, MODEL_NAME
+from src.utils import Utils
+from src.constants import CONFIDENCE_MAPPINGS, MODEL_NAME
 
 class ScamDetectorFinding:
 
@@ -188,6 +189,7 @@ class ScamDetectorFinding:
                     }))
             except Exception as e:
                 logging.warning(f"Error getting contracts for scammer address {scammer_address}: {e}")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "findings.alert_similar_contract", traceback.format_exc()))
 
             metadata = {}
             metadata['scammer_address'] = scammer_address
@@ -322,6 +324,8 @@ class ScamDetectorFinding:
                                     }))
                         except Exception as e:
                             logging.warning(f"Error getting contracts for scammer address {scammer_address}: {e}")
+                            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "findings.scam_finding", traceback.format_exc()))
+
                     
             if url != "":
                 labels.append(Label({
@@ -545,6 +549,8 @@ class ScamDetectorFinding:
                 }))
         except Exception as e:
             logging.warning(f"Error getting contracts for scammer address {new_scammer_eoa}: {e}")
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "findings.scammer_association", traceback.format_exc()))
+
 
         metadata = {}
         metadata['scammer_address'] = new_scammer_eoa

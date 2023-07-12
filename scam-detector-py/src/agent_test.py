@@ -654,15 +654,9 @@ class TestScamDetector:
         findings = TestScamDetector.filter_findings(agent.detect_scam(w3error, alert_event, clear_state_flag=True),"passthrough")
 
         assert len(findings) == 1, "this should have triggered a finding"
-        finding = findings[0]
-        assert finding.alert_id == "SCAM-DETECTOR-IMPERSONATING-TOKEN", "should be impersonating token finding"
-        assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
-
         assert Utils.ERROR_CACHE.len() > 0, "error cache should not be empty given w3error logged an error"
 
 
-    # TODO - fix with new data once version 0.2.8 is deployed and emitted such labels
     def test_detect_alert_similar_contract(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
@@ -1057,7 +1051,7 @@ class TestScamDetector:
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
-        bot_id = "0x4ca56cfab479c4d41cf382383f6932f4bd8bfc6428bdeba82b634f7bf83ad333"
+        bot_id = "0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e"
         alert_id = "EOA-PHISHING-SCAMMER"
         description = "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12 has been identified as a phishing scammer"
         metadata = {

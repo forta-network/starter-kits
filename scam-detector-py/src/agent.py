@@ -16,18 +16,18 @@ import forta_agent
 from forta_agent import get_json_rpc_url,  Finding, FindingType, FindingSeverity
 from web3 import Web3
 
-from constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_ENTITIES_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
+from src.constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_ENTITIES_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
                        FINDINGS_CACHE_ALERT_KEY, FINDINGS_CACHE_BLOCK_KEY, ALERTED_FP_CLUSTERS_KEY, FINDINGS_CACHE_TRANSACTION_KEY,
                        ALERTED_FP_CLUSTERS_QUEUE_SIZE, CONTRACT_SIMILARITY_BOTS, CONTRACT_SIMILARITY_BOT_THRESHOLDS, EOA_ASSOCIATION_BOTS,
                        EOA_ASSOCIATION_BOT_THRESHOLDS, PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES, POOLCREATED_EVENT_ABI, ENCRYPTED_BOTS,
                        MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT, MODEL_FEATURES, MODEL_NAME, DEBUG_ALERT_ENABLED)
-from storage import s3_client, dynamo_table, get_secrets, bucket_name
-from findings import ScamDetectorFinding
-from blockchain_indexer_service import BlockChainIndexer
-from forta_explorer import FortaExplorer
-from base_bot_parser import BaseBotParser
-from l2_cache import L2Cache
-from utils import Utils
+from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
+from src.findings import ScamDetectorFinding
+from src.blockchain_indexer_service import BlockChainIndexer
+from src.forta_explorer import FortaExplorer
+from src.base_bot_parser import BaseBotParser
+from src.l2_cache import L2Cache
+from src.utils import Utils
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 block_chain_indexer = BlockChainIndexer()
@@ -219,6 +219,7 @@ def put_entity_cluster(alert_created_at_str: str, address: str, cluster: str):
 
     if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
         logging.error(f"Error putting alert in dynamoDB: {response}")
+        Utils.ERROR_CACHE.add(Utils.alert_error(f'dynamo.put_item HTTPStatusCode {response["ResponseMetadata"]["HTTPStatusCode"]}', "agent.put_entity_cluster", ""))
         return
     else:
         logging.info(f"Successfully put alert in dynamoDB: {response}")
@@ -256,6 +257,7 @@ def put_alert(alert_event: forta_agent.alert_event.AlertEvent, cluster: str):
 
     if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
         logging.error(f"Error putting alert in dynamoDB: {response}")
+        Utils.ERROR_CACHE.add(Utils.alert_error(f'dynamo.put_item HTTPStatusCode {response["ResponseMetadata"]["HTTPStatusCode"]}', "agent.put_alert", ""))
         return
     else:
         logging.info(f"Successfully put alert in dynamoDB: {response}")
@@ -613,6 +615,9 @@ def emit_manual_finding(w3, test = False) -> list:
         raise Exception("Chain ID not set")
 
     res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/manual_alert_list.tsv')
+    if res.status_code != 200:
+        logging.warn(f"Manual finding: failed to fetch manual alerts: {res.status_code}")
+        Utils.ERROR_CACHE.add(Utils.alert_error(f'request github {res.status_code}', "agent.emit_manual_finding", ""))
     logging.info(f"Manual finding: made request to fetch manual alerts: {res.status_code}")
     content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
     df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
@@ -623,6 +628,7 @@ def emit_manual_finding(w3, test = False) -> list:
             chain_id = int(chain_id_float)
         except Exception as e:
             logging.warning("Manual finding: Failed to get chain ID from manual finding")
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding", traceback.format_exc()))
             continue
 
         if chain_id != CHAIN_ID:
@@ -659,6 +665,7 @@ def emit_manual_finding(w3, test = False) -> list:
                 logging.info(f"Manual finding: Already alerted on {scammer_address_lower}")
         except Exception as e:
             logging.warning(f"Manual finding: Failed to process manual finding: {e} : {traceback.format_exc()}")
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding", traceback.format_exc()))
             continue
 
     return findings
@@ -749,6 +756,8 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
             raise e
+        else:
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.detect_scam", traceback.format_exc()))
 
     return findings
 
@@ -774,6 +783,9 @@ def emit_new_fp_finding(w3) -> list:
 
     try:
         res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
+        if res.status_code != 200:
+            logging.warn(f"{BOT_VERSION}: Could not retrieve fp_list.csv from github")
+            Utils.ERROR_CACHE.add(Utils.alert_error(f'request github {res.status_code}', "agent.emit_new_fp_finding", ""))
         content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
         df_fp = pd.read_csv(io.StringIO(content), sep=',')
         for index, row in df_fp.iterrows():
@@ -799,6 +811,9 @@ def emit_new_fp_finding(w3) -> list:
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
             logging.info(f"{BOT_VERSION}: emit fp finding exception:  - Raising exception to expose error to scannode")
             raise e
+        else:
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_new_fp_finding", traceback.format_exc()))
+
 
     return findings
 
@@ -1047,6 +1062,7 @@ def provide_handle_alert(w3):
                 raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception")
             else:
                 logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Return empty findings.")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.handle_alert", traceback.format_exc()))
                 return []
 
 
@@ -1106,6 +1122,7 @@ def provide_handle_block(w3):
                 raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
             else:
                 logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle block {INITIALIZED}. Time elapsed: {time_elapsed}. Return empty finding.")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.handle_block", traceback.format_exc()))
                 return []
 
         global FINDINGS_CACHE_BLOCK
@@ -1113,8 +1130,9 @@ def provide_handle_block(w3):
         dt = datetime.fromtimestamp(block_event.block.timestamp)
         logging.info(f"{BOT_VERSION}: handle block called with block timestamp {dt}")
         
-        logging.info(f"{BOT_VERSION}: Handle block called. Adding {Utils.ERROR_CACHE.len()} error findings.")
-        findings.extend(Utils.ERROR_CACHE.get_all())
+        if Utils.is_beta():
+            logging.info(f"{BOT_VERSION}: Handle block called. Adding {Utils.ERROR_CACHE.len()} error findings.")
+            findings.extend(Utils.ERROR_CACHE.get_all())
         Utils.ERROR_CACHE.clear()
         
         if dt.minute == 0:  # every hour
@@ -1167,6 +1185,7 @@ def provide_handle_transaction(w3):
                 raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
             else:
                 logging.warning(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Return empty finding.")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.handle_transaction", traceback.format_exc()))
                 return []
         
         global FINDINGS_CACHE_TRANSACTION

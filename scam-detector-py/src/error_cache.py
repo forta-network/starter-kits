@@ -1,15 +1,20 @@
+import logging
+
 class ErrorCache:
-    def __init__(self):
-        self.errors = []
+    errors = []
 
-    def add(self, error):
-        self.errors.append(error)
+    @staticmethod
+    def add(error):
+        ErrorCache.errors.append(error)
 
-    def get_all(self):
-        return self.errors
+    @staticmethod
+    def get_all():
+        return ErrorCache.errors
 
-    def clear(self):
-        self.errors = []
+    @staticmethod
+    def clear():
+        ErrorCache.errors = []
 
-    def len(self):
-        return len(self.errors)
+    @staticmethod
+    def len():
+        return len(ErrorCache.errors)

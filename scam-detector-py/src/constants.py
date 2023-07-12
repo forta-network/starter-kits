@@ -123,7 +123,7 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Ice-phishing", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"), 
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Native-ice-phishing", "PassThrough", "SCAM-DETECTOR-NATIVE-ICE-PHISHING"), 
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Address-poisoning", "PassThrough", "SCAM-DETECTOR-ADDRESS-POISONING"), 
-                ("0x4ca56cfab479c4d41cf382383f6932f4bd8bfc6428bdeba82b634f7bf83ad333", "EOA-PHISHING-SCAMMER", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"), 
+                ("0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e", "EOA-PHISHING-SCAMMER", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"), 
                  
                 ]
 
