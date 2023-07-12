@@ -115,7 +115,7 @@ address,chain_id,comment
 0x4c360c914c32a3f0c45c4635161174b28cfc79e9,	1, Executions of swaps. Does not seem like anything suspicious
 0x0ac8ca3a85edaa2de9b5776f63ca5d2ad470dc0c,	1,	Living period of the wallet is more than two years. Does not seem like a scammer wallet due to their activities
 0x7159ef8c080b6bfd32bbb02547de4c43c0af0e5f,	1,	Executing swaps on uniswap - Does not seem like a suspicious address
-0xc3ebe30f5b3aa266c3d1cf153b815b743f0aa14f,	1,	Living period of the wallet is more than 2 year. Although this address is swapping unknown coins, does not seem to be scamming people
+0xc3ebe30f5b3aa266c3d1cf153b815b743f0aa14f,	1,	Living period of the wallet is more than 2 year. Although this address is swapping unknown coins; does not seem to be scamming people
 0x008e12025b3637e099b4a5ea88c561d59fdde622,	1,	Although this address is swapping unknown coins, does not seem to be scamming people
 0x46634774b210fa9a19b0f89d14f7d43e4d69ceaf,	1,	Normal swaps. Does not seem like a phishing
 0x190029ef9a44c0a9ca83ece79367430a01b6643b,	1,	Simple swaps on uniswap
