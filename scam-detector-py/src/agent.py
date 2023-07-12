@@ -614,12 +614,12 @@ def emit_manual_finding(w3, test = False) -> list:
         logging.error("Chain ID not set")
         raise Exception("Chain ID not set")
 
-    res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/manual_alert_list.tsv')
-    if res.status_code != 200:
-        logging.warn(f"Manual finding: failed to fetch manual alerts: {res.status_code}")
-        Utils.ERROR_CACHE.add(Utils.alert_error(f'request github {res.status_code}', "agent.emit_manual_finding", ""))
-    logging.info(f"Manual finding: made request to fetch manual alerts: {res.status_code}")
-    content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
+    content = open('manual_alert_list_test.tsv', 'r').read() if test else open('manual_alert_list.tsv', 'r').read()
+    if not test:
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/manual_alert_list.tsv')
+        logging.info(f"Manual finding: made request to fetch manual alerts: {res.status_code}")
+        content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
+
     df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
     for index, row in df_manual_findings.iterrows():
         chain_id = -1
@@ -650,17 +650,16 @@ def emit_manual_finding(w3, test = False) -> list:
             threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']
             alert_id_threat_category = threat_category.upper().replace(" ", "-")
             alert_id = "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category
-            if not already_alerted(scammer_address_lower, alert_id):
+            if not already_alerted(cluster, alert_id):
                 logging.info(f"Manual finding: Emitting manual finding for {cluster}")
                 tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
                 account = "" if 'nan' in str(row["Account"]) else row['Account']
                 update_list(ALERTED_ENTITIES, ALERTED_ENTITIES_QUEUE_SIZE, cluster, alert_id)
-                findings.append(ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, cluster, threat_category, account + " " + tweet, chain_id))
+                finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, cluster, threat_category, account + " " + tweet, chain_id)
+                if finding is not None:
+                    findings.append(finding)
                 logging.info(f"Findings count {len(findings)}")
-                persist_state()
 
-                if test:
-                    break
             else:
                 logging.info(f"Manual finding: Already alerted on {scammer_address_lower}")
         except Exception as e:

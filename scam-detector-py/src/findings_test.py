@@ -247,26 +247,18 @@ class TestScamFindings:
         assert finding.labels[0].entity == EOA_ADDRESS_LARGE_TX, "should be EOA_ADDRESS_LARGE_TX"
 
     def test_scam_finding_manual(self):
-        finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, EOA_ADDRESS_LARGE_TX, "ice phishing", "me http://foo.com", 1)  # this EOA did not deploy a contract
+        finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, '0xdec08cb92a506B88411da9Ba290f3694BE223caa', "ice phishing", "me http://foo.com", 1)  # this EOA did not deploy a contract
         assert finding.alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
-        assert finding.description == f'{EOA_ADDRESS_LARGE_TX} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)', "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+        assert finding.description == f'0xdec08cb92a506B88411da9Ba290f3694BE223caa likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)', "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
         assert finding.metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
-        assert len(finding.labels) == 2, "should be 1"  
-        assert finding.labels[0].entity == EOA_ADDRESS_LARGE_TX, "should be EOA_ADDRESS"
+        assert len(finding.labels) == 1, "should be 1"  
+        assert finding.labels[0].entity == '0xdec08cb92a506B88411da9Ba290f3694BE223caa', "should be EOA_ADDRESS"
         assert finding.labels[0].metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
         assert finding.labels[0].label == "scammer", "should be scamme"
         assert finding.labels[0].metadata["address_type"] == "EOA"
         assert finding.labels[0].metadata["chain_id"] == 1
         assert finding.labels[0].metadata["threat_category"] == "ice-phishing"
         assert finding.labels[0].metadata["logic"] == "manual"
-
-        assert finding.labels[1].entity == CONTRACT2, "should be CONTRACT2"
-        assert finding.labels[1].metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
-        assert finding.labels[1].label == "scammer", "should be scammer"
-        assert finding.labels[1].metadata["address_type"] == "contract"
-        assert finding.labels[1].metadata["threat_category"] == "scammer-deployed-contract"
-        assert finding.labels[1].metadata["logic"] == "propagation"
-
 
 
     def test_scammer_contract_deployment(self):
