@@ -14,11 +14,13 @@ import agent
 
 from constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES
 from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX, CONTRACT2
+from web3_errormock import Web3ErrorMock
 from forta_explorer_mock import FortaExplorerMock
 from blockchain_indexer_mock import BlockChainIndexerMock
 from utils import Utils
 
 w3 = Web3Mock()
+w3error = Web3ErrorMock()
 forta_explorer = FortaExplorerMock()
 block_chain_indexer = BlockChainIndexerMock()
 
@@ -637,6 +639,27 @@ class TestScamDetector:
         assert finding.alert_id == "SCAM-DETECTOR-IMPERSONATING-TOKEN", "should be impersonating token finding"
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
+
+
+    def test_detect_impersonating_token_with_error(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127"
+        alert_id = "IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR"
+        description = "0x0cfeaed6f106154153325342d509b3a61b94d68c deployed an impersonating token contract at 0xfbd4f5ce3824af29fcb9e90ccb239f1761670606. It impersonates token BTC (Bitcoin) at 0x05f774f2eca50291a0407ca881f6405d84ea005b"
+        metadata = {"anomalyScore":"0.008463572974272662","newTokenContract":"0xfbd4f5ce3824af29fcb9e90ccb239f1761670606","newTokenDeployer":"0x0cfeaed6f106154153325342d509b3a61b94d68c","newTokenName":"Bitcoin","newTokenSymbol":"BTC","oldTokenContract":"0x05f774f2eca50291a0407ca881f6405d84ea005b","oldTokenDeployer":"0x5abf98eb769114e43b1c87413f2a93a384d2e905","oldTokenName":"Bitcoin","oldTokenSymbol":"BTC"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3error, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-IMPERSONATING-TOKEN", "should be impersonating token finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+
+        assert Utils.ERROR_CACHE.len() > 0, "error cache should not be empty given w3error logged an error"
 
 
     # TODO - fix with new data once version 0.2.8 is deployed and emitted such labels

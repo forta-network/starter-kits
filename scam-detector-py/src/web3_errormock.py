@@ -1,6 +1,9 @@
-class Web3Mock:
+from hexbytes import HexBytes
+
+class Web3ErrorMock:
     def __init__(self):
         self.eth = EthMock()
+
 
 
 class EthMock:
@@ -11,6 +14,13 @@ class EthMock:
         raise BaseException("unable to get tx account")
 
 
+    def chain_id(self):
+        return 1
+
+    
+    def get_code(self, address):
+        return HexBytes('0x')
+    
 class ContractMock:
     def __init__(self):
         self.functions = FunctionsMock()
