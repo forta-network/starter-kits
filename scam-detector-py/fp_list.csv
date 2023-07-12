@@ -82,3 +82,45 @@ address,chain_id,comment
 0x4e283abd94aee0a5a64a582def7b22bba60576d8,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
 0xbf901f52aef5bb098f6f7918e1fa0c639720f409,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
 0x75444282050682a43d1220cc4a09362c032538a3,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0xbb7c3a9c23c1d9aded4f98e8270bc3ee9914ddad, 1, Address is doing some swaps of some tokens but does not seem like ice phsihing
+0x56bf5b8db413f699d2649a39fc66b91dc858969b,	1,	Address is swapping some unknow tokens but does not seem like icehishing
+0xb9045c0f6a9726f9f88b9af56e6c3a1910ba6984,	1,	Seems to be executing swaps on uniswap. Does not seem like phsihing
+0x87b87f78917371aff305e719fbc8eaa8b3520bea,	1, Seems to be executing swaps on uniswap. Does not seem like phsihing
+0x385fa52944e8041438a75949e07a780351f4a56d,	1,	Seems to be executing swaps on uniswap. Does not sound like phsihing
+0x0dc6b208dc9bf42c3c23fa2e0a4dfddc2688c8a4,	1,	Seem to be executing swaps on metamask
+0xfd679b70742938242c8566cb2525ca0283d30309,	1,	Seem that swaps on uniswap are being triggered
+0xd0b801f002e08a15826d7ca963ab224426915041,	1,	Seem this address is executing a bunch of swaps but does not seem like tp
+0xb5ad01603a45382c128fb9b7d150d7585323ab63,	1,	Seems this address is being funded by binance then executing a bunch of swaps on uniswap buying low value tokens. Hard to associate this with a scammer
+0x4ce8bdc18e257db9ea29d11e290dfba99431ddd9,	1,	Address is buying and selling coins. Does not seem like TP
+0x9382ae1604e645cc26ae50263268530d09a06ca3,	1,	address is just swapping on uniswap - Does not seem like phishing
+0x77b5f2d89b33eedd7b8ab0ff72e1eaa186165f6d,	1,	Address is swapping on uniswap. Also the living period of this address is more than 3 years
+0x205abee28c9a0104fb2f5ffd7f6656c9a366f75d,	1,	Does not seem like ice phsihing. There are swaps but unverified contracts are called
+0x88e39e98079eca89e4cbee919656b23cc1d8e345,	1,	Does not seem like phhisng 
+0x7f38cabc77a64fbac1a34141c307c0c8795a400a,	1,	Excuting swaps on uniswap. Tokens that were exchanged are low value ones
+0x0f17b023309e1015841bd0058cfd252f2b5d67f7,	1,	Excuting swaps on uniswap. Tokens that were exchanged are low value ones
+0x7c8233475d24c1a17ee48c0ec2b972b5b084620d, 1,	Excuting swaps on uniswap. Tokens that were exchanged are low value ones. Living period of the wallet is 165 days
+0x307b50fa0cd6b9a7fd04668adc3eb47b54194107,	1,	Swapping unknown tokens on uniswap. Does not seem like TP
+0x917bfbd942017e54704aec0764bcf06014cd1fd6,	1,	This address seems to be executing swaps on uniswaps. Does not seem like phishing
+0x747fdd2878548a3e013a2f886b183d0321b72e9a, 1,	Address executing swaps on uniswap but nothing uncommon
+0x5c43b066ea091cc8f6851d7cbc29843bf0726e3d,	1,	Address executing a bunch of swaps. That's it
+0x69af7c5f6d88bba573d03617144bdae055f101b3,	1,	Normal swaps. Does not seem like phishing
+0xf6055ba9f26fc7708bb5fad8de6194f8300780b9, 1,	Normal swaps. Does not seem like phishing
+0xdbd64e0537f7629df84aed0dce9be0927a254e5f,	1,	Likely FP. Considering the address only executed swaps on uniswap. Does not sound like phishing
+0x069a19665a0a032c9310ba7ec297138da61d9e0d,	1,	Considering the living period of the address and that this one has no misterious acitivity - would say this is an FP
+0xa0025b8c1c82be938b668adb6d1107e4b14b3bec,	1,	Executing swaps on uniswap. Does not seem like ice-phishing
+0x45c9b6f766a800846ce00bb21ef8a45f483bd584,	1,	Executing swaps on uniswap. Does not seem like ice phishing
+0xa1a424e2fe48ba591e06a7ca5ef187f95df06901,	1,	Execution of swaps. Does not seem like a TP alert
+0x759dd4f35aaf00fabd843ae1fa09ccac2acc1420,	1,	Executing swaps on 1inch
+0xc15cfac8f3cafb9449687a5786251942506c7403,	1,	Normal swaps. Does not seem like a TP
+0x4c360c914c32a3f0c45c4635161174b28cfc79e9,	1, Executions of swaps. Does not seem like anything suspicious
+0x0ac8ca3a85edaa2de9b5776f63ca5d2ad470dc0c,	1,	Living period of the wallet is more than two years. Does not seem like a scammer wallet due to their activities
+0x7159ef8c080b6bfd32bbb02547de4c43c0af0e5f,	1,	Executing swaps on uniswap - Does not seem like a suspicious address
+0xc3ebe30f5b3aa266c3d1cf153b815b743f0aa14f,	1,	Living period of the wallet is more than 2 year. Although this address is swapping unknown coins, does not seem to be scamming people
+0x008e12025b3637e099b4a5ea88c561d59fdde622,	1,	Although this address is swapping unknown coins, does not seem to be scamming people
+0x46634774b210fa9a19b0f89d14f7d43e4d69ceaf,	1,	Normal swaps. Does not seem like a phishing
+0x190029ef9a44c0a9ca83ece79367430a01b6643b,	1,	Simple swaps on uniswap
+0xf39bcdc40c2c842bde8ac3c26d7391e188986df5,	1,	Swaps on OKX dex
+0xd17c9fb467c27ce4e45eaf5c4ae02b56ac95ec7e,	1,	Funded by coinbase. This address has normal activity and does not seem to have executed any attack
+0x00db4a28a036ec4f542163f2bdcec104313be22a,	1,	This address has normal activity. Does not seem to be executing any type of scam
+0x85db41cce3050194bd2725efa34bb2081ee40f9f,	1,	This address created a bunch of contracts. Does not seem to be gaining approvals and the draining
+0x8cc6b83d52b67f629fb3c5978cda3a6c2a456edc,	1,	Normal activity. Does not sound like ice phishign
