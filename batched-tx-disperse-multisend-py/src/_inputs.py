@@ -83,13 +83,31 @@ def get_array_length_candidates(data: str) -> list:
     return list(set([_c for _c in _chunks if _c <= _limit])) # remove repeats
 
 def get_array_candidates(data: str, element_regex: str, element_check: callable, parse_element: callable) -> list:
-    """Extract the address & value arrays from the hex input"""
+    """Extract the address & value arrays from the hex input."""
     _arrays = []
     _length_candidates = get_array_length_candidates(data)
     for _l in _length_candidates:
         _array_re = re.compile(array_regex(length=_l, element_regex=element_regex))
-        _array_candidates = _array_re.findall(data)
+        _array_candidates = _array_re.findall(data.lower())
         for _a in _array_candidates:
             if is_valid_array(data=_a, check=element_check):
                 _arrays.append(parse_array(_a, parse_element))
     return _arrays
+
+# HELPERS #####################################################################
+
+def get_array_of_address_candidates(data: str) -> list:
+    """Extract the address arrays from the hex input."""
+    return get_array_candidates(
+        data=data,
+        element_regex=address_regex(),
+        element_check=is_valid_address,
+        parse_element=parse_address)
+
+def get_array_of_value_candidates(data: str) -> list:
+    """Extract the value arrays from the hex input."""
+    return get_array_candidates(
+        data=data,
+        element_regex=value_regex(),
+        element_check=is_valid_value,
+        parse_element=parse_value)

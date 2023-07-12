@@ -59,7 +59,7 @@ ARGS = [
 
 # WORDLIST GENERATION #########################################################
 
-def generate_method_signatures(
+def generate_signature_wordlist(
     pattern: list=PATTERNS[0],
     verbs: list=VERBS,
     adjectives: list=ADJECTIVES,
@@ -70,17 +70,22 @@ def generate_method_signatures(
     """Generate a list of plausible method signatures."""
     _signatures = []
     for _a in product(verbs, adjectives, tokens, nouns, args):
-        _signature = pattern.format(
-            verb=_a[0],
-            adjective=_a[1],
-            token=_a[2],
-            noun=_a[3],
-            args=_a[-1])
+        _signature = pattern.format(verb=_a[0], adjective=_a[1], token=_a[2], noun=_a[3], args=_a[-1])
         _signature = _signature[0].lower() + _signature[1:] # camel case
         _signatures.append(_signature)
         #_signatures.append((Web3.keccak(text=_signature).hex())[:10]) # 0x + first 4 bytes of the hash
     return _signatures
 
-def generate_method_selectors(signatures: list) -> list:
-    """Compute the web3 method selectors for each signature."""
-    return [(Web3.keccak(text=_s).hex())[:10] for _s in signatures]
+# SELECTOR ####################################################################
+
+def selector(signature: str) -> str:
+    """Compute the web3 method selector for a single signature."""
+    return (Web3.keccak(text=signature).hex().lower())[:10] # "0x" prefix + 4 bytes
+
+# INDICATORS ##################################################################
+
+KNOWN_SIGNATURES = (
+    generate_signature_wordlist(pattern=PATTERNS[0], verbs=VERBS, adjectives=ADJECTIVES, tokens=TOKENS, nouns=NOUNS, args=ARGS)
+    + generate_signature_wordlist(pattern=PATTERNS[1], verbs=VERBS, adjectives=ADJECTIVES, tokens=TOKENS, nouns=NOUNS, args=ARGS))
+
+KNOWN_SELECTORS = {selector(_s): _s for _s in KNOWN_SIGNATURES}
