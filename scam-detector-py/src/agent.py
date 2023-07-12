@@ -672,8 +672,9 @@ def emit_manual_finding(w3, test = False) -> list:
                     logging.info(f"Manual finding: Emitting manual finding for {cluster}")
                     tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
                     account = "" if 'nan' in str(row["Account"]) else row['Account']
+                    comment = "" if 'nan' in str(row["Comment"]) else row['Comment']
                     update_list(ALERTED_ENTITIES, ALERTED_ENTITIES_QUEUE_SIZE, cluster, alert_id)
-                    finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, entity_type, cluster, threat_category, account + " " + tweet, chain_id)
+                    finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, entity_type, cluster, threat_category, account + " " + tweet, chain_id, comment)
                     if finding is not None:
                         findings.append(finding)
                     logging.info(f"Findings count {len(findings)}")

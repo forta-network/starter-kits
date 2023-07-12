@@ -401,7 +401,7 @@ class ScamDetectorFinding:
 
 
     @staticmethod
-    def scam_finding_manual(block_chain_indexer, forta_explorer, entity_type: str, entities: str, threat_category: str, reported_by: str, chain_id: int) -> Finding:
+    def scam_finding_manual(block_chain_indexer, forta_explorer, entity_type: str, entities: str, threat_category: str, reported_by: str, chain_id: int, comment:str = '') -> Finding:
         label_doesnt_exist = False
         
         labels = []
@@ -427,7 +427,8 @@ class ScamDetectorFinding:
                         'threat_category': ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-"+alert_id_threat_category),
                         'bot_version': Utils.get_bot_version(),
                         'label_version': ScamDetectorFinding.LABEL_VERSION,
-                        'logic': 'manual'
+                        'logic': 'manual',
+                        'comment': comment
                     }
                 }))
                 # get all deployed contracts by EOA and add label for those using etherscan or allium
@@ -447,7 +448,8 @@ class ScamDetectorFinding:
                                 'threat_category': ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"),
                                 'bot_version': Utils.get_bot_version(),
                                 'label_version': ScamDetectorFinding.LABEL_VERSION,
-                                'logic': 'propagation'
+                                'logic': 'propagation',
+                                'comment': comment
                             }
                         }))
             else:
@@ -460,7 +462,7 @@ class ScamDetectorFinding:
                 'alert_id': "SCAM-DETECTOR-MANUAL-" + alert_id_threat_category,
                 'type': FindingType.Scam,
                 'severity': FindingSeverity.Critical,
-                'metadata': {"reported_by": reported_by},
+                'metadata': {"reported_by": reported_by, 'comment': comment},
                 'labels': labels
             })
        
