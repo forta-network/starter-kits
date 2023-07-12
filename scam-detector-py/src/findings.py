@@ -393,11 +393,20 @@ class ScamDetectorFinding:
 
     @staticmethod
     def scam_finding_manual(block_chain_indexer, forta_explorer, scammer_cluster: str, threat_category: str, reported_by: str, chain_id: int) -> Finding:
+        label_doesnt_exist = False
+        
         labels = []
 
         alert_id_threat_category = threat_category.upper().replace(" ", "-")
 
+
         for scammer_address in scammer_cluster.split(","):
+            source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
+            df_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = scammer_address.lower())
+            if df_labels.empty:
+                label_doesnt_exist = True
+
+
             labels.append(Label({
                 'entityType': EntityType.Address,
                 'label': 'scammer',
@@ -433,15 +442,17 @@ class ScamDetectorFinding:
                     }
                 }))
 
-        return Finding({
-            'name': 'Scam detector identified an EOA with past alerts mapping to attack behavior',
-            'description': f'{scammer_cluster} likely involved in an attack (SCAM-DETECTOR-MANUAL-{alert_id_threat_category}, manual)',
-            'alert_id': "SCAM-DETECTOR-MANUAL-" + alert_id_threat_category,
-            'type': FindingType.Scam,
-            'severity': FindingSeverity.Critical,
-            'metadata': {"reported_by": reported_by},
-            'labels': labels
-        })
+        if label_doesnt_exist:
+            return Finding({
+                'name': 'Scam detector identified an EOA with past alerts mapping to attack behavior',
+                'description': f'{scammer_cluster} likely involved in an attack (SCAM-DETECTOR-MANUAL-{alert_id_threat_category}, manual)',
+                'alert_id': "SCAM-DETECTOR-MANUAL-" + alert_id_threat_category,
+                'type': FindingType.Scam,
+                'severity': FindingSeverity.Critical,
+                'metadata': {"reported_by": reported_by},
+                'labels': labels
+            })
+       
 
     @staticmethod
     def scammer_contract_deployment(scammer_address: str, scammer_contract_address: str, original_threat_category: str, original_alert_hash: str, chain_id: int) -> Finding:
