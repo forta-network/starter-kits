@@ -690,8 +690,9 @@ def emit_manual_finding(w3, test = False) -> list:
                     logging.info(f"Manual finding: Emitting manual finding for {url_lower}")
                     tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
                     account = "" if 'nan' in str(row["Account"]) else row['Account']
+                    comment = "" if 'nan' in str(row["Comment"]) else row['Comment']
                     update_list(ALERTED_ENTITIES, ALERTED_ENTITIES_QUEUE_SIZE, url_lower, alert_id)
-                    finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, entity_type, url_lower, threat_category, account + " " + tweet, chain_id)
+                    finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, entity_type, url_lower, threat_category, account + " " + tweet, chain_id, comment)
                     if finding is not None:
                         findings.append(finding)
                     logging.info(f"Findings count {len(findings)}")
@@ -1015,8 +1016,9 @@ def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transact
                 if not already_alerted(transaction_event.from_, alert_id):
                     tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
                     account = "" if 'nan' in str(row["Account"]) else row['Account']
+                    comment = "" if 'nan' in str(row["Comment"]) else row['Comment']
                     update_list(ALERTED_ENTITIES, ALERTED_ENTITIES_QUEUE_SIZE, transaction_event.from_, alert_id)
-                    finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, "Address", transaction_event.from_, threat_category, account + " " + tweet, CHAIN_ID)
+                    finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, "Address", transaction_event.from_, threat_category, account + " " + tweet, CHAIN_ID, comment)
                     if finding is not None:
                         logging.info(f"Manual finding: Emitting manual finding for {transaction_event.from_}")
                         findings.append(finding)
