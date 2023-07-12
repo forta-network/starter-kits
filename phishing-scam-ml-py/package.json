@@ -1,13 +1,14 @@
 {
-  "name": "phishing-scam-detection-ml-model",
+  "name": "phishing-scam-detection-ml-bot",
   "version": "0.0.1",
+  "repository": "https://github.com/forta-network/starter-kits/tree/main/phishing-scam-ml-py#ethereum-phishing-scam-detection-ml-model",
   "description": "Ethereum Phishing Scam Detection ML Model",
   "chainIds": [
     1
   ],
   "chainSettings": {
     "1": {
-      "shards": 3,
+      "shards": 6,
       "target": 2
     },
     "default": {
@@ -23,6 +24,8 @@
     "tx": "forta-agent run --tx",
     "block": "forta-agent run --block",
     "range": "forta-agent run --range",
+    "alert": "forta-agent run --alert",
+    "sequence": "forta-agent run --sequence",
     "file": "forta-agent run --file",
     "publish": "forta-agent publish",
     "info": "forta-agent info",
@@ -31,12 +34,13 @@
     "disable": "forta-agent disable",
     "enable": "forta-agent enable",
     "keyfile": "forta-agent keyfile",
+    "stake": "forta-agent stake",
     "test": "python3 -m pytest"
   },
   "dependencies": {
     "forta-agent": "^0.1.33"
   },
   "devDependencies": {
-    "nodemon": "^1.14.9"
+    "nodemon": "^2.0.8"
   }
 }

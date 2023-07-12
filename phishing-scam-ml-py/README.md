@@ -104,9 +104,9 @@ phishing-scam       0.88      0.54      0.67        80
 ### Phishing Scammer Alert Example
 
 ```bash
-$ npm run tx 0x3dd20a427489cec65c333cfdbc9d76c8533b57e9735961bead79a9d6729c3dd1
+$  npm run tx 0x85092ab425136dc35cdfdb3af6ecadae6ee7a9d652fb2c7a30e0fcefedc14585
 ...
-1 findings for transaction 0x3dd20a427489cec65c333cfdbc9d76c8533b57e9735961bead79a9d6729c3dd1 {
+1 findings for transaction 0x85092ab425136dc35cdfdb3af6ecadae6ee7a9d652fb2c7a30e0fcefedc14585 {
   "name": "Phishing Scammer Detected",
   "description": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12 has been identified as a phishing scammer",
   "alertId": "EOA-PHISHING-SCAMMER",
@@ -115,26 +115,26 @@ $ npm run tx 0x3dd20a427489cec65c333cfdbc9d76c8533b57e9735961bead79a9d6729c3dd1
   "type": "Suspicious",
   "metadata": {
     "scammer": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
-    "feature_generation_time_sec": 55.393977834,
-    "prediction_time_sec": 3.258650750000001,
-    "model_score": 0.659,
+    "feature_generation_time_sec": 17.310424417,
+    "prediction_time_sec": 3.108,
+    "model_score": 0.658,
     "feature_1_from_address_count_unique_ratio": 0.8977777777777778,
     "feature_2_from_address_nunique": 202,
-    "feature_3_in_block_number_std": 103944.45395073255,
+    "feature_3_in_block_number_std": 103944.45395073376,
     "feature_4_in_ratio": 0.0000027220471162690886,
     "feature_5_ratio_from_address_nunique": 0.6824324324324325,
     "feature_6_total_time": 9495012,
     "feature_7_from_in_min_std": 0,
-    "feature_8_from_in_block_timespan_median": 477557,
+    "feature_8_from_in_block_timespan_median": 411200,
     "feature_9_from_out_min_std": 0,
-    "feature_10_from_out_block_std_median": 166256.50317778645,
-    "feature_11_to_in_sum_min": 48516.30387100715,
-    "feature_12_to_in_sum_median": 196337.4491312858,
-    "feature_13_to_in_sum_median_ratio": 5190.0165806816785,
+    "feature_10_from_out_block_std_median": 130370.44905728434,
+    "feature_11_to_in_sum_min": 51073.6825051918,
+    "feature_12_to_in_sum_median": 194736.90871786117,
+    "feature_13_to_in_sum_median_ratio": 5147.7076308584055,
     "feature_14_to_in_min_min": 1e-18,
-    "feature_15_to_in_block_std_median": 236914.9074575176,
+    "feature_15_to_in_block_std_median": 235510.33946402825,
     "feature_16_to_out_min_std": 0,
-    "anomaly_score": 1,
+    "anomaly_score": 0.000001,
     "model_version": "1678286940",
     "model_threshold": 0.5
   },
@@ -144,7 +144,7 @@ $ npm run tx 0x3dd20a427489cec65c333cfdbc9d76c8533b57e9735961bead79a9d6729c3dd1
       "entityType": "Address",
       "entity": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
       "label": "scammer-eoa",
-      "confidence": 0.659,
+      "confidence": 0.658,
       "remove": false,
       "metadata": {}
     }
