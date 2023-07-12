@@ -11,6 +11,7 @@
 
 ## v2.15.4 (July 11th prod (without private key compromise nor ice phishing ML bot))
 - ice phishing ML FP fix; increating threshold to 0.89 to mitigate a class of FPs
+- fixed issue around repeated manual finding emission
 
 ## v2.15.3 (June 29th 2023 - beta, July 5th prod (without private key compromise))
 - added Urls to scam detector
