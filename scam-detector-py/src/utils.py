@@ -27,6 +27,11 @@ class Utils:
     IS_BETA = None
 
     @staticmethod
+    def get_code(w3, address) -> str:
+        code = w3.eth.get_code(Web3.toChecksumAddress(address))
+        return code.hex()
+
+    @staticmethod
     def is_contract(w3, addresses) -> bool:
         """
         this function determines whether address/ addresses is a contract; if all are contracts, returns true; otherwise false
