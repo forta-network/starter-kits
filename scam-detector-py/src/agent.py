@@ -1006,17 +1006,19 @@ def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transact
         for index, row in DF_CONTRACT_SIGNATURES.iterrows():
             code_regex = row["Entity"]
             if re.search(code_regex, code):
+                logging.info(row['Threat category'])
                 logging.info(f"{BOT_VERSION}: {transaction_event.from_} created contract {created_contract_address} matches {code_regex}")
                 threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']
                 alert_id_threat_category = threat_category.upper().replace(" ", "-")
                 alert_id = "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category
                 if not already_alerted(transaction_event.from_, alert_id):
-                    logging.info(f"Manual finding: Emitting manual finding for {transaction_event.from_}")
                     tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
                     account = "" if 'nan' in str(row["Account"]) else row['Account']
                     update_list(ALERTED_ENTITIES, ALERTED_ENTITIES_QUEUE_SIZE, transaction_event.from_, alert_id)
-                    
-                    findings.append(ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, "Address", transaction_event.from_, threat_category, account + " " + tweet, CHAIN_ID))
+                    finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, "Address", transaction_event.from_, threat_category, account + " " + tweet, CHAIN_ID)
+                    if finding is not None:
+                        logging.info(f"Manual finding: Emitting manual finding for {transaction_event.from_}")
+                        findings.append(finding)
                 break
 
         
@@ -1252,7 +1254,7 @@ def provide_handle_transaction(w3):
         logging.debug(f"{BOT_VERSION}: Handle transaction was called. Findings cache for transaction size: {len(FINDINGS_CACHE_TRANSACTION)}")
         contract_creation_findings = detect_scammer_contract_creation(w3, transaction_event)                        
         logging.debug(f"{BOT_VERSION}: Added {len(contract_creation_findings)} scammer contract creation findings.")
-        FINDINGS_CACHE_BLOCK.extend(contract_creation_findings)
+        FINDINGS_CACHE_TRANSACTION.extend(contract_creation_findings)
 
         logging.debug(f"{BOT_VERSION}: Handle transaction on the hour was called. Findings cache for transaction size now: {len(FINDINGS_CACHE_TRANSACTION)}")
             
