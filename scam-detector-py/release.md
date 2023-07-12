@@ -1,7 +1,6 @@
 # Scam Detector Bot Release Notes
 
 ## v2.17.0 (July 11th 2023 - beta)
-- add url and contract bytecode capabilities to manual list
 - add finding around error conditions
 
 ## v2.16.1 (July 11th 2023 - beta)

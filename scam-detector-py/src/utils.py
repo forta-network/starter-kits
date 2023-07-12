@@ -12,12 +12,12 @@ import pandas as pd
 import json
 import traceback
 
-from constants import TX_COUNT_FILTER_THRESHOLD
-from error_cache import ErrorCache
+from src.constants import TX_COUNT_FILTER_THRESHOLD
+from src.error_cache import ErrorCache
 
 
 class Utils:
-    ERROR_CACHE = ErrorCache()
+    ERROR_CACHE = ErrorCache
 
     ETHERSCAN_LABEL_SOURCE_IDS = ['etherscan','0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede']
     FP_MITIGATION_ADDRESSES = set()
@@ -93,6 +93,10 @@ class Utils:
     @staticmethod
     def update_fp_list(CHAIN_ID: int):
         res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/fp_list.tsv')
+        if res.status_code != 200:
+            logging.warn(f"Failed to update fp_list.tsv: {res.status_code}")
+            Utils.ERROR_CACHE.add(Utils.alert_error(f'request github {res.status_code}.', "utils.update_fp_list", ""))
+
         content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.tsv', 'r').read()
         df_fp = pd.read_csv(io.StringIO(content), sep='\t')
         for index, row in df_fp.iterrows():
