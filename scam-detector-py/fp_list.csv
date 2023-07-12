@@ -8,7 +8,7 @@ address,chain_id,comment
 0x55d398326f99059ff775485246999027b3197955,56,Binance Peg Token
 0x6F5aC65CA70F2a44d73c8f711Cb2bDf425D9F304,56,BitKeep: Swap Router v1
 0xa30669c9ddb1cbf1594a923f7eccac8ce0eee7fa,1,Not a TP (the potenital hacker was not approved but somehow invoked the transfer from function)
-0x8d5064fd1b1e74405050ba297239bc2aff28ef1b,1,This is clearly an FP. "Targets" are being drained several times by the same EOA. Also all targets are funded by crypto.com
+0x8d5064fd1b1e74405050ba297239bc2aff28ef1b,1,This is clearly an FP. >Targets< are being drained several times by the same EOA. Also all targets are funded by crypto.com
 0x2356821b1a40d5d5e53352c5112f89b273a83aed,1,Likely FP. "targets" are being funded then there's a short gap where they are stealed. Also funds are always sent to two different addresses
 0x576165c5c51A8E2571E798867405A939b8Dc9C5b,1,Likely FP. All targets are funded by Binance. As soon as funded "stealed"
 0x8ed0533fe6622d1c08b32e9075b0f0d2e090ff80,1,Likely FP. All targets are funded by Binance. As soon as funded "stealed"
