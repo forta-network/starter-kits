@@ -10,7 +10,7 @@ RUN python3 -m pip install --user -r requirements.txt
 FROM ubuntu:focal
 # this python version should match the build stage python version
 RUN apt-get update
-RUN apt-get -y install curl gnupg
+RUN apt-get -y install curl gnupg apt-utils libgomp1
 RUN curl -sL https://deb.nodesource.com/setup_14.x  | bash -
 RUN apt-get -y install nodejs
 COPY --from=builder /root/.local /root/.local

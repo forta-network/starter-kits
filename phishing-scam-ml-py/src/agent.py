@@ -1,3 +1,4 @@
+import concurrent.futures
 from os import environ
 from joblib import load
 from timeit import default_timer as timer
@@ -45,13 +46,15 @@ def is_eoa(w3, address) -> bool:
     return code == HexBytes("0x")
 
 
-def get_prediction(features) -> tuple:
+def get_prediction(address, features) -> tuple:
     start = timer()
     model_input = pd.DataFrame([{key: features.get(key, 0) for key in MODEL_FEATURES}])
     prediction_score = ML_MODEL.predict_proba(model_input)[0][1]
     prediction = "PHISHING_SCAMMER" if prediction_score >= MODEL_THRESHOLD else "NORMAL"
     end = timer()
-    return prediction_score, prediction, end - start
+    prediction_time = round(end - start, 3)
+    logger.info(f"Prediction time for {address}: {prediction_time}")
+    return prediction_score, prediction, prediction_time
 
 
 def check_scammer(address: str, eoa_stats: dict, chain_id: str):
@@ -61,7 +64,7 @@ def check_scammer(address: str, eoa_stats: dict, chain_id: str):
             model_score,
             prediction_label,
             pred_response_time,
-        ) = get_prediction(model_features)
+        ) = get_prediction(address, model_features)
         if prediction_label == "PHISHING_SCAMMER":
             labels = [
                 {
@@ -87,38 +90,47 @@ def check_scammer(address: str, eoa_stats: dict, chain_id: str):
             return EoaScammer(metadata, address, labels, chain_id).emit_finding()
 
 
+def analyze_address(w3, address):
+    finding = None
+    if is_eoa(w3, address):
+        address_start = timer()
+        eoa_stats, eoa_lst = get_eoa_tx_stats([address])
+
+        if address in eoa_lst:
+            finding = check_scammer(
+                address,
+                eoa_stats=eoa_stats[eoa_stats["eoa"] == address],
+                chain_id=w3.eth.chainId,
+            )
+        address_end = timer()
+        response_time = round(address_end - address_start, 3)
+        logger.info(f"Finding generation time for {address}: {response_time}sec")
+    return finding
+
+
 def detect_eoa_phishing_scammer(w3, transaction_event):
     findings = []
 
     value = transaction_event.transaction.value
 
     if value > 0:
-        # check if to or from is a phishing scammer
+        # check if to is a phishing scammer
         to_address = transaction_event.to
         from_address = transaction_event.from_
 
-        if is_eoa(w3, to_address):
-            eoa_stats, eoa_lst = get_eoa_tx_stats([to_address])
+        functions = [analyze_address, analyze_address]
+        function_params = [to_address, from_address]
 
-            if to_address in eoa_lst:
-                finding = check_scammer(
-                    to_address,
-                    eoa_stats=eoa_stats[eoa_stats["eoa"] == to_address],
-                    chain_id=w3.eth.chainId,
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = list(
+                executor.map(
+                    lambda f, params: f(w3, params), functions, function_params
                 )
-                if finding:
-                    findings.append(finding)
+            )
 
-        if is_eoa(w3, from_address):
-            eoa_stats, eoa_lst = get_eoa_tx_stats([from_address])
-            if from_address in eoa_lst:
-                finding = check_scammer(
-                    from_address,
-                    eoa_stats=eoa_stats[eoa_stats["eoa"] == from_address],
-                    chain_id=w3.eth.chainId,
-                )
-                if finding:
-                    findings.append(finding)
+        for finding in results:
+            if finding is not None:
+                findings.append(finding)
 
     return findings
 
