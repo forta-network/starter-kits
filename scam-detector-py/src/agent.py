@@ -1005,7 +1005,6 @@ def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transact
         code = Utils.get_code(w3, created_contract_address)
         for index, row in DF_CONTRACT_SIGNATURES.iterrows():
             code_regex = row["Entity"]
-            logging.info(code_regex)
             if re.search(code_regex, code):
                 logging.info(f"{BOT_VERSION}: {transaction_event.from_} created contract {created_contract_address} matches {code_regex}")
                 threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']
