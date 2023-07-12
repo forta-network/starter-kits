@@ -1,7 +1,7 @@
 from utils import Utils
-from web3_errormock import Web3Mock
+from web3_errormock import Web3ErrorMock
 
-w3 = Web3Mock()
+w3 = Web3ErrorMock()
 
 class TestErrorCache:
     
@@ -14,4 +14,5 @@ class TestErrorCache:
         error_findings = Utils.ERROR_CACHE.get_all()
         assert error_findings[0].description == "unable to get tx account"
         assert error_findings[0].metadata['error_source'] == 'Utils.get_max_tx_count'
+        assert len(error_findings[0].metadata['error_stacktrace']) >0 
         
