@@ -997,6 +997,7 @@ def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transact
     if transaction_event.to is None:
         nonce = transaction_event.transaction.nonce
         created_contract_address = Utils.calc_contract_address(w3, transaction_event.from_, nonce)
+        logging.info(f"{BOT_VERSION}: {transaction_event.from_} created contract {created_contract_address}")
         original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
         if original_threat_category != "":
             findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
@@ -1004,7 +1005,9 @@ def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transact
         code = Utils.get_code(w3, created_contract_address)
         for index, row in DF_CONTRACT_SIGNATURES.iterrows():
             code_regex = row["Entity"]
+            logging.info(code_regex)
             if re.search(code_regex, code):
+                logging.info(f"{BOT_VERSION}: {transaction_event.from_} created contract {created_contract_address} matches {code_regex}")
                 threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']
                 alert_id_threat_category = threat_category.upper().replace(" ", "-")
                 alert_id = "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category
