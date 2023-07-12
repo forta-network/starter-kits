@@ -11,6 +11,7 @@ import numpy as np
 from forta_agent import create_transaction_event, create_alert_event, FindingSeverity, AlertEvent, Label, EntityType, Finding, FindingType
 import requests
 import agent
+from unittest.mock import patch
 
 from constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES
 from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX, CONTRACT2
@@ -1085,15 +1086,14 @@ class TestScamDetector:
 
 
     def test_emit_new_manual_finding(self):
+        agent.TEST_STATE = True
         agent.clear_state()
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         findings = agent.emit_manual_finding(w3, True)
-        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/manual_alert_list_test.tsv')
-        content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
-        df_manual_entries = pd.read_csv(io.StringIO(content), sep='\t')
-        assert len(findings) == len(df_manual_entries), "this should have triggered manual findings"
+
+        assert len(findings) == 4, "this should have triggered manual address findings"
         
         for finding in findings:
             address_lower = "0x5ae30eb89d761675b910e5f7acc9c5da0c85baaa".lower()
@@ -1101,4 +1101,33 @@ class TestScamDetector:
                 assert findings[0].alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
                 assert findings[0].description == f"{address_lower} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)", "wrong description"
                 assert findings[0].metadata["reported_by"] == "Blocksec "
+
+    def test_scammer_contract_deployment_manual(self):
+        agent.TEST_STATE = True
+        agent.clear_state()
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        # should result in 0xd89a4f1146ea3ddc8f21f97b562d97858d89d307, which matches the signature in the manual list
+        tx_event = create_transaction_event({
+            'transaction': {
+                'hash': "0",
+                'from': '0x59d3BeE9C38C0b43cAEf8a83eC31e13d550EEa22',
+                'nonce': 0,
+            },
+            'block': {
+                'number': 0
+            },
+            'receipt': {
+                'logs': []}
+        })
+        findings = agent.detect_scammer_contract_creation(w3, tx_event)
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        assert findings[0].alert_id == f"SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+        found_contract = False
+        for label in findings[0].labels:
+            if label.label == 'scammer' and label.entity.lower() == '0xd89a4f1146ea3ddc8f21f97b562d97858d89d307':
+                found_contract = True
+        assert found_contract
 
