@@ -3281,4 +3281,4 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 7/12/23	Address	0x39720be11da41f0b0bf37a3cc918b5d89a949ce9 	@Intell_On_Chain	https://twitter.com/Intell_On_Chain/status/1679155993916178432?s=20	1	Ice phishing	
 7/12/23	Address	0x0ADFAA2Fd26AF99ddDCc68C4eFbe479C1a04c4e3	@CertiKAlert	https://twitter.com/CertiKAlert/status/1679121615156592640?s=20	1	Ice phishing	
 7/12/23	Address	0x6ae0f79a8c2E1071E563F9E3191870546c8df18e	@CertiKAlert	https://twitter.com/CertiKAlert/status/1679119872444313602?s=20		Protocol attack	
-7/12/23	Code	56657269666963696174696f6e2e.*566572696669636174696f6e2e	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+7/12/23	Code	5665726966.*6174696f6e2e	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
