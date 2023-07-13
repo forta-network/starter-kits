@@ -79,10 +79,3 @@ class Utils:
             Utils.TOTAL_SHARDS = total_shards
         return Utils.TOTAL_SHARDS
          
-    @staticmethod
-    def get_shard(CHAIN_ID: int, timestamp: int) -> int:
-        logging.debug(f"getting shard for timestamp {timestamp}")
-        total_shards = Utils.get_total_shards(CHAIN_ID)
-        shard = int(timestamp % total_shards)
-        logging.debug(f"shard: {shard}")
-        return shard
