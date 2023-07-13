@@ -3,7 +3,7 @@
 from json import loads
 from web3 import Web3
 
-from src.constants import TOKEN
+from src.options import TARGET_TOKEN
 
 # CONSTANTS ###################################################################
 
@@ -13,7 +13,7 @@ METHODS = ['disperseToken', 'disperseTokenSimple', 'disperseEther']
 
 # PARSER ######################################################################
 
-def parse_transaction_input_factory(w3: Web3, token: str=TOKEN) -> callable:
+def parse_transaction_input_factory(w3: Web3, token: str=TARGET_TOKEN) -> callable:
     _contract = w3.eth.contract(address=ADDRESS, abi=ABI)
 
     def _decode_function_input(data: str) -> tuple:

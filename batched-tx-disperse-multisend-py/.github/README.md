@@ -78,6 +78,8 @@ The agent behaviour can be verified on the following transactions:
 
 ## Metrics
 
+Uses the conflation to combine the scores from each source.
+
 The bot looks for transactions to the following contract:
 
 - Ethereum:

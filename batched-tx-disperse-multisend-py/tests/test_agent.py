@@ -24,20 +24,18 @@ def token_filter_handle_transaction(w3):
 # RANDOM TX ###################################################################
 
 def test_ignores_random_transactions(no_filter_handle_transaction):
-    assert len(no_filter_handle_transaction(data.TRANSACTIONS['random'][0])) == 0
+    assert ([len(no_filter_handle_transaction(_t)) == 0 for _t in data.TRANSACTIONS['random']])
 
 # BATCH ERC20 TRANSFERS #######################################################
 
 def test_detects_native_tokens_batched_transfers(no_filter_handle_transaction):
-    assert len(no_filter_handle_transaction(data.TRANSACTIONS['batch'][1])) > 0
-    assert len(no_filter_handle_transaction(data.TRANSACTIONS['batch'][3])) > 0
+    assert all([len(no_filter_handle_transaction(_t)) > 0 for _t in data.TRANSACTIONS['batch-native-token']])
 
 def test_detects_erc20_batched_transfers(no_filter_handle_transaction):
-    assert len(no_filter_handle_transaction(data.TRANSACTIONS['batch'][0])) > 0
-    assert len(no_filter_handle_transaction(data.TRANSACTIONS['batch'][2])) > 0
+    assert all([len(no_filter_handle_transaction(_t)) > 0 for _t in data.TRANSACTIONS['batch-erc20-token']])
 
 # FILTER BY TOKEN #############################################################
 
 def test_filters_findings_by_token(token_filter_handle_transaction):
-    assert len(token_filter_handle_transaction(data.TRANSACTIONS['batch'][0])) == 0
-    assert len(token_filter_handle_transaction(data.TRANSACTIONS['batch'][2])) > 0
+    assert len(token_filter_handle_transaction(data.TRANSACTIONS['batch-erc20-token'][0])) == 0
+    assert len(token_filter_handle_transaction(data.TRANSACTIONS['batch-erc20-token'][1])) > 0
