@@ -1,0 +1,158 @@
+from unittest.mock import Mock
+from boto3.dynamodb.conditions import Key
+from src.dynamo_utils import DynamoUtils, item_id_prefix
+from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
+import time
+import pandas as pd
+
+
+
+class TestDynamoUtils:
+    CHAIN_ID = 1
+
+    def test_put_entity_cluster(self):
+        dynamo = Mock()
+        dynamo.put_item.return_value = {
+            'ResponseMetadata': {'HTTPStatusCode': 200}}
+        address = '0x123456789'
+        cluster = 'entity_cluster'
+
+        DynamoUtils.put_entity_cluster(
+            dynamo, '2022-01-01T00:00:00', address, cluster, TestDynamoUtils.CHAIN_ID)
+
+        dynamo.put_item.assert_called_once_with(Item={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|entity_cluster',
+                                                'sortKey': address, 'address': address, 'cluster': cluster, 'expiresAt': 1641074400})
+
+    def test_put_fp_mitigation_cluster(self):
+        dynamo = Mock()
+        dynamo.put_item.return_value = {
+            'ResponseMetadata': {'HTTPStatusCode': 200}}
+        address = '0x123456789'
+        expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
+        expiresAt = int(time.time()) + int(expiry_offset)
+
+        DynamoUtils.put_fp_mitigation_cluster(
+            dynamo, address, TestDynamoUtils.CHAIN_ID)
+        dynamo.put_item.assert_called_once_with(
+            Item={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|fp_mitigation_cluster', 'sortKey': address, 'address': address, 'expiresAt': expiresAt})
+
+    def test_put_end_user_attack_cluster(self):
+        dynamo = Mock()
+        dynamo.put_item.return_value = {
+            'ResponseMetadata': {'HTTPStatusCode': 200}}
+        address = '0x123456789'
+        expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
+        expiresAt = int(time.time()) + int(expiry_offset)
+
+        DynamoUtils.put_end_user_attack_cluster(
+            dynamo, address, TestDynamoUtils.CHAIN_ID)
+        dynamo.put_item.assert_called_once_with(
+            Item={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|end_user_attack_cluster', 'sortKey': address, 'address': address, 'expiresAt': expiresAt})
+    
+    def test_put_alert_data(self):
+        dynamo = Mock()
+        dynamo.put_item.return_value = {
+            'ResponseMetadata': {'HTTPStatusCode': 200}}
+        cluster = 'alert_cluster'
+        dataframe = pd.DataFrame(
+            {'created_at': ['2022-01-01T00:00:00'], 'data': ['test']})
+        dataframe['created_at'] = pd.to_datetime(dataframe['created_at'])
+        first_alert_created_at_str = dataframe['created_at'].iloc[0]
+        first_alert_created_at = first_alert_created_at_str.timestamp()
+        dataframe_json = dataframe.to_json(orient="records")
+        expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
+        expiresAt = int(first_alert_created_at) + int(expiry_offset)
+
+        DynamoUtils.put_alert_data(
+            dynamo, cluster, dataframe, TestDynamoUtils.CHAIN_ID)
+        dynamo.put_item.assert_called_once_with(Item={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|alert',
+                                                'sortKey': cluster, 'cluster': cluster, 'dataframe': dataframe_json, 'expiresAt': expiresAt})
+    
+    def test_put_victim(self):
+        dynamo = Mock()
+        dynamo.put_item.return_value = {
+            'ResponseMetadata': {'HTTPStatusCode': 200}}
+        transaction_hash = '0xabcdef123456'
+        metadata = {'key': 'value'}
+        expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
+        expiresAt = int(time.time()) + int(expiry_offset)
+
+        DynamoUtils.put_victim(dynamo, transaction_hash,
+                               metadata, TestDynamoUtils.CHAIN_ID)
+        dynamo.put_item.assert_called_once_with(Item={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|victim',
+                                                'sortKey': transaction_hash, 'transaction_hash': transaction_hash, 'metadata': metadata, 'expiresAt': expiresAt})
+
+    def test_read_entity_clusters(self):
+        dynamo = Mock()
+        address = '0x123456789'
+        items = [{'cluster': 'cluster1'},
+                 {'cluster': 'cluster2'}]
+        response = {'Items': items}
+        dynamo.query.return_value = response
+
+        DynamoUtils.read_entity_clusters(
+            dynamo, address, TestDynamoUtils.CHAIN_ID)
+        dynamo.query.assert_called_once_with(KeyConditionExpression='itemId = :id AND sortKey = :sid', ExpressionAttributeValues={
+                                         ':id': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|entity_cluster', ':sid': f'{address}'})
+
+    def test_read_fp_mitigation_clusters(self):
+        dynamo = Mock()
+        items = [{'address': '0x123456789', 'expiresAt': 1641074400}]
+        response = {'Items': items}
+        dynamo.query.return_value = response
+
+        DynamoUtils.read_fp_mitigation_clusters(
+            dynamo, TestDynamoUtils.CHAIN_ID)
+        dynamo.query.assert_called_once_with(KeyConditionExpression='itemId = :id', ExpressionAttributeValues={
+            ':id': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|fp_mitigation_cluster'})
+
+    def test_read_end_user_attack_clusters(self):
+        dynamo = Mock()
+        items = [{'address': '0x123456789', 'expiresAt': 1641074400}]
+        response = {'Items': items}
+        dynamo.query.return_value = response
+
+        DynamoUtils.read_end_user_attack_clusters(
+            dynamo, TestDynamoUtils.CHAIN_ID)
+        dynamo.query.assert_called_once_with(KeyConditionExpression='itemId = :id', ExpressionAttributeValues={
+            ':id': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|end_user_attack_cluster'})
+
+    def test_read_alert_data(self):
+        dynamo = Mock()
+        cluster = 'alert_cluster'
+        items = [{'cluster': 'alert_cluster', 'sortKey': '1641074400',
+                  'dataframe': '{"created_at":{"0":"2022-01-01T00:00:00"},"data":{"0":"test"}}'}]
+        response = {'Items': items}
+        dynamo.query.return_value = response
+
+        DynamoUtils.read_alert_data(
+            dynamo, cluster, TestDynamoUtils.CHAIN_ID)
+        dynamo.query.assert_called_once_with(KeyConditionExpression='itemId = :id AND sortKey = :sid', ExpressionAttributeValues={
+            ':id': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|alert', ':sid': f'{cluster}'})
+
+    def test_read_victims(self):
+        dynamo = Mock()
+        items = [{'transaction_hash': '0xabcdef123456', 'sortKey': '1641074400',
+                  'metadata': '{"key":"value"}'}]
+        response = {'Items': items}
+        dynamo.query.return_value = response
+
+        DynamoUtils.read_victims(
+            dynamo, TestDynamoUtils.CHAIN_ID)
+        dynamo.query.assert_called_once_with(
+            KeyConditionExpression=Key('itemId').eq(
+                f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|victim')
+        )
+
+    def test_delete_alert_data(self):
+        dynamo = Mock()
+        address = '0x432423'
+        dynamo.delete_item.return_value = {
+            'ResponseMetadata': {'HTTPStatusCode': 200}}
+
+        DynamoUtils.delete_alert_data(
+            dynamo, address, TestDynamoUtils.CHAIN_ID)
+        dynamo.delete_item.assert_called_once_with(
+            Key={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|alert',
+                 'sortKey': f'{address}'}
+        )
