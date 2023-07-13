@@ -1,7 +1,11 @@
 # Scam Detector Bot Release Notes
 
+## v2.1710 (July 13th 2023 - beta)
+- better error handling around manual lists
+
 ## v2.17.0 (July 11th 2023 - beta)
 - add finding around error conditions
+- add ability to alert on manual provided URLs and contract signatures
 
 ## v2.16.1 (July 11th 2023 - beta)
 - ice phishing ML FP fix; increating threshold to 0.89 to mitigate a class of FPs

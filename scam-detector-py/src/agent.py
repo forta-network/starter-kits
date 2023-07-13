@@ -636,73 +636,78 @@ def emit_manual_finding(w3, test = False) -> list:
         logging.error("Chain ID not set")
         raise Exception("Chain ID not set")
 
-    df_manual_findings = get_manual_list()
-    for index, row in df_manual_findings.iterrows():
-        chain_id = -1
-        try:
-            chain_id_float = row['Chain ID']
-            chain_id = int(chain_id_float)
-        except Exception as e:
-            logging.warning("Manual finding: Failed to get chain ID from manual finding")
-            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding", traceback.format_exc()))
-            continue
+    try:
+        df_manual_findings = get_manual_list()
+        for index, row in df_manual_findings.iterrows():
+            chain_id = -1
+            try:
+                chain_id_float = row['Chain ID']
+                chain_id = int(chain_id_float)
+            except Exception as e:
+                logging.warning("Manual finding: Failed to get chain ID from manual finding")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding", traceback.format_exc()))
+                continue
 
-        if chain_id != CHAIN_ID:
-            logging.info("Manual finding: Manual entry doesnt match chain ID.")
-            continue
+            if chain_id != CHAIN_ID:
+                logging.info("Manual finding: Manual entry doesnt match chain ID.")
+                continue
 
-        try:
-            entity_type = row['EntityType']
-            if entity_type == "Address":
-                scammer_address_lower = row['Entity'].lower().strip()
-                cluster = scammer_address_lower
-                logging.info(f"Manual finding: Have manual entry for {scammer_address_lower}")
-                entity_clusters = read_entity_clusters(scammer_address_lower)
-                if scammer_address_lower in entity_clusters.keys():
-                    cluster = entity_clusters[scammer_address_lower]
+            try:
+                entity_type = row['EntityType']
+                if entity_type == "Address":
+                    scammer_address_lower = row['Entity'].lower().strip()
+                    cluster = scammer_address_lower
+                    logging.info(f"Manual finding: Have manual entry for {scammer_address_lower}")
+                    entity_clusters = read_entity_clusters(scammer_address_lower)
+                    if scammer_address_lower in entity_clusters.keys():
+                        cluster = entity_clusters[scammer_address_lower]
 
-                if Utils.is_contract(w3, cluster):
-                    logging.info(f"Manual finding: Address {cluster} is a contract")
-                    continue
+                    if Utils.is_contract(w3, cluster):
+                        logging.info(f"Manual finding: Address {cluster} is a contract")
+                        continue
 
-                threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']
-                alert_id_threat_category = threat_category.upper().replace(" ", "-")
-                alert_id = "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category
-                if not already_alerted(cluster, alert_id):
-                    logging.info(f"Manual finding: Emitting manual finding for {cluster}")
-                    tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
-                    account = "" if 'nan' in str(row["Account"]) else row['Account']
-                    comment = "" if 'nan' in str(row["Comment"]) else row['Comment']
-                    update_list(ALERTED_ENTITIES, ALERTED_ENTITIES_QUEUE_SIZE, cluster, alert_id)
-                    finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, entity_type, cluster, threat_category, account + " " + tweet, chain_id, comment)
-                    if finding is not None:
-                        findings.append(finding)
-                    logging.info(f"Findings count {len(findings)}")
+                    threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']
+                    alert_id_threat_category = threat_category.upper().replace(" ", "-")
+                    alert_id = "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category
+                    if not already_alerted(cluster, alert_id):
+                        logging.info(f"Manual finding: Emitting manual finding for {cluster}")
+                        tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
+                        account = "" if 'nan' in str(row["Account"]) else row['Account']
+                        comment = "" if 'nan' in str(row["Comment"]) else row['Comment']
+                        update_list(ALERTED_ENTITIES, ALERTED_ENTITIES_QUEUE_SIZE, cluster, alert_id)
+                        finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, entity_type, cluster, threat_category, account + " " + tweet, chain_id, comment)
+                        if finding is not None:
+                            findings.append(finding)
+                        logging.info(f"Findings count {len(findings)}")
 
-                else:
-                    logging.info(f"Manual finding: Already alerted on {scammer_address_lower}")
-            if entity_type == "Url":
-                url_lower = row['Entity'].lower().strip()
-                threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']
-                alert_id_threat_category = threat_category.upper().replace(" ", "-")
-                alert_id = "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category
-                if not already_alerted(url_lower, alert_id):
-                    logging.info(f"Manual finding: Emitting manual finding for {url_lower}")
-                    tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
-                    account = "" if 'nan' in str(row["Account"]) else row['Account']
-                    comment = "" if 'nan' in str(row["Comment"]) else row['Comment']
-                    update_list(ALERTED_ENTITIES, ALERTED_ENTITIES_QUEUE_SIZE, url_lower, alert_id)
-                    finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, entity_type, url_lower, threat_category, account + " " + tweet, chain_id, comment)
-                    if finding is not None:
-                        findings.append(finding)
-                    logging.info(f"Findings count {len(findings)}")
-                else:
-                    logging.info(f"Manual finding: Already alerted on {url_lower}")
+                    else:
+                        logging.info(f"Manual finding: Already alerted on {scammer_address_lower}")
+                if entity_type == "Url":
+                    url_lower = row['Entity'].lower().strip()
+                    threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']
+                    alert_id_threat_category = threat_category.upper().replace(" ", "-")
+                    alert_id = "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category
+                    if not already_alerted(url_lower, alert_id):
+                        logging.info(f"Manual finding: Emitting manual finding for {url_lower}")
+                        tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
+                        account = "" if 'nan' in str(row["Account"]) else row['Account']
+                        comment = "" if 'nan' in str(row["Comment"]) else row['Comment']
+                        update_list(ALERTED_ENTITIES, ALERTED_ENTITIES_QUEUE_SIZE, url_lower, alert_id)
+                        finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, entity_type, url_lower, threat_category, account + " " + tweet, chain_id, comment)
+                        if finding is not None:
+                            findings.append(finding)
+                        logging.info(f"Findings count {len(findings)}")
+                    else:
+                        logging.info(f"Manual finding: Already alerted on {url_lower}")
 
-        except Exception as e:
-            logging.warning(f"Manual finding: Failed to process manual finding: {e} : {traceback.format_exc()}")
-            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding", traceback.format_exc()))
-            continue
+            except Exception as e:
+                logging.warning(f"Manual finding: Failed to process manual finding: {e} : {traceback.format_exc()}")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding.internal", traceback.format_exc()))
+                continue
+    
+    except Exception as e:
+        logging.warning(f"Manual finding: Failed to process manual finding: {e} : {traceback.format_exc()}")
+        Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding", traceback.format_exc()))
 
     return findings
 
@@ -816,7 +821,6 @@ def emit_new_fp_finding(w3) -> list:
     similar_contract_labels = None
     scammer_association_labels = None
 
-
     try:
         res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
         if res.status_code != 200:
@@ -825,31 +829,30 @@ def emit_new_fp_finding(w3) -> list:
         content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
         df_fp = pd.read_csv(io.StringIO(content), sep=',')
         for index, row in df_fp.iterrows():
-            chain_id = int(row['chain_id'])
-            if chain_id != CHAIN_ID:
-                continue
-            cluster = row['address'].lower()
-            if cluster not in ALERTED_FP_CLUSTERS.keys():
-                update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, cluster, "SCAM-DETECTOR-FALSE-POSITIVE")
-                for address in cluster.split(','):
-                    if scammer_association_labels is None:
-                        scammer_association_labels = get_scammer_association_labels(w3, forta_explorer)
-                    if similar_contract_labels is None:
-                        similar_contract_labels = get_similar_contract_labels(w3, forta_explorer)
-                    
-                    for (entity, label, metadata) in obtain_all_fp_labels(w3, address, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, CHAIN_ID):
-                        logging.info(f"{BOT_VERSION}: Emitting FP mitigation finding for {entity} {label}")
-                        update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, entity, "SCAM-DETECTOR-FALSE-POSITIVE")
-                        findings.append(ScamDetectorFinding.alert_FP(w3, entity, label, metadata))
-                        logging.info(f"{BOT_VERSION}: Findings count {len(FINDINGS_CACHE_BLOCK)}")
-    except BaseException as e:
+            try:
+                chain_id = int(row['chain_id'])
+                if chain_id != CHAIN_ID:
+                    continue
+                cluster = row['address'].lower()
+                if cluster not in ALERTED_FP_CLUSTERS.keys():
+                    update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, cluster, "SCAM-DETECTOR-FALSE-POSITIVE")
+                    for address in cluster.split(','):
+                        if scammer_association_labels is None:
+                            scammer_association_labels = get_scammer_association_labels(w3, forta_explorer)
+                        if similar_contract_labels is None:
+                            similar_contract_labels = get_similar_contract_labels(w3, forta_explorer)
+                        
+                        for (entity, label, metadata) in obtain_all_fp_labels(w3, address, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, CHAIN_ID):
+                            logging.info(f"{BOT_VERSION}: Emitting FP mitigation finding for {entity} {label}")
+                            update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, entity, "SCAM-DETECTOR-FALSE-POSITIVE")
+                            findings.append(ScamDetectorFinding.alert_FP(w3, entity, label, metadata))
+                            logging.info(f"{BOT_VERSION}: Findings count {len(FINDINGS_CACHE_BLOCK)}")
+            except Exception as e:
+                logging.warning(f"{BOT_VERSION}: emit fp finding exception: {e} - {traceback.format_exc()}")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_new_fp_finding.internal", traceback.format_exc()))
+    except Exception as e:
         logging.warning(f"{BOT_VERSION}: emit fp finding exception: {e} - {traceback.format_exc()}")
-        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
-            logging.info(f"{BOT_VERSION}: emit fp finding exception:  - Raising exception to expose error to scannode")
-            raise e
-        else:
-            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_new_fp_finding", traceback.format_exc()))
-
+        Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_new_fp_finding", traceback.format_exc()))
 
     return findings
 
@@ -1204,10 +1207,13 @@ def provide_handle_block(w3):
             FINDINGS_CACHE_BLOCK.extend(manual_findings)
 
             global DF_CONTRACT_SIGNATURES
-            df_manual_list = get_manual_list()
-            DF_CONTRACT_SIGNATURES = df_manual_list[df_manual_list['EntityType']=='Code']
-            logging.info(f"{BOT_VERSION}: Loaded {len(DF_CONTRACT_SIGNATURES)} contract signatures.")
-
+            try:
+                df_manual_list = get_manual_list()
+                DF_CONTRACT_SIGNATURES = df_manual_list[df_manual_list['EntityType']=='Code']
+                logging.info(f"{BOT_VERSION}: Loaded {len(DF_CONTRACT_SIGNATURES)} contract signatures.")
+            except Exception as e:
+                logging.error(f"{BOT_VERSION}: Failed to load contract signatures.")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.handle_block", traceback.format_exc()))
             logging.info(f"{BOT_VERSION}: Handle block on the hour was called. Findings cache for blocks size now: {len(FINDINGS_CACHE_BLOCK)}")
             
             persist_state()
