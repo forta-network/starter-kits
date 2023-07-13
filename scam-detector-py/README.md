@@ -206,6 +206,6 @@ The scam detector passes unrecoverable errors to the scan node, which cause a re
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Ice-phishing | PassThrough | 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Native-ice-phishing | PassThrough | 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Address-poisoning | PassThrough | 
-| 0x4ca56cfab479c4d41cf382383f6932f4bd8bfc6428bdeba82b634f7bf83ad333 | Ice Phishing ML Model | EOA-PHISHING-SCAMMER | PassThrough |
+| 0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e | Ice Phishing ML Model | EOA-PHISHING-SCAMMER | PassThrough |
 
 
