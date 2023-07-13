@@ -13,17 +13,17 @@ KNOWN_SIGNATURES = [
     'disperseEther(address[],uint256[])',
     'disperseToken(address,address[],uint256[])',]
 
-KNOWN_SELECTORS = [_t.transaction.data[:10] for _t in data.TRANSACTIONS['batch']]
+KNOWN_SELECTORS = [_t.transaction.data[:10] for _t in data.TRANSACTIONS['batch-erc20-token'] + data.TRANSACTIONS['batch-native-token']]
 
 @pytest.fixture
 def signature_wordlist():
     return (
-        selectors.generate_method_signatures(pattern=selectors.PATTERNS[0])
-        + selectors.generate_method_signatures(pattern=selectors.PATTERNS[1]))
+        selectors.generate_signature_wordlist(pattern=selectors.PATTERNS[0])
+        + selectors.generate_signature_wordlist(pattern=selectors.PATTERNS[1]))
 
 @pytest.fixture
 def selector_wordlist(signature_wordlist):
-    return selectors.generate_method_selectors(signatures=signature_wordlist)
+    return [selectors.selector(_s) for _s in signature_wordlist]
 
 # SIGNATURES ##################################################################
 

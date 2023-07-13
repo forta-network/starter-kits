@@ -1,3 +1,5 @@
+"""Format the agent findings into Forta alerts"""
+
 from forta_agent import Finding, FindingType, FindingSeverity, EntityType, Label
 
 # CONSTANTS ###################################################################

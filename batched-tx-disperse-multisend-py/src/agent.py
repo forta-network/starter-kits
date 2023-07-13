@@ -4,7 +4,7 @@ from web3 import Web3
 from forta_agent import get_json_rpc_url, FindingSeverity
 from forta_agent.transaction_event import TransactionEvent
 
-import src.constants as constants
+import src.options as options
 import src.disperse as disperse
 import src.findings as findings
 import src.multisend as multisend
@@ -17,7 +17,7 @@ ADDRESS_TO_NAME = {
 
 # SCANNER #####################################################################
 
-def handle_transaction_factory(w3: Web3, token: str=constants.TOKEN) -> callable:
+def handle_transaction_factory(w3: Web3, token: str=options.TARGET_TOKEN) -> callable:
     _chain_id = w3.eth.chain_id
     _parsers = { # input data parsers for each target contract
         disperse.ADDRESS.lower(): disperse.parse_transaction_input_factory(w3=w3, token=token),
