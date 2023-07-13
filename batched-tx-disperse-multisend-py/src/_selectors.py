@@ -81,11 +81,3 @@ def generate_signature_wordlist(
 def selector(signature: str) -> str:
     """Compute the web3 method selector for a single signature."""
     return (Web3.keccak(text=signature).hex().lower())[:10] # "0x" prefix + 4 bytes
-
-# INDICATORS ##################################################################
-
-KNOWN_SIGNATURES = (
-    generate_signature_wordlist(pattern=PATTERNS[0], verbs=VERBS, adjectives=ADJECTIVES, tokens=TOKENS, nouns=NOUNS, args=ARGS)
-    + generate_signature_wordlist(pattern=PATTERNS[1], verbs=VERBS, adjectives=ADJECTIVES, tokens=TOKENS, nouns=NOUNS, args=ARGS))
-
-KNOWN_SELECTORS = {selector(_s): _s for _s in KNOWN_SIGNATURES}
