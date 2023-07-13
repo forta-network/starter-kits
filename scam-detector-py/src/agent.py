@@ -774,11 +774,11 @@ def emit_new_fp_finding(w3) -> list:
     scammer_association_labels = None
 
 
-    try:
-        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
-        content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
-        df_fp = pd.read_csv(io.StringIO(content), sep=',')
-        for index, row in df_fp.iterrows():
+    res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
+    content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
+    df_fp = pd.read_csv(io.StringIO(content), sep=',')
+    for index, row in df_fp.iterrows():
+        try:
             chain_id = int(row['chain_id'])
             if chain_id != CHAIN_ID:
                 continue
@@ -796,11 +796,8 @@ def emit_new_fp_finding(w3) -> list:
                         update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, entity, "SCAM-DETECTOR-FALSE-POSITIVE")
                         findings.append(ScamDetectorFinding.alert_FP(w3, entity, label, metadata))
                         logging.info(f"{BOT_VERSION}: Findings count {len(FINDINGS_CACHE_BLOCK)}")
-    except BaseException as e:
-        logging.warning(f"{BOT_VERSION}: emit fp finding exception: {e} - {traceback.format_exc()}")
-        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
-            logging.info(f"{BOT_VERSION}: emit fp finding exception:  - Raising exception to expose error to scannode")
-            raise e
+        except Exception as e:
+            logging.warning(f"{BOT_VERSION}: emit fp finding exception: {e} - {traceback.format_exc()}")
 
     return findings
 
