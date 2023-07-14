@@ -3,7 +3,7 @@ from hexbytes import HexBytes
 EOA_ADDRESS_SMALL_TX = '0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4'  # small tx count
 EOA_ADDRESS_LARGE_TX = '0xdec08cb92a506B88411da9Ba290f3694BE223c26'  # large tx count
 CONTRACT = '0x2320A28f52334d62622cc2EaFa15DE55F9987eD9'
-
+CONTRACT2 = '0x440aECA896009f006EEA3df4BA3A236EE8D57D36'
 
 
 
@@ -35,7 +35,7 @@ class EthMock:
     def get_code(self, address):
         if address == EOA_ADDRESS_SMALL_TX:
             return HexBytes('0x')
-        elif address == CONTRACT:
+        elif address == CONTRACT or address == CONTRACT2:
             return HexBytes('0x0000000000000000000000000000000000000000000000000000000000000005')
         else:
             return HexBytes('0x')

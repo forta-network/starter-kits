@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Forta Entity Cluster Viewer</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="force.css" />
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <svg width="960" height="600"></svg>
+    <script type="text/javascript" src="force.js"></script>
+  </body>
+  <script>
+    $(function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const alertId = urlParams.get('alertId');
+      $.ajax({
+          method: "POST",
+          url: "https://api.forta.network/graphql",
+          contentType: "application/json",
+          headers: {
+            Authorization: "bearer ***********"
+          },
+          data: JSON.stringify({
+            query: `
+            query pastAlerts($input: AlertsInput) {
+              alerts(input: $input) {
+                alerts {
+                  metadata
+                  hash
+                }
+              }
+            }
+            `,
+            variables: {
+              "input": {
+                "alertHash":  alertId
+              }
+            },
+        }),
+    }).done(function( data ) {
+      console.log( "Sample of data:", data);
+      let base64Json = data.data.alerts.alerts[0].metadata.diagram;
+      let j= atob(base64Json);
+      console.log(j);
+      FORCE.force(null, JSON.parse(j));
+  });
+    });
+  </script>
+</html>

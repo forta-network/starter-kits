@@ -1,18 +1,21 @@
 
 from web3 import Web3
 from hexbytes import HexBytes
+from forta_agent import get_labels, Label, Finding, FindingSeverity, FindingType, AlertEvent
 import requests
 import logging
 import io
+import rlp
+import base64
+import gnupg
 import pandas as pd
 import json
 
 from src.constants import TX_COUNT_FILTER_THRESHOLD
 
-etherscan_label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
-
 
 class Utils:
+    ETHERSCAN_LABEL_SOURCE_IDS = ['etherscan','0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede']
     FP_MITIGATION_ADDRESSES = set()
     CONTRACT_CACHE = dict()
     BOT_VERSION = None
@@ -61,18 +64,16 @@ class Utils:
         if cluster is None:
             return ""
 
-        labels_str = []   
-        try:
-            res = requests.get(etherscan_label_api + cluster.lower())  # already comma separated
-            if res.status_code == 200:
-                labels = res.json()
-                if len(labels) > 0 and labels['events'] is not None:
-                    logging.info(f"retreived label for {cluster}: {labels['events'][0]}")
-                    labels_str.append(labels['events'][0]['label']['label'])
-            else:
-                logging.warning(f"Status code get_etherscan_label {res.status_code} {res.text}. Returning no label.")    
-        except Exception as e:
-            logging.warning(f"Exception in get_etherscan_label {e}. Returning no label.")
+        labels_str = []
+
+        response = get_labels({'entities': [cluster],
+                    'sourceIds': Utils.ETHERSCAN_LABEL_SOURCE_IDS,
+                    'state': True})
+        labels = response.labels
+        for label in labels:
+            if label.source.bot is None or label.source.bot.id in Utils.ETHERSCAN_LABEL_SOURCE_IDS:
+                logging.info(f"retreived label for {cluster}: {label.label}")
+                labels_str.append(label.label)
         
         return labels_str
 
@@ -106,6 +107,7 @@ class Utils:
                 or 'hack' in etherscan_label
                 or 'heist' in etherscan_label
                 or 'exploit' in etherscan_label
+                or 'drainer' in etherscan_label
                 or 'scam' in etherscan_label
                 or 'fraud' in etherscan_label
                 or '.eth' in etherscan_label
@@ -177,4 +179,85 @@ class Utils:
         shard = int(timestamp % total_shards)
         logging.debug(f"shard: {shard}")
         return shard
+    
+    @staticmethod
+    def calc_contract_address(w3, address, nonce) -> str:
+        """
+        this function calculates the contract address from sender/nonce
+        :return: contract address: str
+        """
 
+        address_bytes = bytes.fromhex(address[2:].lower())
+        return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
+
+    gpg = None
+
+    @staticmethod
+    def decrypt_alert(encrypted_finding_ascii:str, private_key:str) -> Finding:
+        if Utils.gpg is None:
+            Utils.gpg =  gnupg.GPG(gnupghome='.')
+            import_result = Utils.gpg.import_keys(private_key)
+            for fingerprint in import_result.fingerprints:
+                Utils.gpg.trust_keys(fingerprint, 'TRUST_ULTIMATE')
+    
+        decrypted_finding_json = Utils.gpg.decrypt(encrypted_finding_ascii)
+        finding_dict = json.loads(str(decrypted_finding_json))
+
+        finding_dict['severity'] = FindingSeverity(finding_dict['severity'])
+        finding_dict['type'] = FindingType(finding_dict['type'])
+        finding_dict['alert_id'] = finding_dict['alertId']
+
+        labels_new = []
+        labels = finding_dict['labels']
+        for label in labels:
+            if label['entity'] != '':
+                labels_new.append(label)
+        finding_dict['labels'] = labels_new
+        
+        return Finding(finding_dict)
+
+    @staticmethod
+    def decrypt_alert_event(alert_event: AlertEvent, private_key:str) -> AlertEvent:
+        if Utils.gpg is None:
+            logging.info("Importing private keys into GPG")
+    
+            Utils.gpg =  gnupg.GPG(gnupghome='.')
+            import_result = Utils.gpg.import_keys(private_key)
+            if len(import_result.fingerprints) == 0:
+                logging.info("Imported no private key into GPG")
+    
+            for fingerprint in import_result.fingerprints:
+                Utils.gpg.trust_keys(fingerprint, 'TRUST_ULTIMATE')
+                logging.info(f"Imported private key {fingerprint} into GPG")
+    
+        if alert_event.alert.name == 'omitted' and 'data' in alert_event.alert.metadata.keys():
+            encrypted_finding_ascii = alert_event.alert.metadata['data']
+            logging.info(f"Decrypting finding. Data length: {len(encrypted_finding_ascii)}. Private key length {len(private_key)}")
+            
+            decrypted_finding_json = Utils.gpg.decrypt(encrypted_finding_ascii)
+            logging.info(f"Decrypted finding. Data length: {len(str(decrypted_finding_json))}")
+            if len(str(decrypted_finding_json)) > 0:
+                finding_dict = json.loads(str(decrypted_finding_json))
+
+                finding_dict['severity'] = FindingSeverity(finding_dict['severity'])
+                finding_dict['type'] = FindingType(finding_dict['type'])
+                finding_dict['alert_id'] = finding_dict['alertId']
+
+                labels_new = []
+                labels = finding_dict['labels']
+                for label in labels:
+                    if label['entity'] != '':
+                        labels_new.append(label)
+                finding_dict['labels'] = labels_new
+            
+                finding = Finding(finding_dict)
+
+                alert_event.alert.name = finding.name
+                alert_event.alert.description = finding.description
+                alert_event.alert.severity = FindingSeverity(finding.severity)
+                alert_event.alert.finding_type = FindingType(finding.type)
+                alert_event.alert.metadata = finding.metadata
+                alert_event.alert.alert_id = finding.alert_id
+                alert_event.alert.labels = finding.labels
+        
+        return alert_event
