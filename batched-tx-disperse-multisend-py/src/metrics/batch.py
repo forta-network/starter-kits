@@ -5,14 +5,9 @@ import src.metrics._probabilities as probabilities
 
 # CONFIDENCE ##################################################################
 
-def confidence_score(recipient: str, data: str) -> float:
+def confidence_score(receiver: str, data: str) -> float:
     """Evaluate the probability that multiple transfers were bundled in a transaction."""
     _scores = []
-    # to address
-    _scores.append(probabilities.indicator_to_probability(
-        indicator=indicators.address_is_known_contract(recipient),
-        true_score=0.9, # known addresses make it a near certainty
-        false_score=0.5)) # unknown addresses are neutral
     # method selector
     _scores.append(probabilities.indicator_to_probability(
         indicator=indicators.input_data_has_batching_selector(data),
@@ -34,11 +29,7 @@ def confidence_score(recipient: str, data: str) -> float:
 
 # events differ from input data
 
-def anomaly_score(recipient: str, data: str) -> float:
+def anomaly_score(receiver: str, data: str) -> float:
     """Evaluate."""
     _scores = []
-    _scores.append(probabilities.indicator_to_probability(
-        indicator=indicators.address_is_known_contract(recipient) and not indicators.input_data_has_batching_selector(data),
-        true_score=0.7, # slightly
-        false_score=0.5)) # neutral if false
     return probabilities.conflation(_scores)
