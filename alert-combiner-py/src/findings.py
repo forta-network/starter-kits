@@ -5,8 +5,6 @@ import os
 import logging
 import forta_agent
 
-
-
 class AlertCombinerFinding:
 
     @staticmethod

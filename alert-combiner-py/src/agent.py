@@ -1,6 +1,6 @@
 import logging
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime 
 
 import traceback
 import forta_agent
@@ -550,11 +550,9 @@ def provide_handle_alert(w3, du):
 
 real_handle_alert = provide_handle_alert(web3, DynamoUtils(web3.eth.chain_id))
 
-
 def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     logging.debug("handle_alert called")
     return real_handle_alert(alert_event)
-
 
 def handle_block(block_event: forta_agent.BlockEvent):
     logging.debug("handle_block called")
