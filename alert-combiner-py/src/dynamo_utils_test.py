@@ -1,5 +1,4 @@
 from unittest.mock import Mock
-from boto3.dynamodb.conditions import Key
 from src.dynamo_utils import DynamoUtils, item_id_prefix
 from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
 import time
