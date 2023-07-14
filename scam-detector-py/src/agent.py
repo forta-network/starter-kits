@@ -1158,10 +1158,12 @@ def provide_handle_alert(w3):
             logging.info(f"{BOT_VERSION}: Persisted state")
 
         for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
-            findings.append(finding)
+            if finding is not None:
+                findings.append(finding)
         FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
 
         logging.info(f"{BOT_VERSION}: Return {len(findings)} finding(s) to handleAlert.") 
+
         return findings
 
     return handle_alert
@@ -1220,10 +1222,12 @@ def provide_handle_block(w3):
             logging.info(f"{BOT_VERSION}: Persisted state")
         
         for finding in FINDINGS_CACHE_BLOCK[0:10]:  # 10 findings per block due to size limitation
-            findings.append(finding)
+            if finding is not None:
+                findings.append(finding)
         FINDINGS_CACHE_BLOCK = FINDINGS_CACHE_BLOCK[10:]
 
         logging.info(f"{BOT_VERSION}: Return {len(findings)} to handleBlock. FINDINGS_CACHE_BLOCK size: {len(FINDINGS_CACHE_BLOCK)}")
+
         return findings
 
     return handle_block
@@ -1268,10 +1272,12 @@ def provide_handle_transaction(w3):
         logging.debug(f"{BOT_VERSION}: Handle transaction on the hour was called. Findings cache for transaction size now: {len(FINDINGS_CACHE_TRANSACTION)}")
             
         for finding in FINDINGS_CACHE_TRANSACTION[0:10]:  # 10 findings per block due to size limitation
-            findings.append(finding)
+            if finding is not None:
+                findings.append(finding)
         FINDINGS_CACHE_TRANSACTION = FINDINGS_CACHE_TRANSACTION[10:]
 
         logging.debug(f"{BOT_VERSION}: Return {len(findings)} to handleTransaction.")
+
         return findings
 
     return handle_transaction
