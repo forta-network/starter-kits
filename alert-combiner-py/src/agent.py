@@ -21,7 +21,7 @@ from src.L2Cache import L2Cache
 from src.storage import s3_client, dynamo_table, get_secrets
 from src.blockchain_indexer_service import BlockChainIndexer
 from src.utils import Utils
-from src.dynamo_utils import DynamoUtils as du
+from src.dynamo_utils import DynamoUtils
 
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -41,6 +41,7 @@ dynamo = None
 
 root = logging.getLogger()
 root.setLevel(logging.DEBUG)
+logging.getLogger('botocore').setLevel(logging.WARNING)
 
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.DEBUG)
@@ -240,7 +241,7 @@ def get_end_user_attack_addresses(alert_event: forta_agent.alert_event.AlertEven
     return list(addresses)
 
 
-def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
+def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> list:
     """
     this function returns finding for any address with at least 3 alerts observed on that address; it will generate an anomaly score
     :return: findings: list
@@ -289,11 +290,10 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                             else:
                                 alert_data_cluster = stored_alert_data_address
                             du.put_alert_data(dynamo, cluster, alert_data_cluster)
-
-                        if du.read_fp_mitigation_clusters(dynamo, address):
+                        
+                        if address in du.read_fp_mitigation_clusters(dynamo):
                             du.put_fp_mitigation_cluster(dynamo, cluster)
-
-                        if du.read_end_user_attack_clusters(dynamo, address):
+                        if address in du.read_end_user_attack_clusters(dynamo):
                             du.put_end_user_attack_cluster(dynamo, cluster)
 
                 # update victim alerts
@@ -309,7 +309,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                     entity_clusters = du.read_entity_clusters(dynamo, address)
                     if address in entity_clusters.keys():
                         cluster = entity_clusters[address]
-                    du.put_fp_mitigation_cluster(dynamo, cluster)
+                    du.put_fp_mitigation_cluster(dynamo, cluster.lower())
 
                 # update end user clusters
                 if in_list(alert_event, END_USER_ATTACK_BOTS):
@@ -320,7 +320,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                         entity_clusters = du.read_entity_clusters(dynamo, address)
                         if address in entity_clusters.keys():
                             cluster = entity_clusters[address]
-                        du.put_end_user_attack_cluster(dynamo, cluster)
+                        du.put_end_user_attack_cluster(dynamo, cluster.lower())
                         logging.info(f"alert {alert_event.alert_hash} adding end user attacks cluster: {cluster}.")
 
                 # update alerts and process them for a given cluster
@@ -362,7 +362,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
 
                         stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
                         if CHAIN_ID in [10, 42161]:
-                             new_alert_data = pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, chain_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'chain_id', 'addresses', 'transaction_hash'])
+                            new_alert_data = pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, chain_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'chain_id', 'addresses', 'transaction_hash'])
                         else:
                             new_alert_data = pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])
                         alert_data_cluster = pd.concat([alert_data_cluster, new_alert_data], ignore_index=True, axis=0)
@@ -421,12 +421,13 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                                     logging.info(f"alert {alert_event.alert_hash} - {cluster} is polygon validator. Wont raise finding")
                                     fp_mitigated = True
 
-                                if du.read_fp_mitigation_clusters(dynamo, cluster):
+                                if cluster in du.read_fp_mitigation_clusters(dynamo):
                                     logging.info(f"alert {alert_event.alert_hash} - Mitigating FP for {cluster}. Wont raise finding")
                                     fp_mitigated = True
 
-                                if du.read_end_user_attack_clusters(dynamo, cluster):
-                                    logging.info(f"alert {alert_event.alert_hash} - End user attack identified for {cluster}. Downgrade finding")
+                                if cluster in du.read_end_user_attack_clusters(dynamo):
+                                    logging.info(
+                                        f"alert {alert_event.alert_hash} - End user attack identified for {cluster}. Downgrade finding")
                                     end_user_attack = True
 
                                 if not end_user_attack and not fp_mitigated and (len(anomaly_scores) == 4) and cluster not in ALERTED_CLUSTERS_STRICT:
@@ -438,7 +439,7 @@ def detect_attack(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
                                 elif not end_user_attack and not fp_mitigated and ((highly_precise_bot_alert_id_count > 0 and len(anomaly_scores) > 1) or (len(highly_precise_bot_ids)>1)) and cluster not in ALERTED_CLUSTERS_STRICT:
                                     logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
                                     victims = du.read_victims(dynamo)
-                                    victim_address, victim_name, victim_metadata = get_victim_info(alert_data, victims)         
+                                    victim_address, victim_name, victim_metadata = get_victim_info(alert_data, victims)
                                     update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
                                     findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
                                 elif not end_user_attack and not fp_mitigated and (len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT and anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT) and cluster not in ALERTED_CLUSTERS_STRICT:
@@ -534,7 +535,7 @@ def load(chain_id: int, key: str) -> object:
     return L2Cache.load(chain_id, key)
 
 
-def provide_handle_alert(w3):
+def provide_handle_alert(w3, du):
     logging.debug("provide_handle_alert called")
 
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
@@ -543,7 +544,7 @@ def provide_handle_alert(w3):
         if not INITIALIZED:
             raise Exception("Not initialized")
 
-        findings = detect_attack(w3, alert_event)
+        findings = detect_attack(w3, du, alert_event)
         if not ('NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV')):
             persist_state()
 
@@ -552,7 +553,7 @@ def provide_handle_alert(w3):
     return handle_alert
 
 
-real_handle_alert = provide_handle_alert(web3)
+real_handle_alert = provide_handle_alert(web3, DynamoUtils(web3.eth.chain_id))
 
 
 def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
