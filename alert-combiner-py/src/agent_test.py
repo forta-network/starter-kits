@@ -1,19 +1,22 @@
 from typing import Optional
-from forta_agent import create_alert_event,FindingSeverity
+from forta_agent import create_alert_event, FindingSeverity
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 import agent
+from src.utils import Utils
+from src.storage import dynamo_table, get_secrets
 import json
 import os
 from forta_agent import EntityType
 from datetime import datetime, timedelta
-from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
-                       ALERTS_DATA_KEY, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ENTITY_CLUSTERS_KEY, FP_MITIGATION_CLUSTERS_KEY)
+from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS,
+                       ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY)
 from web3_mock import CONTRACT, EOA_ADDRESS, EOA_ADDRESS_2, Web3Mock
 from L2Cache import VERSION
-
+from src.dynamo_utils import DynamoUtils as du
 w3 = Web3Mock()
 
+dynamo = None
 
 class TestAlertCombiner:
 
@@ -37,43 +40,47 @@ class TestAlertCombiner:
         agent.CHAIN_ID = 1
 
     def remove_persistent_state():
-        if os.path.isfile(f"{VERSION}-{ALERTS_DATA_KEY}"):
-            os.remove(f"{VERSION}-{ALERTS_DATA_KEY}")
+        global dynamo
+        try:
+            # initialize dynamo DB
+            if dynamo is None:
+                secrets = get_secrets()
+                dynamo = dynamo_table(secrets)      
+        except Exception as e:
+           raise e
+        du.clean_db(dynamo)
+
         if os.path.isfile(f"{VERSION}-{ALERTED_CLUSTERS_STRICT_KEY}"):
             os.remove(f"{VERSION}-{ALERTED_CLUSTERS_STRICT_KEY}")
         if os.path.isfile(f"{VERSION}-{ALERTED_CLUSTERS_LOOSE_KEY}"):
             os.remove(f"{VERSION}-{ALERTED_CLUSTERS_LOOSE_KEY}")
-        if os.path.isfile(f"{VERSION}-{ENTITY_CLUSTERS_KEY}"):
-            os.remove(f"{VERSION}-{ENTITY_CLUSTERS_KEY}")
-        if os.path.isfile(f"{VERSION}-{FP_MITIGATION_CLUSTERS_KEY}"):
-            os.remove(f"{VERSION}-{FP_MITIGATION_CLUSTERS_KEY}")
 
     def test_is_contract_eoa(self):
-        assert not agent.is_contract(w3, EOA_ADDRESS), "EOA shouldn't be identified as a contract"
+        assert not Utils.is_contract(w3, EOA_ADDRESS), "EOA shouldn't be identified as a contract"
 
     def test_is_contract_contract(self):
-        assert agent.is_contract(w3, CONTRACT), "Contract should be identified as a contract"
+        assert Utils.is_contract(w3, CONTRACT), "Contract should be identified as a contract"
 
     def test_is_contract_contract_eoa(self):
-        assert not agent.is_contract(w3, f"{CONTRACT},{EOA_ADDRESS}"), "EOA & Contract shouldnt be identified as a contract"
+        assert not Utils.is_contract(w3, f"{CONTRACT},{EOA_ADDRESS}"), "EOA & Contract shouldnt be identified as a contract"
 
     def test_is_contract_contracts(self):
-        assert agent.is_contract(w3, f"{CONTRACT},{CONTRACT}"), "Contracts should be identified as a contract"
+        assert Utils.is_contract(w3, f"{CONTRACT},{CONTRACT}"), "Contracts should be identified as a contract"
 
     def test_is_contract_null(self):
-        assert not agent.is_contract(w3, '0x0000000000a00000000000000000000000000000'), "EOA shouldn't be identified as a contract"
+        assert not Utils.is_contract(w3, '0x0000000000a00000000000000000000000000000'), "EOA shouldn't be identified as a contract"
 
     def test_is_address_valid(self):
-        assert agent.is_address(w3, '0x7328BBc3EaCfBe152f569f2C09f96f915F2C8D73'), "this should be a valid address"
+        assert Utils.is_address(w3, '0x7328BBc3EaCfBe152f569f2C09f96f915F2C8D73'), "this should be a valid address"
 
     def test_is_address_aaa(self):
-        assert not agent.is_address(w3, '0x7328BBaaaaaaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
+        assert not Utils.is_address(w3, '0x7328BBaaaaaaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
 
     def test_is_addresses_aaa(self):
-        assert not agent.is_address(w3, f'0x7328BBaaaaaaaaa52f569f2C09f96f915F2C8D73,{EOA_ADDRESS}'), "this shouldnt be a valid address"
+        assert not Utils.is_address(w3, f'0x7328BBaaaaaaaaa52f569f2C09f96f915F2C8D73,{EOA_ADDRESS}'), "this shouldnt be a valid address"
 
     def test_is_address_aAa(self):
-        assert not agent.is_address(w3, '0x7328BBaaaaAaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
+        assert not Utils.is_address(w3, '0x7328BBaaaaAaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
 
     def test_in_list(self):
         alert = create_alert_event(
@@ -148,8 +155,8 @@ class TestAlertCombiner:
 
         assert len(items) == 1, "should be in list"
 
-        agent.persist(items, chain_id, ALERTS_DATA_KEY)
-        items_loaded = agent.load(chain_id, ALERTS_DATA_KEY)
+        agent.persist(items, chain_id, ALERTED_CLUSTERS_STRICT_KEY)
+        items_loaded = agent.load(chain_id, ALERTED_CLUSTERS_STRICT_KEY)
 
         assert len(items_loaded) == 1, "should be in loaded list"
 
@@ -161,9 +168,9 @@ class TestAlertCombiner:
 
         assert len(items) == 1, "should be in list"
 
-        agent.persist(items, chain_id, FP_MITIGATION_CLUSTERS_KEY)
+        agent.persist(items, chain_id, ALERTED_CLUSTERS_LOOSE_KEY)
         agent.initialize()
-        items_loaded = agent.load(chain_id, FP_MITIGATION_CLUSTERS_KEY)
+        items_loaded = agent.load(chain_id, ALERTED_CLUSTERS_LOOSE_KEY)
 
         assert len(items_loaded) == 1, "should be in loaded list"
 
@@ -215,17 +222,19 @@ class TestAlertCombiner:
         # anomaly score < 10 E-8
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        agent.CHAIN_ID = 1
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
@@ -239,17 +248,19 @@ class TestAlertCombiner:
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
         agent.CHAIN_ID = 10
+        dynamo_utils = du(agent.CHAIN_ID)
+
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
@@ -262,16 +273,17 @@ class TestAlertCombiner:
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
         agent.CHAIN_ID = 10
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)}, [], 10)  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
@@ -284,13 +296,15 @@ class TestAlertCombiner:
         # anomaly score < 10 E-8
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        agent.CHAIN_ID = 1
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # smart contract ML bot
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         assert len(findings) == 1, "alert should have been raised"
 
@@ -328,7 +342,7 @@ class TestAlertCombiner:
         # anomaly score < 10 E-8
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
-
+        dynamo_utils = du(agent.CHAIN_ID)
         label = {"label": "Attacker",
                  "confidence": 0.25,
                  "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99B3820",
@@ -336,15 +350,15 @@ class TestAlertCombiner:
                  }
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)}, [label])  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)}, [label])  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)}, [label])  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
@@ -357,17 +371,18 @@ class TestAlertCombiner:
         # anomaly score < 10 E-8
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
@@ -381,17 +396,18 @@ class TestAlertCombiner:
         # anomaly score < 10 E-8
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION")  
-        agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100/100000 * 1.0 * 50/10000000 -> 5E-9
 
@@ -404,21 +420,22 @@ class TestAlertCombiner:
         # anomaly score < 10 E-8
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         metadata = {"address1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "holders1": "", "protocolTwitter1": "wrappedEth", "protocolUrl1": "", "tag1": "Wrapped Ether"}
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250", "VICTIM-IDENTIFIER-PREPARATION-STAGE", metadata)  # contains victim info
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100.0/100000 * 200.0/10000 * 50.0/10000000 -> 1E-10
 
@@ -433,17 +450,18 @@ class TestAlertCombiner:
         # anomaly score < 10 E-8
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
@@ -451,15 +469,15 @@ class TestAlertCombiner:
         findings = []
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         assert len(findings) == 0, "alert should not have been raised again"
 
@@ -469,17 +487,18 @@ class TestAlertCombiner:
         # anomaly score < 10 E-8
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         assert len(findings) == 0, "alert should have been raised as this is a contract"
 
@@ -489,18 +508,19 @@ class TestAlertCombiner:
         # anomaly score < 10 E-8
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         alert_event.alert.created_at = (datetime.now() - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS + 1)).strftime("%Y-%m-%dT%H:%M:%S.%f123Z")
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         assert len(findings) == 0, "alert should not have been raised funding alert is too old"
 
@@ -510,22 +530,23 @@ class TestAlertCombiner:
         # anomaly score < 10 E-8
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x0e82982faa7878af3fad8ddf5042762a3b78d8949da2e301f1adfedc973f25ea", "EXPLOITER-ADDR-TX", {"anomaly_score": (1000.0 / 10000000)})  # preparation -> alert count = 1000, blocklist account tx; ad-scorer contract-creation -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 1, "only 1 alert should have been raised"
         assert findings[0].severity == FindingSeverity.Low, "low severity alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         
 
         # 100/100000 * 1000/10000000 * 50/10000000 -> 5E-13
@@ -539,13 +560,14 @@ class TestAlertCombiner:
         # anomaly score < 10 E-8
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100/100000 * 50/10000000 -> 5E-9
         assert len(findings) == 0, "no alert should have been raised"
@@ -557,20 +579,21 @@ class TestAlertCombiner:
 
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f", "POSITIVE-REPUTATION-1")  # positive reputation alert
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
@@ -585,21 +608,22 @@ class TestAlertCombiner:
 
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entityAddresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})   # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings =  agent.detect_attack(w3, alert_event)
+        findings =  agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})   # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS_2, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})   # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
@@ -613,21 +637,22 @@ class TestAlertCombiner:
 
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS_2, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})   # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entityAddresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})   # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
@@ -641,22 +666,23 @@ class TestAlertCombiner:
         # anomaly score < 10 E-8
         TestAlertCombiner.remove_persistent_state()
         agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         metadata = {"attacker_deployer_address": EOA_ADDRESS, "rugpull_techniques": "HIDDENTRANSFERREVERTS, HONEYPOT", "token_contract_address": "0xC159B59Bb001d26e69A7a6F278939559A0a5028a"}
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15", "HARD-RUG-PULL-1", metadata)  # this is an end user alert; should be ignored in context of AD calculation
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
-        findings = agent.detect_attack(w3, alert_event)
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
 
