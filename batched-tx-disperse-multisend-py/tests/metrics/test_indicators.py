@@ -11,11 +11,6 @@ TX_TO = [_t.transaction.to for _t in data.TRANSACTIONS['batch-erc20-token'] + da
 TX_DATA_BATCH = [_t.transaction.data for _t in data.TRANSACTIONS['batch-erc20-token'] + data.TRANSACTIONS['batch-native-token']]
 TX_DATA_RANDOM = [_t.transaction.data for _t in data.TRANSACTIONS['random']]
 
-# ADDRESSES ###################################################################
-
-def test_indicators_detect_transactions_aimed_at_known_addresses():
-    assert all([indicators.address_is_known_contract(_a) for _a in TX_TO])
-
 # SELECTORS ###################################################################
 
 def test_indicators_detect_transaction_calls_to_known_methods():

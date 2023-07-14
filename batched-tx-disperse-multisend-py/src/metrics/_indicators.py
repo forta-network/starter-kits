@@ -4,11 +4,6 @@ import src._addresses as addresses
 import src._inputs as inputs
 import src._selectors as selectors
 
-# ADDRESS INDICATORS ##########################################################
-
-def address_is_known_contract(address: str, known: list=addresses.KNOWN_ADDRESSES) -> bool:
-    return address.lower() in known
-
 # SELECTORS INDICATORS ########################################################
 
 KNOWN_SIGNATURES = (

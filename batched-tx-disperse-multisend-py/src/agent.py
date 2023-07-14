@@ -30,7 +30,7 @@ def handle_transaction_factory(w3: Web3, token: str=options.TARGET_TOKEN) -> cal
         _data = str(getattr(transaction_event.transaction, 'data', '')).lower()
         _wrapped_tx = []
         
-        if _to in _parsers:
+        if _to in _parsers and options.TARGET_CONTRACT in _to:
             _token, _wrapped_tx, _is_manual = _parsers[_to](_data)
             if _wrapped_tx:
                 _findings.append(findings.FormatBatchTxFinding(
