@@ -1,167 +1,165 @@
 import logging
-from boto3.dynamodb.conditions import Key
 from datetime import datetime
 import time
 from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
 import pandas as pd
-from src.utils import Utils 
 
-# TODO: Replace with real prefix
-item_id_prefix = ""
+# TODO: Replace with prod prefix
+item_id_prefix = "devdevdev1111"
+
 
 class DynamoUtils:
-    @staticmethod
-    def put_entity_cluster(dynamo, alert_created_at_str: str, address: str, cluster: str, chain_id):
+    chain_id = None
+
+    def __init__(self, chain_id = 1):
+        self.chain_id = chain_id
+        print(f"Set chain ID = {self.chain_id} to the DynamoUtils class")
+     
+    def _get_expiry_offset(self):
+        return ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
+
+    def _get_expires_at(self, alert_created_at=None):
+        expiry_offset = self._get_expiry_offset()
+        if alert_created_at:
+            return int(alert_created_at) + int(expiry_offset)
+        else:
+            return int(time.time()) + int(expiry_offset)
+
+    def _put_item(self, dynamo, item):
+        response = dynamo.put_item(Item=item)
+        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+            logging.error(f"Error putting item in dynamoDB: {response}")
+        else:
+            logging.info(f"Successfully put item in dynamoDB: {response}")
+
+    def put_entity_cluster(self, dynamo, alert_created_at_str: str, address: str, cluster: str):
         logging.debug(f"putting entity clustering alert for {address} in dynamo DB")
         alert_created_at = datetime.strptime(alert_created_at_str[0:19], "%Y-%m-%dT%H:%M:%S").timestamp()
         logging.debug(f"alert_created_at: {alert_created_at}")
-        itemId = f"{item_id_prefix}|{chain_id}|entity_cluster"
+        itemId = f"{item_id_prefix}|{self.chain_id}|entity_cluster"
         logging.debug(f"itemId: {itemId}")
         sortId = f"{address}"
         logging.debug(f"sortId: {sortId}")
         
-        expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
-        
-        expiresAt = int(alert_created_at) + int(expiry_offset)
+        expiresAt = self._get_expires_at(alert_created_at)
         logging.debug(f"expiresAt: {expiresAt}")
-        response = dynamo.put_item(Item={
+        
+        item = {
             "itemId": itemId,
             "sortKey": sortId,
             "address": address,
             "cluster": cluster,
             "expiresAt": expiresAt
-        })
+        }
+        
+        self._put_item(dynamo, item)
 
-        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-            logging.error(f"Error putting entity cluster in dynamoDB: {response}")
-            return
-        else:
-            logging.info(f"Successfully put entity cluster in dynamoDB: {response}")
-            return
-
-    @staticmethod
-    def put_fp_mitigation_cluster(dynamo, address: str, chain_id):
+    def put_fp_mitigation_cluster(self, dynamo, address: str):
         logging.debug(f"putting fp mitigation cluster alert for {address} in dynamo DB")
-        itemId = f"{item_id_prefix}|{chain_id}|fp_mitigation_cluster"
+        itemId = f"{item_id_prefix}|{self.chain_id}|fp_mitigation_cluster"
         logging.debug(f"itemId: {itemId}")
         sortId = f"{address}"
         logging.debug(f"sortId: {sortId}")
 
-        expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
-
-        expiresAt = int(time.time()) + int(expiry_offset)
+        expiresAt = self._get_expires_at()
         logging.debug(f"expiresAt: {expiresAt}")
-        response = dynamo.put_item(Item={
+
+        item = {
             "itemId": itemId,
             "sortKey": sortId,
             "address": address,
             "expiresAt": expiresAt
-        })
+        }
 
-        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-            logging.error(f"Error putting fp mitigation cluster in dynamoDB: {response}")
-            return
-        else:
-            logging.info(f"Successfully put fp mitigation cluster in dynamoDB: {response}")
-            return
+        self._put_item(dynamo, item)
 
-    @staticmethod
-    def put_end_user_attack_cluster(dynamo, address: str, chain_id):
+    def put_end_user_attack_cluster(self, dynamo, address: str):
         logging.debug(f"putting end user attack cluster alert for {address} in dynamo DB")
-        itemId = f"{item_id_prefix}|{chain_id}|end_user_attack_cluster"
+        itemId = f"{item_id_prefix}|{self.chain_id}|end_user_attack_cluster"
         logging.debug(f"itemId: {itemId}")
         sortId = f"{address}"
         logging.debug(f"sortId: {sortId}")
 
-        expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
-
-        expiresAt = int(time.time()) + int(expiry_offset)
+        expiresAt = self._get_expires_at()
         logging.debug(f"expiresAt: {expiresAt}")
-        response = dynamo.put_item(Item={
+
+        item = {
             "itemId": itemId,
             "sortKey": sortId,
             "address": address,
             "expiresAt": expiresAt
-        })
+        }
 
-        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-            logging.error(f"Error putting end user attack cluster in dynamoDB: {response}")
-            return
-        else:
-            logging.info(f"Successfully put end user attack cluster in dynamoDB: {response}")
-            return
+        self._put_item(dynamo, item)
 
-    @staticmethod
-    def put_alert_data(dynamo, cluster: str, dataframe: pd.DataFrame, chain_id):
+    def put_alert_data(self, dynamo, cluster: str, dataframe: pd.DataFrame):
         logging.debug(f"Putting alert data for cluster {cluster} in DynamoDB")
         first_alert_created_at = dataframe["created_at"].iloc[0].timestamp()
         logging.debug(f"alert_created_at: {first_alert_created_at}")
-        itemId = f"{item_id_prefix}|{chain_id}|alert"
+        itemId = f"{item_id_prefix}|{self.chain_id}|alert"
         logging.debug(f"itemId: {itemId}")
         sortId = f"{cluster}"
         logging.debug(f"sortId: {sortId}")
 
-        expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
-
-        expiresAt = int(first_alert_created_at) + int(expiry_offset)
+        expiresAt = self._get_expires_at(first_alert_created_at)
         logging.debug(f"expiresAt: {expiresAt}")
         
         dataframe_json = dataframe.to_json(orient="records")
         
-        response = dynamo.put_item(Item={
+        item = {
             "itemId": itemId,
             "sortKey": sortId,
             "cluster": cluster,
             "dataframe": dataframe_json,
             "expiresAt": expiresAt
-        })
+        }
 
-        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-            logging.error(f"Error putting alert data in DynamoDB: {response}")
-        else:
-            logging.info(f"Successfully put alert data in DynamoDB: {response}")
+        self._put_item(dynamo, item)
 
-    @staticmethod   
-    def put_victim(dynamo, transaction_hash: str, metadata: dict, chain_id):
+    def put_victim(self, dynamo, transaction_hash: str, metadata: dict):
         logging.debug(f"Putting victim with transaction hash {transaction_hash} in DynamoDB")
-        itemId = f"{item_id_prefix}|{chain_id}|victim"
+        itemId = f"{item_id_prefix}|{self.chain_id}|victim"
         logging.debug(f"itemId: {itemId}")
         sortId = f"{transaction_hash}"
         logging.debug(f"sortId: {sortId}")
 
-        expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
-
-        expiresAt = int(time.time()) + int(expiry_offset)
+        expiresAt = self._get_expires_at()
         logging.debug(f"expiresAt: {expiresAt}")
-        response = dynamo.put_item(Item={
+
+        item = {
             "itemId": itemId,
             "sortKey": sortId,
             "transaction_hash": transaction_hash,
             "metadata": metadata,
             "expiresAt": expiresAt
-        })
+        }
 
-        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-            logging.error(f"Error putting victim in DynamoDB: {response}")
+        self._put_item(dynamo, item)
+
+    def _query_items(self, dynamo, itemId, sortKey=None):
+        if sortKey:
+            response = dynamo.query(KeyConditionExpression='itemId = :id AND sortKey = :sid',
+                                    ExpressionAttributeValues={
+                                        ':id': itemId,
+                                        ':sid': sortKey
+                                    }
+                                    )
         else:
-            logging.info(f"Successfully put victim in DynamoDB: {response}")
+            response = dynamo.query(KeyConditionExpression='itemId = :id',
+                                    ExpressionAttributeValues={
+                                        ':id': itemId,
+                                    }
+                                    )
+        return response.get('Items', [])
 
-    @staticmethod
-    def read_entity_clusters(dynamo, address: str, chain_id) -> dict:
+    def read_entity_clusters(self, dynamo, address: str) -> dict:
         entity_clusters = dict()
-        itemId = f"{item_id_prefix}|{chain_id}|entity_cluster"
+        itemId = f"{item_id_prefix}|{self.chain_id}|entity_cluster"
         sortKey = f"{address}"
         logging.debug(f"Reading entity clusters for address {address}, itemId {itemId}")
-        logging.debug(f"Dynamo : {dynamo}")
-        response = dynamo.query(KeyConditionExpression='itemId = :id AND sortKey = :sid',
-                                ExpressionAttributeValues={
-                                    ':id': itemId,
-                                    ':sid': sortKey
-                                }
-                                )
 
-        # Print retrieved item
-        items = response.get('Items', [])
+        items = self._query_items(dynamo, itemId, sortKey)
+
         logging.debug(f"Items retrieved: {len(items)}")
         for item in items:
             logging.debug(f"Item retrieved: {item}")
@@ -169,20 +167,12 @@ class DynamoUtils:
         logging.info(f"Read entity clusters for address {address}. Retrieved {len(entity_clusters)} alert_clusters.")
         return entity_clusters
 
-    @staticmethod
-    def read_fp_mitigation_clusters(dynamo, chain_id) -> list:
+    def read_fp_mitigation_clusters(self, dynamo) -> list:
         fp_mitigation_clusters = []        
-        itemId = f"{item_id_prefix}|{chain_id}|fp_mitigation_cluster"
-        logging.debug(f"Reading fp mitigation clusters, itemId {itemId}")
-        logging.debug(f"Dynamo : {dynamo}")
-        response = dynamo.query(KeyConditionExpression='itemId = :id',
-                                ExpressionAttributeValues={
-                                    ':id': itemId
-                                }
-                                )
+        itemId = f"{item_id_prefix}|{self.chain_id}|fp_mitigation_cluster"
+        
+        items = self._query_items(dynamo, itemId)
 
-        # Print retrieved item
-        items = response.get('Items', [])
         logging.debug(f"Items retrieved: {len(items)}")
         for item in items:
             logging.debug(f"Item retrieved: {item}")
@@ -190,20 +180,12 @@ class DynamoUtils:
         logging.info(f"Read fp mitigation clusters. Retrieved {len(fp_mitigation_clusters)} alert_clusters.")
         return fp_mitigation_clusters
     
-    @staticmethod
-    def read_end_user_attack_clusters(dynamo, chain_id) -> list:
+    def read_end_user_attack_clusters(self, dynamo) -> list:
         end_user_attack_clusters = []
-        itemId = f"{item_id_prefix}|{chain_id}|end_user_attack_cluster"
-        logging.debug(f"Reading end user attack clusters, itemId {itemId}")
-        logging.debug(f"Dynamo : {dynamo}")
-        response = dynamo.query(KeyConditionExpression='itemId = :id',
-                                ExpressionAttributeValues={
-                                    ':id': itemId,
-                                }
-                                )
+        itemId = f"{item_id_prefix}|{self.chain_id}|end_user_attack_cluster"
+        
+        items = self._query_items(dynamo, itemId)
 
-        # Print retrieved item
-        items = response.get('Items', [])
         logging.debug(f"Items retrieved: {len(items)}")
         for item in items:
             logging.debug(f"Item retrieved: {item}")
@@ -211,22 +193,13 @@ class DynamoUtils:
         logging.info(f"Read end user attack clusters. Retrieved {len(end_user_attack_clusters)} alert_clusters.")
         return end_user_attack_clusters
     
-    @staticmethod
-    def read_alert_data(dynamo, cluster: str, chain_id) -> pd.DataFrame:
+    def read_alert_data(self, dynamo, cluster: str) -> pd.DataFrame:
         alert_data = pd.DataFrame()
-        itemId = f"{item_id_prefix}|{chain_id}|alert"
+        itemId = f"{item_id_prefix}|{self.chain_id}|alert"
         sortKey = f"{cluster}"
-        logging.debug(f"Reading alert data for cluster {cluster}, itemId {itemId}, sortKey {sortKey}")
-        logging.debug(f"Dynamo : {dynamo}")
-        response = dynamo.query(KeyConditionExpression='itemId = :id AND sortKey = :sid',
-                                ExpressionAttributeValues={
-                                    ':id': itemId,
-                                    ':sid': sortKey
-                                }
-                                )
+        
+        items = self._query_items(dynamo, itemId, sortKey)
 
-        # Print retrieved item
-        items = response.get('Items', [])
         logging.debug(f"Items retrieved: {len(items)}")
         for item in items:
             logging.debug(f"Item retrieved: {item}")
@@ -236,36 +209,28 @@ class DynamoUtils:
         logging.info(f"Read alert data for cluster {cluster}. Retrieved {len(alert_data)} alert_data.")
         return alert_data
 
-    @staticmethod
-    def delete_alert_data(dynamo, address, chain_id):
-            itemId = f"{item_id_prefix}|{chain_id}|alert"
-            sortKey = f"{address}"
-            logging.debug(f"Deleting alert data for address {address}, itemId {itemId}, sortKey {sortKey}")
-            logging.debug(f"Dynamo: {dynamo}")
-            response = dynamo.delete_item(
-                Key={
-                    'itemId': itemId,
-                    'sortKey': sortKey
-                }
-            )
-
-            if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-                logging.error(f"Error deleting alert data for address {address} from DynamoDB: {response}")
-            else:
-                logging.info(f"Successfully deleted alert data for address {address} from DynamoDB")
-
-    @staticmethod
-    def read_victims(dynamo, chain_id) -> dict:
-        victims = dict()
-        itemId = f"{item_id_prefix}|{chain_id}|victim"
-        logging.debug(f"Reading victims from shard, itemId {itemId}")
-        logging.debug(f"Dynamo: {dynamo}")
-        response = dynamo.query(
-            KeyConditionExpression=Key('itemId').eq(itemId)
+    def delete_alert_data(self, dynamo, address):
+        itemId = f"{item_id_prefix}|{self.chain_id}|alert"
+        sortKey = f"{address}"
+        logging.debug(f"Deleting alert data for address {address}, itemId {itemId}, sortKey {sortKey}")
+        response = dynamo.delete_item(
+            Key={
+                'itemId': itemId,
+                'sortKey': sortKey
+            }
         )
 
-        # Print retrieved items
-        items = response.get('Items', [])
+        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+            logging.error(f"Error deleting alert data for address {address} from DynamoDB: {response}")
+        else:
+            logging.info(f"Successfully deleted alert data for address {address} from DynamoDB")
+
+    def read_victims(self, dynamo) -> dict:
+        victims = dict()
+        itemId = f"{item_id_prefix}|{self.chain_id}|victim"
+        
+        items = self._query_items(dynamo, itemId)
+
         logging.debug(f"Items retrieved: {len(items)}")
         for item in items:
             logging.debug(f"Item retrieved: {item}")
@@ -273,10 +238,9 @@ class DynamoUtils:
         logging.info(f"Read victims. Retrieved {len(victims)} victims.")
         return victims
     
-    @staticmethod
     def clean_db(dynamo):
         item_types = ['entity_cluster', 'fp_mitigation_cluster', 'end_user_attack_cluster', 'alert', 'victim']
-        chain_ids = [1, 10] # Only chains used in tests
+        chain_ids = [1, 10]  # Only chains used in tests
 
         for chain_id in chain_ids:            
             for item_type in item_types:
@@ -285,20 +249,28 @@ class DynamoUtils:
                 while True:
                     if lastEvaluatedKey:
                         response = dynamo.query(
-                            KeyConditionExpression=Key('itemId').eq(itemId),
+                            KeyConditionExpression='itemId = :id',
+                            ExpressionAttributeValues={
+                                ':id': itemId,
+                            },
                             ExclusiveStartKey=lastEvaluatedKey
                         )
                     else:
                         response = dynamo.query(
-                            KeyConditionExpression=Key('itemId').eq(itemId)
+                            KeyConditionExpression='itemId = :id',
+                            ExpressionAttributeValues={
+                                ':id': itemId,
+                            }
                         )
 
-                    items = response['Items']
-                    for item in items:
-                        dynamo.delete_item(Key={'itemId': item['itemId'], 'sortKey': item['sortKey']})
-                        print("delete for " + item['itemId'])
+                    for item in response['Items']:
+                        dynamo.delete_item(
+                            Key={
+                                'itemId': item['itemId'],
+                                'sortKey': item['sortKey']
+                            }
+                        )
 
-                    if 'LastEvaluatedKey' in response:
-                        lastEvaluatedKey = response['LastEvaluatedKey']
-                    else:
+                    lastEvaluatedKey = response.get('LastEvaluatedKey')
+                    if not lastEvaluatedKey:
                         break
