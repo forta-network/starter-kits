@@ -6,6 +6,9 @@
 ## v2.16.0 (July 6th 2023 - beta)
 - incorporate new [ice phishing machine learning model](https://explorer.forta.network/bot/0x4ca56cfab479c4d41cf382383f6932f4bd8bfc6428bdeba82b634f7bf83ad333)
 
+## v2.15.6 (July 17th prod (without private key compromise nor ice phishing ML bot))
+- additional error handling fixes
+
 ## v2.15.5 (July 13th prod (without private key compromise nor ice phishing ML bot))
 - additional manual list processing error handling
 
