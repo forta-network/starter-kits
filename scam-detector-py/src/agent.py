@@ -950,26 +950,31 @@ def get_original_threat_category_alert_hash(address: str) -> (tuple):
 def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     findings = []
 
-    if transaction_event.to is None:
-        nonce = transaction_event.transaction.nonce
-        created_contract_address = Utils.calc_contract_address(w3, transaction_event.from_, nonce)
-        original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
-        if original_threat_category != "":
-            findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
-        
-    pair_created_events = transaction_event.filter_log(PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES[CHAIN_ID].lower())
-    for event in pair_created_events:
-        original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
-        if original_threat_category != "":
-            created_contract_address = event['args']['pair']
-            findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
+    try:
+        if transaction_event.to is None:
+            nonce = transaction_event.transaction.nonce
+            created_contract_address = Utils.calc_contract_address(w3, transaction_event.from_, nonce)
+            original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
+            if original_threat_category != "":
+                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
+            
+        pair_created_events = transaction_event.filter_log(PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES[CHAIN_ID].lower())
+        for event in pair_created_events:
+            original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
+            if original_threat_category != "":
+                created_contract_address = event['args']['pair']
+                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
 
-    pool_created_events = transaction_event.filter_log(POOLCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES[CHAIN_ID].lower())
-    for event in pool_created_events:
-        original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
-        if original_threat_category != "":
-            created_contract_address = event['args']['pool']
-            findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
+        pool_created_events = transaction_event.filter_log(POOLCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES[CHAIN_ID].lower())
+        for event in pool_created_events:
+            original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
+            if original_threat_category != "":
+                created_contract_address = event['args']['pool']
+                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
+    except BaseException as e:
+        logging.warning(f"{BOT_VERSION}: tx {transaction_event.hash} - Exception in detect_scammer_contract_creation {transaction_event.hash}: {e} - {traceback.format_exc()}")
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+            logging.info(f"{BOT_VERSION}: tx {transaction_event.hash} - Raising exception to expose error to scannode")
 
 
     return findings
