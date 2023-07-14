@@ -1,6 +1,6 @@
 {
   "name": "stolen-nft-bot",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "This bot will alert/label likely stolen NFTs",
   "repository": "https://github.com/forta-network/forta-bot-sdk/tree/master/starter-project",
   "chainIds": [
@@ -26,7 +26,7 @@
 
   },
   "dependencies": {
-    "forta-agent": "^0.1.32"
+    "forta-agent": "^0.1.33"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

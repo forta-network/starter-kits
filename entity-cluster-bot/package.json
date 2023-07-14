@@ -1,10 +1,36 @@
 {
   "name": "entity-cluster-bot",
-  "version": "0.0.15",
+  "version": "0.0.17",
   "description": "A bot that clusters entities",
   "chainIds": [
-    1, 56, 137, 43114, 42161, 10, 250
+    1, 137, 56, 43114, 42161, 10, 250
   ],
+  "chainSettings": {
+    "1": {
+      "shards": 9,
+      "target": 1
+    },
+    "137": {
+      "shards": 9,
+      "target": 1
+    },
+    "56": {
+      "shards": 15,
+      "target": 1
+    },
+    "10": {
+      "shards": 3,
+      "target": 1
+    },
+    "42161": {
+      "shards": 6,
+      "target": 1
+    },
+    "default": {
+      "shards": 2,
+      "target": 1
+    }
+  },
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
     "start": "npm run start:dev",
@@ -21,10 +47,18 @@
     "disable": "forta-agent disable",
     "enable": "forta-agent enable",
     "keyfile": "forta-agent keyfile",
-    "test": "python3 -m pytest"
+    "test": "python3 -m pytest",
+    "myTx": "forta-agent run --tx 0x431136dd361557abe34fe4685a278654e9e1bc7547a40719b348c096c5092d2b,0x5dfb733a9522f72e4dff5d6cb635135ee599cf3c19f2b9e4a8c91fba7e7aeb45",
+    "myTx2": "forta-agent run --tx 0x940a334b0b419ed46bf905d5158df3ae3e80dacfd7c658b6b6e4442bc522f90c",
+    "approve-tx": "forta-agent run --tx  0xd683432852788360365c68016c5ac51b79a57c43c5b04db9fa44a2dd082fbf15",
+    "contract-creation": "forta-agent run --tx 0x43ccd83cc6059db240e7957586e3a22d0a8871e986f4325fc778943b9514ca11",
+    "small-tx": "forta-agent run --tx 0x8c9b92897af9f7c93ebc6beffc1a8c6d68225b8b40ef4e276a3df83fd308e416",
+    "erc-20-tx": "forta-agent run --tx 0x9ca1ae7438b939c23b69e72e740615f2d0ef4360bb06047d9201ac29baf64283"
+
+
   },
   "dependencies": {
-    "forta-agent": "^0.1.10"
+    "forta-agent": "^0.1.33"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

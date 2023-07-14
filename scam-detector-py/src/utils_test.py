@@ -1,5 +1,6 @@
 from datetime import datetime
-from forta_agent import get_json_rpc_url
+import json
+from forta_agent import get_json_rpc_url, FindingSeverity
 from web3 import Web3
 from utils import Utils
 from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX
@@ -68,6 +69,21 @@ class TestUtils:
     def test_is_beta(self):
         assert Utils.is_beta() is not None
 
-
     def test_is_fp_investigation1(self):
         assert not Utils.is_fp(real_w3, "0x61fF13F129a96d2d229D37A0531979852945433a".lower()), "this should not be a false positive"
+
+    def test_calc_contract_address(self):
+        contract_address = Utils.calc_contract_address(w3, EOA_ADDRESS_SMALL_TX, 9)
+        assert contract_address == "0x728ad672409DA288cA5B9AA85D1A55b803bA97D7", "should be the same contract address"
+
+    def test_decrypt_alert(self):
+        private_key = ""
+        with open("secrets.json") as f:
+            secrets_json = json.load(f)
+            if "BLOCKSEC" in secrets_json['decryptionKeys']:
+                private_key = secrets_json['decryptionKeys']["BLOCKSEC"]
+             
+        encrypted_finding_base64 = "-----BEGIN PGP MESSAGE-----\n\nwV4Dsrw6yC2ErRsSAQdAH4G1wHZ51oEkY1qabIqDgy2fCO4tyPQQ8lTkUx2U\n8yUw7PknK6WzKO08VAzP5ME6s9uDOyhDg7A7rn2h4Sx1yW3sv264/r2yiKAq\nWJK+fIdd0sD5AaVkIyGWLhBnLBe+UYVhcYPh+6ynB1Vm2rh4l/qndcgIex6d\nTb/uriimCuMSZvUM4EfPzEZ1R/v0I//ryOJESS8PespcuczAQTYfwNUFXLKb\nGIhvjLwtwAeqOMnnukWFK3VGx8FodPEGjpVHGKP6tetY40np4saorsflamhu\nGI+mPOxm/5jc+r1D0zVVcjPNQ7n2rgr/PKhdiNwlkbK123HAvSIfDMxMeBs0\npD8T9LABU3P4wR2MGw6t0935o1tKUf0MiymSpsxqjrhrYsGBcIaMtomLO9eM\nFLs1/cLG8g5DQlcz3zkTFtcPHSt7mh4rio9en8a4ZzXoUiRhbD6DSFXsnuEt\n7VZ0UnTVES6J+YfUFiMTiFhXwZ07xxMWn8/LNfJUa2ADSIBpFOM6uVslhwxo\nuU0l29Sm09EWa0MXTf3Qo73VbzVb1NpwwwSeIUN/e3QbtE/udgeWhrwQXk91\nw25m1GSQCnO2oWenRSudvbbbir9Ew3kCi9aosOPM9iMCNk2HUGtS7FpRAz2A\nQwoNV2WOIR01VVDjdnguF/JKaeMrBqTOEqlqIqH60haJ1ct9wfjidoqBaA0V\n=YuOS\n-----END PGP MESSAGE-----\n"
+        decrypted_finding = Utils.decrypt_alert(encrypted_finding_base64, private_key)
+        assert decrypted_finding.description == "Ice phishing report."
+        assert decrypted_finding.severity == FindingSeverity.Critical

@@ -1,6 +1,15 @@
 # Attack Detector Bot Release Notes
 
-## v3.45.0 (June 27 2023: beta)
+## v3.46.1 (July 5 2023: beta, July 5 2023: prod)
+- increase redundancy of bot on the network
+
+## v3.46.0 (June 29 2023: beta, June 29 2023: prod)
+- additional FP mitigation around scammers
+
+## v3.45.2 (June 29 2023: beta, June 29 2023: prod)
+- updated SDK to version 0.1.33
+
+## v3.45.1 (June 28 2023: beta, June 29 2023: prod)
 - add date limit on zettablock to obtain contract creation more cheaply
 - small adjustments to high precision logic to also fire if there are more than 1 high precision bot that triggered
 - updated SDK to version 0.1.32

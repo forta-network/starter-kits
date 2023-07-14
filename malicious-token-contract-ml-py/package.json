@@ -1,10 +1,20 @@
 {
   "name": "malicious-token-contract-ml",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Malicious Token Contract Detection Bot",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
   ],
+  "chainSettings": {
+    "1": {
+      "shards": 3,
+      "target": 2
+    },
+    "default": {
+      "shards": 2,
+      "target": 2
+    }
+  },
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
     "start": "npm run start:dev",
@@ -22,7 +32,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.20"
+    "forta-agent": "^0.1.33"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

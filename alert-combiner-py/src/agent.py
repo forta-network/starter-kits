@@ -224,6 +224,11 @@ def get_end_user_attack_addresses(alert_event: forta_agent.alert_event.AlertEven
     #0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4,SOFT-RUG-PULL-,metadata,,deployer,
     #0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11,RAKE-TOKEN-CONTRACT-1,metadata,,attackerRakeTokenDeployer,
     #0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11,RAKE-TOKEN-CONTRACT-1,metadata,,attacker_rake_token_deployer,
+    #0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127,IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR,eoa,metadata,,newTokenDeployer,
+    #0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127,IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR,eoa,metadata,,new_token_deployer,
+    #0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1,*,eoa,metadata,,attackerAddress,
+    #0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1,*,eoa,metadata,,attacker_address,
+    #0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1,*,eoa,metadata,,deployer,
     if alert_event.bot_id == '0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15':  # hard rug pull
         if alert_event.alert.metadata.get('attacker_deployer_address') is not None:
             addresses.add(alert_event.alert.metadata['attacker_deployer_address'].lower())
@@ -231,12 +236,24 @@ def get_end_user_attack_addresses(alert_event: forta_agent.alert_event.AlertEven
             addresses.add(alert_event.alert.metadata['attacker_deployer_address'].lower())
     elif alert_event.bot_id == '0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4':  # soft rug pull
         if alert_event.alert.metadata.get('deployer') is not None:
-            addresses.add(alert_event.alert.metadata['deployer'].lower())
+            addresses.add(alert_event.alert.metadata['deployer'].lower().replace('"', ''))
     elif alert_event.bot_id == '0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11':
         if alert_event.alert.metadata.get('attackerRakeTokenDeployer') is not None:
             addresses.add(alert_event.alert.metadata['attackerRakeTokenDeployer'].lower())
         if alert_event.alert.metadata.get('attacker_rake_token_deployer') is not None:
             addresses.add(alert_event.alert.metadata['attacker_rake_token_deployer'].lower())
+    elif alert_event.bot_id == '0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127':
+        if alert_event.alert.metadata.get('newTokenDeployer') is not None:
+            addresses.add(alert_event.alert.metadata['newTokenDeployer'].lower())
+        if alert_event.alert.metadata.get('new_token_deployer') is not None:
+            addresses.add(alert_event.alert.metadata['new_token_deployer'].lower())
+    elif alert_event.bot_id == '0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1':
+        if alert_event.alert.metadata.get('attackerAddress') is not None:
+            addresses.add(alert_event.alert.metadata['attackerAddress'].lower().replace('"', ''))
+        if alert_event.alert.metadata.get('attacker_address') is not None:
+            addresses.add(alert_event.alert.metadata['attacker_address'].lower().replace('"', ''))
+        if alert_event.alert.metadata.get('deployer') is not None:
+            addresses.add(alert_event.alert.metadata['deployer'].lower().replace('"', ''))
 
     return list(addresses)
 
@@ -374,6 +391,12 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                         highly_precise_bot_ids = set()
                         uniq_bot_alert_ids = alert_data[['bot_id', 'alert_id']].drop_duplicates(inplace=False)
                         for bot_id, alert_id, s in HIGHLY_PRECISE_BOTS:
+                            if bot_id == '0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac':  # temp hot fix for FP; awaiting FP mitigation from basebot (https://github.com/NethermindEth/forta-starter-kits/issues/59)
+                                highly_precise_bot_alerts = alert_data[(alert_data['bot_id'] == bot_id) & (alert_data['alert_id'] == alert_id)]
+                                if len(highly_precise_bot_alerts) > 0 and highly_precise_bot_alerts['anomaly_score'].max() > 0.5:
+                                    logging.info(f"Large profit anomaly score not anomalous enough ({highly_precise_bot_alerts['anomaly_score'].max()}) for inclusion in high precision count; skipping ...")
+                                    continue
+
                             if len(uniq_bot_alert_ids[(uniq_bot_alert_ids['bot_id'] == bot_id) & (uniq_bot_alert_ids['alert_id'] == alert_id)]) > 0:
                                 highly_precise_bot_alert_id_count += 1
                                 highly_precise_bot_ids.add(bot_id)
