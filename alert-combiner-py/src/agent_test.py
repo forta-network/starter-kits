@@ -3,7 +3,6 @@ from forta_agent import create_alert_event, FindingSeverity
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 import agent
-from src.utils import Utils
 from src.storage import dynamo_table, get_secrets
 import json
 import os
@@ -54,33 +53,6 @@ class TestAlertCombiner:
             os.remove(f"{VERSION}-{ALERTED_CLUSTERS_STRICT_KEY}")
         if os.path.isfile(f"{VERSION}-{ALERTED_CLUSTERS_LOOSE_KEY}"):
             os.remove(f"{VERSION}-{ALERTED_CLUSTERS_LOOSE_KEY}")
-
-    def test_is_contract_eoa(self):
-        assert not Utils.is_contract(w3, EOA_ADDRESS), "EOA shouldn't be identified as a contract"
-
-    def test_is_contract_contract(self):
-        assert Utils.is_contract(w3, CONTRACT), "Contract should be identified as a contract"
-
-    def test_is_contract_contract_eoa(self):
-        assert not Utils.is_contract(w3, f"{CONTRACT},{EOA_ADDRESS}"), "EOA & Contract shouldnt be identified as a contract"
-
-    def test_is_contract_contracts(self):
-        assert Utils.is_contract(w3, f"{CONTRACT},{CONTRACT}"), "Contracts should be identified as a contract"
-
-    def test_is_contract_null(self):
-        assert not Utils.is_contract(w3, '0x0000000000a00000000000000000000000000000'), "EOA shouldn't be identified as a contract"
-
-    def test_is_address_valid(self):
-        assert Utils.is_address(w3, '0x7328BBc3EaCfBe152f569f2C09f96f915F2C8D73'), "this should be a valid address"
-
-    def test_is_address_aaa(self):
-        assert not Utils.is_address(w3, '0x7328BBaaaaaaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
-
-    def test_is_addresses_aaa(self):
-        assert not Utils.is_address(w3, f'0x7328BBaaaaaaaaa52f569f2C09f96f915F2C8D73,{EOA_ADDRESS}'), "this shouldnt be a valid address"
-
-    def test_is_address_aAa(self):
-        assert not Utils.is_address(w3, '0x7328BBaaaaAaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
 
     def test_in_list(self):
         alert = create_alert_event(

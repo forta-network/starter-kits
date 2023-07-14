@@ -1,4 +1,3 @@
-from datetime import datetime
 from forta_agent import get_json_rpc_url
 from web3 import Web3
 from utils import Utils
@@ -24,16 +23,16 @@ class TestUtils:
         assert not Utils.is_contract(w3, '0x0000000000a00000000000000000000000000000'), "EOA shouldn't be identified as a contract"
 
     def test_is_address_valid(self):
-        assert Utils.is_address(w3, '0x7328BBc3EaCfBe152f569f2C09f96f915F2C8D73'), "this should be a valid address"
+        assert Utils.is_address('0x7328BBc3EaCfBe152f569f2C09f96f915F2C8D73'), "this should be a valid address"
 
     def test_is_address_aaa(self):
-        assert not Utils.is_address(w3, '0x7328BBaaaaaaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
+        assert not Utils.is_address('0x7328BBaaaaaaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
 
     def test_is_addresses_aaa(self):
-        assert not Utils.is_address(w3, f'0x7328BBaaaaaaaaa52f569f2C09f96f915F2C8D73,{EOA_ADDRESS}'), "this shouldnt be a valid address"
+        assert not Utils.is_address(f'0x7328BBaaaaaaaaa52f569f2C09f96f915F2C8D73,{EOA_ADDRESS}'), "this shouldnt be a valid address"
 
     def test_is_address_aAa(self):
-        assert not Utils.is_address(w3, '0x7328BBaaaaAaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
+        assert not Utils.is_address('0x7328BBaaaaAaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
 
     def test_etherscan_label(self):
         label = Utils.get_etherscan_label("0xffc0022959f58aa166ce58e6a38f711c95062b99")
