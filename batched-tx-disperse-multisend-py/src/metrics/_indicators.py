@@ -1,9 +1,10 @@
 """Base indicators on transactions and their metadata."""
 
+import itertools
+
 from forta_agent.transaction_event import TransactionEvent
 from web3 import Web3
 
-import src._addresses as addresses
 import src._balances as balances
 import src._events as events
 import src._inputs as inputs
@@ -44,9 +45,9 @@ def _get_all_balance_updates(w3: Web3, addresses: list, block: int) -> list:
     return [_d for _d in _deltas if abs(_d) > 0]
 
 def multiple_native_token_balances_have_been_updated(w3: Web3, data: str, block: int, floor: int) -> bool:
-    _recipients = inputs.get_array_of_address_candidates(data)
-    _deltas = _get_all_balance_updates(w3=w3, addresses=_recipients, block=block)
-    return len(_deltas) >= floor
+    _recipients = inputs.get_array_of_address_candidates(data) # list of candidates = list of lists
+    _deltas = [_get_all_balance_updates(w3=w3, addresses=_a, block=block) for _a in _recipients if len(_a) >= floor]
+    return len(list(itertools.chain.from_iterable(_deltas))) >= floor
 
 def receiver_contract_balance_did_not_change(w3: Web3, address: str, block: int, tolerance: int=10**17) -> bool:
     return balances.get_balance_delta(w3=w3, address=address, block=block) <= tolerance # in case the contract has a fee, set to 0.1 EHT by default
