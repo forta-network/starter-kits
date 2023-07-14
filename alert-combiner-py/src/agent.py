@@ -14,7 +14,7 @@ from forta_agent import FindingSeverity
 
 from src.findings import AlertCombinerFinding
 from src.constants import (BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
-                           FP_MITIGATION_BOTS, ALERTS_LOOKBACK_WINDOW_IN_HOURS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE,
+                           FP_MITIGATION_BOTS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE,
                            MIN_ALERTS_COUNT, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS, DEFAULT_ANOMALY_SCORE, HIGHLY_PRECISE_BOTS,
                            ALERTED_CLUSTERS_FP_MITIGATED_KEY, END_USER_ATTACK_BOTS, POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD)
 from src.L2Cache import L2Cache
@@ -326,8 +326,6 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                 # update alerts and process them for a given cluster
                 if in_list(alert_event, BASE_BOTS):
                     logging.info(f"alert {alert_event.alert_hash}: is a base bot {alert_event.alert.source.bot.id}, {alert_event.alert_id} alert for addresses {alert_event.alert.addresses}")
-                    end_date = datetime.strptime(alert_event.alert.created_at[0:25]+'Z', '%Y-%m-%dT%H:%M:%S.%fZ')  # getting block time stamp would be more accurate, but more expensive as it requires an RPC call
-                    start_date = end_date - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS)
 
                     # analyze attacker addresses from labels if there are any; otherwise analyze all addresses
                     pot_attacker_addresses = get_pot_attacker_addresses(alert_event)
@@ -368,12 +366,9 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                         alert_data_cluster = pd.concat([alert_data_cluster, new_alert_data], ignore_index=True, axis=0)
                         logging.info(f"alert {alert_event.alert_hash} - alert data size for cluster {cluster} now: {len(alert_data_cluster)}")
 
-                        # add new alert and purge old alerts
-                        alert_data_cluster = alert_data_cluster[alert_data_cluster['created_at'] > start_date]
                         du.put_alert_data(dynamo, cluster, alert_data_cluster)
                         alert_data = alert_data_cluster
-                        logging.info(f"alert {alert_event.alert_hash} - alert data size for cluster {cluster} now (after date pruning): {len(alert_data_cluster)}")
-
+                        
                         # 3. contains highly precise bot
                         highly_precise_bot_alert_id_count = 0
                         highly_precise_bot_ids = set()
@@ -383,7 +378,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                 highly_precise_bot_alert_id_count += 1
                                 highly_precise_bot_ids.add(bot_id)
 
-                        # analyze ALERT_DATA to see whether conditions are met to generate a finding
+                        # analyze alert_data to see whether conditions are met to generate a finding
                         # 1. Have to have at least MIN_ALERTS_COUNT bots reporting alerts
                         if len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT or highly_precise_bot_alert_id_count>0:
                             # 2. Have to have overall anomaly score of less than ANOMALY_SCORE_THRESHOLD
