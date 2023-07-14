@@ -13,7 +13,7 @@ class DynamoUtils:
 
     def __init__(self, chain_id = 1):
         self.chain_id = chain_id
-        print(f"Set chain ID = {self.chain_id} to the DynamoUtils class")
+        logging.debug(f"Set chain ID = {self.chain_id} to the DynamoUtils class")
      
     def _get_expiry_offset(self):
         return ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
@@ -94,16 +94,18 @@ class DynamoUtils:
 
     def put_alert_data(self, dynamo, cluster: str, dataframe: pd.DataFrame):
         logging.debug(f"Putting alert data for cluster {cluster} in DynamoDB")
-        first_alert_created_at = dataframe["created_at"].iloc[0].timestamp()
-        logging.debug(f"alert_created_at: {first_alert_created_at}")
+        last_alert_created_at = dataframe["created_at"].iloc[-1].timestamp()
+        logging.debug(f"alert_created_at: {last_alert_created_at}")
         itemId = f"{item_id_prefix}|{self.chain_id}|alert"
         logging.debug(f"itemId: {itemId}")
         sortId = f"{cluster}"
         logging.debug(f"sortId: {sortId}")
-
-        expiresAt = self._get_expires_at(first_alert_created_at)
-        logging.debug(f"expiresAt: {expiresAt}")
-        
+        expiresAt = self._get_expires_at(last_alert_created_at)
+        logging.debug(f"expiresAt: {expiresAt}")    
+        logging.debug(f"Dataframe length before filtering: {len(dataframe)}")
+        expiry_offset = pd.Timedelta(seconds=self._get_expiry_offset())
+        dataframe = dataframe[dataframe["created_at"] > (pd.to_datetime(last_alert_created_at, unit='s') - expiry_offset)]
+        logging.debug(f"Dataframe length after filtering: {len(dataframe)}")
         dataframe_json = dataframe.to_json(orient="records")
         
         item = {
