@@ -22,5 +22,5 @@ WORKDIR /app
 COPY ./malicious_non_token_model_02_07_23_exp2.joblib ./
 COPY ./src ./src
 COPY package*.json ./
-RUN npm ci --production
+RUN npm ci --production --loglevel verbose
 CMD [ "npm", "run", "start:prod" ]
