@@ -1,4 +1,5 @@
 from unittest.mock import Mock
+from datetime import datetime
 from src.dynamo_utils import DynamoUtils, item_id_prefix
 from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
 import time
@@ -15,12 +16,16 @@ class TestDynamoUtils:
             'ResponseMetadata': {'HTTPStatusCode': 200}}
         address = '0x123456789'
         cluster = 'entity_cluster'
+        alert_created_at_str = '2022-01-01T00:00:00'
+        alert_created_at = datetime.strptime(alert_created_at_str[0:19], "%Y-%m-%dT%H:%M:%S").timestamp()
 
         du = DynamoUtils(TestDynamoUtils.CHAIN_ID)
-        du.put_entity_cluster(dynamo, '2022-01-01T00:00:00', address, cluster)
+        expiresAt = du._get_expires_at(alert_created_at)
+
+        du.put_entity_cluster(dynamo, alert_created_at_str, address, cluster)
 
         dynamo.put_item.assert_called_once_with(Item={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|entity_cluster',
-                                                'sortKey': address, 'address': address, 'cluster': cluster, 'expiresAt': 1641074400})
+                                                'sortKey': address, 'address': address, 'cluster': cluster, 'expiresAt': expiresAt})
 
     def test_put_fp_mitigation_cluster(self):
         dynamo = Mock()
