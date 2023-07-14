@@ -50,6 +50,7 @@ Threat categories are as follows:
 - similar contract - Fired when a similar contract to a previously identified scammer contract has been identified
 - scammer association - Fired when an EOA is associated with a known scammer account (e.g. receiving or sending funds)
 - scammer-deployed-contract - When a known scammer deploys a contract
+- unknown - Scam has been identified, but threat category couldnt be determined
 
 
 Additional information can be found on the label for provenance purposes:
@@ -207,5 +208,6 @@ The scam detector passes unrecoverable errors to the scan node, which cause a re
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Native-ice-phishing | PassThrough | 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Address-poisoning | PassThrough | 
 | 0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e | Ice Phishing ML Model | EOA-PHISHING-SCAMMER | PassThrough |
-
+| 0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e | Scam Notifier | VICTIM-NOTIFIER-EOA | PassThrough |
+| 0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e | Scam Notifier | SCAM-NOTIFIER-EOA | PassThrough |
 
