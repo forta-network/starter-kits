@@ -81,6 +81,8 @@ class ScamDetectorFinding:
             return "sleepdrop"
         elif alert_id == "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE":
             return "private-key-compromise"
+        elif alert_id == "SCAM-DETECTOR-UNKNOWN":
+            return "unknown"
         else:
             return ""
 

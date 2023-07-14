@@ -641,6 +641,24 @@ class TestScamDetector:
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 
+    def test_detect_scam_notifier(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e"
+        alert_id = "SCAM-NOTIFIER-EOA"
+        description = "0x72dd58002e6d17a3ec18b9ae3460449c51d619ac was flagged as a scam by 0xba6e11347856c79797af6b2eac93a8145746b4f9 🛑scam-warning🛑.eth"
+        metadata = {"message":"HARD SCAM DETECTED\n\nVerify: https://t.me/iTokenEthereum/533110\nWarning issued by iToken - a cloud based token spotter & scam detector.","notifier_eoa":"0xba6e11347856c79797af6b2eac93a8145746b4f9","notifier_name":"🛑scam-warning🛑.eth","scammer_eoa":"0x72dd58002e6d17a3ec18b9ae3460449c51d619ac"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-UNKNOWN", "should be scammer unknown finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+
 
     def test_detect_impersonating_token_with_error(self):
         agent.initialize()
