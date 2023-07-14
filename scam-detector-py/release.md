@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## v2.17.3 (July 14th 2023 - beta)
+- change error handling to emit finding as opposed to raising an exception (beta version only)
+
 ## v2.17.2 (July 14th 2023 - beta)
 - better error handling around manual lists
 - fix finding null issue

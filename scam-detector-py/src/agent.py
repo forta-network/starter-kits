@@ -794,12 +794,12 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.alert_id} {alert_event.chain_id} processing took {end_all - start_all} seconds")
     except BaseException as e:
         logging.warning(f"{BOT_VERSION}: alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e} - {traceback.format_exc()}")
-        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
-            logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV') and not Utils.is_beta():
+            logging.error(f"{BOT_VERSION}: alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
             raise e
         else:
             Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.detect_scam", traceback.format_exc()))
-
+   
     return findings
 
 # This function emits FPs for each address in the static list maintained by the Forta Community residing on github
@@ -999,49 +999,57 @@ def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transact
     global DF_CONTRACT_SIGNATURES
     findings = []
 
-    if transaction_event.to is None:
-        nonce = transaction_event.transaction.nonce
-        created_contract_address = Utils.calc_contract_address(w3, transaction_event.from_, nonce)
-        logging.info(f"{BOT_VERSION}: {transaction_event.from_} created contract {created_contract_address}")
-        original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
-        if original_threat_category != "":
-            findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
+    try:
+        if transaction_event.to is None:
+            nonce = transaction_event.transaction.nonce
+            created_contract_address = Utils.calc_contract_address(w3, transaction_event.from_, nonce)
+            logging.info(f"{BOT_VERSION}: {transaction_event.from_} created contract {created_contract_address}")
+            original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
+            if original_threat_category != "":
+                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
 
-        code = Utils.get_code(w3, created_contract_address)
-        for index, row in DF_CONTRACT_SIGNATURES.iterrows():
-            code_regex = row["Entity"]
-            if re.search(code_regex, code):
-                logging.info(row['Threat category'])
-                logging.info(f"{BOT_VERSION}: {transaction_event.from_} created contract {created_contract_address} matches {code_regex}")
-                threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']
-                alert_id_threat_category = threat_category.upper().replace(" ", "-")
-                alert_id = "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category
-                if not already_alerted(transaction_event.from_, alert_id):
-                    tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
-                    account = "" if 'nan' in str(row["Account"]) else row['Account']
-                    comment = "" if 'nan' in str(row["Comment"]) else row['Comment']
-                    update_list(ALERTED_ENTITIES, ALERTED_ENTITIES_QUEUE_SIZE, transaction_event.from_, alert_id)
-                    finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, "Address", transaction_event.from_, threat_category, account + " " + tweet, CHAIN_ID, comment)
-                    if finding is not None:
-                        logging.info(f"Manual finding: Emitting manual finding for {transaction_event.from_}")
-                        findings.append(finding)
-                break
+            code = Utils.get_code(w3, created_contract_address)
+            for index, row in DF_CONTRACT_SIGNATURES.iterrows():
+                code_regex = row["Entity"]
+                if re.search(code_regex, code):
+                    logging.info(row['Threat category'])
+                    logging.info(f"{BOT_VERSION}: {transaction_event.from_} created contract {created_contract_address} matches {code_regex}")
+                    threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']
+                    alert_id_threat_category = threat_category.upper().replace(" ", "-")
+                    alert_id = "SCAM-DETECTOR-MANUAL-"+alert_id_threat_category
+                    if not already_alerted(transaction_event.from_, alert_id):
+                        tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
+                        account = "" if 'nan' in str(row["Account"]) else row['Account']
+                        comment = "" if 'nan' in str(row["Comment"]) else row['Comment']
+                        update_list(ALERTED_ENTITIES, ALERTED_ENTITIES_QUEUE_SIZE, transaction_event.from_, alert_id)
+                        finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, "Address", transaction_event.from_, threat_category, account + " " + tweet, CHAIN_ID, comment)
+                        if finding is not None:
+                            logging.info(f"Manual finding: Emitting manual finding for {transaction_event.from_}")
+                            findings.append(finding)
+                    break
 
-        
-    pair_created_events = transaction_event.filter_log(PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES[CHAIN_ID].lower())
-    for event in pair_created_events:
-        original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
-        if original_threat_category != "":
-            created_contract_address = event['args']['pair']
-            findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
+            
+        pair_created_events = transaction_event.filter_log(PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES[CHAIN_ID].lower())
+        for event in pair_created_events:
+            original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
+            if original_threat_category != "":
+                created_contract_address = event['args']['pair']
+                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
 
-    pool_created_events = transaction_event.filter_log(POOLCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES[CHAIN_ID].lower())
-    for event in pool_created_events:
-        original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
-        if original_threat_category != "":
-            created_contract_address = event['args']['pool']
-            findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
-
+        pool_created_events = transaction_event.filter_log(POOLCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES[CHAIN_ID].lower())
+        for event in pool_created_events:
+            original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
+            if original_threat_category != "":
+                created_contract_address = event['args']['pool']
+                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
+    except BaseException as e:
+        logging.warning(f"{BOT_VERSION}: transaction {transaction_event.hash} - Exception in detect_scammer_contract_creation {transaction_event.hash}: {e} - {traceback.format_exc()}")
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV') and not Utils.is_beta():
+            logging.error(f"{BOT_VERSION}: transaction {transaction_event.hash} - Raising exception to expose error to scannode")
+            raise e
+        else:
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.detect_scammer_contract_creation", traceback.format_exc()))
+    
 
     return findings
 
@@ -1213,9 +1221,10 @@ def provide_handle_block(w3):
                 df_manual_list = get_manual_list()
                 DF_CONTRACT_SIGNATURES = df_manual_list[df_manual_list['EntityType']=='Code']
                 logging.info(f"{BOT_VERSION}: Loaded {len(DF_CONTRACT_SIGNATURES)} contract signatures.")
-            except Exception as e:
-                logging.error(f"{BOT_VERSION}: Failed to load contract signatures.")
+            except BaseException as e:
+                logging.warning(f"{BOT_VERSION}: Failed to load contract signatures.")
                 Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.handle_block", traceback.format_exc()))
+
             logging.info(f"{BOT_VERSION}: Handle block on the hour was called. Findings cache for blocks size now: {len(FINDINGS_CACHE_BLOCK)}")
             
             persist_state()
