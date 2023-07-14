@@ -17,8 +17,8 @@ class TestDynamoUtils:
         address = '0x123456789'
         cluster = 'entity_cluster'
 
-        DynamoUtils.put_entity_cluster(
-            dynamo, '2022-01-01T00:00:00', address, cluster, TestDynamoUtils.CHAIN_ID)
+        du = DynamoUtils(TestDynamoUtils.CHAIN_ID)
+        du.put_entity_cluster(dynamo, '2022-01-01T00:00:00', address, cluster)
 
         dynamo.put_item.assert_called_once_with(Item={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|entity_cluster',
                                                 'sortKey': address, 'address': address, 'cluster': cluster, 'expiresAt': 1641074400})
@@ -31,8 +31,9 @@ class TestDynamoUtils:
         expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
         expiresAt = int(time.time()) + int(expiry_offset)
 
-        DynamoUtils.put_fp_mitigation_cluster(
-            dynamo, address, TestDynamoUtils.CHAIN_ID)
+        du = DynamoUtils(TestDynamoUtils.CHAIN_ID) 
+        du.put_fp_mitigation_cluster(dynamo, address) 
+
         dynamo.put_item.assert_called_once_with(
             Item={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|fp_mitigation_cluster', 'sortKey': address, 'address': address, 'expiresAt': expiresAt})
 
@@ -44,8 +45,9 @@ class TestDynamoUtils:
         expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
         expiresAt = int(time.time()) + int(expiry_offset)
 
-        DynamoUtils.put_end_user_attack_cluster(
-            dynamo, address, TestDynamoUtils.CHAIN_ID)
+        du = DynamoUtils(TestDynamoUtils.CHAIN_ID) 
+        du.put_end_user_attack_cluster(dynamo, address)
+
         dynamo.put_item.assert_called_once_with(
             Item={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|end_user_attack_cluster', 'sortKey': address, 'address': address, 'expiresAt': expiresAt})
     
@@ -63,8 +65,9 @@ class TestDynamoUtils:
         expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
         expiresAt = int(first_alert_created_at) + int(expiry_offset)
 
-        DynamoUtils.put_alert_data(
-            dynamo, cluster, dataframe, TestDynamoUtils.CHAIN_ID)
+        du = DynamoUtils(TestDynamoUtils.CHAIN_ID) 
+        du.put_alert_data(dynamo, cluster, dataframe)
+
         dynamo.put_item.assert_called_once_with(Item={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|alert',
                                                 'sortKey': cluster, 'cluster': cluster, 'dataframe': dataframe_json, 'expiresAt': expiresAt})
     
@@ -77,8 +80,8 @@ class TestDynamoUtils:
         expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
         expiresAt = int(time.time()) + int(expiry_offset)
 
-        DynamoUtils.put_victim(dynamo, transaction_hash,
-                               metadata, TestDynamoUtils.CHAIN_ID)
+        du = DynamoUtils(TestDynamoUtils.CHAIN_ID) 
+        du.put_victim(dynamo, transaction_hash, metadata)
         dynamo.put_item.assert_called_once_with(Item={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|victim',
                                                 'sortKey': transaction_hash, 'transaction_hash': transaction_hash, 'metadata': metadata, 'expiresAt': expiresAt})
 
@@ -90,8 +93,9 @@ class TestDynamoUtils:
         response = {'Items': items}
         dynamo.query.return_value = response
 
-        DynamoUtils.read_entity_clusters(
-            dynamo, address, TestDynamoUtils.CHAIN_ID)
+        du = DynamoUtils(TestDynamoUtils.CHAIN_ID)
+        du.read_entity_clusters(dynamo, address)
+
         dynamo.query.assert_called_once_with(KeyConditionExpression='itemId = :id AND sortKey = :sid', ExpressionAttributeValues={
                                          ':id': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|entity_cluster', ':sid': f'{address}'})
 
@@ -101,8 +105,9 @@ class TestDynamoUtils:
         response = {'Items': items}
         dynamo.query.return_value = response
 
-        DynamoUtils.read_fp_mitigation_clusters(
-            dynamo, TestDynamoUtils.CHAIN_ID)
+        du = DynamoUtils(TestDynamoUtils.CHAIN_ID)
+        du.read_fp_mitigation_clusters(dynamo)
+
         dynamo.query.assert_called_once_with(KeyConditionExpression='itemId = :id', ExpressionAttributeValues={
             ':id': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|fp_mitigation_cluster'})
 
@@ -112,8 +117,9 @@ class TestDynamoUtils:
         response = {'Items': items}
         dynamo.query.return_value = response
 
-        DynamoUtils.read_end_user_attack_clusters(
-            dynamo, TestDynamoUtils.CHAIN_ID)
+        du = DynamoUtils(TestDynamoUtils.CHAIN_ID)
+        du.read_end_user_attack_clusters(dynamo)
+
         dynamo.query.assert_called_once_with(KeyConditionExpression='itemId = :id', ExpressionAttributeValues={
             ':id': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|end_user_attack_cluster'})
 
@@ -125,23 +131,27 @@ class TestDynamoUtils:
         response = {'Items': items}
         dynamo.query.return_value = response
 
-        DynamoUtils.read_alert_data(
-            dynamo, cluster, TestDynamoUtils.CHAIN_ID)
+        du = DynamoUtils(TestDynamoUtils.CHAIN_ID)
+        du.read_alert_data(dynamo, cluster)
+
         dynamo.query.assert_called_once_with(KeyConditionExpression='itemId = :id AND sortKey = :sid', ExpressionAttributeValues={
             ':id': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|alert', ':sid': f'{cluster}'})
 
     def test_read_victims(self):
         dynamo = Mock()
         items = [{'transaction_hash': '0xabcdef123456', 'sortKey': '1641074400',
-                  'metadata': '{"key":"value"}'}]
+                'metadata': '{"key":"value"}'}]
         response = {'Items': items}
         dynamo.query.return_value = response
 
-        DynamoUtils.read_victims(
-            dynamo, TestDynamoUtils.CHAIN_ID)
+        du = DynamoUtils(TestDynamoUtils.CHAIN_ID)
+        du.read_victims(dynamo)
+
         dynamo.query.assert_called_once_with(
-            KeyConditionExpression=Key('itemId').eq(
-                f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|victim')
+            KeyConditionExpression='itemId = :id',
+            ExpressionAttributeValues={
+                ':id': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|victim'
+            }
         )
 
     def test_delete_alert_data(self):
@@ -150,8 +160,8 @@ class TestDynamoUtils:
         dynamo.delete_item.return_value = {
             'ResponseMetadata': {'HTTPStatusCode': 200}}
 
-        DynamoUtils.delete_alert_data(
-            dynamo, address, TestDynamoUtils.CHAIN_ID)
+        du = DynamoUtils(TestDynamoUtils.CHAIN_ID)
+        du.delete_alert_data(dynamo, address)
         dynamo.delete_item.assert_called_once_with(
             Key={'itemId': f'{item_id_prefix}|{TestDynamoUtils.CHAIN_ID}|alert',
                  'sortKey': f'{address}'}
