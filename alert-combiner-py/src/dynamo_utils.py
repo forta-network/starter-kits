@@ -5,7 +5,7 @@ from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
 import pandas as pd
 
 # TODO: Replace with prod prefix
-item_id_prefix = "devdevdev1111"
+item_id_prefix = ""
 
 
 class DynamoUtils:
