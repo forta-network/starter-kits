@@ -1,6 +1,7 @@
 from web3 import Web3
 from hexbytes import HexBytes
 import requests
+import re
 import logging
 import json
 
@@ -30,7 +31,7 @@ class Utils:
             return is_contract
         
     @staticmethod
-    def is_address(w3, addresses: str) -> bool:
+    def is_address(addresses: str) -> bool:
         """
         this function determines whether address is a valid address
         :return: is_address: bool
@@ -40,10 +41,8 @@ class Utils:
 
         is_address = True
         for address in addresses.split(','):
-            for c in ['a', 'b', 'c', 'd', 'e', 'f', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-                test_str = c + c + c + c + c + c + c + c + c  # make a string of length 9; I know this is ugly, but regex didnt work
-                if test_str in address.lower():
-                    is_address = False
+            if re.search(r'([a-f0-9])\1{8}', address.lower()):
+                is_address = False
 
         return is_address
 

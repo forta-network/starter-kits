@@ -340,7 +340,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                         entity_clusters = du.read_entity_clusters(dynamo, address_lower)
                         if address_lower in entity_clusters.keys():
                             cluster = entity_clusters[address_lower]
-                        if(not Utils.is_address(w3, cluster)):  # ignore contracts and invalid addresses like 0x0000000000000blabla
+                        if(not Utils.is_address(cluster)):  # ignore contracts and invalid addresses like 0x0000000000000blabla
                             logging.info(f"alert {alert_event.alert_hash}: {cluster} is not an address. Continue ... ")
                             continue
 
