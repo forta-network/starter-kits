@@ -19,7 +19,7 @@ def no_filter_handle_transaction(w3):
 
 @pytest.fixture
 def token_filter_handle_transaction(w3):
-    return agent.handle_transaction_factory(w3=w3, token=data.TOKENS['buyback'])
+    return agent.handle_transaction_factory(w3=w3, target_token=data.TOKENS['buyback'])
 
 # RANDOM TX ###################################################################
 

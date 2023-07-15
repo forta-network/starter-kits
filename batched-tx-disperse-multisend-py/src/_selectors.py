@@ -9,14 +9,20 @@ from web3 import Web3
 
 # DEFAULT ARGUMENTS ###########################################################
 
+# TODO: add optional suffix "from"
+# TODO: add optional prefix "safe"
+# TODO: add optional argument "_from"
+# TODO: "transfer(address[],address[],address[],uint256[])" => transfer(token,from,to,amount)
 PATTERNS = [
     '{verb}{adjective}{token}{noun}{args}',
     '{adjective}{verb}{token}{noun}{args}',]
 
+# TODO: sort signatures by action (batch, airdrop, etc)
 VERBS = [
     '',
     'Multisend',
     'Disperse',
+    'Dispatch',
     'Send',
     'Batch',
     'Bundle',
@@ -33,13 +39,10 @@ ADJECTIVES = [
     'Bundle',
     'Mass']
 
-TOKENS = ['', 'ETH', 'Eth', 'Ether', 'Token', 'Coin']
+# TODO: sort signatures by token
+TOKENS = ['', 'ETH', 'Eth', 'Ether', 'Token', 'Coin', 'NFT', 'Nft', 'ERC20', 'Erc20', 'ERC721', 'Erc721']
 
-NOUNS = [
-    '',
-    'Sender',
-    'Transfer',
-    'Transaction']
+NOUNS = ['', 'Sender', 'Transfer', 'Transaction']
 
 # TODO: add argument pattern
 # TODO: single value for all addresses

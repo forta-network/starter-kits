@@ -78,7 +78,15 @@ The agent behaviour can be verified on the following transactions:
 
 ## Metrics
 
+### Indicators
+
+### Combination
+
 Uses the conflation to combine the scores from each source.
+
+#### Confidence
+
+#### Malicious Behaviours
 
 The bot looks for transactions to the following contract:
 
@@ -95,6 +103,18 @@ And checks whether specific functions are called by their signature:
 - `Multisend.multisendToken`: `0x0b66f3f5`
 
 The web app for Disperse never uses `disperseTokenSimple`: custom calls to this method are more suspect.
+
+## Performance
+
+The web requests are cached, in particular balance checks.
+
+## TODOs
+
+- add other standards, like ERC1155
+- extend the wordlists with:
+  - new patterns
+  - additional keywords
+  - signatures for batch `transferFrom` functions 
 
 [etherscan-contract-disperse]: https://etherscan.io/address/0xd152f549545093347a162dce210e7293f1452150#code
 [etherscan-contract-multisend]: https://etherscan.io/address/0x22bc0693163ec3cee5ded3c2ee55ddbcb2ba9bbe#code
