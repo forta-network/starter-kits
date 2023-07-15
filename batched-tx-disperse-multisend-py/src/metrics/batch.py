@@ -32,19 +32,19 @@ def confidence_score(log: TransactionEvent, w3: Web3) -> float:
     _has_any_token_transfers = (
         indicators.log_has_multiple_erc20_transfer_events(log=log, floor=4) # erc20
         or indicators.log_has_multiple_erc721_transfer_events(log=log, floor=4) # erc721
-        or indicators.multiple_native_token_balances_have_been_updated(w3=w3, data=_data, block=_block, floor=4)) # native
+        or indicators.multiple_native_token_balances_have_been_updated(w3=w3, data=_data, block=_block, floor=4)) # only called if there are no ERC20 / ERC721 events (net opt)
     _scores.append(probabilities.indicator_to_probability(
         indicator=_has_any_token_transfers,
         true_score=0.8, # a list of transfers almost certainly means batching
         false_score=0.2)) # it's possible the transfered token doesn't follow ERC20 and did not emit an event
     return probabilities.conflation(_scores)
 
-# ANOMALY #####################################################################
+# MALICIOUS ###################################################################
 
 # events differ from input data
 
 def malicious_score(log: TransactionEvent, w3: Web3) -> float:
-    """Evaluate."""
+    """Evaluate the provabability that a batch transaction is malicious."""
     _scores = []
     _to = str(getattr(log.transaction, 'to', '')).lower()
     _block = int(log.block.number)
