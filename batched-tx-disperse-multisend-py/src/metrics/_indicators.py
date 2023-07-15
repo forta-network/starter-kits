@@ -1,6 +1,6 @@
 """Base indicators on transactions and their metadata."""
 
-import itertools
+from itertools import chain
 
 from forta_agent.transaction_event import TransactionEvent
 from web3 import Web3
@@ -41,10 +41,10 @@ def log_has_multiple_erc721_transfer_events(log: TransactionEvent, floor: int) -
 
 # BALANCES INDICATORS #########################################################
 
-def multiple_native_token_balances_have_been_updated(w3: Web3, data: str, block: int, floor: int) -> bool:
-    _recipients = inputs.get_array_of_address_candidates(data=data, min_length=floor) # list of candidates = list of lists
-    _deltas = [balances.get_balance_deltas(w3=w3, addresses=_a, block=block).values() for _a in _recipients] # get_balance_deltas returns a dict
-    return len(list(itertools.chain.from_iterable(_deltas))) >= floor
+def multiple_native_token_balances_changed(w3: Web3, data: str, block: int, floor: int) -> bool:
+    _recipients = chain.from_iterable(inputs.get_array_of_address_candidates(data=data, min_length=floor)) # list of candidates = list of lists
+    _deltas = [balances.get_balance_delta(w3=w3, address=_a, block=block) for _a in _recipients] # _recipients is now a flat list
+    return len(_deltas) >= floor
 
-def receiver_contract_balance_did_not_change(w3: Web3, address: str, block: int, tolerance: int=10**17) -> bool:
-    return balances.get_balance_delta(w3=w3, address=address, block=block) <= tolerance # in case the contract has a fee, set to 0.1 EHT by default
+def native_token_balance_changed(w3: Web3, address: str, block: int, tolerance: int=10**17) -> bool:
+    return balances.get_balance_delta(w3=w3, address=address, block=block) > tolerance # in case the contract has a fee, set to 0.1 EHT by default
