@@ -24,12 +24,14 @@ def input_data_has_batching_selector(data: str, known: dict=KNOWN_SELECTORS) -> 
 # INPUTS INDICATORS ###########################################################
 
 def input_data_has_array_of_addresses(data: str) -> bool:
-    return len(inputs.get_array_of_address_candidates(data)) > 0
+    return len(inputs.get_array_of_address_candidates(data=data, min_length=4)) > 0 # at least one candidate array
 
 def input_data_has_array_of_values(data: str) -> bool:
-    return len(inputs.get_array_of_value_candidates(data)) > 0
+    return len(inputs.get_array_of_value_candidates(data=data, min_length=4)) > 0 # at least one candidate array
 
 # EVENTS INDICATORS ###########################################################
+
+# TODO: add ERC1155
 
 def log_has_multiple_erc20_transfer_events(log: TransactionEvent, floor: int) -> bool:
     return len(events.parse_log(log=log, abi=events.ERC20_TRANSFER_EVENT)) >= floor
@@ -39,14 +41,9 @@ def log_has_multiple_erc721_transfer_events(log: TransactionEvent, floor: int) -
 
 # BALANCES INDICATORS #########################################################
 
-def _get_all_balance_updates(w3: Web3, addresses: list, block: int) -> list:
-    """List all the addresses that sustained a balance change."""
-    _deltas = [balances.get_balance_delta(w3=w3, address=_a, block=block) for _a in addresses]
-    return [_d for _d in _deltas if abs(_d) > 0]
-
 def multiple_native_token_balances_have_been_updated(w3: Web3, data: str, block: int, floor: int) -> bool:
-    _recipients = inputs.get_array_of_address_candidates(data) # list of candidates = list of lists
-    _deltas = [_get_all_balance_updates(w3=w3, addresses=_a, block=block) for _a in _recipients if len(_a) >= floor]
+    _recipients = inputs.get_array_of_address_candidates(data=data, min_length=floor) # list of candidates = list of lists
+    _deltas = [balances.get_balance_deltas(w3=w3, addresses=_a, block=block).values() for _a in _recipients] # get_balance_deltas returns a dict
     return len(list(itertools.chain.from_iterable(_deltas))) >= floor
 
 def receiver_contract_balance_did_not_change(w3: Web3, address: str, block: int, tolerance: int=10**17) -> bool:

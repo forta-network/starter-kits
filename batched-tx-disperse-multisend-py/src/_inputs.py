@@ -29,12 +29,13 @@ def is_valid_value(data: str) -> bool:
     """Checks whether a hex string represents a meaningful monetary amount."""
     return len(hex(int(data, 16))) <= 32 # counting the prefix 0x
 
-def is_valid_array(data: str, check: callable) -> bool:
+def is_valid_array(data: str, check: callable, length: int) -> bool:
     """Checks whether a hex string is an array."""
     _chunks = list(chunk(data, 64))
     _valid = len(data) >= 128 # array length + at least 1 element = 64 + 64 = 2 * 32 bytes
     _valid = _valid and len(data) % 64 == 0 # correct ABI encoding
     _valid = _valid and int(_chunks[0], 16) == len(_chunks) - 1 # the first word is the array length
+    _valid = _valid and int(_chunks[0], 16) >= length # ignore small arrays
     _valid = _valid and all([check(_c) for _c in _chunks[1:]]) # all the elements are addresses
     return _valid
 
@@ -82,7 +83,7 @@ def get_array_length_candidates(data: str) -> list:
     _chunks = [int(_c, 16) for _c in chunk(data[10:], 64)] # ignore the prefix and selector
     return list(set([_c for _c in _chunks if _c <= _limit])) # remove repeats
 
-def get_array_candidates(data: str, element_regex: str, element_check: callable, parse_element: callable) -> list:
+def get_array_candidates(data: str, element_regex: str, element_check: callable, parse_element: callable, min_length: int=4) -> list:
     """Extract the address & value arrays from the hex input."""
     _arrays = []
     _length_candidates = get_array_length_candidates(data)
@@ -90,24 +91,26 @@ def get_array_candidates(data: str, element_regex: str, element_check: callable,
         _array_re = re.compile(array_regex(length=_l, element_regex=element_regex))
         _array_candidates = _array_re.findall(data.lower())
         for _a in _array_candidates:
-            if is_valid_array(data=_a, check=element_check):
+            if is_valid_array(data=_a, check=element_check, length=min_length):
                 _arrays.append(parse_array(_a, parse_element))
     return _arrays
 
 # HELPERS #####################################################################
 
-def get_array_of_address_candidates(data: str) -> list:
+def get_array_of_address_candidates(data: str, min_length: int=4) -> list:
     """Extract the address arrays from the hex input."""
     return get_array_candidates(
         data=data,
         element_regex=address_regex(),
         element_check=is_valid_address,
-        parse_element=parse_address)
+        parse_element=parse_address,
+        min_length=min_length)
 
-def get_array_of_value_candidates(data: str) -> list:
+def get_array_of_value_candidates(data: str, min_length: int=4) -> list:
     """Extract the value arrays from the hex input."""
     return get_array_candidates(
         data=data,
         element_regex=value_regex(),
         element_check=is_valid_value,
-        parse_element=parse_value)
+        parse_element=parse_value,
+        min_length=min_length)
