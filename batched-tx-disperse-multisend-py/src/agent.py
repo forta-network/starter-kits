@@ -23,6 +23,37 @@ import src.findings as findings
 
 # METRICS #####################################################################
 
+def _score_transaction(
+    log: TransactionEvent,
+    w3: Web3,
+    min_transfer_count: int=options.MIN_TRANSFER_COUNT,
+    min_transfer_total_erc20: int=options.MIN_TRANSFER_TOTAL_ERC20,
+    min_transfer_total_native: int=options.MIN_TRANSFER_TOTAL_NATIVE
+) -> dict:
+    """Estimate the probability that a transaction contains multiple transfers."""
+    _scores = {
+        'batch': {
+            'confidence': batch.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total_erc20=min_transfer_total_erc20, min_transfer_total_native=min_transfer_total_native),
+            'malicious': 0.5}, # compute only if necessary: network requests
+        'airdrop': {
+            'confidence': airdrop.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total=min_transfer_total_erc20),
+            'malicious': airdrop.malicious_score(log=log, w3=w3)},
+        'erc20': {
+            'confidence': erc20.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total=min_transfer_total_erc20),
+            'malicious': erc20.malicious_score(log=log, w3=w3)},
+        'erc721': {
+            'confidence': nft.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count),
+            'malicious': nft.malicious_score(log=log, w3=w3)},
+        'native': {
+            'confidence': 0.5, # compute only if necessary: network requests
+            'malicious': 0.5}} # compute only if necessary: network requests
+    # compute remaining scores, if relevant
+    if _scores['batch']['confidence'] >= 0.6:
+        _scores['batch']['malicious'] = batch.malicious_score(log=log, w3=w3)
+        if _scores['erc20']['confidence'] <= 0.5 and _scores['erc721']['confidence'] <= 0.5:
+            _scores['native']['malicious'] = native.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total=min_transfer_total_native)
+    return _scores
+
 # SCANNER #####################################################################
 
 def handle_transaction_factory(
@@ -49,34 +80,29 @@ def handle_transaction_factory(
         _data = str(getattr(log.transaction, 'data', '')).lower()
         _block = int(log.block.number)
         # analyse the transaction
-        _batch_confidence_score = batch.confidence_score(log=log, w3=w3)
-        _batch_malicious_score = batch.malicious_score(log=log, w3=w3)
-        _airdrop_confidence_score = airdrop.confidence_score(log=log, w3=w3)
-        _erc20_confidence_score = erc20.confidence_score(log=log, w3=w3)
-        _nft_confidence_score = nft.confidence_score(log=log, w3=w3)
-        _native_confidence_score = 0.
-        # raise an alert
-        if _batch_confidence_score >= min_confidence_score and _batch_malicious_score >= min_malicious_score:
-            if _erc20_confidence_score >= 0.6:
+        _scores = _score_transaction(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total_erc20=min_transfer_total_erc20, min_transfer_total_native=min_transfer_total_native)
+        # identify the token
+        if _scores['batch']['confidence'] >= min_confidence_score and _scores['batch']['malicious'] >= min_malicious_score:
+            if _scores['erc20']['confidence'] >= 0.6:
                 _token = 'ERC20'
                 _transfers = events.parse_log(log=log, abi=events.ERC20_TRANSFER_EVENT)
-            elif _nft_confidence_score >= 0.6:
+            elif _scores['erc721']['confidence'] >= 0.6:
                 _token = 'ERC721'
                 _transfers = events.parse_log(log=log, abi=events.ERC721_TRANSFER_EVENT)
-            else:
-                _native_confidence_score = native.confidence_score(log=log, w3=w3)
-                if _native_confidence_score >= 0.6:
-                    _token = chains.CURRENCIES.get(_chain_id, 'ETH')
-                    _recipients = chain.from_iterable(inputs.get_array_of_address_candidates(data=_data, min_length=min_transfer_count))
-                    _transfers = [balances.get_balance_delta(w3=w3, address=_r, block=_block) for _r in _recipients]
-            _findings.append(findings.FormatBatchTxFinding(
-                sender=_from,
-                receiver=_to,
-                token=_token,
-                transfers=_transfers,
-                chain_id=_chain_id,
-                confidence_score=_batch_confidence_score,
-                malicious_score=_batch_malicious_score))
+            elif _scores['native']['confidence'] >= 0.6:
+                _token = chains.CURRENCIES.get(_chain_id, 'ETH')
+                _recipients = chain.from_iterable(inputs.get_array_of_address_candidates(data=_data, min_length=min_transfer_count))
+                _transfers = [balances.get_balance_delta(w3=w3, address=_r, block=_block) for _r in _recipients]
+            # raise an alert
+            if _transfers:
+                _findings.append(findings.FormatBatchTxFinding(
+                    sender=_from,
+                    receiver=_to,
+                    token=_token,
+                    transfers=_transfers,
+                    chain_id=_chain_id,
+                    confidence_score=_scores['batch']['confidence'],
+                    malicious_score=_scores['batch']['malicious']))
         return _findings
 
     return _handle_transaction

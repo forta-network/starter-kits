@@ -9,21 +9,26 @@ import src.options as options
 
 # CONFIDENCE ##################################################################
 
-def confidence_score(log: TransactionEvent, w3: Web3) -> float:
+def confidence_score(
+    log: TransactionEvent,
+    w3: Web3,
+    min_transfer_count: int=options.MIN_TRANSFER_COUNT,
+    min_transfer_total: int=options.MIN_TRANSFER_TOTAL_ERC20
+) -> float:
     """Evaluate the probability that a transaction is an airdrop."""
     _scores = []
     _data = str(getattr(log.transaction, 'data', '')).lower()
     # performs token transfers
-    _has_token_transfer_events = (
-        indicators.log_has_multiple_erc20_transfer_events(log=log, floor=2*options.MIN_TRANSFER_COUNT)
-        or indicators.log_has_multiple_erc721_transfer_events(log=log, floor=2*options.MIN_TRANSFER_COUNT))
+    _has_token_mint_events = (
+        indicators.log_has_multiple_erc20_mint_events(log=log, min_count=min_transfer_count, min_total=min_transfer_total)
+        or indicators.log_has_multiple_erc721_mint_events(log=log, min_count=min_transfer_count))
     _scores.append(probabilities.indicator_to_probability(
-        indicator=_has_token_transfer_events,
-        true_score=0.6, # required, but not enough to conclude
+        indicator=_has_token_mint_events,
+        true_score=0.9, # the tokens were minted
         false_score=0.2)) # could be another standard
     # doesn't have input
     _scores.append(probabilities.indicator_to_probability(
-        indicator=not indicators.input_data_has_array_of_addresses(_data),
+        indicator=not indicators.input_data_has_array_of_addresses(data=_data, min_length=min_transfer_count),
         true_score=0.6, # not enough to conclude
         false_score=0.4)) # some airdrop functions take inputs
     return probabilities.conflation(_scores)
@@ -32,6 +37,7 @@ def confidence_score(log: TransactionEvent, w3: Web3) -> float:
 
 # TODO: contract accumulates wealth
 # TODO: new contract / new token
+# TODO: contract pretends to be a known token (ex: Tether USDT)
 
 def malicious_score(log: TransactionEvent, w3: Web3) -> float:
     """Evaluate the provabability that an airdrop is malicious."""
