@@ -3,7 +3,7 @@
 from itertools import chain
 from pprint import pprint
 
-from forta_agent import get_json_rpc_url, FindingSeverity
+from forta_agent import get_json_rpc_url
 from forta_agent.transaction_event import TransactionEvent
 from web3 import Web3
 
@@ -21,23 +21,7 @@ import src.findings as findings
 
 # FILTERS #####################################################################
 
-# PARSERS #####################################################################
-
-def _parse(log: TransactionEvent, w3: Web3) -> dict:
-    """Gather and parse the data from all the relevant sources in one dict."""
-    _from = str(getattr(log.transaction, 'from_', '')).lower()
-    _to = str(getattr(log.transaction, 'to', '')).lower()
-    _data = str(getattr(log.transaction, 'data', '')).lower()
-    _metadata = {
-        'scores': {
-            'batch': (batch.confidence_score(log=log, w3=w3), batch.malicious_score(log=log, w3=w3)),},
-        'from': _from,
-        'to': _to, # could be None in case of a contract creation
-        'data': _data,
-        'balance_updates': '',
-        'erc20_events': '',
-        'erc721_events': ''}
-    return _metadata
+# METRICS #####################################################################
 
 # SCANNER #####################################################################
 
@@ -60,39 +44,39 @@ def handle_transaction_factory(
         _token = ''
         _transfers = []
         # parse the log
+        _from = str(getattr(log.transaction, 'from_', '')).lower()
+        _to = str(getattr(log.transaction, 'to', '')).lower()
         _data = str(getattr(log.transaction, 'data', '')).lower()
         _block = int(log.block.number)
         # analyse the transaction
-        _batch_score = batch.confidence_score(log=log, w3=w3)
-        _airdrop_score = airdrop.confidence_score(log=log, w3=w3)
-        _erc20_score = erc20.confidence_score(log=log, w3=w3)
-        _nft_score = nft.confidence_score(log=log, w3=w3)
-        _native_score = 0.
+        _batch_confidence_score = batch.confidence_score(log=log, w3=w3)
+        _batch_malicious_score = batch.malicious_score(log=log, w3=w3)
+        _airdrop_confidence_score = airdrop.confidence_score(log=log, w3=w3)
+        _erc20_confidence_score = erc20.confidence_score(log=log, w3=w3)
+        _nft_confidence_score = nft.confidence_score(log=log, w3=w3)
+        _native_confidence_score = 0.
         # raise an alert
-        if _batch_score >= 0.6:
-            if _erc20_score >= 0.6:
+        if _batch_confidence_score >= min_confidence_score and _batch_malicious_score >= min_malicious_score:
+            if _erc20_confidence_score >= 0.6:
                 _token = 'ERC20'
                 _transfers = events.parse_log(log=log, abi=events.ERC20_TRANSFER_EVENT)
-            elif _nft_score >= 0.6:
+            elif _nft_confidence_score >= 0.6:
                 _token = 'ERC721'
                 _transfers = events.parse_log(log=log, abi=events.ERC721_TRANSFER_EVENT)
             else:
-                _native_score = native.confidence_score(log=log, w3=w3)
-                if _native_score >= 0.6:
+                _native_confidence_score = native.confidence_score(log=log, w3=w3)
+                if _native_confidence_score >= 0.6:
                     _token = chains.CURRENCIES.get(_chain_id, 'ETH')
                     _recipients = chain.from_iterable(inputs.get_array_of_address_candidates(data=_data, min_length=min_transfer_count))
                     _transfers = [balances.get_balance_delta(w3=w3, address=_r, block=_block) for _r in _recipients]
-            pprint({
-                'confidence': _batch_score,
-                'token': _token,
-                'transfers': _transfers}) # native.confidence_score(log=log, w3=w3)
-        # _findings.append(findings.FormatBatchTxFinding(
-        #     origin=_from,
-        #     contract=ADDRESS_TO_NAME[_to],
-        #     token=_token,
-        #     transactions=_wrapped_tx,
-        #     chain_id=_chain_id,
-        #     severity=FindingSeverity.Low if _is_manual else FindingSeverity.Info))
+            _findings.append(findings.FormatBatchTxFinding(
+                sender=_from,
+                receiver=_to,
+                token=_token,
+                transfers=_transfers,
+                chain_id=_chain_id,
+                confidence_score=_batch_confidence_score,
+                malicious_score=_batch_malicious_score))
         return _findings
 
     return _handle_transaction

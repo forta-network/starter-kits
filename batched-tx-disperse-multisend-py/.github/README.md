@@ -1,69 +1,164 @@
-# Disperse / Multisend batched transactions
+# Batch Transfers Bot
 
 ## Description
 
 Disperse / Multisend are apps used to distribute tokens to multiple addresses in one transaction.
 Although they are useful to reduce gas fees by sending transactions in batches, many use them as part of their scam schemes. 
 
-The goal of this bot is to alert when someone is using any of these apps in order to send native tokens or any other ERC-20 token.
+The goal of this bot is to alert when someone is using a similar app in order to send multiple tokens.
 
-## Supported Chains
+## Support
 
-The bot is specific to the contracts [`Disperse`][etherscan-contract-disperse] and [`Multisend`][etherscan-contract-multisend].
-
-So it runs on a single chain:
+The bot runs on all the chains:
 
 - Ethereum
+- BSC
+- Polygon
+- Optimism
+- Arbitrum
+- Avalanche
+- Fantom
 
-## Filtering & Edge Cases
+It scans for the following token transfers:
 
-- using batching to perform a single transfer
-- no input => airdrop
-- no token => native
+- ERC20
+- ERC721
+- all native currencies (ETH, MATIC, etc)
+
+It could also be used to detect airdrops (and their associated scam: sleepdrops).
+They are very similar, the main difference being that those calls don't require array of addresses (recipients) as inputs.
+By default, this option is disabled and the bot scans for batch transactions only.
 
 ## Alerts
 
 The bot only emits `info` alerts:
 
 - `BATCHED-ERC20-TX`:
-  - Fired when a transaction calls either:
-    - `disperseToken`, `disperseTokenSimple` from the [`Disperse` contract][etherscan-contract-disperse]
-    - or `multisendToken` from the [`Multisend` contract][etherscan-contract-multisend]
-  - Severity is "low" in case of a manual call, otherwise it is set to "info" (call via the web app)
-  - Type is always set to "info"
-  - Labels:
-    - the origin address of the transaction
   - Metadata:
-    - `transactions`: the serialized list of arguments for each transaction, IE a list of `(recipient, value)` tuples
-    - `count`: the number of transfers contained in the batch
-- `BATCHED-ETH-TX`:
-  - Fired when a transaction calls either:
-    - `disperseEther` from the [`Disperse` contract][etherscan-contract-disperse]
-    - or `multisendEther` from the [`Multisend` contract][etherscan-contract-multisend]
-  - Severity is always set to "info"
-  - Type is always set to "info"
-  - Labels:
-    - the origin address of the transaction
+    - `transfers`: a list of ERC20 transfer events, with their inputs (IE `token, from, to, value`)
+- `BATCHED-ERC721-TX`:
   - Metadata:
-    - `transactions`: the serialized list of arguments for each transaction, IE a list of `(recipient, value)` tuples
-    - `count`: the number of transfers contained in the batch
+    - `transfers`: a list of ERC721 transfer events, with their inputs (IE `token, from, to, value` where value is a token id)
+- `BATCHED-ETH-TX` / `BATCHED-MATIC-TX` / `BATCHED-{CURRENCY}-TX`
+  - Metadata:
+    - `transfers`: a list of balance delta, for the native currency of the target chain
 
-## Configuration
+For all the alerts:    
 
-The file [`constants.py`](src/constants.py) contains filtering options.
+- Type is always set to `info`
+- Severity is either `info` or `low` depending on the estimated probability that the transaction is malicious
+- Metadata:
+  - `confidence`: the estimated probability that the transaction contains batch transfers
+  - `chain_id`: the chain id
+  - `from`: the transaction sender
+  - `to`: the transaction recipient
+  - `token`: the type of token, IE ERC20 / ERC721 / NATIVE
+  - `count`: the number of transfers wrapped in the transaction
+  - `anomaly_score`: the alert rate for this combination of bot / alert type
+- Labels:
+  - `entity`: address of the sender, if the transaction is assessed as malicious
 
-- `TOKEN`:
+## Filtering Options
+
+The file [`options.py`](src/options.py) contains filtering options.
+
+All of these criteria must be satisfied by a transaction to be reported:
+
+- `TARGET_CONTRACT` (`str`, length 42)
   - should be either the empty string `''` or an address like `'0x767fe9edc9e0df98e07454847909b5e959d7ca0e'`
   - if empty the agent reports all findings
-  - otherwise it will only report transfers batched for a specific ERC20 token
+  - otherwise it will only report transactions sent the given contract address
+- `TARGET_TOKEN` (`str`, length 42)
+  - should be either the empty string `''` or an address like `'0x767fe9edc9e0df98e07454847909b5e959d7ca0e'` (`0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee` for native currencies)
+  - if empty the agent reports all findings
+  - otherwise it will only report transfers of the given 
+- `MIN_TRANSFER_COUNT` (`int`)
+  - the minimum number of transfers wrapped in the transaction
+- `MIN_TRANSFER_TOTAL_ERC20`:
+  - the minimum amount of ERC20 tokens transfered in total
+- `MIN_TRANSFER_TOTAL_NATIVE`:
+  - the minimum amount of native currency transfered in total
+- `MIN_CONFIDENCE_SCORE`:
+  - the minimum probabillity that a given transaction is a batch transfer
+- `MIN_MALICIOUS_SCORE`:
+  - the minimum probability that a given transaction is malicious
 
 ## Deployment
 
 The code is bundled in a Docker container.
 
+## Implementation: Metrics & Edge Cases
+
+### Indicators
+
+First, the bot parses the transaction metadata and looks for relevant patterns:
+
+- on the method selector:
+  - the batching methods have predictable names and arguments
+  - a wordlist of all the probable signature is generated
+  - then the actual selector of the transaction call is compared with the wordlist
+- on the input data:
+  - arrays have a specific format, they can be detected without the contract ABI
+  - the bot looks for arrays of addresses (the recipients) and arrays of values (the amounts to transfer)
+- on the events:
+  - ERC20 and ERC721 standards are supposed to emit `Transfer` events when the tokens are moved
+  - the bot parses the transaction log, looking for those events
+- on the balances:
+  - the balances of all the addresses involved can be checked
+  - in particular, the balance of the `from` address is expected to change (decrease) while the `to` is supposed to remain mostly unchanged (apart from the possible collection of a fee)
+
+### Combination
+
+Then, the transaction is scored differently depending on the presence / absence of each of these indicators.
+
+The indicators are turned into quantified probabilities with the conflation function, $\&$:
+
+$$\begin{align}
+Conflation(p_1, ..., p_N) &= \&(p_1, ..., p_N) \\
+                          &= \frac{\prod_{i=1}^{i=N} p_i}{\prod_{i=1}^{i=N} p_i + \prod_{i=1}^{i=N} (1 - p_i)}
+\end{align}$$
+
+Given a list of probabilities $\{p_i\}$ and a extra probability $p$, the conflation has the following properties:
+
+- if $p = 0.5$ then $\&(p_1, ..., p_N, p) = \&(p_1, ..., p_N)$
+- if $p > 0.5$ then $\&(p_1, ..., p_N, p) > \&(p_1, ..., p_N)$
+- if $p < 0.5$ then $\&(p_1, ..., p_N, p) < \&(p_1, ..., p_N)$
+
+For example:
+
+- when an indicator (presence / absence) doesn't add information it can be scored as `0.5`.
+- when it greatly increases the probability `0.9`
+- when it slightly decreases the probability `0.4`
+- when it strongly decreases the probability `0.1`
+- etc
+
+Rather than each individual score, it is the tendency of the list of scores that drives the overall metric toward a low / high probability.
+
+#### Confidence & Malicious scores
+
+There are two types of scores computed:
+
+- confidence score: estimated probability that a transaction is correctly classified
+- malicious score: estimated probability that a transaction has evil intents
+
+### Edge Cases
+
+When only a subset of the indicators are satisfied, the transaction may actually be of a connex type:
+
+- no array of addresses in the input:
+  - the contract may be performing an airdrop (sending to random addresses)
+  - in turn these airdrops can be malicious: non standard tokens, fake copy of a valid token etc
+- no array of amounts in the input:
+  - the transaction may be a phishing attack, sending random or 0 amount of tokens
+- low transfer count:
+  - the transaction may be a token swap
+  - typically around 4-6 transfers for a (Uni)swap
+- no event / token:
+  - the transaction may be a transfer of native currency
+
 ## Tests
 
-The test can be run with `python -m pytest`.
+The bot comes with extensive unit tests that can be run with `python -m pytest`.
 
 ### Data
 
@@ -75,18 +170,6 @@ The agent behaviour can be verified on the following transactions:
 - Token transactions:
   - Disperse: [0x2e311b6e9c842e4ec06712cad2acb6be9d6eec341c348a7dc3aac51ec9a8426c][etherscan-tx-disperse-token]
   - Multisend: [0x78b093c64e09cb7a3ce6bad2480549b058550faa5ba21be7c19ad732dc761fc5][etherscan-tx-multisend-token]
-
-## Metrics
-
-### Indicators
-
-### Combination
-
-Uses the conflation to combine the scores from each source.
-
-#### Confidence
-
-#### Malicious Behaviours
 
 The bot looks for transactions to the following contract:
 
@@ -110,11 +193,18 @@ The web requests are cached, in particular balance checks.
 
 ## TODOs
 
-- add other standards, like ERC1155
-- extend the wordlists with:
+The bot could be improved by:
+
+- adding other standards, like ERC1155
+- sorting / splitting the selector wordlist to classify the methods by their signature 
+- extending the wordlists with:
   - new patterns
   - additional keywords
-  - signatures for batch `transferFrom` functions 
+  - signatures for batch `transferFrom` functions
+
+## Author
+
+[apehex](https://github.com/apehex)
 
 [etherscan-contract-disperse]: https://etherscan.io/address/0xd152f549545093347a162dce210e7293f1452150#code
 [etherscan-contract-multisend]: https://etherscan.io/address/0x22bc0693163ec3cee5ded3c2ee55ddbcb2ba9bbe#code
