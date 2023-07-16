@@ -153,6 +153,8 @@ When only a subset of the indicators are satisfied, the transaction may actually
 - low transfer count:
   - the transaction may be a token swap
   - typically around 4-6 transfers for a (Uni)swap
+- low transfer total amount:
+  - most likely a phishing attempt, since they often transfer `0` amounts of tokens
 - no event / token:
   - the transaction may be a transfer of native currency
 

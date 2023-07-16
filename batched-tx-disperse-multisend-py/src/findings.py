@@ -18,8 +18,14 @@ def FormatBatchTxFinding(sender: str, receiver: str, token: str, transfers: list
     if malicious_score >= 0.6:
         _labels.append(Label({
             'entityType': EntityType.Address,
-            'label': "benign",
+            'label': "scammer-eoa",
             'entity': sender,
+            'confidence': round(malicious_score, 1),
+            'metadata': {'chain_id': chain_id}}))
+        _labels.append(Label({
+            'entityType': EntityType.Address,
+            'label': "scammer-contract",
+            'entity': receiver,
             'confidence': round(malicious_score, 1),
             'metadata': {'chain_id': chain_id}}))
 
@@ -31,6 +37,7 @@ def FormatBatchTxFinding(sender: str, receiver: str, token: str, transfers: list
         'severity': FindingSeverity.Info if malicious_score <= 0.5 else FindingSeverity.Low,
         'metadata': {
             'confidence': round(confidence_score, 1),
+            'malicious': round(malicious_score, 1),
             'chain_id': str(chain_id),
             'from': sender,
             'to': receiver,
