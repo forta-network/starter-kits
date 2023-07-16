@@ -1,11 +1,9 @@
 {
   "name": "batched-tx-bot",
-  "version": "0.1.0",
-  "description": "Bot scanning for ERC20 transfers batched in a single transaction",
+  "version": "0.2.0",
+  "description": "Bot scanning for multiple transfers batched in a single transaction",
   "repository": "https://github.com/forta-network/starter-kits/tree/main//batched-tx-disperse-multisend-py",
-  "chainIds": [
-    1
-  ],
+  "chainIds": [1, 10, 56, 137, 250, 42161, 43114],
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
     "start": "npm run start:dev",

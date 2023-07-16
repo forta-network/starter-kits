@@ -50,8 +50,9 @@ def malicious_score(log: TransactionEvent, w3: Web3) -> float:
     _to = str(getattr(log.transaction, 'to', '')).lower()
     _block = int(log.block.number)
     # "to" contract balance significantly changed
-    _scores.append(probabilities.indicator_to_probability(
-        indicator=indicators.native_token_balance_changed(w3=w3, address=_to, block=_block, tolerance=10**17), # mvt below 0.1 ETH are ignored
-        true_score=0.7, # batching contracts are not supposed to accumulate ETH
-        false_score=0.5)) # neutral: could still be malicious
+    _scores.append(0.5)
+    # _scores.append(probabilities.indicator_to_probability(
+    #     indicator=indicators.native_token_balance_changed(w3=w3, address=_to, block=_block, tolerance=10**17), # mvt below 0.1 ETH are ignored
+    #     true_score=0.7, # batching contracts are not supposed to accumulate ETH
+    #     false_score=0.5)) # neutral: could still be malicious
     return probabilities.conflation(_scores)
