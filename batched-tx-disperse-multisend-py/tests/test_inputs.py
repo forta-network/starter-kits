@@ -8,7 +8,7 @@ import tests.test_data as data
 
 # FIXTURES ####################################################################
 
-DATA = [_t.transaction.data for _t in data.TRANSACTIONS['batch-erc20-token'] + data.TRANSACTIONS['batch-native-token']]
+DATA = [_t.transaction.data for _t in data.TRANSACTIONS['batch']['ft'] + data.TRANSACTIONS['batch']['native']]
 ADDRESSES = ['0x04ae3226c80e8c04d35e6e56089345bdd06da6de', '0xc5ac25cfc2b8284e84ca47dad21cf1319f732c11', '0x79dbe9bbde91a35fa8148a14084979a531fe57ea', '0x3b1ea5b11d12452693f9bd290ac2100394e6850f', '0x682dcf2f4a6e46c222927a54529b4965fb313bf2', '0xbc48cd3265fd6d6cd413cd3e7082c27993baf8b2', '0x62494b3ed9663334e57f23532155ea0575c487c5', '0x164c2b90f83b67d897ff00899695430841e38536', '0x1bcf9edb72f7650dfcdc59ae3b8a73d35a2f2902', '0x259a2795624b8a17bc7eb312a94504ad0f615d1e', '0x728ad672409da288ca5b9aa85d1a55b803ba97d7', '0x1695ce70da4521cb94dea036e6ebcf1e8a073ee6', '0x1c39e47a2968f166a11c4af9088dd45ccd13b13d', '0x961d2b694d9097f35cfffa363ef98823928a330d', '0x289e90e739a797ca53319e7a225a15f587e16d4f', '0x01b09c9a2a67a829b5d54affd0233821b43632a5', '0x4f4e0f2cb72e718fc0433222768c57e823162152', '0x0de0dd63d9fb65450339ef27577d4f39d095eb85', '0x327bb6e6fff2c05e542c63b0fcfdd270734738ef', '0x54b5ae5ebe86d2d86134f3bb7e36e7c83295cbcb', '0x360f85f0b74326cddff33a812b05353bc537747b', '0x3b135dbf827508d8ed170548f157bdcd2dc857d3', '0xb4f89d6a8c113b4232485568e542e646d93cfab1', '0x7e015972db493d9ba9a30075e397dc57b1a677da', '0x4a33862042d004d3fc45e284e1aafa05b48e3c9c', '0x4f4e0f2cb72e718fc0433222768c57e823162152', '0x50ae462a6b05c72e48dcf683a651e3d06cde4100', '0xbead32e8d8fb4fae7b08c4b3253b3cfe05e2c0de', '0xee001c024fdc16bc24638a579a52732189c7cb0d', '0x3d2b9f6a5ae61be1dfc52d9b1f807caeab60cdde', '0xed4086231fac17e04cb478448ae1439c57820b4d']
 
 # DECODING ####################################################################
@@ -33,7 +33,7 @@ def test_value_validation(): # addresses and values are exclusive
 
 def test_array_length_matches_number_of_elements():
     _chopped_array = '000000000000000000000000000000000000000000000000000000000000000b00000000000000000000000007f3eaa03c2deb2b909b7ff5ecf4a20f540ab1de0000000000000000000000004c956623424394c5dc4fd71f04bb28ee117b496f00000000000000000000000077d880c57f0aafea9f41405098dbe60b538cfa750000000000000000000000004eaec98a381fb95067278b1bec977b83a501dd2f000000000000000000000000380846d771c1fc8a0f7724ee98f86e2127474239'
-    assert not inputs.is_valid_array(data=_chopped_array, check=inputs.is_valid_address)
+    assert not inputs.is_valid_array(data=_chopped_array, check=inputs.is_valid_address, length=0xb)
 
 def test_parsed_address_format():
     _raw = '00000000000000000000000007f3eaa03c2deb2b909b7ff5ecf4a20f540ab1de'
@@ -67,11 +67,13 @@ def test_array_length_regex_match_batch_input_data():
         assert _re.findall(_d)
 
 def test_array_regex_match_batch_input_data():
+    _data = []
     for _d in DATA:
-        _c = list(inputs.chunk(_d[10:], 64))
-        _l = inputs.parse_value(_c[3]) if inputs.is_valid_address(_c[0]) else inputs.parse_value(_c[2]) # token batch include an extra argument in the input data: the address of the token
-        _re = re.compile(inputs.array_regex(length=_l, element_regex=inputs.address_regex()))
-        assert _re.findall(_d)
+        _lengths = inputs.get_array_length_candidates(data=_d)
+        for _l in _lengths:
+            _re = re.compile(inputs.array_regex(length=_l, element_regex=inputs.address_regex()))
+            _data.append(_re.findall(_d))
+    assert any(_data) # not all batch transactions have arrays in their inputs
 
 # PARSING #####################################################################
 
@@ -79,5 +81,5 @@ def test_find_array_length_in_batch_data():
     assert all([inputs.get_array_length_candidates(data=_d) for _d in DATA])
 
 def test_find_arrays_in_batch_data():
-    assert all([inputs.get_array_candidates(data=_d, element_regex=inputs.address_regex(), element_check=inputs.is_valid_address, parse_element=inputs.parse_address) for _d in DATA])
-    assert all([inputs.get_array_candidates(data=_d, element_regex=inputs.value_regex(), element_check=inputs.is_valid_value, parse_element=inputs.parse_value) for _d in DATA])
+    assert any([inputs.get_array_of_address_candidates(data=_d) for _d in DATA]) # not all batch transactions have array inputs
+    assert any([inputs.get_array_of_value_candidates(data=_d) for _d in DATA]) # not all batch transactions have array inputs

@@ -13,7 +13,11 @@ KNOWN_SIGNATURES = [
     'disperseEther(address[],uint256[])',
     'disperseToken(address,address[],uint256[])',]
 
-KNOWN_SELECTORS = [_t.transaction.data[:10] for _t in data.TRANSACTIONS['batch-erc20-token'] + data.TRANSACTIONS['batch-native-token']]
+KNOWN_SELECTORS = [
+    '0xe63d38ed',
+    '0xc73a2d60',
+    '0xab883d28',
+    '0x0b66f3f5',]
 
 @pytest.fixture
 def signature_wordlist():
