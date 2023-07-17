@@ -89,6 +89,16 @@ The code is bundled in a Docker container.
 
 ## Implementation: Metrics & Edge Cases
 
+The bot decisions are guided by probability metrics / scores.
+
+For example, the confidence that a transaction contains a batch of transfers can be interpreted as follows:
+
+- if equal to `0.5`, it is undecided, the bot didn't find enough evidence for / against
+- from `0.5` to `1`, the chances go toward the certainty of a batch transaction
+- from `0.5` to `0`, the agent is ruling out the possibility of a batch transaction
+
+These metrics are computed in two steps.
+
 ### Indicators
 
 First, the bot parses the transaction metadata and looks for relevant patterns:
@@ -153,6 +163,7 @@ When only a subset of the indicators are satisfied, the transaction may actually
 - low transfer count:
   - the transaction may be a token swap
   - typically around 4-6 transfers for a (Uni)swap
+  - sometimes a little more (8-10) for MEV bots
 - low transfer total amount:
   - most likely a phishing attempt, since they often transfer `0` amounts of tokens
 - no event / token:
@@ -160,11 +171,14 @@ When only a subset of the indicators are satisfied, the transaction may actually
 
 ## Tests
 
-The bot comes with extensive unit tests that can be run with `python -m pytest`.
+The bot comes with extensive unit tests that can be run with `python -m pytest` from the root directory of this bot.
 
 ### Data
 
-The agent behaviour can be verified on the following transactions:
+The test data is made of serialized live transaction events, using `pickle`.
+It is location in `tests/.data/` and classified by transaction type.
+
+Otherwise, the agent behaviour can be verified on the following transactions:
 
 - ETH transactions:
   - Disperse: [0xa7f0f0470e9be92b10c57273087cef31774c1284acf3d3b56e3e92c504437fb4][etherscan-tx-disperse-eth]
@@ -173,25 +187,9 @@ The agent behaviour can be verified on the following transactions:
   - Disperse: [0x2e311b6e9c842e4ec06712cad2acb6be9d6eec341c348a7dc3aac51ec9a8426c][etherscan-tx-disperse-token]
   - Multisend: [0x78b093c64e09cb7a3ce6bad2480549b058550faa5ba21be7c19ad732dc761fc5][etherscan-tx-multisend-token]
 
-The bot looks for transactions to the following contract:
-
-- Ethereum:
-  - Disperse: [`0xd152f549545093347a162dce210e7293f1452150`][etherscan-contract-disperse]
-  - Multisend: [`0x22bc0693163ec3cee5ded3c2ee55ddbcb2ba9bbe`][etherscan-contract-multisend]
-
-And checks whether specific functions are called by their signature:
-
-- `Disperse.disperseEther`: `0xe63d38ed`
-- `Disperse.disperseToken`: `0xc73a2d60`
-- `Disperse.disperseTokenSimple`: `0x51ba162c`
-- `Multisend.multisendEther`: `0xab883d28`
-- `Multisend.multisendToken`: `0x0b66f3f5`
-
-The web app for Disperse never uses `disperseTokenSimple`: custom calls to this method are more suspect.
-
 ## Performance
 
-The web requests are cached, in particular balance checks.
+The web requests are cached, in particular balance checks require time and are performed only when relevant.
 
 ## TODOs
 

@@ -1,7 +1,6 @@
 """Forta agent scanning for batched transactions."""
 
 from itertools import chain
-from pprint import pprint
 
 from forta_agent import get_json_rpc_url
 from forta_agent.transaction_event import TransactionEvent
@@ -79,30 +78,34 @@ def handle_transaction_factory(
         _to = str(getattr(log.transaction, 'to', '')).lower()
         _data = str(getattr(log.transaction, 'data', '')).lower()
         _block = int(log.block.number)
-        # analyse the transaction
-        _scores = _score_transaction(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total_erc20=min_transfer_total_erc20, min_transfer_total_native=min_transfer_total_native)
-        # identify the token
-        if _scores['batch']['confidence'] >= min_confidence_score and _scores['batch']['malicious'] >= min_malicious_score:
-            if _scores['erc20']['confidence'] >= 0.6:
-                _token = 'ERC20'
-                _transfers = events.parse_log(log=log, abi=events.ERC20_TRANSFER_EVENT)
-            elif _scores['erc721']['confidence'] >= 0.6:
-                _token = 'ERC721'
-                _transfers = events.parse_log(log=log, abi=events.ERC721_TRANSFER_EVENT)
-            elif _scores['native']['confidence'] >= 0.6:
-                _token = chains.CURRENCIES.get(_chain_id, 'ETH')
-                _recipients = chain.from_iterable(inputs.get_array_of_address_candidates(data=_data, min_length=min_transfer_count))
-                _transfers = [balances.get_balance_delta(w3=w3, address=_r, block=_block) for _r in _recipients]
-            # raise an alert
-            if _transfers:
-                _findings.append(findings.FormatBatchTxFinding(
-                    sender=_from,
-                    receiver=_to,
-                    token=_token,
-                    transfers=_transfers,
-                    chain_id=_chain_id,
-                    confidence_score=_scores['batch']['confidence'],
-                    malicious_score=_scores['batch']['malicious']))
+        # filter by contract
+        if target_contract in _to:
+            # analyse the transaction
+            _scores = _score_transaction(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total_erc20=min_transfer_total_erc20, min_transfer_total_native=min_transfer_total_native)
+            # identify the token
+            if _scores['batch']['confidence'] >= min_confidence_score and _scores['batch']['malicious'] >= min_malicious_score:
+                if _scores['erc20']['confidence'] >= 0.6:
+                    _token = 'ERC20'
+                    # filter by token
+                    _transfers = [_e for _e in events.parse_log(log=log, abi=events.ERC20_TRANSFER_EVENT) if target_token in _e['token']]
+                elif _scores['erc721']['confidence'] >= 0.6:
+                    _token = 'ERC721'
+                    # filter by token
+                    _transfers = [_e for _e in events.parse_log(log=log, abi=events.ERC721_TRANSFER_EVENT) if target_token in _e['token']]
+                elif _scores['native']['confidence'] >= 0.6:
+                    _token = chains.CURRENCIES.get(_chain_id, 'ETH')
+                    _recipients = chain.from_iterable(inputs.get_array_of_address_candidates(data=_data, min_length=min_transfer_count))
+                    _transfers = [balances.get_balance_delta(w3=w3, address=_r, block=_block) for _r in _recipients]
+                # raise an alert
+                if _transfers:
+                    _findings.append(findings.FormatBatchTxFinding(
+                        sender=_from,
+                        receiver=_to,
+                        token=_token,
+                        transfers=_transfers,
+                        chain_id=_chain_id,
+                        confidence_score=_scores['batch']['confidence'],
+                        malicious_score=_scores['batch']['malicious']))
         return _findings
 
     return _handle_transaction
