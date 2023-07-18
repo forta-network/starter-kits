@@ -48,7 +48,8 @@ For all the alerts:
 - Type is always set to `info`
 - Severity is either `info` or `low` depending on the estimated probability that the transaction is malicious
 - Metadata:
-  - `confidence`: the estimated probability that the transaction contains batch transfers
+  - `confidence`: the estimated probability that the transaction contains batch transfers (see [the section on metrics](#confidence-malicious-score))
+  - `malicious`: the estimated probability that the transaction is malicious (see [the section on metrics](#confidence-malicious-score))
   - `chain_id`: the chain id
   - `from`: the transaction sender
   - `to`: the transaction recipient
@@ -121,18 +122,18 @@ First, the bot parses the transaction metadata and looks for relevant patterns:
 
 Then, the transaction is scored differently depending on the presence / absence of each of these indicators.
 
-The indicators are turned into quantified probabilities with the conflation function, $\&$:
+The indicators are turned into quantified probabilities with the conflation function, $\xi$:
 
 $$\begin{align}
-Conflation(p_1, ..., p_N) &= \&(p_1, ..., p_N) \\
+Conflation(p_1, ..., p_N) &= \xi(p_1, ..., p_N) \\
                           &= \frac{\prod_{i=1}^{i=N} p_i}{\prod_{i=1}^{i=N} p_i + \prod_{i=1}^{i=N} (1 - p_i)}
 \end{align}$$
 
 Given a list of probabilities $\{p_i\}$ and a extra probability $p$, the conflation has the following properties:
 
-- if $p = 0.5$ then $\&(p_1, ..., p_N, p) = \&(p_1, ..., p_N)$
-- if $p > 0.5$ then $\&(p_1, ..., p_N, p) > \&(p_1, ..., p_N)$
-- if $p < 0.5$ then $\&(p_1, ..., p_N, p) < \&(p_1, ..., p_N)$
+- if $p = 0.5$ then $\xi(p_1, ..., p_N, p) = \xi(p_1, ..., p_N)$
+- if $p > 0.5$ then $\xi(p_1, ..., p_N, p) > \xi(p_1, ..., p_N)$
+- if $p < 0.5$ then $\xi(p_1, ..., p_N, p) < \xi(p_1, ..., p_N)$
 
 For example:
 
@@ -148,8 +149,18 @@ Rather than each individual score, it is the tendency of the list of scores that
 
 There are two types of scores computed:
 
-- confidence score: estimated probability that a transaction is correctly classified
-- malicious score: estimated probability that a transaction has evil intents
+- `confidence` score: estimated probability that a transaction is correctly classified
+- `malicious` score: estimated probability that a transaction has evil intents
+
+The `malicious` score comes into play once the bot has identified a batch transaction.
+For now, this score will be higher than `0.5` in 2 cases:
+
+- if the `to` contract accumulates wealth (native or ERC tokens):
+  - a batching contract is supposed to redistribute the tokens it receives
+  - so if its balance has significantly increased after the transaction, this behavior is tagged as malicious
+  - there is a tolerance for the fees it may gather
+- if the `to` contract performs transfers of `0` amount:
+  - this technique is often used in phishing scams
 
 ### Edge Cases
 
@@ -176,7 +187,7 @@ The bot comes with extensive unit tests that can be run with `python -m pytest` 
 ### Data
 
 The test data is made of serialized live transaction events, using `pickle`.
-It is location in `tests/.data/` and classified by transaction type.
+It is located in `tests/.data/` and classified by transaction type.
 
 Otherwise, the agent behaviour can be verified on the following transactions:
 
@@ -191,7 +202,7 @@ Otherwise, the agent behaviour can be verified on the following transactions:
 
 The web requests are cached, in particular balance checks require time and are performed only when relevant.
 
-## TODOs
+## TODOs & Thoughts
 
 The bot could be improved by:
 
@@ -201,6 +212,16 @@ The bot could be improved by:
   - new patterns
   - additional keywords
   - signatures for batch `transferFrom` functions
+
+Other potential avenues for improvements:
+
+- split the repository in standalone python modules:
+  - the parsing logic for the selectors and arrays could be reused
+  - the various indicators are related to other types of transactions / scams
+- the metric & decision process could be formalized for the network:
+  - having quantified metrics helps with the interpretation / debugging
+  - it explicitely breaks down a given decision along several axes, while if-then-else are hidden
+  - finally it could be a basis to build / extend ML datasets
 
 ## Author
 
