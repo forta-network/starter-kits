@@ -57,9 +57,12 @@ class TestEntityClusterBot:
         agent = EntityClusterAgent(DynamoPersistance())
 
         agent.add_address(EOA_ADDRESS_SMALL_TX)
-        agent.persist_state()  # will perist state
+        agent.persist_state()
 
-        assert len(agent.GRAPH.nodes) == 1, "Address should have been added to graph. Its nonce is within range"
+        agent.add_address(EOA_ADDRESS_NEW)
+        agent.persist_state()
+
+        assert len(agent.GRAPH.nodes) == 2, "Addresses should have been added to graph. Its nonce is within range"
 
 
     def test_add_directed_edges_without_add(self):
