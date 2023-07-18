@@ -126,7 +126,7 @@ The indicators are turned into quantified probabilities with the conflation func
 
 $$\begin{align}
 Conflation(p_1, ..., p_N) &= \xi(p_1, ..., p_N) \\
-                          &= \frac{\prod^{N}_{i=1} p_i}{\prod^{N}_{i=1} p_i + \prod^{N}_{i=1} (1 - p_i)}
+                          &= \frac{\prod_{i=1}^{N} p_i}{\prod_{i=1}^{N} p_i + \prod_{i=1}^{N} (1 - p_i)}
 \end{align}$$
 
 Given a list of probabilities $\{p_i\}$ and a extra probability $p$, the conflation has the following properties:
