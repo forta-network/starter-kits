@@ -1,5 +1,6 @@
 from typing import Optional
 from forta_agent import create_alert_event, FindingSeverity
+from forta_agent.bloom_filter import BloomFilter
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 import agent
@@ -146,7 +147,7 @@ class TestAlertCombiner:
 
         assert len(items_loaded) == 1, "should be in loaded list"
 
-    def generate_alert(address: str, bot_id: str, alert_id: str, metadata={}, labels=[], chain_id: Optional[int] = 1):
+    def generate_alert(address: str, bot_id: str, alert_id: str, metadata={}, labels=[], chain_id: Optional[int] = 1, hash: Optional[str] = "0xabc", address_filter=None):
         # {
         #       "label": "Attacker",
         #       "confidence": 0.25,
@@ -158,7 +159,7 @@ class TestAlertCombiner:
         if len(labels)>0:
             alert = {"alert":
                     {"name": "x",
-                    "hash": "0xabc",
+                    "hash": hash,
                     "addresses": [],
                     "chainId": chain_id,
                     "description": f"{address} description",
@@ -167,14 +168,15 @@ class TestAlertCombiner:
                     "source":
                         {"bot": {'id': bot_id}, "block": {}, 'transactionHash': '0x123'},
                     "metadata": metadata,
-                    "labels": labels
+                    "labels": labels,
+                    "addressBloomFilter": address_filter
                     }
                     }
         else:
             addresses = [address] 
             alert = {"alert":
                     {"name": "x",
-                    "hash": "0xabc",
+                    "hash": hash,
                     "addresses": addresses,
                     "chainId": chain_id,
                     "description": f"{address} description",
@@ -183,7 +185,7 @@ class TestAlertCombiner:
                     "source":
                         {"bot": {'id': bot_id}, "block": {}, 'transactionHash': '0x123'},
                     "metadata": metadata,
-                   
+                    "addressBloomFilter": address_filter
                     }
                     }
         return create_alert_event(alert)
@@ -213,6 +215,42 @@ class TestAlertCombiner:
         assert len(findings) == 1, "alert should have been raised"
         assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
 
+    def test_alert_simple_case_bloom_filter(self):
+        # three alerts in diff stages for a given EOA
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state()
+        agent.initialize()
+        dynamo_utils = du(agent.CHAIN_ID)
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+        
+        address_filter_values_1 = [11, 4, 'test_1_base64_data']
+        address_filter_1 = {
+            'k': address_filter_values_1[0],
+            'm': address_filter_values_1[1],
+            'bitset': address_filter_values_1[2]
+        }
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)}, [], 1, "0xabcd", address_filter_1)  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+
+        address_filter_values_2 = [5, 41, 'test_2_base64_data']
+        address_filter_2 = {
+            'k': address_filter_values_2[0],
+            'm': address_filter_values_2[1],
+            'bitset': address_filter_values_2[2]
+        }
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)}, [], 1, "0xabcde", address_filter_2)  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+
+        assert len(findings) == 1, "alert should have been raised"
+        assert findings[0].metadata['involved_address_bloom_filter_0'] == None, 'incorrect involved_address_bloom_filter_0'
+        assert findings[0].metadata['involved_address_bloom_filter_1'] == address_filter_values_1, 'incorrect involved_address_bloom_filter_1'
+        assert findings[0].metadata['involved_address_bloom_filter_2'] == address_filter_values_2, 'incorrect involved_address_bloom_filter_2'
+        
     def test_alert_simple_case_L2_no_findings(self):
         # three alerts in diff stages for a given EOA
         # no FP

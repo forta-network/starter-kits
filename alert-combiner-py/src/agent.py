@@ -366,20 +366,32 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                         stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
                         logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} {stage}: {cluster} anomaly score of {alert_anomaly_score}")
 
+                        base_columns = ['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash', 'address_filter']
+
                         stored_alert_data_cluster = du.read_alert_data(dynamo, cluster)
                         if stored_alert_data_cluster.empty:
                             if CHAIN_ID in [10, 42161]:
-                                alert_data_cluster = pd.DataFrame(columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'chain_id', 'addresses', 'transaction_hash'])
+                                columns = base_columns + ['chain_id']
                             else:
-                                alert_data_cluster = pd.DataFrame(columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])
+                                columns = base_columns
+                            alert_data_cluster = pd.DataFrame(columns=columns)
                         else:
                             alert_data_cluster = stored_alert_data_cluster
 
                         stage = ALERT_ID_STAGE_MAPPING[(alert_event.bot_id, alert_event.alert.alert_id)]
-                        if CHAIN_ID in [10, 42161]:
-                            new_alert_data = pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, chain_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'chain_id', 'addresses', 'transaction_hash'])
+                        address_filter = alert_event.alert.address_filter
+                        if address_filter is not None:
+                            # Create a list of the filter values to pass to the dataframe
+                            filter_data = [address_filter.k, address_filter.m, address_filter.base64_data]
                         else:
-                            new_alert_data = pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash]], columns=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash'])
+                            filter_data = None
+
+                        if CHAIN_ID in [10, 42161]:
+                            columns = base_columns + ['chain_id']
+                            new_alert_data = pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash, filter_data, chain_id]], columns=columns)
+                        else:
+                            columns = base_columns
+                            new_alert_data = pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash, filter_data]], columns=columns)
                         alert_data_cluster = pd.concat([alert_data_cluster, new_alert_data], ignore_index=True, axis=0)
                         logging.info(f"alert {alert_event.alert_hash} - alert data size for cluster {cluster} now: {len(alert_data_cluster)}")
 

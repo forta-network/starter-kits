@@ -207,6 +207,12 @@ class DynamoUtils:
             logging.debug(f"Item retrieved: {item}")
             dataframe_json = item["dataframe"]
             dataframe = pd.read_json(dataframe_json, orient="records")
+            # Convert NaN values to string "NaN"
+            dataframe = dataframe.fillna("Nan")           
+            # Replace "NaN" with None in each column
+            for column in dataframe.columns:
+                dataframe[column].replace("Nan", None, inplace=True)
+
             alert_data = pd.concat([alert_data, dataframe], ignore_index=True)
         logging.info(f"Read alert data for cluster {cluster}. Retrieved {len(alert_data)} alert_data.")
         return alert_data
