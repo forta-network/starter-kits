@@ -1,5 +1,11 @@
 # Attack Detector Bot Release Notes
 
+## v3.48.0 (July 19 2023: beta)
+- propagate bloom filter
+
+## v3.47.0 (July 17 2023: beta)
+- dynamo DB persistence and sharding
+
 ## v3.46.1 (July 5 2023: beta, July 5 2023: prod)
 - increase redundancy of bot on the network
 
