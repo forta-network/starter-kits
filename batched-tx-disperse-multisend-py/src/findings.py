@@ -5,7 +5,7 @@ from forta_agent import Finding, FindingType, FindingSeverity, EntityType, Label
 
 # CONSTANTS ###################################################################
 
-BOT_ID = '0x518619e99547b3c400f76d80c5371081f6952840d7c18b755082e7ddca5f644c'
+BOT_ID = '0x568bf7a13b62e5041705eff995328c84ce7b037961ab6cdded927c9ab3b59e58'
 
 # TEMPLATES ###################################################################
 
