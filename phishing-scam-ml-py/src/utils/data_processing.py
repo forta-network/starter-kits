@@ -24,7 +24,7 @@ MAX_ADDRESSES_PER_QUERY = 110
 @backoff.on_exception(
     backoff.expo, requests.exceptions.RequestException, max_tries=3, jitter=None
 )
-def zettablock_api(url: str, query: str, addresses: str):
+def zettablock_api(url: str, query: str, addresses: str, query_type: str):
     # converting addresses from str to list because lru cache can only hash strings
     variables = {"addresses": addresses.split(",")}
     payload = {"query": query, "variables": variables}
@@ -33,7 +33,11 @@ def zettablock_api(url: str, query: str, addresses: str):
         "X-API-KEY": environ["ZETTABLOCK_API_KEY"],
         "content-type": "application/json",
     }
-    response = requests.post(url, json=payload, headers=headers)
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=30)
+    except requests.exceptions.Timeout:
+        logger.info(f"{query_type} query timed out")
+        return []
     data = response.json()["data"]["records"]
     return data
 
@@ -54,7 +58,7 @@ def get_eoa_tx_stats(addresses):
 
     query = "query($addresses: [String!]!) {   records(filter: { eoa: { in: $addresses } }) {     eoa,     num_transactions,     total_time,     total_outgoing_value,     total_incoming_value,     in_ratio,     from_address_nunique,     from_address_count_unique_ratio,     ratio_from_address_nunique,     in_block_number_std,     unique_from_friends,     unique_to_friends   } }"
 
-    data = zettablock_api(url, query, ",".join(addresses))
+    data = zettablock_api(url, query, ",".join(addresses), "EOA stats")
     df = pd.DataFrame(data).fillna(0)
     eoas = []
     if len(df) > 0:
@@ -83,7 +87,7 @@ def get_from_in_stats(addresses):
     url = f"https://api.zettablock.com/api/v1/dataset/{get_query_id('FROM_IN')}/graphql"
 
     query = "query($addresses: [String!]!) {records(filter: { eoa: { in: $addresses } }) {eoa, from_in_std_val, from_in_timespan }}"
-    data = zettablock_api(url, query, ",".join(addresses))
+    data = zettablock_api(url, query, ",".join(addresses), "From in stats")
     df = pd.DataFrame(data).fillna(0)
 
     min_std = np.min(df["from_in_std_val"])
@@ -114,7 +118,7 @@ def get_from_out_stats(addresses):
     )
 
     query = "query($addresses: [String!]!) {records(filter: { eoa: { in: $addresses } }) {eoa, from_out_std_block, from_out_std_val}}"
-    data = zettablock_api(url, query, ",".join(addresses))
+    data = zettablock_api(url, query, ",".join(addresses), "From out stats")
     df = pd.DataFrame(data).fillna(0)
 
     min_std = np.min(df["from_out_std_val"])
@@ -148,7 +152,7 @@ def get_to_in_stats(addresses, total_eth):
     url = f"https://api.zettablock.com/api/v1/dataset/{get_query_id('TO_IN')}/graphql"
 
     query = "query($addresses: [String!]!) {records(filter: { eoa: { in: $addresses } }) {eoa, to_in_min_val, to_in_median_val, to_in_std_block }}"
-    data = zettablock_api(url, query, ",".join(addresses))
+    data = zettablock_api(url, query, ",".join(addresses), "To in stats")
     df = pd.DataFrame(data).fillna(0)
 
     sum_median = np.sum(df["to_in_median_val"])
@@ -182,7 +186,7 @@ def get_to_out_stats(addresses):
     url = f"https://api.zettablock.com/api/v1/dataset/{get_query_id('TO_OUT')}/graphql"
 
     query = "query($addresses: [String!]!) {records(filter: { eoa: { in: $addresses } }) {eoa, to_out_std_val }}"
-    data = zettablock_api(url, query, ",".join(addresses))
+    data = zettablock_api(url, query, ",".join(addresses), "To out stats")
     df = pd.DataFrame(data).fillna(0)
 
     min_std = np.min(df["to_out_std_val"])
@@ -227,11 +231,11 @@ def get_features(address, eoa_stats) -> tuple:
     ]
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        results = list(
-            executor.map(lambda f, params: f(**params), functions, function_params)
-        )
-
         try:
+            results = list(
+                executor.map(lambda f, params: f(**params), functions, function_params)
+            )
+
             # get from_in ML features
             (
                 data["from_in_min_std"],
