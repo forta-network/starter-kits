@@ -14,7 +14,8 @@ def confidence_score(
     w3: Web3,
     min_transfer_count: int=options.MIN_TRANSFER_COUNT,
     min_transfer_total_erc20: int=options.MIN_TRANSFER_TOTAL_ERC20,
-    min_transfer_total_native: int=options.MIN_TRANSFER_TOTAL_NATIVE
+    min_transfer_total_native: int=options.MIN_TRANSFER_TOTAL_NATIVE,
+    max_batching_fee: int=options.MAX_BATCHING_FEE
 ) -> float:
     """Evaluate the probability that multiple transfers were bundled in a transaction."""
     _scores = []
@@ -43,7 +44,7 @@ def confidence_score(
         indicators.log_has_multiple_erc20_transfer_events(log=log, min_count=min_transfer_count, min_total=min_transfer_total_erc20) # erc20
         or indicators.log_has_multiple_erc721_transfer_events(log=log, min_count=min_transfer_count) # erc721
         or (
-            _value >= 10 ** 17 # don't go further if the sender's balance didn't move
+            _value >= max_batching_fee # don't go further if the sender's balance didn't move
             and indicators.multiple_native_token_balances_changed(w3=w3, data=_data, block=_block, min_count=min_transfer_count, min_total=min_transfer_total_native))) # only called if there are no ERC20 / ERC721 events (net opt)
     _scores.append(probabilities.indicator_to_probability(
         indicator=_has_any_token_transfers,
@@ -55,7 +56,7 @@ def confidence_score(
 
 # TODO: events differ from input data
 
-def malicious_score(log: TransactionEvent, w3: Web3) -> float:
+def malicious_score(log: TransactionEvent, w3: Web3, max_batching_fee: int=options.MAX_BATCHING_FEE) -> float:
     """Evaluate the provabability that a batch transaction is malicious."""
     _scores = []
     _block = int(log.block.number)
@@ -67,9 +68,9 @@ def malicious_score(log: TransactionEvent, w3: Web3) -> float:
         true_score=0.9, # certainty
         false_score=0.5)) # neutral
     # "to" contract balance significantly changed
-    if _value >= 10 ** 17:
+    if _value >= max_batching_fee:
         _scores.append(probabilities.indicator_to_probability(
-            indicator=indicators.native_token_balance_changed(w3=w3, address=_to, block=_block, tolerance=10**17), # mvt below 0.1 ETH are ignored
+            indicator=indicators.native_token_balance_changed(w3=w3, address=_to, block=_block, tolerance=max_batching_fee), # mvt below 0.2 ETH are ignored
             true_score=0.7, # batching contracts are not supposed to accumulate ETH
             false_score=0.5)) # neutral: could still be malicious
     return probabilities.conflation(_scores)
