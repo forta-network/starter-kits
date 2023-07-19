@@ -200,7 +200,9 @@ The scam detector passes unrecoverable errors to the scan node, which cause a re
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION | Combination |
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE | Combination |
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION && SOFT-RUG-PULL-SUS-POOL-REMOVAL | PassThrough |
-| 0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03 | private key compromise | PKC-2 | PassThrough |
+| 0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03 | private key compromise | PKC-3 | PassThrough |
+| 0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03 | private key compromise | PKC-1 | Combination |
+| 0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03 | private key compromise | PKC-2 | Combination |
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | omitted | Combination | 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Ice-phishing-web | PassThrough | 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Fraudulent-nft-order | PassThrough | 

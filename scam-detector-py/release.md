@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## v2.17.5 (July 14th 2023 - beta)
+- reconfigured PKC bot
+
 ## v2.17.4 (July 14th 2023 - beta)
 - integrated scam notifier bot
 
