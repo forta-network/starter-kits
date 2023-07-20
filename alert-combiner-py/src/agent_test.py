@@ -4,16 +4,18 @@ from forta_agent.bloom_filter import BloomFilter
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 import agent
-from src.storage import dynamo_table, get_secrets
 import json
 import os
 from forta_agent import EntityType
 from datetime import datetime, timedelta
+
+from storage import dynamo_table, get_secrets
 from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS,
                        ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY)
 from web3_mock import CONTRACT, EOA_ADDRESS, EOA_ADDRESS_2, Web3Mock
 from L2Cache import VERSION
-from src.dynamo_utils import DynamoUtils as du, TEST_TAG
+from dynamo_utils import DynamoUtils as du, TEST_TAG
+
 w3 = Web3Mock()
 
 dynamo = None

@@ -1,8 +1,9 @@
 import logging
 from datetime import datetime
 import time
-from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
 import pandas as pd
+
+from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
 
 TEST_TAG = "attack-detector-test"
 PROD_TAG = "attack-detector-prod"
