@@ -12,4 +12,12 @@ MIN_MALICIOUS_SCORE = 0.5
 
 # INDICATORS ##################################################################
 
-MAX_BATCHING_FEE = 2 * 10 ** 17 # 0.2 ETH: the balance of the batching contract should not increase more than a fee
+MAX_BATCHING_FEE = {
+	1: 2 * 10 ** 17, # 0.2 ETH: the balance of the batching contract should not increase more than a fee
+	10: 2 * 10 ** 17, # 0.2 ETH
+	56: 2 * 10 ** 18, # 2 BNB
+	137: 5 * 10 ** 20, # 500 MATIC
+	250: 1.5 * 10 ** 21, # 1500 FTM
+	42161: 2 * 10 ** 17, # 0.2 ETH
+	43114: 3 * 10 ** 19, # 30 AVAX
+}
