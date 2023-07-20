@@ -41,9 +41,9 @@ def FormatBatchTxFinding(sender: str, receiver: str, token: str, transfers: list
             'chain_id': str(chain_id),
             'from': sender,
             'to': receiver,
-            'token': token,
-            'transfers': str(transfers),
-            'count': str(len(transfers)),
+            'transfer_tokens': str(list(set([_t['token'] for _t in transfers]))),
+            'transfer_count': str(len(transfers)),
+            'transfer_total': str(sum([abs(int(_t['value'])) for _t in transfers])),
             'anomaly_score': _alert_rate},
         'labels': _labels
     })
