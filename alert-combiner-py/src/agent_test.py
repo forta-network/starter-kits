@@ -13,7 +13,7 @@ from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS,
                        ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY)
 from web3_mock import CONTRACT, EOA_ADDRESS, EOA_ADDRESS_2, Web3Mock
 from L2Cache import VERSION
-from src.dynamo_utils import DynamoUtils as du
+from src.dynamo_utils import DynamoUtils as du, TEST_TAG
 w3 = Web3Mock()
 
 dynamo = None
@@ -39,7 +39,7 @@ class TestAlertCombiner:
         assert agent.is_polygon_validator(w3, polygon_validator, polygon_tx), "should be a polygon validator"
         agent.CHAIN_ID = 1
 
-    def remove_persistent_state():
+    def remove_persistent_state(du):
         global dynamo
         try:
             # initialize dynamo DB
@@ -98,7 +98,7 @@ class TestAlertCombiner:
         assert not agent.in_list(alert, BASE_BOTS), "should be in list"
 
     def test_initialize(self):
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
 
         subscription_json = agent.initialize()
         json.dumps(subscription_json)
@@ -111,7 +111,7 @@ class TestAlertCombiner:
         assert len(items) == 1, "should be in list"
 
     def test_update_list_queue_limit(self):
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         items = []
         for i in range(0, 11):
             agent.update_list(items, 10, str(i))
@@ -120,7 +120,7 @@ class TestAlertCombiner:
         assert '0' not in items, "first item should have been removed"
 
     def test_persist_and_load(self):
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         chain_id = 1
 
         items = []
@@ -134,7 +134,7 @@ class TestAlertCombiner:
         assert len(items_loaded) == 1, "should be in loaded list"
 
     def test_persist_and_initialize(self):
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         chain_id = 1
         items = []
         agent.update_list(items, 10, '0xabc')
@@ -194,10 +194,10 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given EOA
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
         agent.CHAIN_ID = 1
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -219,9 +219,9 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given EOA
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -255,10 +255,10 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given EOA
         # no FP
         # all alert have been raised on L1
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
         agent.CHAIN_ID = 10
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
@@ -280,10 +280,10 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given EOA
         # no FP
         # final alert raised on L2
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
         agent.CHAIN_ID = 10
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -304,10 +304,10 @@ class TestAlertCombiner:
         # two alerts in two stages for a given EOA for a given highly precise bot
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
         agent.CHAIN_ID = 1
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -350,9 +350,9 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given EOA
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
         label = {"label": "Attacker",
                  "confidence": 0.25,
                  "entity": "0x2967E7Bb9DaA5711Ac332cAF874BD47ef99B3820",
@@ -379,9 +379,9 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given EOA
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -404,9 +404,9 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given EOA
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -428,9 +428,9 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given EOA
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -458,9 +458,9 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given EOA
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -495,9 +495,9 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given contract
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(CONTRACT, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -516,9 +516,9 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given older alerts
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         alert_event.alert.created_at = (datetime.now() - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS + 1)).strftime("%Y-%m-%dT%H:%M:%S.%f123Z")
@@ -538,9 +538,9 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given older alerts
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -568,9 +568,9 @@ class TestAlertCombiner:
         # two alerts in diff stages for a given EOA
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -587,9 +587,9 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given EOA
         # anomaly score < 10 E-8
 
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f", "POSITIVE-REPUTATION-1")  # positive reputation alert
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -616,9 +616,9 @@ class TestAlertCombiner:
         # no FP
         # anomaly score < 10 E-8
 
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entityAddresses": f"{EOA_ADDRESS},{EOA_ADDRESS_2}"})  # entity clustering alert
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -645,9 +645,9 @@ class TestAlertCombiner:
         # no FP
         # anomaly score < 10 E-8
 
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS_2, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
@@ -674,9 +674,9 @@ class TestAlertCombiner:
         # three alerts in diff stages for a given EOA
         # no FP
         # anomaly score < 10 E-8
-        TestAlertCombiner.remove_persistent_state()
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
         agent.initialize()
-        dynamo_utils = du(agent.CHAIN_ID)
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
