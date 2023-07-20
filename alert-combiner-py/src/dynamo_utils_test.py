@@ -1,10 +1,10 @@
 from unittest.mock import Mock
 from datetime import datetime
-from src.dynamo_utils import DynamoUtils, TEST_TAG
-from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
 import time
 import pandas as pd
 
+from src.dynamo_utils import DynamoUtils, TEST_TAG
+from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
 
 
 class TestDynamoUtils:
