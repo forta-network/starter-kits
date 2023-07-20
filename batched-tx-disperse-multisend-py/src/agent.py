@@ -97,7 +97,7 @@ def handle_transaction_factory(
                 elif _scores['native']['confidence'] >= 0.6:
                     _token = chains.CURRENCIES.get(_chain_id, 'ETH')
                     _recipients = chain.from_iterable(inputs.get_array_of_address_candidates(data=_data, min_length=min_transfer_count))
-                    _transfers = [balances.get_balance_delta(w3=w3, address=_r, block=_block) for _r in _recipients]
+                    _transfers = [{'token': '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'from': _to, 'to': _r, 'value': balances.get_balance_delta(w3=w3, address=_r, block=_block)} for _r in _recipients]
                 # raise an alert
                 if _transfers:
                     _findings.append(findings.FormatBatchTxFinding(

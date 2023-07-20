@@ -35,13 +35,13 @@ The bot only emits `info` alerts:
 
 - `BATCHED-ERC20-TX`:
   - Metadata:
-    - `transfers`: a list of ERC20 transfer events, with their inputs (IE `token, from, to, value`)
+    - `transfer_tokens`: the address(es) of the ERC20 tokens being transfered
 - `BATCHED-ERC721-TX`:
   - Metadata:
-    - `transfers`: a list of ERC721 transfer events, with their inputs (IE `token, from, to, value` where value is a token id)
+    - `transfer_tokens`: the address(es) of the ERC721 tokens being transfered
 - `BATCHED-ETH-TX` / `BATCHED-MATIC-TX` / `BATCHED-{CURRENCY}-TX`
   - Metadata:
-    - `transfers`: a list of balance delta, for the native currency of the target chain
+    - `transfer_tokens`: `['0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee']`, the agreed upon address to represent native currencies
 
 For all the alerts:    
 
@@ -53,15 +53,17 @@ For all the alerts:
   - `chain_id`: the chain id
   - `from`: the transaction sender
   - `to`: the transaction recipient
-  - `token`: the type of token, IE ERC20 / ERC721 / NATIVE
-  - `count`: the number of transfers wrapped in the transaction
+  - `transfer_count`: the number of transfers wrapped in the transaction
+  - `transfer_total`: the total amount of all the transfers wrapped in the transaction
   - `anomaly_score`: the alert rate for this combination of bot / alert type
 - Labels:
   - `entity`: address of the sender, if the transaction is assessed as malicious
 
-## Filtering Options
+## Options
 
-The file [`options.py`](src/options.py) contains filtering options.
+The file [`options.py`](src/options.py) contains sets the options at their default values.
+
+### Filtering Options
 
 All of these criteria must be satisfied by a transaction to be reported:
 
@@ -83,6 +85,8 @@ All of these criteria must be satisfied by a transaction to be reported:
   - the minimum probabillity that a given transaction is a batch transfer
 - `MIN_MALICIOUS_SCORE`:
   - the minimum probability that a given transaction is malicious
+
+### 
 
 ## Deployment
 
