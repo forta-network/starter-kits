@@ -21,7 +21,7 @@ from src.L2Cache import L2Cache
 from src.storage import s3_client, dynamo_table, get_secrets
 from src.blockchain_indexer_service import BlockChainIndexer
 from src.utils import Utils
-from src.dynamo_utils import DynamoUtils
+from src.dynamo_utils import DynamoUtils, TEST_TAG, PROD_TAG
 
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -582,8 +582,8 @@ def provide_handle_alert(w3, du):
 
     return handle_alert
 
-
-real_handle_alert = provide_handle_alert(web3, DynamoUtils(web3.eth.chain_id))
+#  Set the tag to PROD_TAG for production
+real_handle_alert = provide_handle_alert(web3, DynamoUtils(TEST_TAG, web3.eth.chain_id))
 
 def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     logging.debug("handle_alert called")

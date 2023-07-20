@@ -4,16 +4,16 @@ import time
 from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
 import pandas as pd
 
-# TODO: Replace with prod prefix
-item_id_prefix = ""
-
+TEST_TAG = "attack-detector-test"
+PROD_TAG = "attack-detector-prod"
 
 class DynamoUtils:
     chain_id = None
 
-    def __init__(self, chain_id = 1):
+    def __init__(self, tag = TEST_TAG, chain_id = 1):
         self.chain_id = chain_id
-        logging.debug(f"Set chain ID = {self.chain_id} to the DynamoUtils class")
+        self.tag = tag
+        logging.debug(f"Set chain ID = {self.chain_id} and tag = {self.tag} to the DynamoUtils class")
      
     def _get_expiry_offset(self):
         return ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
@@ -36,7 +36,7 @@ class DynamoUtils:
         logging.debug(f"putting entity clustering alert for {address} in dynamo DB")
         alert_created_at = datetime.strptime(alert_created_at_str[0:19], "%Y-%m-%dT%H:%M:%S").timestamp()
         logging.debug(f"alert_created_at: {alert_created_at}")
-        itemId = f"{item_id_prefix}|{self.chain_id}|entity_cluster"
+        itemId = f"{self.tag}|{self.chain_id}|entity_cluster"
         logging.debug(f"itemId: {itemId}")
         sortId = f"{address}"
         logging.debug(f"sortId: {sortId}")
@@ -56,7 +56,7 @@ class DynamoUtils:
 
     def put_fp_mitigation_cluster(self, dynamo, address: str):
         logging.debug(f"putting fp mitigation cluster alert for {address} in dynamo DB")
-        itemId = f"{item_id_prefix}|{self.chain_id}|fp_mitigation_cluster"
+        itemId = f"{self.tag}|{self.chain_id}|fp_mitigation_cluster"
         logging.debug(f"itemId: {itemId}")
         sortId = f"{address}"
         logging.debug(f"sortId: {sortId}")
@@ -75,7 +75,7 @@ class DynamoUtils:
 
     def put_end_user_attack_cluster(self, dynamo, address: str):
         logging.debug(f"putting end user attack cluster alert for {address} in dynamo DB")
-        itemId = f"{item_id_prefix}|{self.chain_id}|end_user_attack_cluster"
+        itemId = f"{self.tag}|{self.chain_id}|end_user_attack_cluster"
         logging.debug(f"itemId: {itemId}")
         sortId = f"{address}"
         logging.debug(f"sortId: {sortId}")
@@ -96,7 +96,7 @@ class DynamoUtils:
         logging.debug(f"Putting alert data for cluster {cluster} in DynamoDB")
         last_alert_created_at = dataframe["created_at"].iloc[-1].timestamp()
         logging.debug(f"alert_created_at: {last_alert_created_at}")
-        itemId = f"{item_id_prefix}|{self.chain_id}|alert"
+        itemId = f"{self.tag}|{self.chain_id}|alert"
         logging.debug(f"itemId: {itemId}")
         sortId = f"{cluster}"
         logging.debug(f"sortId: {sortId}")
@@ -120,7 +120,7 @@ class DynamoUtils:
 
     def put_victim(self, dynamo, transaction_hash: str, metadata: dict):
         logging.debug(f"Putting victim with transaction hash {transaction_hash} in DynamoDB")
-        itemId = f"{item_id_prefix}|{self.chain_id}|victim"
+        itemId = f"{self.tag}|{self.chain_id}|victim"
         logging.debug(f"itemId: {itemId}")
         sortId = f"{transaction_hash}"
         logging.debug(f"sortId: {sortId}")
@@ -156,7 +156,7 @@ class DynamoUtils:
 
     def read_entity_clusters(self, dynamo, address: str) -> dict:
         entity_clusters = dict()
-        itemId = f"{item_id_prefix}|{self.chain_id}|entity_cluster"
+        itemId = f"{self.tag}|{self.chain_id}|entity_cluster"
         sortKey = f"{address}"
         logging.debug(f"Reading entity clusters for address {address}, itemId {itemId}")
 
@@ -171,7 +171,7 @@ class DynamoUtils:
 
     def read_fp_mitigation_clusters(self, dynamo) -> list:
         fp_mitigation_clusters = []        
-        itemId = f"{item_id_prefix}|{self.chain_id}|fp_mitigation_cluster"
+        itemId = f"{self.tag}|{self.chain_id}|fp_mitigation_cluster"
         
         items = self._query_items(dynamo, itemId)
 
@@ -184,7 +184,7 @@ class DynamoUtils:
     
     def read_end_user_attack_clusters(self, dynamo) -> list:
         end_user_attack_clusters = []
-        itemId = f"{item_id_prefix}|{self.chain_id}|end_user_attack_cluster"
+        itemId = f"{self.tag}|{self.chain_id}|end_user_attack_cluster"
         
         items = self._query_items(dynamo, itemId)
 
@@ -197,7 +197,7 @@ class DynamoUtils:
     
     def read_alert_data(self, dynamo, cluster: str) -> pd.DataFrame:
         alert_data = pd.DataFrame()
-        itemId = f"{item_id_prefix}|{self.chain_id}|alert"
+        itemId = f"{self.tag}|{self.chain_id}|alert"
         sortKey = f"{cluster}"
         
         items = self._query_items(dynamo, itemId, sortKey)
@@ -218,7 +218,7 @@ class DynamoUtils:
         return alert_data
 
     def delete_alert_data(self, dynamo, address):
-        itemId = f"{item_id_prefix}|{self.chain_id}|alert"
+        itemId = f"{self.tag}|{self.chain_id}|alert"
         sortKey = f"{address}"
         logging.debug(f"Deleting alert data for address {address}, itemId {itemId}, sortKey {sortKey}")
         response = dynamo.delete_item(
@@ -235,7 +235,7 @@ class DynamoUtils:
 
     def read_victims(self, dynamo) -> dict:
         victims = dict()
-        itemId = f"{item_id_prefix}|{self.chain_id}|victim"
+        itemId = f"{self.tag}|{self.chain_id}|victim"
         
         items = self._query_items(dynamo, itemId)
 
@@ -246,13 +246,13 @@ class DynamoUtils:
         logging.info(f"Read victims. Retrieved {len(victims)} victims.")
         return victims
     
-    def clean_db(dynamo):
+    def clean_db(self, dynamo):
         item_types = ['entity_cluster', 'fp_mitigation_cluster', 'end_user_attack_cluster', 'alert', 'victim']
         chain_ids = [1, 10]  # Only chains used in tests
 
         for chain_id in chain_ids:            
             for item_type in item_types:
-                itemId = f"{item_id_prefix}|{chain_id}|{item_type}"
+                itemId = f"{self.tag}|{chain_id}|{item_type}"
                 lastEvaluatedKey = None
                 while True:
                     if lastEvaluatedKey:
