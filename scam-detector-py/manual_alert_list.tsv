@@ -3282,3 +3282,5 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 7/12/23	Address	0x0ADFAA2Fd26AF99ddDCc68C4eFbe479C1a04c4e3	@CertiKAlert	https://twitter.com/CertiKAlert/status/1679121615156592640?s=20	1	Ice phishing	
 7/12/23	Address	0x6ae0f79a8c2E1071E563F9E3191870546c8df18e	@CertiKAlert	https://twitter.com/CertiKAlert/status/1679119872444313602?s=20		Protocol attack	
 7/12/23	Code	566572696669636174696f6e2e	@cseifert	N/A	1	sleep drop	SleepDrop Signature #1
+7/21/23	Url	https://rewards-uniswapx.org	@samczsun	https://github.com/MetaMask/eth-phishing-detect/pull/13088/files		Native Ice Phishing	
+7/21/23	Url	https://bounty-uniswap.com	@samczsun	https://github.com/MetaMask/eth-phishing-detect/pull/13088/files		Native Ice Phishing	
