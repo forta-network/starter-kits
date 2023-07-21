@@ -3282,3 +3282,4 @@ Date	Address	Account	Tweet	Chain ID	Threat category	Comment
 7/12/23	0x0ADFAA2Fd26AF99ddDCc68C4eFbe479C1a04c4e3	@CertiKAlert	https://twitter.com/CertiKAlert/status/1679121615156592640?s=20	1	Ice phishing	
 7/12/23	0x6ae0f79a8c2E1071E563F9E3191870546c8df18e	@CertiKAlert	https://twitter.com/CertiKAlert/status/1679119872444313602?s=20		Protocol attack	
 7/18/23	0x60F37b85AA857A5a5583cB0770e60BB119621e4B	@cseifert	N/A	1	sleep drop	https://forta.org/attacks/#sleepdrop
+7/21/23	0x20416Dbb736d78b4C73B8272D408928431f7fc17	@PeckShieldAlert	https://twitter.com/search?q=0x20416Dbb736d78b4C73B8272D408928431f7fc17	1	Native Ice Phishing	
