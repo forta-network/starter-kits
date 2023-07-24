@@ -175,7 +175,7 @@ def provide_handle_alert(w3):
         for label in alert_event.alert.labels:
             # if label.confidence >= ATTACKER_CONFIDENCE and label.entity_type == forta_agent.EntityType.Address:
             if label.confidence >= ATTACKER_CONFIDENCE and label.metadata['address_type'] == 'EOA':
-                logger.info(f"Entity:{label.entity};\tConfidence:{label.confidence};\tMetadata:{label.metadata};\tLabel:{label.label};\tEntityType:{label.entity_type}")
+                logger.debug(f"Entity:{label.entity};\tConfidence:{label.confidence};\tMetadata:{label.metadata};\tLabel:{label.label};\tEntityType:{label.entity_type}")
                 list_of_addresses.append(label.entity)
         list_of_addresses = list(set(list_of_addresses))
         for address in list_of_addresses:
