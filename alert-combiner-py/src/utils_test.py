@@ -41,3 +41,6 @@ class TestUtils:
     def test_get_total_shards(self):
         assert Utils.get_total_shards(w3) == 8, "this should be 8"
 
+    def test_is_beta(self):
+        assert Utils.is_beta() is not None
+

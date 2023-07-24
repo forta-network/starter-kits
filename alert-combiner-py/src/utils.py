@@ -10,6 +10,7 @@ etherscan_label_api = "https://api.forta.network/labels/state?sourceIds=ethersca
 class Utils:
     CONTRACT_CACHE = dict()
     TOTAL_SHARDS = None
+    IS_BETA = None
 
     @staticmethod
     def is_contract(w3, addresses) -> bool:
@@ -77,4 +78,13 @@ class Utils:
             logging.debug(f"total shards: {total_shards}")
             Utils.TOTAL_SHARDS = total_shards
         return Utils.TOTAL_SHARDS
+    
+    @staticmethod
+    def is_beta() -> str:
+        if Utils.IS_BETA is None:
+            logging.debug("getting bot version from package.json")
+            package = json.load(open("package.json"))
+            logging.debug("loaded package.json")
+            Utils.IS_BETA = 'beta' in package["name"]
+        return Utils.IS_BETA
          
