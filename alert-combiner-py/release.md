@@ -1,5 +1,9 @@
 # Attack Detector Bot Release Notes
 
+## v3.49.0 (July 24 2023: beta)
+
+- add fp_list and manual_alert_list
+
 ## v3.48.1 (July 20 2023: beta)
 
 - introduce prod and test dynamo DB item prefix
