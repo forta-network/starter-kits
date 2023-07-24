@@ -1,9 +1,13 @@
-from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType
+from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType, get_labels
 import pandas as pd
 import json
 import os
 import logging
 import forta_agent
+
+from src.constants import ATTACK_DETECTOR_BOT_ID, ATTACK_DETECTOR_BETA_BOT_ID
+from src.utils import Utils
+
 
 class AlertCombinerFinding:
 
@@ -84,3 +88,83 @@ class AlertCombinerFinding:
                        'metadata': meta_data,
                        'labels': labels
                        })
+
+    @staticmethod
+    def alert_FP(address: str, label: str, metadata: dict) -> Finding:
+
+        labels = []
+        labels.append(Label({
+                'entityType': EntityType.Address,
+                'label': label,
+                'entity': address,
+                'confidence': 0.99,
+                'remove': "true",
+                'metadata': metadata
+
+            }))
+
+        return Finding({
+            'name': 'Attack detector identified an address that was incorrectly alerted on. Emitting false positive alert.',
+            'description': f'{address} likely not involved in an attack (ATTACK-DETECTOR-FALSE-POSITIVE)',
+            'alert_id': 'ATTACK-DETECTOR-FALSE-POSITIVE',
+            'type': FindingType.Info,
+            'severity': FindingSeverity.Info,
+            'metadata': {},
+            'labels': labels
+        })
+    
+    @staticmethod
+    def attack_finding_manual(block_chain_indexer, attacker_cluster: str, reported_by: str, chain_id: int) -> Finding:
+        label_doesnt_exist = False
+        labels = []
+
+        for attacker_address in attacker_cluster.split(","):
+            source_id = ATTACK_DETECTOR_BETA_BOT_ID if Utils.is_beta() else ATTACK_DETECTOR_BOT_ID
+            label_query_options_dict = {    
+                "entities": [attacker_address],  
+                "source_ids": [source_id], 
+                "state": True,                   
+                "first": 10,                      
+            }
+            labels_response = get_labels(label_query_options_dict)
+            if not labels_response.labels:
+                label_doesnt_exist = True
+
+
+            labels.append(Label({
+                'entityType': EntityType.Address,
+                'label': 'attacker-eoa',
+                'entity': attacker_address,
+                'confidence': 1,
+                'metadata': {
+                    'address_type': 'EOA',
+                    'chain_id': chain_id,
+                    'reported_by': reported_by,
+                }
+            }))
+
+            contracts = block_chain_indexer.get_contracts(attacker_cluster, chain_id)
+            for contract in contracts:
+                labels.append(Label({
+                    'entityType': EntityType.Address,
+                    'label': 'attacker-contract',
+                    'entity': contract,
+                    'confidence': 1,
+                    'metadata': {
+                        'address_type': 'contract',
+                        'chain_id': chain_id,
+                        'reported_by': reported_by,
+                        'deployer_info': f"Deployer {attacker_address} involved in attack; this contract may or may not be related to this particular attack, but was created by the attacker.",                       
+                    }
+                }))
+
+        if label_doesnt_exist:
+            return Finding({
+                'name': 'Attack detector identified an EOA with past alerts mapping to attack behavior',
+                'description': f'{attacker_cluster} likely involved in an attack (ATTACK-DETECTOR-MANUAL)',
+                'alert_id': "ATTACK-DETECTOR-MANUAL",
+                'type': FindingType.Exploit,
+                'severity': FindingSeverity.Critical,
+                'metadata': {"reported_by": reported_by},
+                'labels': labels
+            })
