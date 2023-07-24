@@ -108,7 +108,7 @@ def run_all_extended(central_node, alert_event):
         finding_dict_global['labels'] = [forta_agent.Label(label_dict)]
         finding_dict_global['metadata'] = metadata
         finding_dict_global['description'] = f"{attacker_info.name} marked as scammer by label propagation (global model)"
-        finding_dict['addresses'] = [attacker_info.name, central_node]
+        finding_dict_global['addresses'] = [attacker_info.name, central_node]
         all_findings_list.append(Finding(finding_dict_global))
     return all_findings_list
         
