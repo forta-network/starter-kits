@@ -1,22 +1,24 @@
 import logging
 import sys
 from datetime import datetime 
-
+import requests
+import io
 import traceback
 import forta_agent
 import pandas as pd
 import time
 import os
+import json
 from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
-from forta_agent import FindingSeverity
+from forta_agent import FindingSeverity, get_labels, get_alerts
 
 from src.findings import AlertCombinerFinding
-from src.constants import (BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE,
+from src.constants import (BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_FP_CLUSTERS_QUEUE_SIZE, MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE, ATTACK_DETECTOR_BOT_ID, ATTACK_DETECTOR_BETA_BOT_ID,
                            FP_MITIGATION_BOTS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE,
-                           MIN_ALERTS_COUNT, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS, DEFAULT_ANOMALY_SCORE, HIGHLY_PRECISE_BOTS,
-                           ALERTED_CLUSTERS_FP_MITIGATED_KEY, END_USER_ATTACK_BOTS, POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD)
+                           MIN_ALERTS_COUNT, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ALERTED_FP_CLUSTERS_KEY, MANUALLY_ALERTED_ENTITIES_KEY, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS, DEFAULT_ANOMALY_SCORE, HIGHLY_PRECISE_BOTS,
+                           ALERTED_CLUSTERS_FP_MITIGATED_KEY, FINDINGS_CACHE_BLOCK_KEY, END_USER_ATTACK_BOTS, POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD)
 from src.L2Cache import L2Cache
 from src.storage import s3_client, dynamo_table, get_secrets
 from src.blockchain_indexer_service import BlockChainIndexer
@@ -34,7 +36,10 @@ CONTRACT_CACHE = dict()  # address -> is_contract
 ALERTED_CLUSTERS_STRICT = []  # cluster
 ALERTED_CLUSTERS_LOOSE = []  # cluster
 ALERTED_CLUSTERS_FP_MITIGATED = []  # cluster
+MANUALLY_ALERTED_ENTITIES = []
 ALERT_ID_STAGE_MAPPING = dict()  # (bot_id, alert_id) -> stage
+ALERTED_FP_CLUSTERS = [] 
+FINDINGS_CACHE_BLOCK = []
 
 s3 = None
 dynamo = None
@@ -62,6 +67,10 @@ def initialize():
     global ALERT_ID_STAGE_MAPPING
     ALERT_ID_STAGE_MAPPING = dict([((bot_id, alert_id), stage) for bot_id, alert_id, stage in BASE_BOTS])
 
+    global ALERTED_FP_CLUSTERS
+    alerted_fp_address = load(CHAIN_ID, ALERTED_FP_CLUSTERS_KEY)
+    ALERTED_FP_CLUSTERS = [] if alerted_fp_address is None else list(alerted_fp_address)
+
     global ALERTED_CLUSTERS_FP_MITIGATED
     alerted_clusters = load(CHAIN_ID, ALERTED_CLUSTERS_FP_MITIGATED_KEY)
     ALERTED_CLUSTERS_FP_MITIGATED = [] if alerted_clusters is None else list(alerted_clusters)
@@ -73,6 +82,14 @@ def initialize():
     global ALERTED_CLUSTERS_LOOSE
     alerted_clusters = load(CHAIN_ID, ALERTED_CLUSTERS_LOOSE_KEY)
     ALERTED_CLUSTERS_LOOSE = [] if alerted_clusters is None else list(alerted_clusters)
+
+    global MANUALLY_ALERTED_ENTITIES
+    alerted_entities = load(CHAIN_ID, MANUALLY_ALERTED_ENTITIES_KEY)
+    MANUALLY_ALERTED_ENTITIES = [] if alerted_entities is None else list(alerted_entities)
+
+    global FINDINGS_CACHE_BLOCK
+    findings_cache_block = load(CHAIN_ID, FINDINGS_CACHE_BLOCK_KEY)
+    FINDINGS_CACHE_BLOCK = [] if findings_cache_block is None else list(findings_cache_block)
 
     global CONTRACT_CACHE
     CONTRACT_CACHE = {}
@@ -515,6 +532,143 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
 
     return findings
 
+def emit_manual_finding(w3, du, test = False) -> list:
+    global MANUALLY_ALERTED_ENTITIES
+    global CHAIN_ID
+    findings = []
+
+    if CHAIN_ID == -1:
+        reinitialize()
+        if CHAIN_ID == -1:
+            raise Exception("CHAIN_ID not set")
+
+    content = open('manual_alert_list_test.tsv', 'r').read() if test else open('manual_alert_list.tsv', 'r').read()
+    if not test:
+        # TODO: Change to point to main branch
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/vxatz/use-dynamodb/alert-combiner-py/manual_alert_list_test.tsv')
+        logging.info(f"Manual finding: made request to fetch manual alerts: {res.status_code}")
+        content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
+
+    df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
+    for index, row in df_manual_findings.iterrows():
+        chain_id = -1
+        try:
+            chain_id_float = row['Chain ID']
+            chain_id = int(chain_id_float)
+        except Exception as e:
+            logging.warning("Manual finding: Failed to get chain ID from manual finding")
+            continue
+
+        if chain_id != CHAIN_ID:
+            logging.info("Manual finding: Manual entry doesnt match chain ID.")
+            continue
+
+        try:
+            attacker_address_lower = row['Address'].lower().strip()
+            cluster = attacker_address_lower
+            logging.info(f"Manual finding: Have manual entry for {attacker_address_lower}")
+            entity_clusters = du.read_entity_clusters(dynamo, attacker_address_lower)
+            if attacker_address_lower in entity_clusters.keys():
+                cluster = entity_clusters[attacker_address_lower]
+
+            if Utils.is_contract(w3, cluster):
+                logging.info(f"Manual finding: Address {cluster} is a contract")
+                continue
+
+            if cluster not in MANUALLY_ALERTED_ENTITIES:
+                logging.info(f"Manual finding: Emitting manual finding for {cluster}")
+                tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
+                account = "" if 'nan' in str(row["Account"]) else row['Account']
+                update_list(MANUALLY_ALERTED_ENTITIES, MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE, cluster)
+                finding = AlertCombinerFinding.attack_finding_manual(block_chain_indexer, cluster, account + " " + tweet, chain_id)
+                if finding is not None:
+                    findings.append(finding)
+                logging.info(f"Findings count {len(findings)}")
+
+            else:
+                logging.info(f"Manual finding: Already alerted on {attacker_address_lower}")
+        except Exception as e:
+            logging.warning(f"Manual finding: Failed to process manual finding: {e} : {traceback.format_exc()}")
+            continue
+
+    return findings
+
+def emit_new_fp_finding() -> list:
+    global ALERTED_FP_CLUSTERS
+    global ALERTED_FP_CLUSTERS_QUEUE_SIZE
+    global CHAIN_ID
+    global FINDINGS_CACHE_BLOCK
+
+    if CHAIN_ID == -1:
+        reinitialize()
+        if CHAIN_ID == -1:
+            raise Exception("CHAIN_ID not set")
+    findings = []
+
+    try:
+        # TODO: Change to point to main branch
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/vxatz/use-dynamodb/alert-combiner-py/fp_list.csv')
+        content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
+        df_fp = pd.read_csv(io.StringIO(content), sep=',')
+        for index, row in df_fp.iterrows():
+            chain_id = int(row['chain_id'])
+            if chain_id != CHAIN_ID:
+                continue
+            cluster = row['address'].lower()
+            if cluster not in ALERTED_FP_CLUSTERS:
+                update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, cluster)
+                for address in cluster.split(','):
+                    
+                    for (entity, label, metadata) in obtain_all_fp_labels(address):
+                        logging.info(f"Emitting FP mitigation finding for {entity} {label}")
+                        update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, entity)
+                        findings.append(AlertCombinerFinding.alert_FP(entity, label, metadata))
+                        logging.info(f"Findings count {len(FINDINGS_CACHE_BLOCK)}")
+    except BaseException as e:
+        logging.warning(f"emit fp finding exception: {e} - {traceback.format_exc()}")
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+            logging.info(f"emit fp finding exception:  - Raising exception to expose error to scannode")
+            raise e
+
+    return findings
+
+def obtain_all_fp_labels(address: str) -> set:
+    logging.info(f"{address} obtain_all_fp_labels")
+
+    source_id = ATTACK_DETECTOR_BETA_BOT_ID if Utils.is_beta() else ATTACK_DETECTOR_BOT_ID
+
+    fp_labels = set()
+
+    label_query_options_dict = {    
+        "entities": [address],  
+        "source_ids": [source_id], 
+        "state": True,                   
+        "first": 10,                      
+    }
+    labels_response = get_labels(label_query_options_dict)
+
+    for label in labels_response.labels:
+        print(f"Adding Label: {label.label}, Entity: {label.entity}, Confidence: {label.confidence}, Metadata: {label.metadata} to the list of FP labels")   
+        address_label = label.label 
+        fp_labels.add((label.entity, label.label, tuple(label.metadata)))
+    
+    alert_query_options_dict = {
+        "bot_ids": [source_id],  
+        "addresses": [address], 
+        "first": 20,  
+    }
+    alerts_response = get_alerts(alert_query_options_dict)
+
+    for alert in alerts_response.alerts:
+        print(f"Alert ID: {alert.alert_id}, Hash: {alert.hash}")
+        #  Check if the alert has the starting address label
+        if any((label.label == address_label and label.entity == address) for label in alert.labels):
+            for label in alert.labels:
+                if not (label.label == address_label and label.entity == address):
+                    print(f"Adding Label: {label.label}, Entity: {label.entity}, Confidence: {label.confidence}, Metadata: {label.metadata} to the list of FP labels")
+                    fp_labels.add((label.entity, label.label, tuple(label.metadata)))
+
+    return fp_labels
 
 def update_list(items: list, max_size: int, item: str):
 
@@ -543,16 +697,27 @@ def in_list(alert_event: forta_agent.alert_event.AlertEvent, bots: list) -> bool
 def persist_state():
     global ALERTED_CLUSTERS_STRICT_KEY
     global ALERTED_CLUSTERS_STRICT
+
     global ALERTED_CLUSTERS_LOOSE_KEY
     global ALERTED_CLUSTERS_LOOSE
+
     global ALERTED_CLUSTERS_FP_MITIGATED_KEY
     global ALERTED_CLUSTERS_FP_MITIGATED
+
+    global MANUALLY_ALERTED_ENTITIES_KEY
+    global MANUALLY_ALERTED_ENTITIES
+
+    global FINDINGS_CACHE_BLOCK
+    global FINDINGS_CACHE_BLOCK_KEY
+
     global CHAIN_ID
 
     start = time.time()
     persist(ALERTED_CLUSTERS_LOOSE, CHAIN_ID, ALERTED_CLUSTERS_LOOSE_KEY)
     persist(ALERTED_CLUSTERS_FP_MITIGATED, CHAIN_ID, ALERTED_CLUSTERS_FP_MITIGATED_KEY)
     persist(ALERTED_CLUSTERS_STRICT, CHAIN_ID, ALERTED_CLUSTERS_STRICT_KEY)
+    persist(MANUALLY_ALERTED_ENTITIES, CHAIN_ID, MANUALLY_ALERTED_ENTITIES_KEY)
+    persist(FINDINGS_CACHE_BLOCK, CHAIN_ID, FINDINGS_CACHE_BLOCK_KEY)
     end = time.time()
     logging.info(f"Persisted bot state. took {end - start} seconds")
 
@@ -589,10 +754,41 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     logging.debug("handle_alert called")
     return real_handle_alert(alert_event)
 
+def provide_handle_block(w3, du):
+    logging.debug("provide_handle_block called")
+
+    def handle_block(block_event: forta_agent.BlockEvent):
+        logging.debug("handle_block inner called")
+        global FINDINGS_CACHE_BLOCK
+        findings = []
+
+        dt = datetime.fromtimestamp(block_event.block.timestamp)
+        logging.info(f"handle block called with block timestamp {dt}")
+        if dt.minute == 0:  
+            fp_findings = emit_new_fp_finding()
+            logging.info(f"Added {len(fp_findings)} fp findings.")
+            FINDINGS_CACHE_BLOCK.extend(fp_findings)
+            manual_findings = emit_manual_finding(w3, du)
+            logging.info(f"Added {len(manual_findings)} manual findings.")
+            FINDINGS_CACHE_BLOCK.extend(manual_findings)
+
+            logging.info(f"Handle block on the hour was called. Findings cache for blocks size now: {len(FINDINGS_CACHE_BLOCK)}")
+            
+            persist_state()
+            logging.info(f"Persisted state")
+        
+        for finding in FINDINGS_CACHE_BLOCK[0:10]: 
+            findings.append(finding)
+        FINDINGS_CACHE_BLOCK = FINDINGS_CACHE_BLOCK[10:]
+
+        logging.info(f"Return {len(findings)} to handleBlock. FINDINGS_CACHE_BLOCK size: {len(FINDINGS_CACHE_BLOCK)}")
+        return findings
+
+    return handle_block
+
 def handle_block(block_event: forta_agent.BlockEvent):
     logging.debug("handle_block called")
+    return real_handle_block(block_event)
 
-    if datetime.now().minute == 0:  # every hour
-        persist_state()
-
-    return []
+#  Set the tag to PROD_TAG for production
+real_handle_block = provide_handle_block(web3, DynamoUtils(TEST_TAG, web3.eth.chain_id))
