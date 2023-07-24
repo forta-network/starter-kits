@@ -6,8 +6,11 @@ from web3.middleware import geth_poa_middleware
 import agent
 import json
 import os
+import pandas as pd
+import io
 from forta_agent import EntityType
 from datetime import datetime, timedelta
+import requests
 
 from storage import dynamo_table, get_secrets
 from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS,
@@ -700,3 +703,20 @@ class TestAlertCombiner:
 
         assert len(findings) == 1, "alert should have been raised"
         assert findings[0].alert_id == "ATTACK-DETECTOR-6", "ATTACK-DETECTOR-6 alert should have been raised as this associated with end user attack"
+
+    def test_emit_new_manual_finding(self):
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
+        agent.initialize()
+
+        findings = agent.emit_manual_finding(w3, du(TEST_TAG, agent.CHAIN_ID), True)
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/vxatz/use-dynamodb/alert-combiner-py/manual_alert_list_test.tsv')
+        content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
+        df_manual_entries = pd.read_csv(io.StringIO(content), sep='\t')
+        assert len(findings) == len(df_manual_entries), "this should have triggered manual findings"
+        
+        for finding in findings:
+            address_lower = "0x5ae30eb89d761675b910e5f7acc9c5da0c85baaa".lower()
+            if address_lower in finding.description.lower():
+                assert findings[0].alert_id == "ATTACK-DETECTOR-MANUAL", "should be ATTACK-DETECTOR-MANUAL"
+                assert findings[0].description == f"{address_lower} likely involved in an attack (ATTACK-DETECTOR-MANUAL)", "wrong description"
+                assert findings[0].metadata["reported_by"] == "Test Source "
