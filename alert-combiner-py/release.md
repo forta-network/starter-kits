@@ -1,5 +1,9 @@
 # Attack Detector Bot Release Notes
 
+## v3.50.0 (July 25 2023: beta)
+
+- add more bridge balance monitoring bots
+
 ## v3.49.0 (July 24 2023: beta)
 
 - add fp_list and manual_alert_list
