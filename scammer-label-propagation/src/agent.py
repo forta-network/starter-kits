@@ -28,8 +28,9 @@ web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 
 def run_all_extended(central_node, alert_event):
+    global secrets
     try:
-        attackers_df, graph_statistics, attackers_df_global = run_all(central_node)
+        attackers_df, graph_statistics, attackers_df_global = run_all(central_node, secrets=secrets)
     except Warning as w:
         logger.warning(f"{central_node}:\tWarning running run_all in a thread: {w}")
         return []
@@ -120,8 +121,10 @@ def initialize():
     global_futures = {}
     global global_alerts
     global_alerts = []
+    global secrets
+    secrets = get_secrets()
     global dynamo
-    dynamo = dynamo_table(get_secrets())
+    dynamo = dynamo_table(secrets)
 
     subscription_json = []
     global CHAIN_ID
@@ -147,7 +150,8 @@ def put_address_in_dynamo(central_node):
     if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
         logging.error(f"Error putting address in dynamoDB: {response}")
     return
-    
+
+
 def get_address_from_dynamo(central_node):
     global dynamo
     global ENV
