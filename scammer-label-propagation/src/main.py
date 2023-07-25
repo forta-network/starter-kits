@@ -35,7 +35,7 @@ def run_all(central_node, secrets):
     loss_function = cross_entropy_masked
 
     # data = collect_data_parallel_parts(central_node)
-    data = collect_data_zettablock(central_node)
+    data = collect_data_zettablock(central_node, secrets)
     if not 'production' in os.environ.get('NODE_ENV', ''):
         data_path = 'data3'
         node_path = os.path.join(data_path, f'{central_node}.pkl')
