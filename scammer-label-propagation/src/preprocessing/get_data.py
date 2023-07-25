@@ -11,14 +11,15 @@ from src.storage import get_secrets, dynamo_table
 
 
 logger = logging.getLogger(__name__)
-global dynamo
-dynamo = dynamo_table(get_secrets())
 
 
 
-def collect_data_zettablock(central_node):
+
+def collect_data_zettablock(central_node, secrets):
     n_retries = 3
-    API_key = get_secrets()['apiKeys']['ZETTABLOCK']
+    API_key = secrets['apiKeys']['ZETTABLOCK']
+    global dynamo
+    dynamo = dynamo_table(secrets)
 
     list_of_addresses = get_list_of_addresses_zettablock(central_node, API_key, n_retries=n_retries)
     erc20_data = get_erc20_data_zettablock(list_of_addresses, API_key=API_key, n_retries=n_retries)

@@ -21,7 +21,7 @@ from src.preprocessing.process_data import prepare_data
 logger = logging.getLogger(__name__)
 
 
-def run_all(central_node):
+def run_all(central_node, secrets):
     """
     Run the whole pipeline for a given central node. Returns a df with the new addresses classified as attackers
     :param central_node: str with the node to build the graph around and analyze
