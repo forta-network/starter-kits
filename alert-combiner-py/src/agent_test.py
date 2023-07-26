@@ -716,7 +716,7 @@ class TestAlertCombiner:
         assert len(findings) == len(df_manual_entries), "this should have triggered manual findings"
         
         for finding in findings:
-            address_lower = "0x5ae30eb89d761675b910e5f7acc9c5da0c85baaa".lower()
+            address_lower = "0x5ae30eb89d761675b910e5f7acc9c5da0c85baab".lower()
             if address_lower in finding.description.lower():
                 assert findings[0].alert_id == "ATTACK-DETECTOR-MANUAL", "should be ATTACK-DETECTOR-MANUAL"
                 assert findings[0].description == f"{address_lower} likely involved in an attack (ATTACK-DETECTOR-MANUAL)", "wrong description"
