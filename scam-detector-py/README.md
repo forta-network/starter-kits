@@ -40,6 +40,7 @@ Threat categories are as follows:
 - native-ice-phishing-social-engineering - Fired when alert combination is observed that points to an native ice phishing involving social engineering techniques (e.g. SecurityUpdate() function sig in the input data field)
 - native-ice-phishing - Fired when alert combination is observed that points to an native ice phishing without social engineering component
 - hard-rug-pull - Fired when a contract with hard rug pull techniques is identified
+- pig-butchering - Fired when a pig butchering attack has been identified; pig butchering involves tricking a user into making a deposit (usually USDT/USDC) on fake investment sites after grooming the target.
 - soft-rug-pull - Fired when a contract with soft rug pull techniques is identified
 - rake-token - Fired when a contract with a rake is identified
 - impersonating-token - Fired when a token contract has been identified that is impersonating a known established token (e.g. USDC or USDT)
@@ -212,4 +213,3 @@ The scam detector passes unrecoverable errors to the scan node, which cause a re
 | 0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e | Ice Phishing ML Model | EOA-PHISHING-SCAMMER | PassThrough |
 | 0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e | Scam Notifier | VICTIM-NOTIFIER-EOA | PassThrough |
 | 0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e | Scam Notifier | SCAM-NOTIFIER-EOA | PassThrough |
-

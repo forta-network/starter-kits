@@ -147,3 +147,9 @@ class TestBaseBotParser:
         alert_event = TestBaseBotParser.generate_alert("0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e", "VICTIM-NOTIFIER-EOA", "description", metadata)
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
         assert "0x0b5a06fb59743b58900725750aba92a49b1e8a28" in addresses, "this should be the scammer address"
+
+    def test_get_ice_phishing_pig_butchering(self):
+        metadata = {"anomalyScore":"0.0004246351283341721","initiator1":"0x55FE002aefF02F77364de339a1292923A15844B8","receiver":"0x55FE002aefF02F77364de339a1292923A15844B8","victim1":"0xeCfc3840216a0177c53219858fAa574688889ad8","victim2":"0xFb6c84F5EA0aF804B34B42E0bCC89c0B10f6ec5B","victim3":"0xa7BF37B2aE73EE323aabCbc4d94A0940e8E9abf5","victim4":"0xa7BF37B2aE73EE323aabCbc4d94A0940e8E9abf5","victim5":"0xF6A82c66323859BA6E53701735d02CbDC4a18166"}
+        alert_event = TestBaseBotParser.generate_alert("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PIG-BUTCHERING", "0x55FE002aefF02F77364de339a1292923A15844B8 received funds through a pig butchering attack", metadata)
+        addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
+        assert "0x55FE002aefF02F77364de339a1292923A15844B8".lower() in addresses, "this should be the scammer address"

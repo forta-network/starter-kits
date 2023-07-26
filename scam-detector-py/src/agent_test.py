@@ -585,6 +585,25 @@ class TestScamDetector:
 
 
 
+    def test_detect_ice_phishing_pig_butchering(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14"
+        alert_id = "ICE-PHISHING-PIG-BUTCHERING"
+        description = "0xdA453CA63F802EE1267f1bA3f9c0120b327B3A7C received funds through a pig butchering attack"
+        metadata = {"anomalyScore":"0.00041909736904142703","initiator1":"0xE9EE9F6B8d09469E7f54E1B23aeA034125c66bfB","initiator2":"0xcEc1214a5269fC5A3f75ce81dA8ad6CA60B9dFB2","receiver":"0xdA453CA63F802EE1267f1bA3f9c0120b327B3A7C","victim1":"0x0E7a79Fa499b33cEf30704202ae947A47be09a8C","victim2":"0x102f51037699597B95e9f846451C762b7eF3DF78","victim3":"0xd546B23A7A4685aDCc6a3745419600D1094B1887","victim4":"0x66e7ACA614c13D94F060928bF77526cac82142E9"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-PIG-BUTCHERING", "should be pig butchering finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+
+
     def test_detect_fraudulent_seaport_orders(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
@@ -609,7 +628,7 @@ class TestScamDetector:
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03"
-        alert_id = "PKC-2"
+        alert_id = "PKC-3"
         description = "0x006a176a0092b19ad0438919b08a0ed317a2a9b5 transferred funds to 0xdcde9a1d3a0357fa3db6ae14aacb188155362974 and has been inactive for a week"
         metadata = {"anomalyScore":"0.00011111934217349434","attacker":"0xdcde9a1d3a0357fa3db6ae14aacb188155362974","transferredAsset":"MATIC","txHash":"0xd39f161892b9cb184b9daa44d2d5ce4a75ab3133275d5f12a4a2b5eed56b6f41","victims":"0x006a176a0092b19ad0438919b08a0ed317a2a9b5"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)

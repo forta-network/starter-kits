@@ -50,7 +50,7 @@ class TestScamFindings:
         assert finding.labels[0].entity_type == EntityType.Address
         assert finding.labels[0].entity == EOA_ADDRESS_SMALL_TX
         assert finding.labels[0].label == "scammer"
-        assert finding.labels[0].confidence == 0.75
+        assert finding.labels[0].confidence == 0.82
         assert finding.labels[0].metadata["address_type"] == "EOA"
         assert finding.labels[0].metadata["logic"] == "passthrough"
         assert finding.labels[0].metadata["threat_category"] == "ice-phishing"
@@ -61,7 +61,7 @@ class TestScamFindings:
         assert finding.labels[1].entity_type == EntityType.Address
         assert finding.labels[1].entity == CONTRACT
         assert finding.labels[1].label == "scammer"
-        assert finding.labels[1].confidence == 0.675
+        assert finding.labels[1].confidence == 0.738
         assert finding.labels[1].metadata["address_type"] == "contract"
         assert finding.labels[1].metadata["threat_category"] == "ice-phishing"
         assert finding.labels[1].metadata["logic"] == "passthrough"
@@ -104,7 +104,7 @@ class TestScamFindings:
         assert finding.labels[0].entity_type == EntityType.Address
         assert finding.labels[0].entity == EOA_ADDRESS_SMALL_TX
         assert finding.labels[0].label == "scammer"
-        assert finding.labels[0].confidence == 0.75
+        assert finding.labels[0].confidence == 0.82
         assert finding.labels[0].metadata["address_type"] == "EOA"
         assert finding.labels[0].metadata["logic"] == "passthrough"
         assert finding.labels[0].metadata["threat_category"] == "ice-phishing"
@@ -115,7 +115,7 @@ class TestScamFindings:
         assert finding.labels[1].entity_type == EntityType.Address
         assert finding.labels[1].entity == CONTRACT
         assert finding.labels[1].label == "scammer"
-        assert finding.labels[1].confidence == 0.675
+        assert finding.labels[1].confidence == 0.738
         assert finding.labels[1].metadata["address_type"] == "contract"
         assert finding.labels[1].metadata["threat_category"] == "ice-phishing"
         assert finding.labels[1].metadata["logic"] == "passthrough"
@@ -126,7 +126,7 @@ class TestScamFindings:
         assert finding.labels[2].entity_type == EntityType.Url
         assert finding.labels[2].entity == "withdraw-llido.com"
         assert finding.labels[2].label == "scammer"
-        assert finding.labels[2].confidence == 0.75
+        assert finding.labels[2].confidence == 0.82
         assert finding.labels[2].metadata["threat_category"] == "ice-phishing"
         assert finding.labels[2].metadata["logic"] == "passthrough"
         assert finding.labels[2].metadata["base_bot_alert_ids"] == "ICE-PHISHING"
@@ -165,7 +165,7 @@ class TestScamFindings:
         assert finding.labels[0].entity_type == EntityType.Url
         assert finding.labels[0].entity == "withdraw-llido.com"
         assert finding.labels[0].label == "scammer"
-        assert finding.labels[0].confidence == 0.75
+        assert finding.labels[0].confidence == 0.82
         assert finding.labels[0].metadata["threat_category"] == "ice-phishing"
         assert finding.labels[0].metadata["logic"] == "passthrough"
         assert finding.labels[0].metadata["base_bot_alert_ids"] == "ICE-PHISHING"
@@ -310,7 +310,7 @@ class TestScamFindings:
         assert finding.labels[0].metadata["address_type"] == "EOA"
         assert finding.labels[0].metadata["logic"] == "propagation"
 
-        assert finding.labels[0].confidence == 0.375
+        assert finding.labels[0].confidence == 0.41
         assert finding.labels[0].metadata['base_bot_alert_ids'] == base_bot_alert_id
         assert finding.labels[0].metadata['base_bot_alert_hashes'] == base_bot_alert_hash
         assert finding.labels[0].metadata['associated_scammer'] == EOA_ADDRESS_LARGE_TX
@@ -324,7 +324,7 @@ class TestScamFindings:
         assert finding.labels[1].metadata["logic"] == "propagation"
         assert finding.labels[1].metadata["threat_category"] == "scammer-deployed-contract"
 
-        assert finding.labels[1].confidence == (0.375 * 0.8)
+        assert finding.labels[1].confidence == (0.41 * 0.8)
         assert finding.labels[1].metadata['associated_scammer'] == EOA_ADDRESS_LARGE_TX
         assert finding.labels[1].metadata['associated_scammer_threat_categories'] == 'ice-phishing'
         assert finding.labels[1].metadata['associated_scammer_alert_hashes'] == original_alert_hash

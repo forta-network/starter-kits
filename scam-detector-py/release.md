@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## v2.17.6 (July 26th 2023 - beta)
+- integrated pig butchering alert
+
 ## v2.17.5 (July 14th 2023 - beta)
 - reconfigured PKC bot
 
