@@ -252,9 +252,10 @@ class TestAlertCombiner:
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         assert len(findings) == 1, "alert should have been raised"
-        assert findings[0].metadata['involved_address_bloom_filter_0'] == None, 'incorrect involved_address_bloom_filter_0'
-        assert findings[0].metadata['involved_address_bloom_filter_1'] == address_filter_values_1, 'incorrect involved_address_bloom_filter_1'
-        assert findings[0].metadata['involved_address_bloom_filter_2'] == address_filter_values_2, 'incorrect involved_address_bloom_filter_2'
+        assert findings[0].metadata['involved_address_bloom_filter_0'] == '', 'incorrect involved_address_bloom_filter_0'
+        assert findings[0].metadata['involved_address_bloom_filter_1'] == ','.join(str(item) for item in address_filter_values_1), 'incorrect involved_address_bloom_filter_1'
+        assert findings[0].metadata['involved_address_bloom_filter_2'] == ','.join(str(item) for item in address_filter_values_2), 'incorrect involved_address_bloom_filter_2'
+
         
     def test_alert_simple_case_L2_no_findings(self):
         # three alerts in diff stages for a given EOA

@@ -43,7 +43,10 @@ class AlertCombinerFinding:
         involved_address_bloom_filters = {}
         for index, row in alerts.iterrows():
             filter_data = alert_data.loc[alert_data['alert_hash'] == row['alert_hash'], 'address_filter'].values
-            involved_address_bloom_filters[f'involved_address_bloom_filter_{index}'] = filter_data[0] 
+            if filter_data[0] is not None:
+                involved_address_bloom_filters[f'involved_address_bloom_filter_{index}'] = ','.join(str(item) for item in filter_data[0])
+            else:
+                involved_address_bloom_filters[f'involved_address_bloom_filter_{index}'] = '' 
 
         meta_data = {**attacker_address, **victim_metadata, **anomaly_scores, **anomaly_score, **involved_addresses, **involved_alerts, **involved_address_bloom_filters}
         victim_clause = f" on {victim_name} ({victim_address.lower()})" if victim_address else ""
