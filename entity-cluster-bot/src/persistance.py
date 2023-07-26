@@ -12,11 +12,11 @@ import string
 
 
 try:
-    from src.constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION, DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY, BOT_ID
+    from src.constants import  GRAPH_KEY, TEST_TAG, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION, DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY, BOT_ID, DYNAMO_TABLE
     from src.dyndbmutex import DynamoDbMutex
     from src.storage import get_secrets
 except ModuleNotFoundError:
-    from constants import  GRAPH_KEY, DEV_DYNAMO_TABLE, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION, DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY, BOT_ID
+    from constants import  GRAPH_KEY, TEST_TAG, S3_BUCKET, MUTEX_TIMEOUT_MILLIS, S3_REGION, DYNAMO_REGION, DYNAMODB_PRIMARY_KEY, DYNAMODB_SORT_KEY, BOT_ID, DYNAMO_TABLE
     from dyndbmutex import DynamoDbMutex
     from storage import get_secrets
 
@@ -52,14 +52,16 @@ class DynamoPersistance:
     graph_cache = None
     table = None
     mutex:DynamoDbMutex = None
+    tag:string = None
 
 
-    def __init__(self, table = DEV_DYNAMO_TABLE, chain_id = 1):
+    def __init__(self, tag = TEST_TAG, chain_id = 1):
         self.name = ''.join(random.choices(string.ascii_lowercase, k=5))
         self.chain_id = chain_id
-        self.table = dynamodb.Table(table)
-        self.mutex = DynamoDbMutex(f"mutex|{self.chain_id}", table, self.name, region_name=DYNAMO_REGION, ttl_minutes=15, timeoutms=MUTEX_TIMEOUT_MILLIS)
-        print(f"chain id {self.chain_id}  - name {self.name} - dynamo table:  {table} ")
+        self.table = dynamodb.Table(DYNAMO_TABLE)
+        self.tag = tag
+        self.mutex = DynamoDbMutex(f"mutex|{self.chain_id}|{self.tag}", DYNAMO_TABLE, self.name, region_name=DYNAMO_REGION, ttl_minutes=15, timeoutms=MUTEX_TIMEOUT_MILLIS)
+        print(f"chain id {self.chain_id}  - name {self.name} - dynamo table:  {DYNAMO_TABLE} - tag: {self.tag}")
         self.graph_cache = self.load(GRAPH_KEY)
         if not self.graph_cache:
             self.graph_cache = nx.DiGraph()
@@ -81,12 +83,12 @@ class DynamoPersistance:
                     size = self.bytes_to_kb(bytes)
                     c = bz2.compress(bytes)
                     c_size =  self.bytes_to_kb(c)
-                    print(f"Persisting with MUTEX {key}/{self.chain_id} using API. Size:: {size} KB and compress {c_size} KB. {str(obj)}")
-                    s3_key = f"{BOT_ID}/sub_graph/{self.chain_id}/{self.table.table_name}_SHARED_GRAPH"
+                    print(f"Persisting with MUTEX {key}/{self.chain_id}/{self.tag} using API. Size:: {size} KB and compress {c_size} KB. {str(obj)}")
+                    s3_key = f"{BOT_ID}/sub_graph/{self.chain_id}/{self.table.table_name}_{self.tag}_SHARED_GRAPH"
                     s3.put_object(Body=c, Bucket=S3_BUCKET, Key=s3_key)
                     self.table.put_item(
                         Item={
-                                DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{key}",
+                                DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{key}|{self.tag}",
                                 DYNAMODB_SORT_KEY: f"shared_graph|{self.chain_id}",
                                 'updated': datetime.now().isoformat(),
                                 'sizeKB': str(c_size), 
@@ -109,10 +111,10 @@ class DynamoPersistance:
         return size_in_kb     
 
     def load(self, key: str) -> object:
-        logging.info(f"Loading {key}/{self.chain_id} using API")
+        logging.info(f"Loading {key}/{self.chain_id}/{self.tag} using API")
         response = self.table.get_item(
             Key={
-                DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{key}",
+                DYNAMODB_PRIMARY_KEY: f"{PRIMARY_PREFIX}|{key}|{self.tag}",
                 DYNAMODB_SORT_KEY: f"shared_graph|{self.chain_id}"
             }
         )
@@ -131,11 +133,11 @@ class DynamoPersistance:
         while True:
             if lastEvaluatedKey == None:
                 response = self.table.query(
-                    KeyConditionExpression=Key(DYNAMODB_PRIMARY_KEY).eq(f"{PRIMARY_PREFIX}|{GRAPH_KEY}")
+                    KeyConditionExpression=Key(DYNAMODB_PRIMARY_KEY).eq(f"{PRIMARY_PREFIX}|{GRAPH_KEY}|{self.tag}")
                 )
             else:
                 response = self.table.query(
-                    KeyConditionExpression=Key(DYNAMODB_PRIMARY_KEY).eq(f"{PRIMARY_PREFIX}|{GRAPH_KEY}"),
+                    KeyConditionExpression=Key(DYNAMODB_PRIMARY_KEY).eq(f"{PRIMARY_PREFIX}|{GRAPH_KEY}|{self.tag}"),
                     ExclusiveStartKey=lastEvaluatedKey
                 )
 
