@@ -40,6 +40,8 @@ class ScamDetectorFinding:
             return url + "#impersonating-token"
         elif alert_id == "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE":
             return url + "#private-key-compromise"
+        elif alert_id == "SCAM-DETECTOR-PIG-BUTCHERING":
+            return url + "#pig-butchering"
         else:
             return url
         
@@ -81,6 +83,8 @@ class ScamDetectorFinding:
             return "sleepdrop"
         elif alert_id == "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE":
             return "private-key-compromise"
+        elif alert_id == "SCAM-DETECTOR-PIG-BUTCHERING":
+            return "pig-butchering"
         elif alert_id == "SCAM-DETECTOR-UNKNOWN":
             return "unknown"
         else:
