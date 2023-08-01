@@ -28,7 +28,7 @@ def is_contract(w3, address) -> bool:
     return code != HexBytes("0x")
 
 
-def detect_dex_funding(
+def detect_cex_funding(
     w3, transaction_event: forta_agent.transaction_event.TransactionEvent
 ) -> list:
     findings = []
@@ -52,7 +52,7 @@ def provide_handle_transaction(w3):
     def handle_transaction(
         transaction_event: forta_agent.transaction_event.TransactionEvent,
     ) -> list:
-        return detect_dex_funding(w3, transaction_event)
+        return detect_cex_funding(w3, transaction_event)
 
     return handle_transaction
 
