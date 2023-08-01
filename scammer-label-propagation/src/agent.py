@@ -78,6 +78,9 @@ def run_all_extended(central_node, alert_event, web3):
         finding_dict['description'] = f"{attacker_info.name} marked as scammer by label propagation"
         finding_dict['addresses'] = [attacker_info.name, central_node]
         all_findings_list.append(Finding(finding_dict))
+    if alert_event.alert.alert_id in ['SCAM-DETECTOR-NATIVE-ICE-PHISHING']:
+        logger.info(f"{central_node}:\tAlert {alert_event.alert.alert_id} is a native ice phishing alert. Not running global model")
+        return all_findings_list
     # Prepare the dataset for the global model
     finding_dict_global = finding_dict.copy()
     finding_dict_global['alert_id'] = 'SCAMMER-LABEL-PROPAGATION-2'
