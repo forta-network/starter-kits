@@ -69,7 +69,7 @@ def get_list_of_addresses_zettablock(central_node, API_key, n_retries=3):
     # Central node is not considered in the above query, so we add it manually
     list_of_addresses += [central_node]
     if len(list_of_addresses) < MIN_NEIGHBORS:
-        raise Warning(f'{central_node}:\tNot enough neighbors, skipping')
+        raise Warning(f'{central_node}:\tNot enough neighbors, skipping. Number of neighbors: {len(list_of_addresses)}')
     if len(list_of_addresses) > MAX_NEIGHBORS:
         raise Warning(f'{central_node}:\tToo many neighbors, skipping')
     return list_of_addresses
