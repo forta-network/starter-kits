@@ -21,7 +21,7 @@ from src.preprocessing.process_data import prepare_data
 logger = logging.getLogger(__name__)
 
 
-def run_all(central_node, secrets):
+def run_all(central_node, secrets, web3):
     """
     Run the whole pipeline for a given central node. Returns a df with the new addresses classified as attackers
     :param central_node: str with the node to build the graph around and analyze
@@ -44,7 +44,7 @@ def run_all(central_node, secrets):
     all_nodes_dict, node_feature, transactions_overview, edge_indexes, edge_features = prepare_data(data)
     labels_df = download_labels_graphql(all_nodes_dict, central_node)
     np.random.seed(SEED)
-    web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
+    # web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
     if len(all_nodes_dict) >= MAX_NEIGHBORS_INDIVIDUAL_MODEL:
         logger.info(f"{central_node}:\tToo many neighbors for individual model ({len(all_nodes_dict)}), using only global model")
         filtered_attackers_df = pd.DataFrame(columns=['n_predicted_attacker', 'mean_probs_victim', 'mean_probs_attacker'])
@@ -115,5 +115,14 @@ def is_contract(w3, address) -> bool:
     """
     if address is None:
         return True
+    # Adding retry logic
+    code = None
+    for _ in range(3):
+        try:
+            code = w3.eth.get_code(Web3.toChecksumAddress(address))
+            break
+        except Exception as e:
+            logger.warning(f"Error checking contract: {e}")
+
     code = w3.eth.get_code(Web3.toChecksumAddress(address))
     return code != HexBytes("0x")

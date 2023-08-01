@@ -27,10 +27,10 @@ logger = logging.getLogger(__name__)
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 
-def run_all_extended(central_node, alert_event):
+def run_all_extended(central_node, alert_event, web3):
     global secrets
     try:
-        attackers_df, graph_statistics, attackers_df_global = run_all(central_node, secrets=secrets)
+        attackers_df, graph_statistics, attackers_df_global = run_all(central_node, secrets=secrets, web3=web3)
     except Warning as w:
         logger.warning(f"{central_node}:\tWarning running run_all in a thread: {w}")
         return []
@@ -188,7 +188,7 @@ def provide_handle_alert(w3):
             if n_times_already_analyzed < 3 and address not in global_futures.keys():
                 logger.info(f"Adding address {address} to the pool. It has been analyzed {n_times_already_analyzed} times in the last {HOURS_BEFORE_REANALYZE} hours")
                 put_address_in_dynamo(address)
-                global_futures[address] = executor.submit(run_all_extended, address, alert_event)
+                global_futures[address] = executor.submit(run_all_extended, address, alert_event, web3)
             else:
                 logger.info(f"Address {address} already analyzed {n_times_already_analyzed} times in the last {HOURS_BEFORE_REANALYZE} hours. Skipping")
         logger.info(f"Alert {alert_event.alert.alert_id}:\t{time.time() - t:.10f} s. {len(list_of_addresses)} addresses: {';'.join(list_of_addresses)}")
