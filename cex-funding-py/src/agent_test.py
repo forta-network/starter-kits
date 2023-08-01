@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from forta_agent import create_transaction_event, FindingSeverity, EntityType
+from forta_agent import create_transaction_event, EntityType
 import agent
 from web3_mock import Web3Mock, NEW_EOA, OLD_EOA, NEW_CONTRACT
 

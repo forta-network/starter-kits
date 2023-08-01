@@ -1,7 +1,7 @@
 from os import environ
 import forta_agent
 from hexbytes import HexBytes
-from forta_agent import Finding, FindingType, FindingSeverity, get_json_rpc_url
+from forta_agent import get_json_rpc_url
 from src.constants import CEXES
 from web3 import Web3
 
@@ -35,12 +35,9 @@ def detect_dex_funding(
 
     # alert on funding tx from CEXes
     value = transaction_event.transaction.value
-    for chainId, address, name, threshold in CEXES:
-        if chainId == w3.eth.chainId:
-            if w3.eth.get_transaction_count(
-                Web3.toChecksumAddress(transaction_event.transaction.to),
-                transaction_event.block.number,
-            ) == 0 and not is_contract(w3, transaction_event.transaction.to):
+    if w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number,) == 0 and not is_contract(w3, transaction_event.transaction.to):
+        for chainId, address, name, threshold in CEXES:
+            if chainId == w3.eth.chainId:
                 if address == transaction_event.transaction.from_ and value < threshold:
                     findings.append(
                         CEXFundingFinding(
