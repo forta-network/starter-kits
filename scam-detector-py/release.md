@@ -1,6 +1,6 @@
 # Scam Detector Bot Release Notes
 
-## v2.17.7 (July 31st 2023 - beta, August 1st 2023 - prod (without private key compromise nor ice phishing ML bot nor scammer association))
+## v2.17.7 (July 31st 2023 - beta, August 1st 2023 - prod (without private key compromise, ice phishing ML bot nor pig butchering))
 - merge beta/ prod
 
 ## v2.17.6 (July 26th 2023 - beta)
