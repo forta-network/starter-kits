@@ -4,6 +4,7 @@ import os
 import requests
 import json
 import rlp
+import traceback
 import time
 from io import StringIO
 from web3 import Web3
@@ -12,6 +13,7 @@ import logging
 from datetime import datetime, timedelta
 
 from src.storage import get_secrets
+from src.utils import Utils
 
 class BlockChainIndexer:
 
@@ -111,6 +113,7 @@ class BlockChainIndexer:
                     logging.warning(f"Error getting contract on etherscan for {address}, {chain_id} {data.status_code} {data.content}")
                     count += 1
                     if count > 10:
+                        Utils.ERROR_CACHE.add(Utils.alert_error(f'request etherscan {data.status_code}', "blockchain_indexer_service.get_contracts", ""))
                         break
                     time.sleep(1)
         
@@ -158,10 +161,13 @@ class BlockChainIndexer:
                     for index, row in df.iterrows():
                         contracts.add(row["address"].lower())
                 else:
+                    Utils.ERROR_CACHE.add(Utils.alert_error(f'request zettablock {res.status_code}', "blockchain_indexer_service.get_contracts", ""))
                     logging.warning(f"Error getting contract on zettablock for {address}, {chain_id} {res.status_code} {res.text}")
 
             except Exception as e:
                 logging.warning(f"Error getting contract on zettablock for {address}, {chain_id} {e}")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "blockchain_indexer_service.get_contracts", traceback.format_exc()))
+
 
         logging.info(f"get_contracts for {address} on {chain_id}; returning {len(contracts)}.")
         return contracts

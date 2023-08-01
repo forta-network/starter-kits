@@ -10,17 +10,26 @@ import base64
 import gnupg
 import pandas as pd
 import json
+import traceback
 
 from src.constants import TX_COUNT_FILTER_THRESHOLD
+from src.error_cache import ErrorCache
 
 
 class Utils:
+    ERROR_CACHE = ErrorCache
+
     ETHERSCAN_LABEL_SOURCE_IDS = ['etherscan','0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede']
     FP_MITIGATION_ADDRESSES = set()
     CONTRACT_CACHE = dict()
     BOT_VERSION = None
     TOTAL_SHARDS = None
     IS_BETA = None
+
+    @staticmethod
+    def get_code(w3, address) -> str:
+        code = w3.eth.get_code(Web3.toChecksumAddress(address))
+        return code.hex()
 
     @staticmethod
     def is_contract(w3, addresses) -> bool:
@@ -89,6 +98,10 @@ class Utils:
     @staticmethod
     def update_fp_list(CHAIN_ID: int):
         res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/fp_list.tsv')
+        if res.status_code != 200:
+            logging.warn(f"Failed to update fp_list.tsv: {res.status_code}")
+            Utils.ERROR_CACHE.add(Utils.alert_error(f'request github {res.status_code}.', "utils.update_fp_list", ""))
+
         content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.tsv', 'r').read()
         df_fp = pd.read_csv(io.StringIO(content), sep='\t')
         for index, row in df_fp.iterrows():
@@ -98,9 +111,28 @@ class Utils:
             cluster = row['cluster'].lower()
             Utils.FP_MITIGATION_ADDRESSES.add(cluster)
 
+    @staticmethod
+    def alert_error(error_description: str, error_source: str, error_stacktrace: str) -> Finding:
+
+        labels = []
+        
+        return Finding({
+            'name': 'Scam detector encountered a recoverable error.',
+            'description': f'{error_description}',
+            'alert_id': 'DEBUG-ERROR',
+            'type': FindingType.Info,
+            'severity': FindingSeverity.Info,
+            'metadata': {
+                'error_source': error_source,
+                'error_stacktrace': error_stacktrace
+            },
+            'labels': labels
+        })
 
     @staticmethod
     def is_fp(w3, cluster: str) -> bool:
+        global ERROR_CACHE
+
         etherscan_label = ','.join(Utils.get_etherscan_label(cluster)).lower()
         if not ('attack' in etherscan_label
                 or 'phish' in etherscan_label
@@ -112,13 +144,15 @@ class Utils:
                 or 'fraud' in etherscan_label
                 or '.eth' in etherscan_label
                 or etherscan_label == ''):
-            logging.error(f"Cluster {cluster} etherscan label: {etherscan_label}")
+            logging.info(f"Cluster {cluster} etherscan label: {etherscan_label}")
             return True
 
         tx_count = 0
         try:
             tx_count = Utils.get_max_tx_count(w3, cluster)
-        except Exception as e:
+        except BaseException as e:
+            error_finding = Utils.alert_error(str(e), "Utils.get_max_tx_count", f"{traceback.format_exc()}")
+            Utils.ERROR_CACHE.add(error_finding)
             logging.error(f"Exception in assessing get_transaction_count for cluster {cluster}: {e}")
 
         if tx_count > TX_COUNT_FILTER_THRESHOLD:

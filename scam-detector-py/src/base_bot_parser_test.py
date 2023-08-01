@@ -135,3 +135,21 @@ class TestBaseBotParser:
         alert_event = TestBaseBotParser.generate_alert("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Ice-phishing-web", "description", metadata, labels)
         urls = BaseBotParser.get_scammer_urls(w3,alert_event)
         assert "withdraw-llido.com" in urls, "this should be the url"
+
+    def test_get_scammer_notification_scam(self):
+        metadata = {"message":"HARD SCAM DETECTED\n\nVerify: https://t.me/iTokenEthereum/534392\nWarning issued by iToken - a cloud based token spotter & scam detector.","notifier_eoa":"0xba6e11347856c79797af6b2eac93a8145746b4f9","notifier_name":"🛑scam-warning🛑.eth","scammer_eoa":"0xcc019f779e0bc922e1c04426d36d2e49516378d9"}
+        alert_event = TestBaseBotParser.generate_alert("0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e", "SCAM-NOTIFIER-EOA", "description", metadata)
+        addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
+        assert "0xcc019f779e0bc922e1c04426d36d2e49516378d9" in addresses, "this should be the scammer address"
+
+    def test_get_scammer_notification_victim(self):
+        metadata = {"message":"Your token (USDT) has been transferred to 0x0b5a06fb59743b58900725750aba92a49b1e8a28. Since you have approved your token to a phishing address, we suspect this is a phishing attack. Please see the detailed report https://metasleuth.io/report?report_id=ece8ffac92d1acf629bd202c5b963142 Revoke your approval to the scammer immediately to prevent further loss. Read this document on how to revoke your approval: https://docs.blocksec.com/metadock/features/approval-diagnosis","notifier_eoa":"0x666a3ce3f9438dccd4a885ba5b565f3035984793","notifier_name":"metasleuth911.eth","scammer_eoa":"0x0b5a06fb59743b58900725750aba92a49b1e8a28","victim_eoa":"0x5cb9baaa73c8308c73e0f0d82ffd88af7a6c4a9c"}
+        alert_event = TestBaseBotParser.generate_alert("0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e", "VICTIM-NOTIFIER-EOA", "description", metadata)
+        addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
+        assert "0x0b5a06fb59743b58900725750aba92a49b1e8a28" in addresses, "this should be the scammer address"
+
+    def test_get_ice_phishing_pig_butchering(self):
+        metadata = {"anomalyScore":"0.0004246351283341721","initiator1":"0x55FE002aefF02F77364de339a1292923A15844B8","receiver":"0x55FE002aefF02F77364de339a1292923A15844B8","victim1":"0xeCfc3840216a0177c53219858fAa574688889ad8","victim2":"0xFb6c84F5EA0aF804B34B42E0bCC89c0B10f6ec5B","victim3":"0xa7BF37B2aE73EE323aabCbc4d94A0940e8E9abf5","victim4":"0xa7BF37B2aE73EE323aabCbc4d94A0940e8E9abf5","victim5":"0xF6A82c66323859BA6E53701735d02CbDC4a18166"}
+        alert_event = TestBaseBotParser.generate_alert("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PIG-BUTCHERING", "0x55FE002aefF02F77364de339a1292923A15844B8 received funds through a pig butchering attack", metadata)
+        addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
+        assert "0x55FE002aefF02F77364de339a1292923A15844B8".lower() in addresses, "this should be the scammer address"
