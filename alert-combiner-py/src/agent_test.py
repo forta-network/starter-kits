@@ -710,7 +710,7 @@ class TestAlertCombiner:
         agent.initialize()
 
         findings = agent.emit_manual_finding(w3, du(TEST_TAG, agent.CHAIN_ID), True)
-        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/vxatz/use-dynamodb/alert-combiner-py/manual_alert_list_test.tsv')
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/alert-combiner-py/manual_alert_list_test.tsv')
         content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
         df_manual_entries = pd.read_csv(io.StringIO(content), sep='\t')
         assert len(findings) == len(df_manual_entries), "this should have triggered manual findings"
