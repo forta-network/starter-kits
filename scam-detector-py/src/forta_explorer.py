@@ -106,7 +106,7 @@ class FortaExplorer:
                     else:
                         raise Exception(f"status code: {r.status_code} {r.text}")
                 except Exception as e:
-                    logging.warning(f"Unable to retrieve alerts {r.status_code} , {e}")
+                    logging.warning(f"Unable to retrieve alerts: {e}")
                     logging.warning(f"Sleeping {wait}sec. Count {count}.")
                     old_chunk_size = chunk_size
                     chunk_size = int(chunk_size/2)
