@@ -23,7 +23,7 @@ class TestDEXFunding:
             }
         )
 
-        findings = agent.detect_dex_funding(w3, tx_event)
+        findings = agent.detect_cex_funding(w3, tx_event)
         assert (
             len(findings) == 0
         ), "this should have not triggered a finding as the from is not a CEX"
@@ -44,7 +44,7 @@ class TestDEXFunding:
             }
         )
 
-        findings = agent.detect_dex_funding(w3, tx_event)
+        findings = agent.detect_cex_funding(w3, tx_event)
         assert (
             len(findings) == 0
         ), "this should have not triggered a finding is to a contract"
@@ -65,7 +65,7 @@ class TestDEXFunding:
             }
         )
 
-        findings = agent.detect_dex_funding(w3, tx_event)
+        findings = agent.detect_cex_funding(w3, tx_event)
         assert (
             len(findings) == 0
         ), "this should have not triggered a finding is to an old EOA"
@@ -86,7 +86,7 @@ class TestDEXFunding:
             }
         )
 
-        findings = agent.detect_dex_funding(w3, tx_event)
+        findings = agent.detect_cex_funding(w3, tx_event)
         assert (
             len(findings) == 0
         ), "this should have not triggered a finding as funding amount is too large"
@@ -108,7 +108,7 @@ class TestDEXFunding:
             }
         )
 
-        findings = agent.detect_dex_funding(w3, tx_event)
+        findings = agent.detect_cex_funding(w3, tx_event)
         assert len(findings) == 1, "this should have triggered a finding"
 
         assert (
