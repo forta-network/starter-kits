@@ -156,9 +156,9 @@ The scam detector passes unrecoverable errors to the scan node, which cause a re
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SCAM-CREATOR-APPROVAL | Combination |
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SCAM-TRANSFER | Combination |
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SCAM-CREATOR-TRANSFER | Combination |
-| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PULL-SWEEPTOKEN | Passthrough |
-| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-OPENSEA-PROXY-UPGRADE | Passthrough |
-| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PIG-BUTCHERING | Passthrough |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PULL-SWEEPTOKEN | PassThrough |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-OPENSEA-PROXY-UPGRADE | PassThrough |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PIG-BUTCHERING | PassThrough |
 | 0x33faef3222e700774af27d0b71076bfa26b8e7c841deb5fb10872a78d1883dba | sleep minting | SLEEPMINT-3 | Combination |
 | 0x47b86137077e18a093653990e80cb887be98e7445291d8cf811d3b2932a3c4d2 | aztec bot | AK-AZTEC-PROTOCOL-DEPOSIT-EVENT | Combination |
 | 0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848 | scammer label propagation | SCAMMER-LABEL-PROPAGATION-2 | PassThrough |

@@ -620,7 +620,7 @@ def in_test_state() -> bool:
 def get_manual_list() -> pd.DataFrame:
     content = open('manual_alert_list_test.tsv', 'r').read() if in_test_state() else open('manual_alert_list.tsv', 'r').read()
     if not in_test_state():
-        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/scam-detector-2_17/scam-detector-py/manual_alert_list.tsv')
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/manual_alert_list.tsv')
         logging.info(f"Manual finding: made request to fetch manual alerts: {res.status_code}")
         content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
 
