@@ -651,6 +651,9 @@ def emit_manual_finding(w3, test = False) -> list:
             if chain_id != CHAIN_ID:
                 logging.info("Manual finding: Manual entry doesnt match chain ID.")
                 continue
+            if chain_id != CHAIN_ID:
+                logging.info("Manual finding: Manual entry doesnt match chain ID.")
+                continue
 
             try:
                 entity_type = row['EntityType']

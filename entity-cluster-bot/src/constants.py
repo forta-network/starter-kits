@@ -13,7 +13,8 @@ S3_BUCKET= "prod-research-bot-data"
 S3_REGION="us-east-1"
 
 DYNAMO_TABLE= "prod-research-bot-data"
-DEV_DYNAMO_TABLE= "dev-prod-research-bot-data"
+TEST_TAG= "test"
+PROD_TAG= "prod"
 DYNAMO_REGION="us-east-1"
 DYNAMODB_PRIMARY_KEY = 'itemId'
 DYNAMODB_SORT_KEY = 'sortKey'
