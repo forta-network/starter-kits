@@ -1,6 +1,29 @@
 # Scam Detector Bot Release Notes
 
-## v2.16.1 (July 6th 2023 - beta)
+## v2.17.7 (July 31st 2023 - beta, August 1st 2023 - prod (without private key compromise, ice phishing ML bot nor pig butchering))
+- merge beta/ prod
+
+## v2.17.6 (July 26th 2023 - beta)
+- integrated pig butchering alert
+
+## v2.17.5 (July 14th 2023 - beta)
+- reconfigured PKC bot
+
+## v2.17.4 (July 14th 2023 - beta)
+- integrated scam notifier bot
+
+## v2.17.3 (July 14th 2023 - beta)
+- change error handling to emit finding as opposed to raising an exception (beta version only)
+
+## v2.17.2 (July 14th 2023 - beta)
+- better error handling around manual lists
+- fix finding null issue
+
+## v2.17.0 (July 11th 2023 - beta)
+- add finding around error conditions
+- add ability to alert on manual provided URLs and contract signatures
+
+## v2.16.1 (July 11th 2023 - beta)
 - ice phishing ML FP fix; increating threshold to 0.89 to mitigate a class of FPs
 
 ## v2.16.0 (July 6th 2023 - beta)
@@ -14,8 +37,6 @@
 
 ## v2.15.4 (July 12th prod (without private key compromise nor ice phishing ML bot))
 - additional manual list processing error handling
-
-## v2.15.4 (July 12th prod (without private key compromise nor ice phishing ML bot))
 - ice phishing ML FP fix; increating threshold to 0.89 to mitigate a class of FPs
 - fixed issue around repeated manual finding emission
 

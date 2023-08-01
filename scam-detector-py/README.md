@@ -40,6 +40,7 @@ Threat categories are as follows:
 - native-ice-phishing-social-engineering - Fired when alert combination is observed that points to an native ice phishing involving social engineering techniques (e.g. SecurityUpdate() function sig in the input data field)
 - native-ice-phishing - Fired when alert combination is observed that points to an native ice phishing without social engineering component
 - hard-rug-pull - Fired when a contract with hard rug pull techniques is identified
+- pig-butchering - Fired when a pig butchering attack has been identified; pig butchering involves tricking a user into making a deposit (usually USDT/USDC) on fake investment sites after grooming the target.
 - soft-rug-pull - Fired when a contract with soft rug pull techniques is identified
 - rake-token - Fired when a contract with a rake is identified
 - impersonating-token - Fired when a token contract has been identified that is impersonating a known established token (e.g. USDC or USDT)
@@ -50,6 +51,7 @@ Threat categories are as follows:
 - similar contract - Fired when a similar contract to a previously identified scammer contract has been identified
 - scammer association - Fired when an EOA is associated with a known scammer account (e.g. receiving or sending funds)
 - scammer-deployed-contract - When a known scammer deploys a contract
+- unknown - Scam has been identified, but threat category couldnt be determined
 
 
 Additional information can be found on the label for provenance purposes:
@@ -91,6 +93,9 @@ When a false positive is observed, the scam detector will remove the previously 
     'confidence': 0.8,
     'remove': "true"
 ```
+
+## Error handling
+The scam detector passes unrecoverable errors to the scan node, which cause a restart. These errors are visible in the scam detector logs. Recoverable errors or temporary errors are emitted through a special DEBUG-ERROR finding. These DEBUG-ERROR findings can be analyzed through the graphQL API. 
 
 ## Base Bots Utilized By Scam Detector
 
@@ -151,9 +156,9 @@ When a false positive is observed, the scam detector will remove the previously 
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SCAM-CREATOR-APPROVAL | Combination |
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SCAM-TRANSFER | Combination |
 | 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-SCAM-CREATOR-TRANSFER | Combination |
-| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PULL-SWEEPTOKEN | Passthrough |
-| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-OPENSEA-PROXY-UPGRADE | Passthrough |
-| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PIG-BUTCHERING | Passthrough |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PULL-SWEEPTOKEN | PassThrough |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-OPENSEA-PROXY-UPGRADE | PassThrough |
+| 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14 | ice phishing | ICE-PHISHING-PIG-BUTCHERING | PassThrough |
 | 0x33faef3222e700774af27d0b71076bfa26b8e7c841deb5fb10872a78d1883dba | sleep minting | SLEEPMINT-3 | Combination |
 | 0x47b86137077e18a093653990e80cb887be98e7445291d8cf811d3b2932a3c4d2 | aztec bot | AK-AZTEC-PROTOCOL-DEPOSIT-EVENT | Combination |
 | 0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848 | scammer label propagation | SCAMMER-LABEL-PROPAGATION-2 | PassThrough |
@@ -196,13 +201,15 @@ When a false positive is observed, the scam detector will remove the previously 
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION | Combination |
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE | Combination |
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull | SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION && SOFT-RUG-PULL-SUS-POOL-REMOVAL | PassThrough |
-| 0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03 | private key compromise | PKC-2 | PassThrough |
+| 0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03 | private key compromise | PKC-3 | PassThrough |
+| 0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03 | private key compromise | PKC-1 | Combination |
+| 0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03 | private key compromise | PKC-2 | Combination |
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | omitted | Combination | 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Ice-phishing-web | PassThrough | 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Fraudulent-nft-order | PassThrough | 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Ice-phishing | PassThrough | 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Native-ice-phishing | PassThrough | 
 | 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534 | Blocksec Phishing Bot | Address-poisoning | PassThrough | 
-| 0x4ca56cfab479c4d41cf382383f6932f4bd8bfc6428bdeba82b634f7bf83ad333 | Ice Phishing ML Model | EOA-PHISHING-SCAMMER | PassThrough |
-
-
+| 0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e | Ice Phishing ML Model | EOA-PHISHING-SCAMMER | PassThrough |
+| 0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e | Scam Notifier | VICTIM-NOTIFIER-EOA | PassThrough |
+| 0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e | Scam Notifier | SCAM-NOTIFIER-EOA | PassThrough |
