@@ -1,0 +1,4 @@
+-r requirements.txt
+pytest>=6.2.5
+pytest-env>=0.6.2
+eth-tester>=0.6.0

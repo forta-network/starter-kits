@@ -1,13 +1,28 @@
 {
   "name": "malicious-token-contract-ml",
   "version": "1.0.1",
+  "repository": "https://github.com/forta-network/starter-kits/tree/main/malicious-token-contract-ml-py",
   "description": "Malicious Token Contract Detection Bot",
   "chainIds": [
-    1, 56, 137, 43114, 42161, 10, 250
+    1,
+    56,
+    137,
+    43114,
+    42161,
+    10,
+    250
   ],
   "chainSettings": {
     "1": {
       "shards": 3,
+      "target": 2
+    },
+    "56": {
+      "shards": 5,
+      "target": 2
+    },
+    "137": {
+      "shards": 5,
       "target": 2
     },
     "default": {
@@ -23,12 +38,17 @@
     "tx": "forta-agent run --tx",
     "block": "forta-agent run --block",
     "range": "forta-agent run --range",
+    "alert": "forta-agent run --alert",
+    "sequence": "forta-agent run --sequence",
     "file": "forta-agent run --file",
     "publish": "forta-agent publish",
+    "info": "forta-agent info",
+    "logs": "forta-agent logs",
     "push": "forta-agent push",
     "disable": "forta-agent disable",
     "enable": "forta-agent enable",
     "keyfile": "forta-agent keyfile",
+    "stake": "forta-agent stake",
     "test": "python3 -m pytest"
   },
   "dependencies": {

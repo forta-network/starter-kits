@@ -1,6 +1,6 @@
 {
   "name": "phishing-scam-detection-ml-bot",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/phishing-scam-ml-py#ethereum-phishing-scam-detection-ml-model",
   "description": "Ethereum Phishing Scam Detection ML Model",
   "chainIds": [
