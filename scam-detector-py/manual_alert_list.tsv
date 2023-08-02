@@ -3284,3 +3284,6 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 7/12/23	Code	566572696669636174696f6e2e	@cseifert	N/A	1	sleep drop	SleepDrop Signature #1
 7/21/23	Url	https://rewards-uniswapx.org	@samczsun	https://github.com/MetaMask/eth-phishing-detect/pull/13088/files		Native Ice Phishing	
 7/21/23	Url	https://bounty-uniswap.com	@samczsun	https://github.com/MetaMask/eth-phishing-detect/pull/13088/files		Native Ice Phishing	
+8/2/23	Address	0xa7bf48749d2e4aa29e3209879956b9baa9e90570	@tayvano_	https://twitter.com/tayvano_/status/1686418992599273472?s=20		Address Poisoning	
+8/2/23	Address	0x3dC62E346843a418Db2D4e3745D2279b9FAfE317	@tayvano_	https://twitter.com/tayvano_/status/1686418992599273472?s=20		Address Poisoning	
+8/2/23	Address	0x9546122362B477dF74cAF55c1F2742f534826CDa	@tayvano_	https://twitter.com/tayvano_/status/1686418992599273472?s=20		Address Poisoning	
