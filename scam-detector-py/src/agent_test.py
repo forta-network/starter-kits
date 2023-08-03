@@ -280,7 +280,7 @@ class TestScamDetector:
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
-        bot_id = "0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732"
+        bot_id = "0x8732dbb3858d65844d940f5de3705b4161c05258bdfedf1ff5afb6683e1274e5"
         alert_id = "NFT-WASH-TRADE"
         description = "test Wash Trade on test."
         metadata = {"buyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","sellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}
@@ -292,7 +292,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-WASH-TRADE", "should be wash trading finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
 
 
@@ -312,7 +312,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-IMPERSONATING-TOKEN", "should be impersonated token finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
 
 
@@ -333,7 +333,7 @@ class TestScamDetector:
         assert finding.description == "URL withdraw-llido.com likely involved in a scam (SCAM-DETECTOR-ICE-PHISHING, passthrough)"
         assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
         assert len(finding.labels) == 1, "should have one label"
         assert finding.labels[0].entity_type == EntityType.Url, "should be URL label"
@@ -358,7 +358,27 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-HARD-RUG-PULL", "should be hard rug pull finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
+
+    
+
+    def test_detect_gas_minting(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x9c1819037bc127d09da00f418e06a8d11d7d41ce1b6e20cc9de0e525707869ee"
+        alert_id = "GAS-ANOMALOUS-LARGE-CONSUMPTION"
+        description = "Suspicious function with anomalous gas detected: 14246778"
+        metadata = {"contractAddress":"\"0xe5e6138e3a6b6ef85b9d2bad287138715ebfa20b\"","deployer":"\"0x32e9f1638a05967c8a30fb1e9febd27c38f29f80\"","function":"\"MethodId is 0x095ea7b3\"","mean":"\"77781.69054054054054054056\"","threshold":"\"6537343.74973840585266180776\"","value":"\"14246778\""}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-GAS-MINTING", "should be hard rug pull finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert len(finding.labels) > 1, "labels should not be empty"
 
 
     def test_detect_hard_rug_pull_no_repeat_finding(self):
@@ -377,7 +397,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-HARD-RUG-PULL", "should be hard rug pull finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
         findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=False),"passthrough")
         assert len(findings) == 0, "this should have not triggered another finding"
@@ -397,7 +417,7 @@ class TestScamDetector:
         assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-HARD-RUG-PULL", "should be hard rug pull finding"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
         assert finding.labels[0].entity == '0x8181bad152a10e7c750af35e44140512552a5cd9'
 
         bot_id = "0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11"
@@ -411,7 +431,7 @@ class TestScamDetector:
         assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA for the different alert_id"
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-RAKE-TOKEN", "should be hard rug pull finding"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
         assert finding.labels[0].entity == '0x8181bad152a10e7c750af35e44140512552a5cd9'
 
 
@@ -431,7 +451,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-RAKE-TOKEN", "should be hard rug pull finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
         assert finding.labels[0].entity == '0xa0f80e637919e7aad4090408a63e0c8eb07dfa03'
         assert finding.labels[0].label == 'scammer'
         found_contract = False
@@ -459,7 +479,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
         assert finding.labels[0].entity == '0x0000553f880ffa3728b290e04e819053a3590000'
         assert finding.labels[0].label == 'scammer'
         found_contract = False
@@ -489,7 +509,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
         assert finding.labels[0].entity == '0x0000553f880ffa3728b290e04e819053a3590000'
         assert finding.labels[0].label == 'scammer'
         found_contract = False
@@ -515,7 +535,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-SOFT-RUG-PULL", "should be hard rug pull finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
         assert finding.labels[0].entity == '0xa3fe18ced8d32ca601e3b4794856c85f6f56a176'
         assert finding.labels[0].label == 'scammer'
         found_contract = False
@@ -542,7 +562,7 @@ class TestScamDetector:
         finding = findings[0]
         assert "SCAM-DETECTOR-ADDRESS-POISON" in finding.alert_id, "should be address poison finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
 
 
@@ -562,7 +582,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING", "should be soc eng native ice phishing finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
     
     def test_detect_ice_phishing_passthrough(self):
@@ -581,7 +601,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
 
 
@@ -601,7 +621,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-PIG-BUTCHERING", "should be pig butchering finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
 
     def test_detect_fraudulent_seaport_orders(self):
@@ -620,7 +640,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER", "should be nft order finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
 
     def test_detect_private_key_compromise(self):
@@ -639,7 +659,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "should be private key compromise finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
 
     def test_detect_impersonating_token(self):
@@ -658,7 +678,28 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-IMPERSONATING-TOKEN", "should be impersonating token finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
+
+
+    def test_detect_spam_phish_token(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0xd45f7183783f5893f4b8e187746eaf7294f73a3bb966500d237bd0d5978673fa"
+        alert_id = "PHISHING-TOKEN-NEW"
+        description = "The ERC-1155 token 2000$ USDC (Voucher) 0xe5e6138e3a6b6ef85b9d2bad287138715ebfa20b shows signs of phishing behavior. Confidence: 0.9. Potential phishing URLs: https://circleusd.co/."
+        metadata = {"analysis":"{\"name\":\"2000$ USDC\",\"symbol\":\"Voucher\",\"urls\":[\"https://circleusd.co/.\"],\"descriptionByTokenId\":{\"0\":\"Congratulations! You can exchange this NFT voucher for $2000 USDC at the official site: https://circleusd.co/.\"}}","confidence":"0.8999999999999999","tokenAddress":"0xe5e6138e3a6b6ef85b9d2bad287138715ebfa20b","tokenDeployer":"0x32e9f1638a05967c8a30fb1e9febd27c38f29f80","tokenStandard":"ERC-1155","urls":"[\"https://circleusd.co/.\"]"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be impersonating token finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
+        assert len(finding.labels) == 3, "should have 3 labels; for deployer, contract and url"
+
 
     def test_detect_scam_notifier(self):
         agent.initialize()
@@ -676,7 +717,7 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-UNKNOWN", "should be scammer unknown finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
 
     def test_detect_impersonating_token_with_error(self):
@@ -988,7 +1029,7 @@ class TestScamDetector:
         assert len(findings) > 0, "this should have triggered FP findings"
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be FP mitigation finding"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
     def test_get_similar_contract_labels(self):
         agent.clear_state()
@@ -1114,9 +1155,9 @@ class TestScamDetector:
 
         assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
         finding = findings[0]
-        assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
+        assert finding.alert_id == "SCAM-DETECTOR-UNKNOWN", "should be unknown finding"
         assert finding.metadata is not None, "metadata should not be empty"
-        assert finding.labels is not None, "labels should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
         assert finding.labels[0].entity == '0xc6f5341d0cfea47660985b1245387ebc0dbb6a12'
         assert finding.labels[0].label == 'scammer'
         assert finding.labels[0].confidence == 0.659

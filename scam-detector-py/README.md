@@ -129,7 +129,8 @@ The scam detector passes unrecoverable errors to the scan node, which cause a re
 | 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0 | Native Ice Phishing Bot | NIP-4 | PassThrough |
 | 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0 | Native Ice Phishing Bot | NIP-5 | PassThrough |
 | 0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0 | Native Ice Phishing Bot | NIP-6 | PassThrough |
-| 0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732 | Wash trading bot | NFT-WASH-TRADE | PassThrough | 
+| 0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732 | Wash trading bot | NFT-WASH-TRADE | Combination | 
+| 0x8732dbb3858d65844d940f5de3705b4161c05258bdfedf1ff5afb6683e1274e5 | Wash trading bot | NFT-WASH-TRADE | PassThrough | 
 | 0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560 | contract similarity bot | NEW-SCAMMER-CONTRACT-CODE-HASH | PassThrough |
 | 0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15 | hard rug pull bot | HARD-RUG-PULL-1 | PassThrough |
 | 0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4 | soft rug pull bot | SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION | PassThrough |
@@ -213,3 +214,5 @@ The scam detector passes unrecoverable errors to the scan node, which cause a re
 | 0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e | Ice Phishing ML Model | EOA-PHISHING-SCAMMER | PassThrough |
 | 0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e | Scam Notifier | VICTIM-NOTIFIER-EOA | PassThrough |
 | 0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e | Scam Notifier | SCAM-NOTIFIER-EOA | PassThrough |
+| 0xd45f7183783f5893f4b8e187746eaf7294f73a3bb966500d237bd0d5978673fa | Spam Detector | PHISHING-TOKEN-NEW | PassThrough |
+| 0x9c1819037bc127d09da00f418e06a8d11d7d41ce1b6e20cc9de0e525707869ee | Gas Minting Detector | GAS-ANOMALOUS-LARGE-CONSUMPTION | PassThrough |

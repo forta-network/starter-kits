@@ -1,5 +1,12 @@
 # Scam Detector Bot Release Notes
 
+## v2.18.0 (August 3rd - beta)
+- swapped wash trading bot to community maintained bot
+- updated RPC endpoints to utilized paid RPC endpoints increasing reliability of the bot
+- integrated phish token alert from spam detection bot
+- incorporated gas minting bot
+
+
 ## v2.17.7 (July 31st 2023 - beta, August 1st 2023 - prod (without private key compromise, ice phishing ML bot nor pig butchering))
 - merge beta/ prod
 

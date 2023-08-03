@@ -10,11 +10,14 @@ import base64
 import gnupg
 import pandas as pd
 import json
+import os
 import traceback
+from web3 import Web3
+from forta_agent import get_json_rpc_url
 
 from src.constants import TX_COUNT_FILTER_THRESHOLD
 from src.error_cache import ErrorCache
-
+from src.storage import get_secrets
 
 class Utils:
     ERROR_CACHE = ErrorCache
@@ -25,6 +28,41 @@ class Utils:
     BOT_VERSION = None
     TOTAL_SHARDS = None
     IS_BETA = None
+
+    RPC_ENDPOINT = None
+
+    @staticmethod
+    def get_rpc_endpoint():
+        if Utils.RPC_ENDPOINT is None:
+            web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
+
+            chain_id = -1
+            try:
+                chain_id_temp = os.environ.get('FORTA_CHAIN_ID')
+                if chain_id_temp is None:
+                    chain_id = web3.eth.chain_id
+                else:
+                    chain_id = int(chain_id_temp)
+            except Exception as e:
+                raise e
+
+            secrets = get_secrets()
+            if chain_id == 1:
+                url = secrets['jsonRpc']['ethereum']
+            elif chain_id == 137:
+                url = secrets['jsonRpc']['polygon']
+            elif chain_id == 10:
+                url = secrets['jsonRpc']['optimism']
+            elif chain_id == 42161:
+                url = secrets['jsonRpc']['arbitrum']
+            elif chain_id == 43114:
+                url = secrets['jsonRpc']['avalanche']
+            else:
+                url = get_json_rpc_url()
+
+            Utils.RPC_ENDPOINT = Web3(Web3.HTTPProvider(url))
+
+        return Utils.RPC_ENDPOINT
 
     @staticmethod
     def get_code(w3, address) -> str:

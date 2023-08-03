@@ -14,7 +14,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 
 import forta_agent
-from forta_agent import get_json_rpc_url,  Finding, FindingType, FindingSeverity
+from forta_agent import Finding, FindingType, FindingSeverity
 from web3 import Web3
 
 from src.constants import (BASE_BOTS, ALERTED_CLUSTERS_KEY, ALERTED_ENTITIES_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
@@ -30,7 +30,7 @@ from src.base_bot_parser import BaseBotParser
 from src.l2_cache import L2Cache
 from src.utils import Utils
 
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
+web3 = Utils.get_rpc_endpoint()
 block_chain_indexer = BlockChainIndexer()
 forta_explorer = FortaExplorer()
 
@@ -520,8 +520,8 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
     scammer_urls_dict = BaseBotParser.get_scammer_urls(w3, alert_event)
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got base bot alert (passthrough); extracted {len(scammer_urls_dict.keys())} scammer urls.")
     for scammer_url in scammer_urls_dict.keys():
-        scammer_address = scammer_urls_dict[scammer_url]['scammer'] if 'scammer' in scammer_urls_dict[scammer_url] else ""
-        if scammer_address == "": # this implies we are dealing with a url which doesnt have a scammer address; if it does, it has already been handled above
+        scammer_address = scammer_urls_dict[scammer_url]['scammer'] if 'scammer' in scammer_urls_dict[scammer_url] else scammer_urls_dict[scammer_url]['tokenDeployer'] if 'tokenDeployer' in scammer_urls_dict[scammer_url] else scammer_urls_dict[scammer_url]['scammer'] if 'scammer' in scammer_urls_dict[scammer_url] else ""
+        if scammer_address == "": # this implies we are dealing with a url which doesnt have a scammer address and we emit a finding; if it does, it has already been handled above and we dont emit a finding
             alert_id_target = alert_target(alert_event, BASE_BOTS)
             alert_id = "SCAM-DETECTOR-ADDRESS-POISONER" if scammer_urls_dict[scammer_url]["address_information"] == "poisoner" else alert_id_target
             if already_alerted(scammer_url, alert_id, "passthrough"):
@@ -568,6 +568,8 @@ def emit_contract_similarity_finding(w3, alert_event: forta_agent.alert_event.Al
                     finding = ScamDetectorFinding.alert_similar_contract(block_chain_indexer, forta_explorer, alert_event.alert.alert_id, alert_event.alert_hash, alert_event.alert.metadata, CHAIN_ID)
                     if(finding is not None):
                         findings.append(finding)
+                    else:
+                        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - finding is none due to original threat category not being in list flagged for propagation")
                 else:
                     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} already alerted")
             else:
