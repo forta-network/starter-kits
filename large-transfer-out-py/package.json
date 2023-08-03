@@ -24,10 +24,6 @@
     "137": {
       "shards": 3,
       "target": 3
-    },
-    "1": {
-      "shards": 3,
-      "target": 3
     }
   },
   "scripts": {
