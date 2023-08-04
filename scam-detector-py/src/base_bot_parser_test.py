@@ -168,7 +168,7 @@ class TestBaseBotParser:
 
     def test_get_gas_minting(self):
         metadata = {"contractAddress":"\"0xe3e1147acd39687a25ca7716227c604500f5c31a\"","deployer":"\"0xdfb44e29fdf01adb886fbf9bc1521f79253b3176\"","function":"\"MethodId is 0x095ea7b3\"","mean":"\"77781.69054054054054054056\"","threshold":"\"6537343.74973840585266180776\"","value":"\"14246778\""}
-        alert_event = TestBaseBotParser.generate_alert("0x9c1819037bc127d09da00f418e06a8d11d7d41ce1b6e20cc9de0e525707869ee", "GAS-ANOMALOUS-LARGE-CONSUMPTION", "Suspicious function with anomalous gas detected: 14246778", metadata)
+        alert_event = TestBaseBotParser.generate_alert("0x715c40c11a3e24f3f21c3e2db1c109bba358ccfcbceada84ee1e0f4dba4410e7", "GAS-ANOMALOUS-LARGE-CONSUMPTION", "Suspicious function with anomalous gas detected: 14246778", metadata)
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
         assert "0xdfb44e29fdf01adb886fbf9bc1521f79253b3176" in addresses, "this should be the attacker address"
         assert "0xe3e1147acd39687a25ca7716227c604500f5c31a".lower() in addresses["0xdfb44e29fdf01adb886fbf9bc1521f79253b3176"]["scammer-contracts"]

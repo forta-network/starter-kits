@@ -366,7 +366,7 @@ class TestScamDetector:
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
-        bot_id = "0x9c1819037bc127d09da00f418e06a8d11d7d41ce1b6e20cc9de0e525707869ee"
+        bot_id = "0x715c40c11a3e24f3f21c3e2db1c109bba358ccfcbceada84ee1e0f4dba4410e7"
         alert_id = "GAS-ANOMALOUS-LARGE-CONSUMPTION"
         description = "Suspicious function with anomalous gas detected: 14246778"
         metadata = {"contractAddress":"\"0xe5e6138e3a6b6ef85b9d2bad287138715ebfa20b\"","deployer":"\"0x32e9f1638a05967c8a30fb1e9febd27c38f29f80\"","function":"\"MethodId is 0x095ea7b3\"","mean":"\"77781.69054054054054054056\"","threshold":"\"6537343.74973840585266180776\"","value":"\"14246778\""}
