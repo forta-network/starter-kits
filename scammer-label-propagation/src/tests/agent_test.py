@@ -190,9 +190,7 @@ class TestScammerLabelPropagationAgent(unittest.TestCase):
             findings += agent.handle_block(block_event)
     
     def test_run_all_extended(self):
-        # central_node = '0x29488E5fD6bF9B3cc98A9d06A25204947ccCBE4D'  # 0x29488E5fD6bF9B3cc98A9d06A25204947ccCBE4D
-        central_node = '0x63605e53d422c4f1ac0e01390ac59aaf84c44a51'
-        # central_node = '0xb547CF047D7ecD65e199c9c77f1938a95da5dc61'  # 0x29488E5fD6bF9B3cc98A9d06A25204947ccCBE4D
+        central_node = '0x000006d683610e61ad9ee4b487fae3904b392b9e'
         alert = {"alert":
                  {"name": "x",
                  "hash": "0xabc",
@@ -209,6 +207,35 @@ class TestScammerLabelPropagationAgent(unittest.TestCase):
                  }
              }
         agent.run_all_extended(central_node, create_alert_event(alert))
+
+    def test_address_more_predictions(self):
+        central_node = '0x872f8a8847129c7c3de5ad4cc8e9b2468763dbdf'
+        agent.initialize()
+        alert = create_alert_event(
+            {"alert":
+                {"name": "x",
+                 "hash": "0xabc",
+                 "description": "description",
+                 "alertId": "alert",
+                 "source":
+                    {"bot": {'id': "0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23"}},
+                 "labels": [{
+                        'entity': central_node,
+                        'label': 'Attacker',
+                        'confidence': 1,
+                        'entity_type': 'Address',
+                        'metadata': {'address_type': 'EOA'}
+                    }]
+                 }
+             })
+        _ = agent.handle_alert(alert)
+        block_event = create_block_event(
+            {'block': {'hash': '0xa', 'number': 1}})
+        findings = []
+        while len(agent.global_futures) > 0:
+            time.sleep(30)
+            findings = agent.handle_block(block_event)
+        assert len(findings) == 0, "The model predicts more than 5 addresses, and thus should be rendered invalid"
 
 
 

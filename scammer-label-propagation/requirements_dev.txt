@@ -5,3 +5,8 @@ xgboost
 matplotlib
 seaborn
 ipykernel
+dask
+dask[distributed]
+bokeh!=3.0.*,>=2.4.2
+imbalanced-learn
+```
