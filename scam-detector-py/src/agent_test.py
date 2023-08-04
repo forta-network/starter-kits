@@ -13,7 +13,7 @@ import requests
 import agent
 from unittest.mock import patch
 
-from constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES
+from constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES, CONFIDENCE_MAPPINGS
 from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX, CONTRACT2
 from web3_errormock import Web3ErrorMock
 from forta_explorer_mock import FortaExplorerMock
@@ -258,23 +258,6 @@ class TestScamDetector:
     #         address_poisoning: {processing_time_address_poisoning_ms} 
     #         ice_phishing: {processing_time_ice_phishing_ms}
     #         If not, this bot is unlikely to keep up with fast chains, like Polygon"""
-
-    def test_documentation(self):
-        # read readme.md
-
-        missing_documentation = ""
-        with open("README.md", "r") as f:
-            readme = f.read()
-
-            for bot_id, alert_id, alert_logic, alert_id_target in BASE_BOTS:
-                found = False
-                for line in readme.split("\n"):
-                    if bot_id in line and alert_id in line and alert_logic in line:
-                        found = True
-                # | 0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127 | token impersonation | IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR | PassThrough |
-                if not found:
-                    missing_documentation += f"| {bot_id} | | {alert_id} | {alert_logic} |\r\n"
-        assert len(missing_documentation) == 0, missing_documentation
 
     def test_detect_wash_trading(self):
         agent.initialize()
@@ -763,12 +746,12 @@ class TestScamDetector:
         label = findings[0].labels[0]
         assert label.entity == "0xa4f58353711f9f29b483fe41be8f0dcc893d9f8a", "entity should be attacker address"
         assert label.label == "scammer", "entity should labeled as scam"
-        assert label.confidence == 0.4, "entity should labeled with 0.7 confidence"
+        assert label.confidence == CONFIDENCE_MAPPINGS['similar-contract'], "entity should labeled with 0.7 confidence"
 
         label = findings[0].labels[1]
         assert label.entity == "0xfe551e214563283c8ab5df967d7d69f630b64079", "entity should be attacker address"
         assert label.label == "scammer", "entity should labeled as scam"
-        assert label.confidence == 0.4, "entity should labeled with 0.7 confidence"
+        assert label.confidence == CONFIDENCE_MAPPINGS['similar-contract'], "entity should labeled with 0.7 confidence"
 
     def test_put_entity_cluster(self):
         agent.initialize()

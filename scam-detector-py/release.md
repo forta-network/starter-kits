@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## v2.18.1 (August 4th - beta)
+- updated README
+- updated confidence values based on July precision measurements
+
 ## v2.18.0 (August 3rd - beta)
 - swapped wash trading bot to community maintained bot
 - updated RPC endpoints to utilized paid RPC endpoints increasing reliability of the bot
