@@ -37,3 +37,5 @@ HOURS_BEFORE_REANALYZE = 48
 MODEL_PATH = 'model.pth'
 # Percentage of nodes that can be labeled as attackers before we bring down the severity
 PERCENTAGE_ATTACKERS = 0.15
+# Max number of findings before we consider the model was defect for that address and cancel all of them
+MAX_FINDINGS_PER_ADDRESS = 5

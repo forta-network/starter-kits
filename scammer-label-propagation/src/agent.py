@@ -9,7 +9,7 @@ from forta_agent import get_json_rpc_url, Finding
 from concurrent.futures import ThreadPoolExecutor
 
 from src.main import run_all
-from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, MAX_FINDINGS, HOURS_BEFORE_REANALYZE, PERCENTAGE_ATTACKERS
+from src.constants import attacker_bots, ATTACKER_CONFIDENCE, N_WORKERS, MAX_FINDINGS, HOURS_BEFORE_REANALYZE, PERCENTAGE_ATTACKERS, MAX_FINDINGS_PER_ADDRESS
 from src.storage import get_secrets, dynamo_table
 
 
@@ -52,32 +52,36 @@ def run_all_extended(central_node, alert_event, web3):
     logger.info(f"{central_node}:\t{graph_statistics} new attackers found")
     # if attackers_df.shape[0] > MAX_FINDINGS:
     #     logger.info(f"{central_node}:\tToo many attackers found: {attackers_df.shape[0]}")
-    if attackers_df.shape[0] >= int(PERCENTAGE_ATTACKERS * graph_statistics['n_nodes']):
-        logger.info(f"{central_node}:\tToo many attackers found in relation to the graph. Lowering confidencce: {attackers_df.shape[0]}")
-        finding_dict['severity'] = forta_agent.FindingSeverity.Medium
-    for row_idx in range(attackers_df.shape[0]):
-        attacker_info = attackers_df.iloc[row_idx]
-        logger.info(f'{central_node}:\tNew attacker info: {attacker_info}')
-        metadata = {
-                'central_node': central_node,
-                'central_node_alert_id': alert_event.alert.alert_id,
-                'central_node_alert_name': alert_event.alert.name,
-                'central_node_alert_hash': alert_event.alert.hash,
-                'graph_statistics': str(graph_statistics),
-                'model_confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
+    # if attackers_df.shape[0] >= int(PERCENTAGE_ATTACKERS * graph_statistics['n_nodes']):
+    #     logger.info(f"{central_node}:\tToo many attackers found in relation to the graph. Lowering confidencce: {attackers_df.shape[0]}")
+    #     finding_dict['severity'] = forta_agent.FindingSeverity.Medium
+    # We will only consider the model as working if it has less or equal than MAX_FINDINGS_PER_ADDRESS findings. Otherwise we remove all findings
+    if attackers_df.shape[0] <= MAX_FINDINGS_PER_ADDRESS:
+        for row_idx in range(attackers_df.shape[0]):
+            attacker_info = attackers_df.iloc[row_idx]
+            logger.info(f'{central_node}:\tNew attacker info: {attacker_info}')
+            metadata = {
+                    'central_node': central_node,
+                    'central_node_alert_id': alert_event.alert.alert_id,
+                    'central_node_alert_name': alert_event.alert.name,
+                    'central_node_alert_hash': alert_event.alert.hash,
+                    'graph_statistics': str(graph_statistics),
+                    'model_confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
+                }
+            label_dict = {
+                'entity': attacker_info.name,
+                'label': 'scammer-eoa',
+                'confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
+                'entity_type': forta_agent.EntityType.Address,
+                'metadata': metadata
             }
-        label_dict = {
-            'entity': attacker_info.name,
-            'label': 'scammer-eoa',
-            'confidence': attacker_info['n_predicted_attacker']/10 * attacker_info['mean_probs_attacker'],
-            'entity_type': forta_agent.EntityType.Address,
-            'metadata': metadata
-        }
-        finding_dict['labels'] = [forta_agent.Label(label_dict)]
-        finding_dict['metadata'] = metadata
-        finding_dict['description'] = f"{attacker_info.name} marked as scammer by label propagation"
-        finding_dict['addresses'] = [attacker_info.name, central_node]
-        all_findings_list.append(Finding(finding_dict))
+            finding_dict['labels'] = [forta_agent.Label(label_dict)]
+            finding_dict['metadata'] = metadata
+            finding_dict['description'] = f"{attacker_info.name} marked as scammer by label propagation"
+            finding_dict['addresses'] = [attacker_info.name, central_node]
+            all_findings_list.append(Finding(finding_dict))
+    else:
+        logger.info(f"{central_node}:\tToo many attackers found: {attackers_df.shape[0]}. Not adding any findings")
     if alert_event.alert.alert_id in ['SCAM-DETECTOR-NATIVE-ICE-PHISHING']:
         logger.info(f"{central_node}:\tAlert {alert_event.alert.alert_id} is a native ice phishing alert. Not running global model")
         return all_findings_list
@@ -88,32 +92,35 @@ def run_all_extended(central_node, alert_event, web3):
     finding_dict_global['description'] = 'Address marked as scammer by label propagation (global model)'
     # Restarting severity
     finding_dict_global['severity'] = forta_agent.FindingSeverity.High
-    if attackers_df_global.shape[0] >= int(PERCENTAGE_ATTACKERS * graph_statistics['n_nodes']):
-        logger.info(f"{central_node}:\tToo many attackers found in relation to the graph for global model. Lowering confidencce: {attackers_df_global.shape[0]}")
-        finding_dict_global['severity'] = forta_agent.FindingSeverity.Medium
-    for row_idx in range(attackers_df_global.shape[0]):
-        attacker_info = attackers_df_global.iloc[row_idx]
-        logger.info(f'{central_node}:\tNew attacker info global: {attacker_info}')
-        metadata = {
-                'central_node': central_node,
-                'central_node_alert_id': alert_event.alert.alert_id,
-                'central_node_alert_name': alert_event.alert.name,
-                'central_node_alert_hash': alert_event.alert.hash,
-                'graph_statistics': str(graph_statistics),
-                'model_confidence': str(attacker_info['p_attacker']),
-            }
-        label_dict = {
-                'entity': attacker_info.name,
-                'label': 'scammer-eoa',
-                'confidence': str(attacker_info['p_attacker']),
-                'entity_type': forta_agent.EntityType.Address,
-                'metadata': metadata
-            }
-        finding_dict_global['labels'] = [forta_agent.Label(label_dict)]
-        finding_dict_global['metadata'] = metadata
-        finding_dict_global['description'] = f"{attacker_info.name} marked as scammer by label propagation (global model)"
-        finding_dict_global['addresses'] = [attacker_info.name, central_node]
-        all_findings_list.append(Finding(finding_dict_global))
+    # if attackers_df_global.shape[0] >= int(PERCENTAGE_ATTACKERS * graph_statistics['n_nodes']):
+    #     logger.info(f"{central_node}:\tToo many attackers found in relation to the graph for global model. Lowering confidencce: {attackers_df_global.shape[0]}")
+    #     finding_dict_global['severity'] = forta_agent.FindingSeverity.Medium
+    if attackers_df_global.shape[0] <= MAX_FINDINGS_PER_ADDRESS:
+        for row_idx in range(attackers_df_global.shape[0]):
+            attacker_info = attackers_df_global.iloc[row_idx]
+            logger.info(f'{central_node}:\tNew attacker info global: {attacker_info}')
+            metadata = {
+                    'central_node': central_node,
+                    'central_node_alert_id': alert_event.alert.alert_id,
+                    'central_node_alert_name': alert_event.alert.name,
+                    'central_node_alert_hash': alert_event.alert.hash,
+                    'graph_statistics': str(graph_statistics),
+                    'model_confidence': str(attacker_info['p_attacker']),
+                }
+            label_dict = {
+                    'entity': attacker_info.name,
+                    'label': 'scammer-eoa',
+                    'confidence': str(attacker_info['p_attacker']),
+                    'entity_type': forta_agent.EntityType.Address,
+                    'metadata': metadata
+                }
+            finding_dict_global['labels'] = [forta_agent.Label(label_dict)]
+            finding_dict_global['metadata'] = metadata
+            finding_dict_global['description'] = f"{attacker_info.name} marked as scammer by label propagation (global model)"
+            finding_dict_global['addresses'] = [attacker_info.name, central_node]
+            all_findings_list.append(Finding(finding_dict_global))
+    else:
+        logger.info(f"{central_node}:\tToo many attackers found for global model: {attackers_df_global.shape[0]}. Not adding any findings")
     return all_findings_list
         
         
@@ -171,6 +178,8 @@ def provide_handle_alert(w3):
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logger.debug("handle_alert inner called")
         logger.debug(f"AlertId:{alert_event.alert_id};\tName:{alert_event.name};\tAlertHash:{alert_event.hash};\tBotId{alert_event.bot_id};\tAddress:{alert_event.alert.addresses}")
+        for label in alert_event.alert.labels:
+            logger.debug(f"Entity:{label.entity};\tConfidence:{label.confidence};\tMetadata:{label.metadata};\tLabel:{label.label};\tEntityType:{label.entity_type}")
         t = time.time()
         global executor
         global global_futures
@@ -181,9 +190,13 @@ def provide_handle_alert(w3):
             return []
         for label in alert_event.alert.labels:
             # if label.confidence >= ATTACKER_CONFIDENCE and label.entity_type == forta_agent.EntityType.Address:
-            if label.confidence >= ATTACKER_CONFIDENCE and label.metadata['address_type'] == 'EOA':
-                logger.debug(f"Entity:{label.entity};\tConfidence:{label.confidence};\tMetadata:{label.metadata};\tLabel:{label.label};\tEntityType:{label.entity_type}")
-                list_of_addresses.append(label.entity)
+            try:
+                if label.confidence >= ATTACKER_CONFIDENCE and label.metadata['address_type'] == 'EOA':
+                    logger.debug(f"Entity:{label.entity};\tConfidence:{label.confidence};\tMetadata:{label.metadata};\tLabel:{label.label};\tEntityType:{label.entity_type}")
+                    list_of_addresses.append(label.entity)
+            except KeyError:
+                logger.error(f"Error getting address type from metadata: {label.metadata}")
+                continue
         list_of_addresses = list(set(list_of_addresses))
         for address in list_of_addresses:
             n_times_already_analyzed = get_address_from_dynamo(address)
