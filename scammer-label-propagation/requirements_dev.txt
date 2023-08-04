@@ -1,0 +1,12 @@
+-r requirements.txt
+pytest==6.2.5
+pytest-env==0.6.2
+xgboost
+matplotlib
+seaborn
+ipykernel
+dask
+dask[distributed]
+bokeh!=3.0.*,>=2.4.2
+imbalanced-learn
+```
