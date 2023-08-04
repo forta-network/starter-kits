@@ -131,7 +131,7 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e", "VICTIM-NOTIFIER-EOA", "PassThrough", "SCAM-DETECTOR-UNKNOWN"),
                 ("0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e", "SCAM-NOTIFIER-EOA", "PassThrough", "SCAM-DETECTOR-UNKNOWN"),
                 ("0xd45f7183783f5893f4b8e187746eaf7294f73a3bb966500d237bd0d5978673fa", "PHISHING-TOKEN-NEW", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),
-                ("0x9c1819037bc127d09da00f418e06a8d11d7d41ce1b6e20cc9de0e525707869ee", "GAS-ANOMALOUS-LARGE-CONSUMPTION", "PassThrough", "SCAM-DETECTOR-GAS-MINTING"),
+                ("0x715c40c11a3e24f3f21c3e2db1c109bba358ccfcbceada84ee1e0f4dba4410e7", "GAS-ANOMALOUS-LARGE-CONSUMPTION", "PassThrough", "SCAM-DETECTOR-GAS-MINTING"),
                 ]
 
 # model information
@@ -261,25 +261,25 @@ MODEL_ALERT_THRESHOLD_STRICT = 0.896  # precision of 100% on test and train set
 # these are sourced from manual analysis and represent precision - last updated 6/15/2023
 CONFIDENCE_MAPPINGS = {
         "sleep-minting": 0.7,
-        "ice-phishing": 0.82,
+        "ice-phishing": 0.88,
         "wash-trading": 0.99, 
-        "fraudulent-nft-order": 0.79,
-        "native-ice-phishing-social-engineering": 0.85,
-        "native-ice-phishing":  0.84,
-        "pig-butchering":  0.80,
-        "hard-rug-pull": 0.73,
-        "soft-rug-pull": 0.53,
-        "rake-token": 0.77,
+        "fraudulent-nft-order": 0.70,
+        "native-ice-phishing-social-engineering": 0.83,
+        "native-ice-phishing":  0.77,
+        "pig-butchering":  0.99,
+        "hard-rug-pull": 0.99,
+        "soft-rug-pull": 0.95,
+        "rake-token": 0.99,
         "address-poisoning": 0.99,
-        "address-poisoner": 0.99,
+        "address-poisoner": 0.85,
         "impersonating-token": 0.99,
         "attack-stages": 0.2,
-        "similar-contract": 0.4,
-        "scammer-deployed-contract": 0.4,
-        "scammer-association": 0.4,
+        "similar-contract": 0.99,
+        "scammer-deployed-contract": 0.8,
+        "scammer-association": 0.75,
         "private-key-compromise": 0.4,
         "gas-minting": 0.9,
-        "unknown": 0.6
+        "unknown": 0.94
 }
 
 

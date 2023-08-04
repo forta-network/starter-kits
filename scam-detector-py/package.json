@@ -4,7 +4,7 @@
   "version": "2.18.0",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/scam-detector-py",
   "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
-  "longDescription": "The Scam Detector is a premium feed that provides real-time intelligence on a wide range of scam attack vectors taking place on-chain. It is a culmination of a variety of different bots deployed on the Forta Network, each of which looks for and alerts on different types of scams, such as rug pulls, ice phishing, and malicious smart contracts. The Scam Detector is built by the Forta Foundation in partnership with the Forta community, Blocksec, and Nethermind. Interested in contributing to the improvement of the Scam Detector? Join the Threat Research Initiative (TRi) at https://forta.org/join-tri.",
+  "longDescription": "The Scam Detector is a premium feed that provides real-time intelligence on a wide range of scam attack vectors taking place on-chain. It is a culmination of a series of modular bots deployed on the Forta Network, each looking different types of scams, such as rug pulls, ice phishing, and malicious smart contracts and associated scammer behavior. The Scam Detector is built by the Forta Foundation in partnership with the Forta community, Blocksec, and Nethermind. The Detector is battle tested, currently powering ZenGo and other's active transaction screening features. Interested in contributing to the improvement of the Scam Detector and the safety of Web3? Join the Threat Research Initiative (TRi) at https://forta.org/join-tri.",
   "licenseUrl": "https://github.com/forta-network/starter-kits/tree/main/scam-detector-py/LICENSE",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
