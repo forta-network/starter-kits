@@ -31,10 +31,10 @@ def _score_transaction(
     chain_id: int=1
 ) -> dict:
     """Estimate the probability that a transaction contains multiple transfers."""
-    _scores = {
+    return {
         'batch': {
             'confidence': batch.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total_erc20=min_transfer_total_erc20, min_transfer_total_native=min_transfer_total_native, max_batching_fee=options.MAX_BATCHING_FEE[chain_id]),
-            'malicious': 0.5}, # compute only if necessary: network requests
+            'malicious': batch.malicious_score(log=log, w3=w3, min_transfer_count=min_transfer_count, max_batching_fee=options.MAX_BATCHING_FEE[chain_id])},
         'airdrop': {
             'confidence': airdrop.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total=min_transfer_total_erc20),
             'malicious': airdrop.malicious_score(log=log, w3=w3)},
@@ -45,14 +45,8 @@ def _score_transaction(
             'confidence': nft.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count),
             'malicious': nft.malicious_score(log=log, w3=w3)},
         'native': {
-            'confidence': 0.5, # compute only if necessary: network requests
-            'malicious': 0.5}} # compute only if necessary: network requests
-    # compute remaining scores, if relevant
-    if _scores['batch']['confidence'] >= 0.6:
-        _scores['batch']['malicious'] = batch.malicious_score(log=log, w3=w3, max_batching_fee=options.MAX_BATCHING_FEE[chain_id])
-        if _scores['erc20']['confidence'] <= 0.5 and _scores['erc721']['confidence'] <= 0.5:
-            _scores['native']['malicious'] = native.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total=min_transfer_total_native, max_batching_fee=options.MAX_BATCHING_FEE[chain_id])
-    return _scores
+            'confidence': native.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total=min_transfer_total_native, max_batching_fee=options.MAX_BATCHING_FEE[chain_id]),
+            'malicious': native.malicious_score(log=log, w3=w3, min_transfer_count=min_transfer_count, max_batching_fee=options.MAX_BATCHING_FEE[chain_id])}}
 
 # SCANNER #####################################################################
 
@@ -95,8 +89,8 @@ def handle_transaction_factory(
                     _transfers = [_e for _e in events.parse_log(log=log, abi=events.ERC721_TRANSFER_EVENT) if target_token in _e['token']]
                 elif _scores['native']['confidence'] >= 0.6:
                     _token = chains.CURRENCIES.get(_chain_id, 'ETH')
-                    _recipients = chain.from_iterable(inputs.get_array_of_address_candidates(data=_data, min_length=min_transfer_count))
-                    _transfers = [{'token': '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'from': _to, 'to': _r, 'value': balances.get_balance_delta(w3=w3, address=_r, block=_block)} for _r in _recipients]
+                    _args = inputs.get_matching_arrays_of_address_and_value(data=_data, min_length=min_transfer_count)
+                    _transfers = [{'token': '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'from': _to, 'to': _r, 'value': _v} for _a in _args for _r, _v in zip(*_a)]
                 # raise an alert
                 if _transfers:
                     _findings.append(findings.FormatBatchTxFinding(
