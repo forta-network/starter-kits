@@ -86,8 +86,6 @@ All of these criteria must be satisfied by a transaction to be reported:
 - `MIN_MALICIOUS_SCORE`:
   - the minimum probability that a given transaction is malicious
 
-### 
-
 ## Deployment
 
 The code is bundled in a Docker container.
@@ -118,6 +116,10 @@ First, the bot parses the transaction metadata and looks for relevant patterns:
 - on the events:
   - ERC20 and ERC721 standards are supposed to emit `Transfer` events when the tokens are moved
   - the bot parses the transaction log, looking for those events
+- on the value:
+  - the sums of each array are calculated
+  - and compared to the transaction value
+  - if there's a match, the transaction value is very likely to be sprayed among several transfers
 - on the balances:
   - the balances of all the addresses involved can be checked
   - in particular, the balance of the `from` address is expected to change (decrease) while the `to` is supposed to remain mostly unchanged (apart from the possible collection of a fee)
@@ -142,9 +144,9 @@ Given a list of probabilities $\{p_i\}$ and a extra probability $p$, the conflat
 For example:
 
 - when an indicator (presence / absence) doesn't add information it can be scored as `0.5`.
-- when it greatly increases the probability `0.9`
-- when it slightly decreases the probability `0.4`
-- when it strongly decreases the probability `0.1`
+- `0.9` to greatly increase the probability
+- `0.4` to slightly decrease the probability
+- `0.1` to strongly decrease the probability
 - etc
 
 Rather than each individual score, it is the tendency of the list of scores that drives the overall metric toward a low / high probability.
