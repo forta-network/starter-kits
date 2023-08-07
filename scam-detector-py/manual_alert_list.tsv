@@ -3287,3 +3287,46 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 8/2/23	Address	0xa7bf48749d2e4aa29e3209879956b9baa9e90570	@tayvano_	https://twitter.com/tayvano_/status/1686418992599273472?s=20		Address Poisoning	
 8/2/23	Address	0x3dC62E346843a418Db2D4e3745D2279b9FAfE317	@tayvano_	https://twitter.com/tayvano_/status/1686418992599273472?s=20		Address Poisoning	
 8/2/23	Address	0x9546122362B477dF74cAF55c1F2742f534826CDa	@tayvano_	https://twitter.com/tayvano_/status/1686418992599273472?s=20		Address Poisoning	
+7/17/23	0x1fabd3b41bf33e14a4588595b5a76eaddac2ea87	@CertiKAlert	https://twitter.com/CertiKAlert/status/1680657569289846784	56	Hard rug pull	#exiscam
+7/17/23	0x1FaBd3B41BF33e14A4588595B5a76eAddAC2eA87	@CertiKAlert	https://twitter.com/CertiKAlert/status/1680657569289846784	56	Hard rug pull	
+7/20/2023	0x00005d0c9ac39db0798f6ca947202e5f55a10000	@ScamSniffer	https://twitter.com/realScamSniffer/status/1682030454235607045	1	Ice phishing	Blur phishing
+7/20/2023	0x4C1F90281421Ca00207F7890342eAa808c322E5A	@CertiKAlert	https://twitter.com/CertiKAlert/status/1682010191263309826	56	Protocol attack	Flashloan
+7/20/2023	0x613C6F064A06C91B2f69459169B7ea739023193A	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1681867482938630144	56	Hard rug pull	Manipulated the setPointRate function with the help of a privileged address set by the project. This allowed the scammer to mint tokens.
+7/20/2023	0xCc8617331849962c27F91859578dC91922F6F050	@CertiKAlert	https://twitter.com/PeckShieldAlert/status/1681851143062970368	1	Hard rug pull	PeckShield has detected a serial exploiter who exploited FIRE FIST, AI-Doge, and QX, totaling ~$111K.
+7/20/2023	0x7AcE5CFfBf9e1B1A4E8F491A64013B0e6F774136	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1681845186484404224	1	Ice phishing	Phishing
+7/20/2023	0x77E3e957082Ca648c1C5b0F3e6AEc00Ab1245186	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1681845186484404224	1	Ice phishing	Phishing
+7/20/2023	0x90B74eF7Bc1975BcB1c67450c7b1575922b67E54	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1681845186484404224	1	Ice phishing	Phishing
+7/20/2023	0x4b139E0e7f57A3400346C6be7BB2d53775a82107	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1681845186484404224	1	Ice phishing	Phishing
+7/20/2023	0x6007D8d700004635340a40B990A4057a16531C2a	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1681834373602062338	1	Hard rug pull	Remove liquidity from smart contract
+7/20/2023	0x4FA82c476c73417a7c7752664ed9897a440EA352	@ScamSniffer	https://twitter.com/realScamSniffer/status/1682030454235607045	1	Ice phishing	phishing scammers with front-run.
+7/24/2023	0x0000553F880fFA3728b290e04E819053A3590000	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1683484328053858306	1	Ice phishing	
+7/24/2023	0x4641236691A6F583b1B979c61D9d5496FEB33604	@ScamSniffer	https://twitter.com/realScamSniffer/status/1683429418033872897	1	Ice phishing	
+7/24/2023	0x000019ef40f8eaab40a233906a5d428418920000	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0x2fdc0d8ca6a7530e9963a5f22e33f1c6cc5273b6	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0xce846169145904fc4e646f9ac89e37435b51a57f	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0x00006deacd9ad19db3d81f8410ea2b45ea570000	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0x0003fd282af2c5f9555584f8714066d4b4f80f00	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0x000a6062c17fc59ff7ff5179e4873f09e6df0000	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0x0be01f2508298771b13424d6fbd87a257c87663f	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0x0000553f880ffa3728b290e04e819053a3590000	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0xc12ba780e5338cc010566150acf9554e0dd271ae	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0xf9408a711c21dcec148823c1e30364795622d942	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0x172c91eab73865c5f589effeffd06cbe75c2773f	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0x8b519b3f9bb099e0fe4ebfd27400daa439716473	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0x8a2695241623923b885f3313ff85c2e5e077bb41	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0x19b799fca779ed2cbf76c50282bc448ff2071eaf	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/24/2023	0x5c327005823406875fef11df769613cbcaa54f10	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
+7/8/2023	0xAF1C0a584a26D7be32300A0ae588dEA4a5B20eb3	@CertiKAlert	https://twitter.com/CertiKAlert/status/1688466468457832448	1	Hard rug pull	
+7/8/2023	0xd2bA7256E5B2388AD97447d790c6D0EED4a0Fa4C	@AegisWeb3	https://twitter.com/AegisWeb3/status/1688436159523827712	1	Hard rug pull	
+7/8/2023	0x000F1E24f3f0c7E3dd25939DBF0ba61dA3c40000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1688406062607818752	1	Ice phishing	
+7/8/2023	0x97Eace4702217c1fea71Cf6b79647A8aD5dDB0EB	@CertiKAlert	https://twitter.com/CertiKAlert/status/1688402513614053376	56	Hard rug pull	
+6/8/2023	0x94D471c6154993BA9A46AAb05AD6057F44166A15	@BeosinAlert	https://twitter.com/BeosinAlert/status/1688381253572243457	1	Hard rug pull	
+6/8/2023	0xD2010607bAB8b8007BF6bB22b4D8A40f73a8003E	@CertiKAlert	https://twitter.com/CertiKAlert/status/1688132913563398144	56	Hard rug pull	
+6/8/2023	0x00005D0c9Ac39DB0798f6cA947202E5F55A10000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1688159180069515264	1	Ice phishing	
+6/8/2023	0xdd7f3e90314228A83923eaf47077348D96Bcb412	@CertiKAlert	https://twitter.com/CertiKAlert/status/1688109795025227776	1	Hard rug pull	
+6/8/2023	0x8281B589Ea0c0B126aF00df3FAe781140920500a	@AegisWeb3	https://twitter.com/AegisWeb3/status/1688096083128291328	1	Hard rug pull	
+5/8/2023	0x808877b83a698f0d866e69591fdca106069e6d69	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1687924933240700928	1	Hard rug pull	
+5/8/2023	0x0000553F880fFA3728b290e04E819053A3590000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1687856506312753152	1	Ice phishing	
+5/8/2023	0x08F579756660e93c8BA68C4283A91C14eB155EC9	@CertiKAlert	https://twitter.com/CertiKAlert/status/1687773506744791040	1	Hard rug pull	
+5/8/2023	0x9731E3ebe02232FD8e54Ae18CD34a49b367ED5f1	@CertiKAlert	https://twitter.com/CertiKAlert/status/1687760426547736576	56	Hard rug pull	
+4/8/2023	0x5aE4E5fF97c2c0b4152fc75566fd7cFF039B2839	@CertiKAlert	https://twitter.com/CertiKAlert/status/1687371037107683328	1	Hard rug pull	
