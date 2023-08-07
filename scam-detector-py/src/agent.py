@@ -8,7 +8,6 @@ import pandas as pd
 import numpy as np
 import io
 import re
-import json
 import traceback
 import joblib
 from sklearn.ensemble import RandomForestClassifier
@@ -37,7 +36,6 @@ forta_explorer = FortaExplorer()
 
 INITIALIZED = False
 INITIALIZED_CALLED = False
-INITIAL_METAMASK_LIST_CONSUMPTION = True
 INITIALIZATION_TIME = datetime.now()
 CHAIN_ID = -1
 BOT_VERSION = Utils.get_bot_version()
@@ -631,23 +629,9 @@ def get_manual_list() -> pd.DataFrame:
     df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
     return df_manual_findings
 
-def get_metamask_phishing_list() -> list:
-    if in_test_state():
-        with open('test_phishing_list.json', 'r') as file:
-            return json.load(file).get('blacklist', [])
-        
-    res = requests.get('https://raw.githubusercontent.com/MetaMask/eth-phishing-detect/master/src/config.json')
-    logging.info(f"Metamask phishing list: made request to fetch metamask phishing list: {res.status_code}")
-    if res.status_code == 200:
-        config_json = json.loads(res.content)
-        if 'blacklist' in config_json:
-            return config_json['blacklist']
-    return []
-
 def emit_manual_finding(w3, test = False) -> list:
     global ALERTED_ENTITIES
     global CHAIN_ID
-    global INITIAL_METAMASK_LIST_CONSUMPTION
     findings = []
 
     if CHAIN_ID == -1:
@@ -729,32 +713,6 @@ def emit_manual_finding(w3, test = False) -> list:
     except Exception as e:
         logging.warning(f"Manual finding: Failed to process manual finding: {e} : {traceback.format_exc()}")
         Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding", traceback.format_exc()))
-
-    try: 
-        alert_id = "SCAM-DETECTOR-MANUAL-METAMASK-PHISHING"
-
-        if INITIAL_METAMASK_LIST_CONSUMPTION:
-            for alert_ids_for_entity in ALERTED_ENTITIES.values():
-                    if any(logic_plus_alert_id.endswith(alert_id) for logic_plus_alert_id in alert_ids_for_entity):
-                        INITIAL_METAMASK_LIST_CONSUMPTION = False
-                        break
-        metamask_phishing_urls = get_metamask_phishing_list()
-        for url in metamask_phishing_urls:
-            url = url[:-1] if url.endswith(",") else url # remove trailing comma from URLs that have it
-            
-            if not already_alerted(url, alert_id):
-                logging.info(f"Manual finding: Emitting manual finding for {url}")
-                update_list(ALERTED_ENTITIES, ALERTED_ENTITIES_QUEUE_SIZE, url, alert_id)
-                finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, "Url", url, "Metamask phishing", "Metamask ", "", "", INITIAL_METAMASK_LIST_CONSUMPTION)
-                if finding is not None:
-                    findings.append(finding)
-                logging.info(f"Findings count {len(findings)}")
-            else:
-                logging.info(f"Manual finding: Already alerted on {url}")
-
-    except Exception as e:
-        logging.warning(f"Manual finding: Failed to process manual finding: {e} : {traceback.format_exc()}")
-        Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding.metamask", traceback.format_exc()))
 
     return findings
 
@@ -1277,10 +1235,10 @@ def provide_handle_block(w3):
             persist_state()
             logging.info(f"{BOT_VERSION}: Persisted state")
         
-        for finding in FINDINGS_CACHE_BLOCK[0:25]:  # 25 findings per block due to size limitation
+        for finding in FINDINGS_CACHE_BLOCK[0:10]:  # 10 findings per block due to size limitation
             if finding is not None:
                 findings.append(finding)
-        FINDINGS_CACHE_BLOCK = FINDINGS_CACHE_BLOCK[25:]
+        FINDINGS_CACHE_BLOCK = FINDINGS_CACHE_BLOCK[10:]
 
         logging.info(f"{BOT_VERSION}: Return {len(findings)} to handleBlock. FINDINGS_CACHE_BLOCK size: {len(FINDINGS_CACHE_BLOCK)}")
 
