@@ -1,5 +1,9 @@
 # Attack Detector Bot Release Notes
 
+## v3.46.3 (August 4 2023: beta, August 7 2023: prod)
+- updated package.json with new fields
+- update SDK to 0.1.34
+
 ## v3.46.1 (July 5 2023: beta, July 5 2023: prod)
 - increase redundancy of bot on the network
 
