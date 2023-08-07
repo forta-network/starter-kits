@@ -1154,14 +1154,20 @@ class TestScamDetector:
 
         findings = agent.emit_manual_finding(w3, True)
 
-        assert len(findings) == 4, "this should have triggered manual address findings"
+        assert len(findings) == 7, "this should have triggered manual address findings"
         
-        for finding in findings:
+        for finding in findings[:4]:
             address_lower = "0x5ae30eb89d761675b910e5f7acc9c5da0c85baaa".lower()
             if address_lower in finding.description.lower():
                 assert findings[0].alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
                 assert findings[0].description == f"{address_lower} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)", "wrong description"
                 assert findings[0].metadata["reported_by"] == "Blocksec "
+
+        # Metamask phishing list findings
+        for finding in findings[4:]:
+            assert finding.alert_id == "SCAM-DETECTOR-MANUAL-METAMASK-PHISHING", "should be SCAM-DETECTOR-MANUAL-METAMASK-PHISHING"
+            assert finding.description == f"{finding.labels[0].entity} likely involved in an attack (SCAM-DETECTOR-MANUAL-METAMASK-PHISHING, manual)", "wrong description"
+            assert finding.metadata["reported_by"] == "Metamask "
 
     def test_scammer_contract_deployment_manual(self):
         agent.TEST_STATE = True
