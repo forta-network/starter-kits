@@ -2,7 +2,6 @@ from operator import inv
 from time import strftime
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType, get_labels
 from datetime import datetime
-import pandas as pd
 import requests
 import logging
 import re
@@ -18,7 +17,7 @@ class ScamDetectorFinding:
     @staticmethod
     def get_threat_description_url(alert_id: str) -> str:
         url = "https://forta.org/attacks"
-        if alert_id == "SCAM-DETECTOR-ICE-PHISHING" or alert_id == "SCAM-DETECTOR-METAMASK-PHISHING":
+        if alert_id == "SCAM-DETECTOR-ICE-PHISHING":
             return url + "#ice-phishing"
         elif alert_id == "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER":
             return url + "#fraudulent-nft-order"
@@ -51,7 +50,7 @@ class ScamDetectorFinding:
         
     @staticmethod
     def get_threat_category(alert_id: str) -> str:
-        if alert_id == "SCAM-DETECTOR-ICE-PHISHING" or alert_id == "SCAM-DETECTOR-METAMASK-PHISHING":
+        if alert_id == "SCAM-DETECTOR-ICE-PHISHING":
             return "ice-phishing"
         elif alert_id == "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER":
             return "fraudulent-nft-order"
@@ -425,7 +424,7 @@ class ScamDetectorFinding:
 
 
     @staticmethod
-    def scam_finding_manual(block_chain_indexer, forta_explorer, entity_type: str, entities: str, threat_category: str, reported_by: str, chain_id: int, comment:str = '', initial_metamask_list_consumption: bool = False) -> Finding:
+    def scam_finding_manual(block_chain_indexer, forta_explorer, entity_type: str, entities: str, threat_category: str, reported_by: str, chain_id: int, comment:str = '') -> Finding:
         label_doesnt_exist = False
         
         labels = []
@@ -435,7 +434,7 @@ class ScamDetectorFinding:
 
         for entity in entities.split(","):
             source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
-            df_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = entity.lower()) if not initial_metamask_list_consumption else pd.DataFrame()
+            df_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = entity.lower())
             if df_labels.empty:
                 label_doesnt_exist = True
             
