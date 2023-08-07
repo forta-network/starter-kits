@@ -3245,7 +3245,7 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 6/30/23	Address	0x9502Da652A52C6A99db12FC2eda21082706BB728	@realScamSniffer	https://twitter.com/realScamSniffer/status/1674804013664210947?s=20	1	Ice phishing	
 6/30/23	Address	0x29488E5fD6bF9B3cc98A9d06A25204947ccCBE4D	@realScamSniffer	https://twitter.com/realScamSniffer/status/1674804013664210947?s=20	1	Ice phishing	
 6/30/23	Address	0xD2010607bAB8b8007BF6bB22b4D8A40f73a8003E	@CertiKAlert	https://twitter.com/CertiKAlert/status/1674687923591995395?s=20	56	Soft rug pull	Archway token
-6/30/23	Address	0x00005D0c9Ac39DB0798f6cA947202E5F55A10000	@PeckShieldAlert  https://twitter.com/PeckShieldAlert/status/1674632375257681920?s=20	1	Ice phishing		
+6/30/23	Address	0x00005D0c9Ac39DB0798f6cA947202E5F55A10000	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1674632375257681920?s=20	1	Ice phishing		
 6/30/23	Address	0xb79c812900334f8bd437E11A59FC3d1c5B4fDDBF	@CertiKAlert	https://twitter.com/CertiKAlert/status/1674625602257580032?s=20	1	Soft rug pull	
 7/3/23	Address	0x57220b0f5335A054014808Be12457CD049B3867E	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1675810505632489473?s=20	1	Hard rug pull	
 7/3/23	Address	0x3429f8257E5f30AF864caBBeCFe6DC97c38986eC	@CertiKAlert	https://twitter.com/CertiKAlert/status/1675809266404564992?s=20	56	Protocol attack	
@@ -3272,7 +3272,7 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 7/3/23	Address	0xbf6302Cbb051e1579Fe0eE116daf708739Ca4aE6	@BeosinAlert	https://twitter.com/BeosinAlert/status/1675773135755546625?s=20	1	Protocol attack	
 7/3/23	Address	0x85ef23553eae46eE8759Ee347D2b2fb1ee99bB60	@BeosinAlert	https://twitter.com/BeosinAlert/status/1675773135755546625?s=20	1	Protocol attack	
 7/3/23	Address	0xB69F28D84497107c2740471926Cc258BA1B855e9	@BeosinAlert	https://twitter.com/BeosinAlert/status/1675773135755546625?s=20	1	Protocol attack	
-7/3/23	Address	0x8E0001966e6997db3e45c5F75D4C89a610255b2E	@PeckShieldAlert  https://twitter.com/PeckShieldAlert/status/1675825963106701312?s=20	1	Protocol attack		
+7/3/23	Address	0x8E0001966e6997db3e45c5F75D4C89a610255b2E	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1675825963106701312?s=20	1	Protocol attack		
 7/3/23	Address	0x906639ab20d12a95a8bec294758955870d0bb5cc	@BeosinAlert	https://twitter.com/BeosinAlert/status/1675708125683372032?s=20	1	Protocol attack	
 7/3/23	Address	0x4218e774634C1ED1761d3b169d89C2ba8B2D6C41	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1675473496674009089?s=20	1	Ice phishing	
 7/3/23	Address	0x4218e774634C1ED1761d3b169d89C2ba8B2D6C41	@realScamSniffer	https://twitter.com/realScamSniffer/status/1675464090343583746?s=20	1	Ice phishing	
