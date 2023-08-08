@@ -95,7 +95,8 @@ class TestSuspiciousContractAgent:
         assert finding.labels[0].toDict(
         )["confidence"] == 0.5, "should have 0.3 as label confidence"
 
-    def test_detect_money_laundering_at_medium_threshold_within_blockrange(self):
+    @patch("src.findings.calculate_alert_rate", return_value=0.33)
+    def test_detect_money_laundering_at_medium_threshold_within_blockrange(self, mocker):
         agent.initialize()
 
         tx_event = create_transaction_event({
@@ -173,9 +174,10 @@ class TestSuspiciousContractAgent:
                        'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM'), None)
         assert finding.severity == FindingSeverity.Medium
         assert finding.metadata == {
-            "anomaly_score": 1, "total_funds_transferred": "210"}
+            "anomaly_score": 0.33, "total_funds_transferred": "210"}
 
-    def test_detect_money_laundering_at_high_threshold_within_blockrange(self):
+    @patch("src.findings.calculate_alert_rate", return_value=0.33)
+    def test_detect_money_laundering_at_high_threshold_within_blockrange(self, mocker):
         agent.initialize()
 
         tx_event = create_transaction_event({
@@ -303,7 +305,7 @@ class TestSuspiciousContractAgent:
                        'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH'), None)
         assert finding.severity == FindingSeverity.High
         assert finding.metadata == {
-            "anomaly_score": 1, "total_funds_transferred": "500"}
+            "anomaly_score": 0.33, "total_funds_transferred": "500"}
 
     def test_detect_money_laundering_below_threshold(self):
         agent.initialize()
@@ -329,7 +331,8 @@ class TestSuspiciousContractAgent:
         findings = agent.detect_money_laundering(w3, tx_event)
         assert len(findings) == 0, "this should not have triggered a finding"
 
-    def test_detect_money_laundering_below_threshold_polygon(self):
+    @patch("src.findings.calculate_alert_rate", return_value=0.33)
+    def test_detect_money_laundering_below_threshold_polygon(self, mocker):
         agent.initialize()
 
         w3.eth.chain_id = 137
@@ -380,7 +383,7 @@ class TestSuspiciousContractAgent:
                        'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-LOW'), None)
         assert finding.severity == FindingSeverity.Low
         assert finding.metadata == {
-            "anomaly_score": 1, "total_funds_transferred": "110000"}
+            "anomaly_score": 0.33, "total_funds_transferred": "110000"}
 
         for i in range(15):
             tx_event = create_transaction_event({
@@ -409,7 +412,7 @@ class TestSuspiciousContractAgent:
                                 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM'), None)
                 assert finding.severity == FindingSeverity.Medium
                 assert finding.metadata == {
-                    "anomaly_score": 1, "total_funds_transferred": "710000"}
+                    "anomaly_score": 0.33, "total_funds_transferred": "710000"}
             elif i == 14:
                 assert len(
                     findings) == 1, "this should have triggered a finding"
@@ -417,4 +420,4 @@ class TestSuspiciousContractAgent:
                                 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH'), None)
                 assert finding.severity == FindingSeverity.High
                 assert finding.metadata == {
-                    "anomaly_score": 1, "total_funds_transferred": "1610000"}
+                    "anomaly_score": 0.33, "total_funds_transferred": "1610000"}
