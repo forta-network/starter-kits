@@ -1,0 +1,13 @@
+node_modules
+dist
+forta.config.json
+__pycache__
+.pytest_cache
+.conda
+.vscode
+results
+secrets.json
+*.log
+data*
+train_model
+model.pth

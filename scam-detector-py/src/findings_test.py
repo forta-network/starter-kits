@@ -50,7 +50,7 @@ class TestScamFindings:
         assert finding.labels[0].entity_type == EntityType.Address
         assert finding.labels[0].entity == EOA_ADDRESS_SMALL_TX
         assert finding.labels[0].label == "scammer"
-        assert finding.labels[0].confidence == 0.75
+        assert finding.labels[0].confidence == 0.82
         assert finding.labels[0].metadata["address_type"] == "EOA"
         assert finding.labels[0].metadata["logic"] == "passthrough"
         assert finding.labels[0].metadata["threat_category"] == "ice-phishing"
@@ -61,7 +61,7 @@ class TestScamFindings:
         assert finding.labels[1].entity_type == EntityType.Address
         assert finding.labels[1].entity == CONTRACT
         assert finding.labels[1].label == "scammer"
-        assert finding.labels[1].confidence == 0.675
+        assert finding.labels[1].confidence == 0.738
         assert finding.labels[1].metadata["address_type"] == "contract"
         assert finding.labels[1].metadata["threat_category"] == "ice-phishing"
         assert finding.labels[1].metadata["logic"] == "passthrough"
@@ -104,7 +104,7 @@ class TestScamFindings:
         assert finding.labels[0].entity_type == EntityType.Address
         assert finding.labels[0].entity == EOA_ADDRESS_SMALL_TX
         assert finding.labels[0].label == "scammer"
-        assert finding.labels[0].confidence == 0.75
+        assert finding.labels[0].confidence == 0.82
         assert finding.labels[0].metadata["address_type"] == "EOA"
         assert finding.labels[0].metadata["logic"] == "passthrough"
         assert finding.labels[0].metadata["threat_category"] == "ice-phishing"
@@ -115,7 +115,7 @@ class TestScamFindings:
         assert finding.labels[1].entity_type == EntityType.Address
         assert finding.labels[1].entity == CONTRACT
         assert finding.labels[1].label == "scammer"
-        assert finding.labels[1].confidence == 0.675
+        assert finding.labels[1].confidence == 0.738
         assert finding.labels[1].metadata["address_type"] == "contract"
         assert finding.labels[1].metadata["threat_category"] == "ice-phishing"
         assert finding.labels[1].metadata["logic"] == "passthrough"
@@ -126,7 +126,7 @@ class TestScamFindings:
         assert finding.labels[2].entity_type == EntityType.Url
         assert finding.labels[2].entity == "withdraw-llido.com"
         assert finding.labels[2].label == "scammer"
-        assert finding.labels[2].confidence == 0.75
+        assert finding.labels[2].confidence == 0.82
         assert finding.labels[2].metadata["threat_category"] == "ice-phishing"
         assert finding.labels[2].metadata["logic"] == "passthrough"
         assert finding.labels[2].metadata["base_bot_alert_ids"] == "ICE-PHISHING"
@@ -165,7 +165,7 @@ class TestScamFindings:
         assert finding.labels[0].entity_type == EntityType.Url
         assert finding.labels[0].entity == "withdraw-llido.com"
         assert finding.labels[0].label == "scammer"
-        assert finding.labels[0].confidence == 0.75
+        assert finding.labels[0].confidence == 0.82
         assert finding.labels[0].metadata["threat_category"] == "ice-phishing"
         assert finding.labels[0].metadata["logic"] == "passthrough"
         assert finding.labels[0].metadata["base_bot_alert_ids"] == "ICE-PHISHING"
@@ -247,10 +247,11 @@ class TestScamFindings:
         assert finding.labels[0].entity == EOA_ADDRESS_LARGE_TX, "should be EOA_ADDRESS_LARGE_TX"
 
     def test_scam_finding_manual(self):
-        finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, '0xdec08cb92a506B88411da9Ba290f3694BE223caa', "ice phishing", "me http://foo.com", 1)  # this EOA did not deploy a contract
+        finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, 'Address', '0xdec08cb92a506B88411da9Ba290f3694BE223caa', "ice phishing", "me http://foo.com", 1, "comment")  # this EOA did not deploy a contract
         assert finding.alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
         assert finding.description == f'0xdec08cb92a506B88411da9Ba290f3694BE223caa likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)', "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
         assert finding.metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
+        assert finding.metadata["comment"] == "comment"
         assert len(finding.labels) == 1, "should be 1"  
         assert finding.labels[0].entity == '0xdec08cb92a506B88411da9Ba290f3694BE223caa', "should be EOA_ADDRESS"
         assert finding.labels[0].metadata['reported_by'] == "me http://foo.com", "me http://foo.com"
@@ -259,6 +260,7 @@ class TestScamFindings:
         assert finding.labels[0].metadata["chain_id"] == 1
         assert finding.labels[0].metadata["threat_category"] == "ice-phishing"
         assert finding.labels[0].metadata["logic"] == "manual"
+        assert finding.labels[0].metadata["comment"] == "comment"
 
 
     def test_scammer_contract_deployment(self):
@@ -308,7 +310,7 @@ class TestScamFindings:
         assert finding.labels[0].metadata["address_type"] == "EOA"
         assert finding.labels[0].metadata["logic"] == "propagation"
 
-        assert finding.labels[0].confidence == 0.375
+        assert finding.labels[0].confidence == 0.41
         assert finding.labels[0].metadata['base_bot_alert_ids'] == base_bot_alert_id
         assert finding.labels[0].metadata['base_bot_alert_hashes'] == base_bot_alert_hash
         assert finding.labels[0].metadata['associated_scammer'] == EOA_ADDRESS_LARGE_TX
@@ -322,10 +324,8 @@ class TestScamFindings:
         assert finding.labels[1].metadata["logic"] == "propagation"
         assert finding.labels[1].metadata["threat_category"] == "scammer-deployed-contract"
 
-        assert finding.labels[1].confidence == (0.375 * 0.8)
+        assert finding.labels[1].confidence == (0.41 * 0.8)
         assert finding.labels[1].metadata['associated_scammer'] == EOA_ADDRESS_LARGE_TX
         assert finding.labels[1].metadata['associated_scammer_threat_categories'] == 'ice-phishing'
         assert finding.labels[1].metadata['associated_scammer_alert_hashes'] == original_alert_hash
         assert finding.labels[1].metadata['deployer_info'] == f"Deployer {EOA_ADDRESS_SMALL_TX} associated with a scammer {EOA_ADDRESS_LARGE_TX}; this contract may or may not be related to this particular scam, but was created by the scammer."
-
-

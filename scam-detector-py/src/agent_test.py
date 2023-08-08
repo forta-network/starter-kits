@@ -11,14 +11,17 @@ import numpy as np
 from forta_agent import create_transaction_event, create_alert_event, FindingSeverity, AlertEvent, Label, EntityType, Finding, FindingType
 import requests
 import agent
+from unittest.mock import patch
 
 from constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES
 from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX, CONTRACT2
+from web3_errormock import Web3ErrorMock
 from forta_explorer_mock import FortaExplorerMock
 from blockchain_indexer_mock import BlockChainIndexerMock
 from utils import Utils
 
 w3 = Web3Mock()
+w3error = Web3ErrorMock()
 forta_explorer = FortaExplorerMock()
 block_chain_indexer = BlockChainIndexerMock()
 
@@ -582,6 +585,25 @@ class TestScamDetector:
 
 
 
+    def test_detect_ice_phishing_pig_butchering(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14"
+        alert_id = "ICE-PHISHING-PIG-BUTCHERING"
+        description = "0xdA453CA63F802EE1267f1bA3f9c0120b327B3A7C received funds through a pig butchering attack"
+        metadata = {"anomalyScore":"0.00041909736904142703","initiator1":"0xE9EE9F6B8d09469E7f54E1B23aeA034125c66bfB","initiator2":"0xcEc1214a5269fC5A3f75ce81dA8ad6CA60B9dFB2","receiver":"0xdA453CA63F802EE1267f1bA3f9c0120b327B3A7C","victim1":"0x0E7a79Fa499b33cEf30704202ae947A47be09a8C","victim2":"0x102f51037699597B95e9f846451C762b7eF3DF78","victim3":"0xd546B23A7A4685aDCc6a3745419600D1094B1887","victim4":"0x66e7ACA614c13D94F060928bF77526cac82142E9"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-PIG-BUTCHERING", "should be pig butchering finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+
+
     def test_detect_fraudulent_seaport_orders(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
@@ -606,7 +628,7 @@ class TestScamDetector:
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         bot_id = "0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03"
-        alert_id = "PKC-2"
+        alert_id = "PKC-3"
         description = "0x006a176a0092b19ad0438919b08a0ed317a2a9b5 transferred funds to 0xdcde9a1d3a0357fa3db6ae14aacb188155362974 and has been inactive for a week"
         metadata = {"anomalyScore":"0.00011111934217349434","attacker":"0xdcde9a1d3a0357fa3db6ae14aacb188155362974","transferredAsset":"MATIC","txHash":"0xd39f161892b9cb184b9daa44d2d5ce4a75ab3133275d5f12a4a2b5eed56b6f41","victims":"0x006a176a0092b19ad0438919b08a0ed317a2a9b5"}
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
@@ -638,8 +660,41 @@ class TestScamDetector:
         assert finding.metadata is not None, "metadata should not be empty"
         assert finding.labels is not None, "labels should not be empty"
 
+    def test_detect_scam_notifier(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
-    # TODO - fix with new data once version 0.2.8 is deployed and emitted such labels
+        bot_id = "0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e"
+        alert_id = "SCAM-NOTIFIER-EOA"
+        description = "0x72dd58002e6d17a3ec18b9ae3460449c51d619ac was flagged as a scam by 0xba6e11347856c79797af6b2eac93a8145746b4f9 🛑scam-warning🛑.eth"
+        metadata = {"message":"HARD SCAM DETECTED\n\nVerify: https://t.me/iTokenEthereum/533110\nWarning issued by iToken - a cloud based token spotter & scam detector.","notifier_eoa":"0xba6e11347856c79797af6b2eac93a8145746b4f9","notifier_name":"🛑scam-warning🛑.eth","scammer_eoa":"0x72dd58002e6d17a3ec18b9ae3460449c51d619ac"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-UNKNOWN", "should be scammer unknown finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.labels is not None, "labels should not be empty"
+
+
+    def test_detect_impersonating_token_with_error(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127"
+        alert_id = "IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR"
+        description = "0x0cfeaed6f106154153325342d509b3a61b94d68c deployed an impersonating token contract at 0xfbd4f5ce3824af29fcb9e90ccb239f1761670606. It impersonates token BTC (Bitcoin) at 0x05f774f2eca50291a0407ca881f6405d84ea005b"
+        metadata = {"anomalyScore":"0.008463572974272662","newTokenContract":"0xfbd4f5ce3824af29fcb9e90ccb239f1761670606","newTokenDeployer":"0x0cfeaed6f106154153325342d509b3a61b94d68c","newTokenName":"Bitcoin","newTokenSymbol":"BTC","oldTokenContract":"0x05f774f2eca50291a0407ca881f6405d84ea005b","oldTokenDeployer":"0x5abf98eb769114e43b1c87413f2a93a384d2e905","oldTokenName":"Bitcoin","oldTokenSymbol":"BTC"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3error, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        assert Utils.ERROR_CACHE.len() > 0, "error cache should not be empty given w3error logged an error"
+
+
     def test_detect_alert_similar_contract(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
@@ -1016,7 +1071,7 @@ class TestScamDetector:
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
-        bot_id = "0x4ca56cfab479c4d41cf382383f6932f4bd8bfc6428bdeba82b634f7bf83ad333"
+        bot_id = "0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e"
         alert_id = "EOA-PHISHING-SCAMMER"
         description = "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12 has been identified as a phishing scammer"
         metadata = {
@@ -1068,15 +1123,14 @@ class TestScamDetector:
 
 
     def test_emit_new_manual_finding(self):
+        agent.TEST_STATE = True
         agent.clear_state()
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         findings = agent.emit_manual_finding(w3, True)
-        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/manual_alert_list_test.tsv')
-        content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
-        df_manual_entries = pd.read_csv(io.StringIO(content), sep='\t')
-        assert len(findings) == len(df_manual_entries), "this should have triggered manual findings"
+
+        assert len(findings) == 4, "this should have triggered manual address findings"
         
         for finding in findings:
             address_lower = "0x5ae30eb89d761675b910e5f7acc9c5da0c85baaa".lower()
@@ -1084,4 +1138,33 @@ class TestScamDetector:
                 assert findings[0].alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
                 assert findings[0].description == f"{address_lower} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)", "wrong description"
                 assert findings[0].metadata["reported_by"] == "Blocksec "
+
+    def test_scammer_contract_deployment_manual(self):
+        agent.TEST_STATE = True
+        agent.clear_state()
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        # should result in 0xd89a4f1146ea3ddc8f21f97b562d97858d89d307, which matches the signature in the manual list
+        tx_event = create_transaction_event({
+            'transaction': {
+                'hash': "0",
+                'from': '0x59d3BeE9C38C0b43cAEf8a83eC31e13d550EEa22',
+                'nonce': 0,
+            },
+            'block': {
+                'number': 0
+            },
+            'receipt': {
+                'logs': []}
+        })
+        findings = agent.detect_scammer_contract_creation(w3, tx_event)
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        assert findings[0].alert_id == f"SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+        found_contract = False
+        for label in findings[0].labels:
+            if label.label == 'scammer' and label.entity.lower() == '0xd89a4f1146ea3ddc8f21f97b562d97858d89d307':
+                found_contract = True
+        assert found_contract
 

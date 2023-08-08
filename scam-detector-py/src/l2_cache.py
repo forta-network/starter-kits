@@ -4,11 +4,13 @@ import logging
 import os
 import pickle
 import requests
+import traceback
 import forta_agent
 
 DATABASE = "https://research.forta.network/database/bot/"
 VERSION = "V10"
 
+from src.utils import Utils
 
 class L2Cache:
 
@@ -26,6 +28,8 @@ class L2Cache:
                 logging.info(f"Persisting {key}_{chain_id} to database. Response: {res}")
             except Exception as e:
                 logging.warn(f"Exception in persist {e}")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "l2_cache.persist", traceback.format_exc()))
+
         else:
             logging.info(f"Persisting {key}_{chain_id} locally")
             pickle.dump(obj, open(key, "wb"))
@@ -50,9 +54,12 @@ class L2Cache:
                 if res.status_code == 200 and len(res.content) > 0:
                     return pickle.loads(res.content)
                 else:
+                    Utils.ERROR_CACHE.add(Utils.alert_error(f'request DB {res.status_code}. key {key} doesnt exist.', "l2_cache.load", ""))
                     logging.info(f"{key} does not exist")
             except Exception as e:
                 logging.warn(f"Exception in load {e}")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "l2_cache.load", traceback.format_exc()))
+
         else:
             # load locally
             logging.info(f"Loading {key}_{chain_id} locally")

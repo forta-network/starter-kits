@@ -1,5 +1,7 @@
-Date	Address	Account	Tweet	Chain ID	Threat category	Comment
-04/20/23	0x5ae30eb89d761675b910e5f7acc9c5da0c85baaa	Blocksec		1	Ice phishing	
-04/20/23	0x25127094935d9130eb5c8bae967ad67d585b5bbb	Blocksec		1	Ice phishing	
-04/20/23	0x8ab3f1055164a68abf1616aaaa7a66695139accc	Blocksec		1	Ice phishing	
-04/20/23	0xa4d08225a0b49945020480a99410757efd2dae9b	Already Exists		1	Ice phishing	
+Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
+04/20/23	Address	0x5ae30eb89d761675b910e5f7acc9c5da0c85baaa	Blocksec		1	Ice phishing	
+04/20/23	Address	0x25127094935d9130eb5c8bae967ad67d585b5bbb	Blocksec		1	Ice phishing	
+04/20/23	Url	https://uniswap_scam_test.io	Blocksec		1	Ice phishing	
+04/20/23	Code	56657269666963696174696f6e2e.*566572696669636174696f6e2e	Blocksec		1	Ice phishing	Sig1
+04/20/23	Address	0x8ab3f1055164a68abf1616aaaa7a66695139accc	Blocksec		1	Ice phishing	
+04/20/23	Address	0xa4d08225a0b49945020480a99410757efd2dae9b	Already Exists		1	Ice phishing	
