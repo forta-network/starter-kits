@@ -4,8 +4,28 @@
   "repository": "https://github.com/forta-network/starter-kits/tree/main/large-transfer-out-py",
   "description": "Bot identifies large native asset transfers that didn't exist X days ago",
   "chainIds": [
-    1, 56, 137, 43114, 42161, 10, 250
+    1,
+    56,
+    137,
+    43114,
+    42161,
+    10,
+    250
   ],
+  "chainSettings": {
+    "default": {
+      "shards": 2,
+      "target": 3
+    },
+    "56": {
+      "shards": 3,
+      "target": 3
+    },
+    "137": {
+      "shards": 3,
+      "target": 3
+    }
+  },
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
     "start": "npm run start:dev",
