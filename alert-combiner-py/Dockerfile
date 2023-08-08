@@ -21,6 +21,8 @@ LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
 COPY ./.env ./
 COPY ./src ./src
+COPY ./fp_list.csv ./
+COPY ./manual_alert_list.tsv ./
 COPY ./LICENSE ./
 COPY ./fp_list.csv ./
 COPY ./manual_alert_list.tsv ./
