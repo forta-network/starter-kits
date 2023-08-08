@@ -129,10 +129,14 @@ class AlertCombinerFinding:
                 "state": True,                   
                 "first": 10,                      
             }
+            
+            logging.info(f"Querying for existing label: {label_query_options_dict}")
             labels_response = get_labels(label_query_options_dict)
             if not labels_response.labels:
+                logging.info(f"Label doesn't exist for {attacker_address}")
                 label_doesnt_exist = True
-
+            else:
+                logging.info(f"Label exists for {attacker_address}")
 
             labels.append(Label({
                 'entityType': EntityType.Address,
