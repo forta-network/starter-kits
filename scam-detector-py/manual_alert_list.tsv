@@ -3316,17 +3316,17 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 7/24/2023	Address	0x8a2695241623923b885f3313ff85c2e5e077bb41	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
 7/24/2023	Address	0x19b799fca779ed2cbf76c50282bc448ff2071eaf	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
 7/24/2023	Address	0x5c327005823406875fef11df769613cbcaa54f10	@AegisWeb3	https://twitter.com/AegisWeb3/status/1682921776425357312	1	Ice phishing	
-7/8/2023	Address	0xAF1C0a584a26D7be32300A0ae588dEA4a5B20eb3	@CertiKAlert	https://twitter.com/CertiKAlert/status/1688466468457832448	1	Hard rug pull	
-7/8/2023	Address	0xd2bA7256E5B2388AD97447d790c6D0EED4a0Fa4C	@AegisWeb3	https://twitter.com/AegisWeb3/status/1688436159523827712	1	Hard rug pull	
-7/8/2023	Address	0x000F1E24f3f0c7E3dd25939DBF0ba61dA3c40000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1688406062607818752	1	Ice phishing	
-7/8/2023	Address	0x97Eace4702217c1fea71Cf6b79647A8aD5dDB0EB	@CertiKAlert	https://twitter.com/CertiKAlert/status/1688402513614053376	56	Hard rug pull	
-6/8/2023	Address	0x94D471c6154993BA9A46AAb05AD6057F44166A15	@BeosinAlert	https://twitter.com/BeosinAlert/status/1688381253572243457	1	Hard rug pull	
-6/8/2023	Address	0xD2010607bAB8b8007BF6bB22b4D8A40f73a8003E	@CertiKAlert	https://twitter.com/CertiKAlert/status/1688132913563398144	56	Hard rug pull	
-6/8/2023	Address	0x00005D0c9Ac39DB0798f6cA947202E5F55A10000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1688159180069515264	1	Ice phishing	
-6/8/2023	Address	0xdd7f3e90314228A83923eaf47077348D96Bcb412	@CertiKAlert	https://twitter.com/CertiKAlert/status/1688109795025227776	1	Hard rug pull	
-6/8/2023	Address	0x8281B589Ea0c0B126aF00df3FAe781140920500a	@AegisWeb3	https://twitter.com/AegisWeb3/status/1688096083128291328	1	Hard rug pull	
-5/8/2023	Address	0x808877b83a698f0d866e69591fdca106069e6d69	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1687924933240700928	1	Hard rug pull	
-5/8/2023	Address	0x0000553F880fFA3728b290e04E819053A3590000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1687856506312753152	1	Ice phishing	
-5/8/2023	Address	0x08F579756660e93c8BA68C4283A91C14eB155EC9	@CertiKAlert	https://twitter.com/CertiKAlert/status/1687773506744791040	1	Hard rug pull	
-5/8/2023	Address	0x9731E3ebe02232FD8e54Ae18CD34a49b367ED5f1	@CertiKAlert	https://twitter.com/CertiKAlert/status/1687760426547736576	56	Hard rug pull	
-4/8/2023	Address	0x5aE4E5fF97c2c0b4152fc75566fd7cFF039B2839	@CertiKAlert	https://twitter.com/CertiKAlert/status/1687371037107683328	1	Hard rug pull	
+8/7/2023	Address	0xAF1C0a584a26D7be32300A0ae588dEA4a5B20eb3	@CertiKAlert	https://twitter.com/CertiKAlert/status/1688466468457832448	1	Hard rug pull	
+8/7/2023	Address	0xd2bA7256E5B2388AD97447d790c6D0EED4a0Fa4C	@AegisWeb3	https://twitter.com/AegisWeb3/status/1688436159523827712	1	Hard rug pull	
+8/7/2023	Address	0x000F1E24f3f0c7E3dd25939DBF0ba61dA3c40000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1688406062607818752	1	Ice phishing	
+8/7/2023	Address	0x97Eace4702217c1fea71Cf6b79647A8aD5dDB0EB	@CertiKAlert	https://twitter.com/CertiKAlert/status/1688402513614053376	56	Hard rug pull	
+8/6/2023	Address	0x94D471c6154993BA9A46AAb05AD6057F44166A15	@BeosinAlert	https://twitter.com/BeosinAlert/status/1688381253572243457	1	Hard rug pull	
+8/6/2023	Address	0xD2010607bAB8b8007BF6bB22b4D8A40f73a8003E	@CertiKAlert	https://twitter.com/CertiKAlert/status/1688132913563398144	56	Hard rug pull	
+8/6/2023	Address	0x00005D0c9Ac39DB0798f6cA947202E5F55A10000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1688159180069515264	1	Ice phishing	
+8/6/2023	Address	0xdd7f3e90314228A83923eaf47077348D96Bcb412	@CertiKAlert	https://twitter.com/CertiKAlert/status/1688109795025227776	1	Hard rug pull	
+8/6/2023	Address	0x8281B589Ea0c0B126aF00df3FAe781140920500a	@AegisWeb3	https://twitter.com/AegisWeb3/status/1688096083128291328	1	Hard rug pull	
+8/5/2023	Address	0x808877b83a698f0d866e69591fdca106069e6d69	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1687924933240700928	1	Hard rug pull	
+8/5/2023	Address	0x0000553F880fFA3728b290e04E819053A3590000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1687856506312753152	1	Ice phishing	
+8/5/2023	Address	0x08F579756660e93c8BA68C4283A91C14eB155EC9	@CertiKAlert	https://twitter.com/CertiKAlert/status/1687773506744791040	1	Hard rug pull	
+8/5/2023	Address	0x9731E3ebe02232FD8e54Ae18CD34a49b367ED5f1	@CertiKAlert	https://twitter.com/CertiKAlert/status/1687760426547736576	56	Hard rug pull	
+8/4/2023	Address	0x5aE4E5fF97c2c0b4152fc75566fd7cFF039B2839	@CertiKAlert	https://twitter.com/CertiKAlert/status/1687371037107683328	1	Hard rug pull	
