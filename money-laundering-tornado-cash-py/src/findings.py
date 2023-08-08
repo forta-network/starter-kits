@@ -30,3 +30,53 @@ class MoneyLaunderingTornadoCashFindings:
             },
             "labels": labels
         })
+
+    @staticmethod
+    def possible_money_laundering_tornado_cash_medium(from_address: str, funds_transferred: int, chain_id: int) -> Finding:
+        labels = [{"entity": from_address,
+                   "entity_type": EntityType.Address,
+                   "label": "attacker",
+                   "confidence": 0.5}]
+
+        return Finding({
+            'name': 'Possible Money Laundering With Tornado Cash',
+            'description': f'{from_address} potentially engaged in money laundering',
+            'alert_id': 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM',
+            'type': FindingType.Suspicious,
+            'severity': FindingSeverity.Medium,
+            'metadata': {
+                "anomaly_score": calculate_alert_rate(
+                        chain_id,
+                        BOT_ID,
+                        'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM',
+                        ScanCountType.TRANSFER_COUNT,
+                ),
+                "total_funds_transferred": str(funds_transferred)
+            },
+            "labels": labels
+        })
+
+    @staticmethod
+    def possible_money_laundering_tornado_cash_low(from_address: str, funds_transferred: int, chain_id: int) -> Finding:
+        labels = [{"entity": from_address,
+                   "entity_type": EntityType.Address,
+                   "label": "attacker",
+                   "confidence": 0.5}]
+
+        return Finding({
+            'name': 'Possible Money Laundering With Tornado Cash',
+            'description': f'{from_address} potentially engaged in money laundering',
+            'alert_id': 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-LOW',
+            'type': FindingType.Suspicious,
+            'severity': FindingSeverity.Low,
+            'metadata': {
+                "anomaly_score": calculate_alert_rate(
+                        chain_id,
+                        BOT_ID,
+                        'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-LOW',
+                        ScanCountType.TRANSFER_COUNT,
+                ),
+                "total_funds_transferred": str(funds_transferred)
+            },
+            "labels": labels
+        })

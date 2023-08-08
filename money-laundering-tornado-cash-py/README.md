@@ -17,10 +17,26 @@ This detection bot detects when numerous large transfers are made to Tornado Cas
 Describe each of the type of alerts fired by this agent
 
 - POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH
-  - Fired when possible money laundering is identified
+
+  - Fired when possible money laundering is identified over the highest threshold
   - Metadata will contain amount if funds transferred in the block range specifified in the configuration
   - Findings severity will be High
-  - Low confidence labels (0.5) for attacker address 
+  - Low confidence labels (0.5) for attacker address
+  - Metadata exposes the anomaly_score for the alert (calculated by dividing TC laundering tx by all transfer out tx)
+
+- POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM
+
+  - Fired when possible money laundering is identified over the medium threshold
+  - Metadata will contain amount if funds transferred in the block range specifified in the configuration
+  - Findings severity will be Medium
+  - Low confidence labels (0.5) for attacker address
+  - Metadata exposes the anomaly_score for the alert (calculated by dividing TC laundering tx by all transfer out tx)
+
+- POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-LOW
+  - Fired when possible money laundering is identified over the low threshold
+  - Metadata will contain amount if funds transferred in the block range specifified in the configuration
+  - Findings severity will be Low
+  - Low confidence labels (0.5) for attacker address
   - Metadata exposes the anomaly_score for the alert (calculated by dividing TC laundering tx by all transfer out tx)
 
 ## Test Data
