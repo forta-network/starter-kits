@@ -18,12 +18,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 try:
-    from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, DYNAMO_TABLE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING, BOT_ID
+    from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING, BOT_ID, PROD_TAG
     from src.persistance import DynamoPersistance
     from src.storage import get_secrets
-
 except ModuleNotFoundError:
-    from constants import MAX_AGE_IN_DAYS, MAX_NONCE, DYNAMO_TABLE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING, BOT_ID
+    from constants import MAX_AGE_IN_DAYS, MAX_NONCE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING, BOT_ID, PROD_TAG
     from persistance import DynamoPersistance
     from storage import get_secrets
 
@@ -354,6 +353,6 @@ class EntityClusterAgent:
     def persist_state(self):
         self.persistance.persist(self.GRAPH, GRAPH_KEY, EntityClusterAgent.prune_graph)
 
-entity_cluster_agent =  EntityClusterAgent(DynamoPersistance(DYNAMO_TABLE, web3.eth.chain_id), TX_SAVE_STEP, web3.eth.chain_id)
+entity_cluster_agent =  EntityClusterAgent(DynamoPersistance(PROD_TAG, web3.eth.chain_id), TX_SAVE_STEP, web3.eth.chain_id)
 def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
     return entity_cluster_agent.real_handle_transaction(transaction_event)

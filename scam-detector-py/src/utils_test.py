@@ -87,3 +87,12 @@ class TestUtils:
         decrypted_finding = Utils.decrypt_alert(encrypted_finding_base64, private_key)
         assert decrypted_finding.description == "Ice phishing report."
         assert decrypted_finding.severity == FindingSeverity.Critical
+
+    def test_debug_error(self):
+        finding = Utils.alert_error("description", "source", "stacktrace")
+        assert finding.description == "description"
+        assert finding.alert_id == "DEBUG-ERROR"
+        assert finding.severity == FindingSeverity.Info
+        assert finding.name == "Scam detector encountered a recoverable error."
+        assert finding.metadata['error_source'] == "source"
+        assert finding.metadata['error_stacktrace'] == "stacktrace"

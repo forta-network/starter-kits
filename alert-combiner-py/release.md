@@ -1,24 +1,15 @@
 # Attack Detector Bot Release Notes
 
-## v3.50.0 (July 25 2023: beta)
-
+## v3.50.0 (August 8 2023: beta)
 - add more bridge balance monitoring bots
-
-## v3.49.0 (July 24 2023: beta)
-
 - add fp_list and manual_alert_list
-
-## v3.48.1 (July 20 2023: beta)
-
 - introduce prod and test dynamo DB item prefix
-
-## v3.48.0 (July 19 2023: beta)
-
 - propagate bloom filter
-
-## v3.47.0 (July 17 2023: beta)
-
 - dynamo DB persistence and sharding
+
+## v3.46.3 (August 4 2023: beta, August 7 2023: prod)
+- updated package.json with new fields
+- update SDK to 0.1.34
 
 ## v3.46.1 (July 5 2023: beta, July 5 2023: prod)
 

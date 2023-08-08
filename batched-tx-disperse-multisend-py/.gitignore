@@ -1,0 +1,15 @@
+# secrets
+forta.config.json
+
+# node
+node_modules
+
+# python
+.python-version
+poetry.lock
+pyproject.toml
+
+# temp
+dist
+__pycache__
+.pytest_cache

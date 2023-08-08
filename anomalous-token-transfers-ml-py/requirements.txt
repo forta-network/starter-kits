@@ -2,7 +2,6 @@ forta_agent>=0.1.17
 setuptools>=61.3.1
 requests>=2.26.0
 scikit-learn==1.1.1 # model trained on 1.1.1
-sklearn
 dill
 numpy
 lime

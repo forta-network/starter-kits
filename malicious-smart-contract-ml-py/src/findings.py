@@ -36,12 +36,14 @@ class ContractFindings:
         chain_id: int,
         labels: list,
     ) -> Finding:
-        self.metadata["anomaly_score"] = calculate_alert_rate(
-            chain_id,
-            BOT_ID,
-            "SUSPICIOUS-CONTRACT-CREATION",
-            ScanCountType.CONTRACT_CREATION_COUNT,
-        ),
+        self.metadata["anomaly_score"] = (
+            calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                "SUSPICIOUS-CONTRACT-CREATION",
+                ScanCountType.CONTRACT_CREATION_COUNT,
+            ),
+        )
         self.label = labels
         return Finding(
             {
@@ -61,12 +63,14 @@ class ContractFindings:
         labels: list,
     ) -> Finding:
         self.label = labels
-        self.metadata["anomaly_score"] = calculate_alert_rate(
-            chain_id,
-            BOT_ID,
-            "SAFE-CONTRACT-CREATION",
-            ScanCountType.CONTRACT_CREATION_COUNT,
-        ),
+        self.metadata["anomaly_score"] = (
+            calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                "SAFE-CONTRACT-CREATION",
+                ScanCountType.CONTRACT_CREATION_COUNT,
+            ),
+        )
         return Finding(
             {
                 "name": "Safe Contract Creation",
@@ -80,12 +84,20 @@ class ContractFindings:
         )
 
     def non_malicious_contract_creation(self, chain_id: int) -> Finding:
-        self.metadata["anomaly_score"] = calculate_alert_rate(
-            chain_id,
-            BOT_ID,
-            "NON-MALICIOUS-CONTRACT-CREATION",
-            ScanCountType.CONTRACT_CREATION_COUNT,
-        ),
+        scan_count_type = ScanCountType.CONTRACT_CREATION_COUNT
+        custom_scan_count = None
+        if chain_id in [43114, 10, 250]:
+            scan_count_type = ScanCountType.CUSTOM_SCAN_COUNT
+            custom_scan_count = 500_000
+        self.metadata["anomaly_score"] = (
+            calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                "NON-MALICIOUS-CONTRACT-CREATION",
+                scan_count_type,
+                custom_scan_count,
+            ),
+        )
         return Finding(
             {
                 "name": "Non-malicious Contract Creation",
