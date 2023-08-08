@@ -1,7 +1,7 @@
 {
   "name": "attack-detector-feed-beta",
+  "version": "3.50.0",
   "displayName": "Attack Detector Feed (beta)",
-  "version": "3.46.4",
   "description": "Combines a set of past alerts under a potential attacker EOA and raises high confidence alert.",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/alert-combiner-py",
   "longDescription": "The Attack Detector bot combines past alerts under a common address from a variety of underlying base bots to emit a high precision alert. It does so by mapping each alert to the four attack stages (Funding, Preparation, Exploitation and Money Laundering/ Post Exploitation) utilizing an anomaly as well as heuristic detection approach.",
@@ -18,8 +18,8 @@
   ],
   "chainSettings": {
     "default": {
-      "shards": 1,
-      "target": 12
+      "shards": 8,
+      "target": 6
     }
   },
   "scripts": {
