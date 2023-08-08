@@ -73,19 +73,3 @@ def get_features(w3, opcodes, contract_creator) -> list:
     features = " ".join(features)
 
     return features, opcode_addresses
-
-
-def alert_count(chain_id: int, alert_id: str) -> int:
-    alert_stats_url = (
-        f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
-    )
-    alert_id_counts = 1
-    alert_counts = 1
-    try:
-        result = requests.get(alert_stats_url).json()
-        alert_id_counts = result["alertIds"][alert_id]["count"]
-        alert_counts = result["total"]["count"]
-    except Exception as err:
-        logger.error(f"Error obtaining alert counts: {err}")
-
-    return alert_id_counts, alert_counts

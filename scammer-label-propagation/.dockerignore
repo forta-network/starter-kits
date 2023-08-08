@@ -1,0 +1,6 @@
+node_modules
+dist
+forta.config.json
+.conda
+.vscode
+secrets.json

@@ -53,7 +53,9 @@ def get_prediction(address, features) -> tuple:
     prediction = "PHISHING_SCAMMER" if prediction_score >= MODEL_THRESHOLD else "NORMAL"
     end = timer()
     prediction_time = round(end - start, 3)
-    logger.info(f"Prediction time for {address}: {prediction_time}")
+    logger.info(
+        f"Prediction time for {address} with score {prediction_score}: {prediction_time}"
+    )
     return prediction_score, prediction, prediction_time
 
 
