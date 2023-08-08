@@ -24,6 +24,8 @@ COPY ./src ./src
 COPY ./fp_list.csv ./
 COPY ./manual_alert_list.tsv ./
 COPY ./LICENSE ./
+COPY ./fp_list.csv ./
+COPY ./manual_alert_list.tsv ./
 COPY package*.json ./
 RUN npm ci --production
 CMD [ "npm", "run", "start:prod" ]
