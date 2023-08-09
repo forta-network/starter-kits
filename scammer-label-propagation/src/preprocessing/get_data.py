@@ -238,7 +238,7 @@ def prepare_labels(df) -> pd.DataFrame:
     :param df: pd.DataFrame Dataframe with the label requests
     :return: pd.DataFrame Dataframe with the probability of being an attacker/victim of an scam
     """
-    attack_words  = ['phish', 'hack', 'attack', 'Attack', 'scam']
+    attack_words  = ['phish', 'hack', 'attack', 'Attack', 'scam', 'attacker', 'Attacker', 'scammer-eoa', 'scammer']
     victim_words = ['Victim', 'victim', 'benign']
 
     labeled = []
@@ -287,7 +287,10 @@ def download_labels_agent(all_nodes_dict, central_node) -> pd.DataFrame:
             response = get_labels(query_variables)
             next_page_exists = response.page_info.has_next_page
             all_labels += response.labels
-    all_labels_df = pd.DataFrame([response.label for response in all_labels])
+    all_labels_df = pd.DataFrame({'entity': [response.entity for response in all_labels],
+                                  'label': [response.label for response in all_labels],
+                                  'confidence': [response.confidence for response in all_labels],
+                                  'entity_type': [response.entity_type for response in all_labels],})
     if all_labels_df.shape[0] == 0:
         raise Warning(f'{central_node}:\tNo labels found, skipping')
     labels_df = prepare_labels(all_labels_df)
