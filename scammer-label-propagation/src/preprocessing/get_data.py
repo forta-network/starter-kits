@@ -262,6 +262,8 @@ def download_labels_agent(all_nodes_dict, central_node) -> pd.DataFrame:
     logger.info(f'{central_node}\tDownloading the automatic labels')
     all_nodes_list = list(all_nodes_dict.keys())
     all_labels = []
+    attack_words  = ['phish', 'hack', 'attack', 'Attack', 'scam', 'attacker', 'Attacker', 'scammer-eoa', 'scammer']
+
     for i in range(int(len(all_nodes_list) / SIMULTANEOUS_ADDRESSES) + 1):
         # This happens if the length of all_nodes_list is a multiple of SIMULTANEOUS_ADDRESSES
         if len(all_nodes_list[(i * SIMULTANEOUS_ADDRESSES):((i + 1) * SIMULTANEOUS_ADDRESSES)]) == 0:
@@ -270,7 +272,8 @@ def download_labels_agent(all_nodes_dict, central_node) -> pd.DataFrame:
                 "state": True,
                 "first": 50,
                 "sourceIds": attacker_bots,
-                "entities": all_nodes_list[(i * SIMULTANEOUS_ADDRESSES):((i + 1) * SIMULTANEOUS_ADDRESSES)]
+                "entities": all_nodes_list[(i * SIMULTANEOUS_ADDRESSES):((i + 1) * SIMULTANEOUS_ADDRESSES)],
+                "labels": attack_words,
                 }
         next_page_exists = True
         # We allow at most n_addresses pages to not overcharge the system, in case there is a contract
