@@ -1,8 +1,8 @@
 {
   "name": "scammer-label-propagation",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Scammer label propagation bot",
-  "repository": "https://github.com/forta-network/starter-kits/tree/scammer-label-propagation/scammer-label-propagation",
+  "repository": "https://github.com/forta-network/starter-kits/tree/main/scammer-label-propagation",
   "chainIds": [
     1
   ],
@@ -27,7 +27,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.33"
+    "forta-agent": "^0.1.34"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

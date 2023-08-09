@@ -5,6 +5,7 @@ import requests
 import numpy as np
 import pandas as pd
 from datetime import datetime
+from forta_agent import get_labels
 
 from src.constants import attacker_bots, victim_bots, SIMULTANEOUS_ADDRESSES, MIN_NEIGHBORS, MAX_NEIGHBORS
 from src.storage import get_secrets, dynamo_table
@@ -481,102 +482,36 @@ def prepare_labels(df) -> pd.DataFrame:
     return pd.DataFrame(labeled)
 
 
-def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
-    """
-    Downloads the labels of the nodes in all_nodes_dict. It uses the graphql API of Forta.
-    :param all_nodes_dict: dict Dictionary with the nodes to download the labels from
-    :param central_node: str Central node
-    :return: pd.DataFrame Dataframe with the labels"""
+def download_labels_agent(all_nodes_dict, central_node) -> pd.DataFrame:
     logger.info(f'{central_node}\tDownloading the automatic labels')
-    forta_api = "https://api.forta.network/graphql"
-    headers = {"content-type": "application/json"}
-    query = """
-    query Query($labelsInput: LabelsInput) {
-    labels(input: $labelsInput) {
-        labels {
-        label {
-            label
-            entity
-            confidence
-        }
-        source {
-            bot {
-            id
-            }
-        }
-        }
-    pageInfo {
-        endCursor {
-            pageToken
-        }
-        hasNextPage
-        }
-    }
-    }
-    """
     all_nodes_list = list(all_nodes_dict.keys())
     all_labels = []
     for i in range(int(len(all_nodes_list) / SIMULTANEOUS_ADDRESSES) + 1):
         # This happens if the length of all_nodes_list is a multiple of SIMULTANEOUS_ADDRESSES
         if len(all_nodes_list[(i * SIMULTANEOUS_ADDRESSES):((i + 1) * SIMULTANEOUS_ADDRESSES)]) == 0:
             continue
-        # We query first the potential attackers.
         query_variables = {
-            "labelsInput": {
                 "state": True,
                 "first": 50,
                 "sourceIds": attacker_bots,
                 "entities": all_nodes_list[(i * SIMULTANEOUS_ADDRESSES):((i + 1) * SIMULTANEOUS_ADDRESSES)]
                 }
-            }
         next_page_exists = True
         # We allow at most n_addresses pages to not overcharge the system, in case there is a contract
         current_page = 0
         while next_page_exists and current_page < SIMULTANEOUS_ADDRESSES:
-            for i in range(5):
-                try:
-                    payload = dict(query=query, variables=query_variables)
-                    response = requests.request("POST", forta_api, json=payload, headers=headers)
-                    all_labels += response.json()['data']['labels']['labels']
-                except Exception as e:
-                    logger.debug(f'Retrying for {i+1} time')
-                    if i == 4:
-                        raise ValueError(f'{central_node}:\tLabels query failed. {response}.\n{e}', exc_info=True)
-                else:
-                    break
-            next_page_exists = response.json()['data']['labels']['pageInfo']['hasNextPage']
-            query_variables['labelsInput']['after'] = response.json()['data']['labels']['pageInfo']['endCursor']
-            current_page += 1
-        # Now query victims
-        query_variables = {
-            "labelsInput": {
-                "state": True,
-                "first": 50,
-                "sourceIds": victim_bots,
-                "labels": ['Victim', 'victim', 'benign'],
-                "entities": all_nodes_list[(i * SIMULTANEOUS_ADDRESSES):((i + 1) * SIMULTANEOUS_ADDRESSES)]
-                }
-            }
+            response = get_labels(query_variables)
+            next_page_exists = response.page_info.has_next_page
+            all_labels += response.labels
+        query_variables['sourceIds'] = victim_bots
+        query_variables['labels'] = ['Victim', 'victim', 'benign']
         next_page_exists = True
-        # We allow at most n_addresses pages to not overcharge the system, in case there is a contract
         current_page = 0
         while next_page_exists and current_page < SIMULTANEOUS_ADDRESSES:
-            for i in range(5):
-                try:
-                    payload = dict(query=query, variables=query_variables)
-                    response = requests.request("POST", forta_api, json=payload, headers=headers)
-                    all_labels += response.json()['data']['labels']['labels']
-                except Exception as e:
-                    logger.debug(f'Retrying for {i+1} time')
-                    if i == 4:
-                        raise ValueError(f'{central_node}:\tLabels query failed. {response}.\n{e}', exc_info=True)
-                else:
-                    break
-            next_page_exists = response.json()['data']['labels']['pageInfo']['hasNextPage']
-            end_cursor = response.json()['data']['labels']['pageInfo']['endCursor']
-            query_variables['labelsInput']['after'] = end_cursor
-            current_page += 1
-    all_labels_df = pd.DataFrame([response['label'] for response in all_labels])
+            response = get_labels(query_variables)
+            next_page_exists = response.page_info.has_next_page
+            all_labels += response.labels
+    all_labels_df = pd.DataFrame([response.label for response in all_labels])
     if all_labels_df.shape[0] == 0:
         raise Warning(f'{central_node}:\tNo labels found, skipping')
     labels_df = prepare_labels(all_labels_df)
