@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def collect_data_zettablock(central_node, secrets):
+    t = time.time()
     n_retries = 3
     API_key = secrets['apiKeys']['ZETTABLOCK']
     global dynamo
@@ -26,15 +27,13 @@ def collect_data_zettablock(central_node, secrets):
     erc20_data = get_erc20_data_zettablock(list_of_addresses, API_key=API_key, n_retries=n_retries)
     eth_data = get_eth_data_zettablock(list_of_addresses, API_key=API_key, n_retries=n_retries)
     data = {**erc20_data, **eth_data}
-    logger.info(f'{central_node}:\tData collected')
+    logger.info(f'{central_node}:\tData collected; Time needed: {time.time() - t:.2f} s')
     return data
 
 
 def get_list_of_addresses_zettablock(central_node, API_key, n_retries=3):
     # Fist step is to query all the addresses that had some interaction with the central node
     all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_4afc4b8183174d1dbbef855a0144efd4/graphql"  # 1 year
-    # all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_bb1d414ac0ac4d76a1ff1ae2e2b5c3f0/graphql"  # 6 months
-    # all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_1e1871c668514f47900937484d974d68/graphql"  # new 6 months
     all_addresses_query = """
     query associatedAddresses($address: String) {
       receiver: records(from_address: $address) {
@@ -259,6 +258,7 @@ def prepare_labels(df) -> pd.DataFrame:
 
 
 def download_labels_agent(all_nodes_dict, central_node) -> pd.DataFrame:
+    t = time.time()
     logger.info(f'{central_node}\tDownloading the automatic labels')
     all_nodes_list = list(all_nodes_dict.keys())
     all_labels = []
@@ -294,6 +294,7 @@ def download_labels_agent(all_nodes_dict, central_node) -> pd.DataFrame:
     if all_labels_df.shape[0] == 0:
         raise Warning(f'{central_node}:\tNo labels found, skipping')
     labels_df = prepare_labels(all_labels_df)
+    logger.info(f'{central_node}\tDownloaded the automatic labels in {time.time() - t} seconds')
     return labels_df
 
 
