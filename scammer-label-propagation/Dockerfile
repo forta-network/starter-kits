@@ -5,6 +5,8 @@ RUN apt-get install -y python3-pip
 RUN python3 -m pip install --upgrade pip
 COPY requirements.txt ./
 RUN python3 -m pip install --user -r requirements.txt --no-cache-dir
+# Installing PyTorch out of the requirements to avoid the CUDA dependency
+RUN python3 -m pip install --user torch --index-url https://download.pytorch.org/whl/cpu --no-cache-dir
 
 # Final stage: copy over Python dependencies and install production Node dependencies
 FROM ubuntu:focal
