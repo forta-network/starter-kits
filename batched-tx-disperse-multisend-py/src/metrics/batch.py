@@ -54,6 +54,8 @@ def confidence_score(
 
 # MALICIOUS ###################################################################
 
+#TODO: "to" address keeps tokens (instead of redistributing them)
+
 def malicious_score(
     log: TransactionEvent,
     w3: Web3,
@@ -62,19 +64,9 @@ def malicious_score(
 ) -> float:
     """Evaluate the provabability that a batch transaction is malicious."""
     _scores = []
-    _block = int(log.block.number)
-    _to = str(getattr(log.transaction, 'to', '')).lower()
-    _data = str(getattr(log.transaction, 'data', '')).lower()
-    _value = int(getattr(log.transaction, 'value', ''))
     # transfer of amount 0
     _scores.append(probabilities.indicator_to_probability(
         indicator=indicators.log_has_erc20_transfer_of_null_amount(log=log),
         true_score=0.9, # certainty
         false_score=0.5)) # neutral
-    # check whether "to" contract balance increased more than the fee
-    if _value >= max_batching_fee and indicators.transaction_value_matches_input_arrays(value=_value, data=_data, min_count=min_transfer_count, tolerance=max_batching_fee):
-        _scores.append(probabilities.indicator_to_probability(
-            indicator=indicators.native_token_balance_changed(w3=w3, address=_to, block=_block, tolerance=max_batching_fee), # mvt below 0.2 ETH are ignored
-            true_score=0.7, # batching contracts are not supposed to accumulate ETH
-            false_score=0.5)) # neutral: could still be malicious
     return probabilities.conflation(_scores)
