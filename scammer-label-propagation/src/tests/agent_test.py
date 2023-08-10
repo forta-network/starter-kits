@@ -209,7 +209,10 @@ class TestScammerLabelPropagationAgent(unittest.TestCase):
         agent.run_all_extended(central_node, create_alert_event(alert))
 
     def test_address_more_predictions(self):
-        central_node = '0x872f8a8847129c7c3de5ad4cc8e9b2468763dbdf'
+        # central_node = '0x872f8a8847129c7c3de5ad4cc8e9b2468763dbdf'
+        # central_node = '0x41473c5ecde5cfedb9c8ff1e339f985a61f38eee'
+        # central_node = '0x9acbee8540fdb9d4f807a872e24aac07a86e5b84'
+        central_node = '0x599cd07401a931e662f6ea7f7f3d15a5e96cbb8e'
         agent.initialize()
         alert = create_alert_event(
             {"alert":
