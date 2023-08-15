@@ -3379,4 +3379,11 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 8/14/2023	Address	0x81d65630561cb4578d90ed5e8d22de3ff11049e9	@CertiKAlert	https://twitter.com/CertiKAlert/status/1690561557506281472	1	Soft rug pull	Vyper vulnerability
 8/14/2023	Address	0xB6f7Df81Ac7EDdF94f9310Cd8C25e439216d9272	@CertiKAlert	https://twitter.com/CertiKAlert/status/1690400707701096448	56	Hard rug pull	fake zkSync token.
 8/14/2023	Address	0x11d81e7caa221f74cafe4266a8c2d8c153394b9c	@AegisWeb3	https://twitter.com/AegisWeb3/status/1690242089425240064	56	Hard rug pull	token $BASO
-8/14/2023	Address	0xf875222B648d83db4c876748da590c192e04a6eb	@CertiKAlert	https://twitter.com/CertiKAlert/status/1690050392267104256	56		Sospicous seller on GLC Space Shuttle (GSS)
+8/14/2023	Address	0xf875222B648d83db4c876748da590c192e04a6eb	@CertiKAlert	https://twitter.com/CertiKAlert/status/1690050392267104256	56	Hard rug pull	Sospicous seller on GLC Space Shuttle (GSS)
+8/15/2023	Address	0x5707b5D01899D8163D18962bD950E36b2EE925ab	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1691412961095536640	1	Hard rug pull	
+8/15/2023	Address	0xeBEdcA4029be2f6d3BD3c8f486AcDc814f3A1862	@CertiKAlert	https://twitter.com/CertiKAlert/status/1691305765301080064	56	Hard rug pull	
+8/15/2023	Address	0x96c0876F573e27636612CF306C9db072d2B13DE8	@BeosinAlert	https://twitter.com/BeosinAlert/status/1691285787101569024	1	Private key theft	
+8/15/2023	Address	0xa88A470fd105B70d07535B2B9673ce8E684A5032	@artemDeDotFi	https://twitter.com/artemDeDotFi/status/1691124228547063809	1	Hard rug pull	
+8/15/2023	Address	0x82b5F93a57c1777DEe880A784860C2D9f88781dF	@CertiKAlert	https://twitter.com/CertiKAlert/status/1691109489225691137	1	Address poisoning	
+8/15/2023	Address	0xE4982B6255661120859f8A8468a64E6F9937C793	@CertiKAlert	https://twitter.com/CertiKAlert/status/1691109489225691137	1	Address poisoning	
+8/15/2023	Address	0x7D725449fa17C4659E5625dC57A2C5e3c0091411	@CertiKAlert	https://twitter.com/CertiKAlert/status/1691109489225691137	1	Address poisoning	
