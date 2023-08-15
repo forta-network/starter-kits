@@ -130,5 +130,5 @@ address,chain_id,comment
 0xA0c68C638235ee32657e8f720a23ceC1bFc77C77, 1, Polygon bridge
 0xdcfae11c70f1575fab9d6bd389a6188ae5524a56, 137, Polygon Old Mapper Deployer
 0xdcfae11c70f1575fab9d6bd389a6188ae5524a56, 1, Polygon Old Mapper Deployer
-0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39, 137, Polygon Old Mapper Deployer
-0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39, 1, Polygon Old Mapper Deployer
+0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39, 137, Chainlink token
+0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39, 1, Chainlink token
