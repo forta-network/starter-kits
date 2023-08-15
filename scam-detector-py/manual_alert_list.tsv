@@ -3369,9 +3369,9 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 8/14/2023	Address	0x5f4c21c9bb73c8b4a296cc256c0cde324db146df	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1691002297361346560	1	Hard rug pull	Exploit  on ZunamiProtocol
 8/14/2023	Address	0x5f4C21c9Bb73c8B4a296cC256C0cDe324dB146DF	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1691002297361346560	1	Hard rug pull	Exploit  on ZunamiProtocol
 8/14/2023	Address	0x93C78BDeC876984435009Df66923B412036e3c5B	@AegisWeb3	https://twitter.com/AegisWeb3/status/1690994771395825664	56	Hard rug pull	Honeypot Token  $TARAL
-8/14/2023	Address	0x7d725449fa17c4659e5625dc57a2c5e3c0091411	@realScamSniffer	https://twitter.com/realScamSniffer/status/1690980624289718274	42161	Ice phishing	victim signed an "increaseAllowance" transaction
-8/14/2023	Address	0x000069bb406c6f9502ee308d9df576765bd70000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1690980624289718274	42161	Ice phishing	victim signed an "increaseAllowance" transaction
-8/14/2023	Address	0x29488e5fd6bf9b3cc98a9d06a25204947cccbe4d	@realScamSniffer	https://twitter.com/realScamSniffer/status/1690980624289718274	42161	Ice phishing	victim signed an "increaseAllowance" transaction
+8/14/2023	Address	0x7d725449fa17c4659e5625dc57a2c5e3c0091411	@realScamSniffer	https://twitter.com/realScamSniffer/status/1690980624289718274	42161	Ice phishing	victim signed an (increaseAllowance) transaction
+8/14/2023	Address	0x000069bb406c6f9502ee308d9df576765bd70000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1690980624289718274	42161	Ice phishing	victim signed an (increaseAllowance) transaction
+8/14/2023	Address	0x29488e5fd6bf9b3cc98a9d06a25204947cccbe4d	@realScamSniffer	https://twitter.com/realScamSniffer/status/1690980624289718274	42161	Ice phishing	victim signed an (increaseAllowance) transaction
 8/14/2023	Address	0x8C5D6DAB815e24cF68aEd155dE377693e5020739	@realScamSniffer	https://twitter.com/realScamSniffer/status/1690727412542365696	1	Ice phishing	the victim gave the token approval to the scammer through ERC-20
 8/14/2023	Address	0x326f374751bbb96560373f29f1f1cc44bdb6a703	@AegisWeb3	https://twitter.com/AegisWeb3/status/1690709266871554048	56	Soft rug pull	token $X Premium
 8/14/2023	Address	0xa4c1dc2a0ff7976fc8b525145906756b38ab75ea	@AegisWeb3	https://twitter.com/AegisWeb3/status/1690709266871554048	56	Soft rug pull	token $X Premium
