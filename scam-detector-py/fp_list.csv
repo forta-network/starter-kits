@@ -124,3 +124,5 @@ address,chain_id,comment
 0x00db4a28a036ec4f542163f2bdcec104313be22a,	1,	This address has normal activity. Does not seem to be executing any type of scam
 0x85db41cce3050194bd2725efa34bb2081ee40f9f,	1,	This address created a bunch of contracts. Does not seem to be gaining approvals and the draining
 0x8cc6b83d52b67f629fb3c5978cda3a6c2a456edc,	1,	Normal activity. Does not sound like ice phishign
+0x8484ef722627bf18ca5ae6bcf031c23e6e922b30, 137, Polygon bridge
+0x8484ef722627bf18ca5ae6bcf031c23e6e922b30, 1, Polygon bridge
