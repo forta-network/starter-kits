@@ -1,10 +1,10 @@
 from os import environ
 import forta_agent
 from forta_agent import Finding, FindingType, FindingSeverity, get_json_rpc_url, EntityType
-from src.constants import THRESHOLDS, DAY_LOOKBACK_WINDOW, SWAP_TOPICS
 from web3 import Web3
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 from src.storage import get_secrets
+from src.constants import THRESHOLDS, DAY_LOOKBACK_WINDOW, SWAP_TOPICS
 
 SECRETS_JSON = get_secrets()
 
