@@ -1,9 +1,9 @@
-from src.constants import SWAP_TOPICS
-from forta_agent import create_transaction_event, FindingSeverity, get_json_rpc_url, EntityType
 import timeit
 import agent
 from web3 import Web3
 from web3_mock import Web3Mock, ADDRESS_WITH_LARGE_BALANCE, ADDRESS_WITHOUT_LARGE_BALANCE, CURRENT_BLOCK, OLDER_CURRENT_BLOCK
+from forta_agent import create_transaction_event, FindingSeverity, get_json_rpc_url, EntityType
+from src.constants import SWAP_TOPICS
 
 w3 = Web3Mock()
 real_w3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
