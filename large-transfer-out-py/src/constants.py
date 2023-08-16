@@ -9,3 +9,7 @@ THRESHOLDS = {1: (10000000000000000000, 50000000000000000000),  # mainnet - 10ET
               250: (50000000000000000000000, 250000000000000000000000),  # fantom - 50,000 -> 250,000 FTM
               42161: (10000000000000000000, 50000000000000000000)  # arbitrum - 10ETH->50 ETH
               }
+
+# 0xd78ad95... is the swap topic for Uniswap v2 & 0xc42079f... is the swap topic for Uniswap v3
+SWAP_TOPICS = ["0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822",
+               "0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67"]
