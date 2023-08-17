@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## v2.18.2
+- integrate metamask phishing list
+
 ## v2.18.1 (August 4th - beta, August 8th - prod (without private key compromise, ice phishing ML bot, pig butchering, nor gas minting))
 - updated README
 - updated confidence values based on July precision measurements
