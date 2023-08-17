@@ -24,3 +24,4 @@ Describe each of the type of alerts fired by this agent
 The agent behaviour can be verified with the following transactions:
 
 - 0x531e42376038809d98fd488edddb33126431bda870bd3f43984025486a3f4f68 (Fei Rari attacker contract)
+- 0x16718a6df144de749035e4763946ad56d3dfaeb5d151a82f913698fa4ae28c3d (Conic Finance Exploiter contract)
