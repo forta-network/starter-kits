@@ -121,9 +121,8 @@ class ScamDetectorFinding:
         df_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = existing_scammer_contract_address.lower())
 
         for index, row in df_labels.iterrows():
-            if row['metadata'] is not None and any("address_type=contract" in s for s in row['metadata']) and any("threat_category=" in s for s in row['metadata']):
-                original_threat_category_pair = next((s for s in row['metadata'] if "threat_category" in s), None)
-                original_threat_category = original_threat_category_pair.split("=")[1] 
+            if row['metadata'] is not None and "address_type" in row['metadata'].keys() and "threat_category" in row['metadata'].keys() and row['metadata']['address_type'] == 'contract':
+                original_threat_category = row['metadata']['threat_category']
                 original_threat_categories.add(original_threat_category)
                 logging.info(f"retrieved original threat category for label {existing_scammer_contract_address.lower()}: {original_threat_category}")
         
@@ -397,7 +396,14 @@ class ScamDetectorFinding:
         })
 
     @staticmethod
-    def alert_FP(w3, address: str, label: str, metadata: dict) -> Finding:
+    def alert_FP(w3, address: str, label: str, metadata: tuple) -> Finding:
+
+        #metadata is a tuple and needs to convert to dict
+        metadata_dict = {}
+        for pair in metadata:
+            key = pair.split("=")[0]
+            value = pair.split("=")[1]
+            metadata_dict[key] = value
 
         labels = []
         labels.append(Label({
@@ -406,7 +412,7 @@ class ScamDetectorFinding:
                 'entity': address,
                 'confidence': 0.99,
                 'remove': "true",
-                'metadata': metadata
+                'metadata': metadata_dict
 
             }))
 
