@@ -35,13 +35,13 @@ The bot only emits `info` alerts:
 
 - `BATCHED-ERC20-TX`:
   - Metadata:
-    - `transfers`: a list of ERC20 transfer events, with their inputs (IE `token, from, to, value`)
+    - `transfer_tokens`: the address(es) of the ERC20 tokens being transfered
 - `BATCHED-ERC721-TX`:
   - Metadata:
-    - `transfers`: a list of ERC721 transfer events, with their inputs (IE `token, from, to, value` where value is a token id)
+    - `transfer_tokens`: the address(es) of the ERC721 tokens being transfered
 - `BATCHED-ETH-TX` / `BATCHED-MATIC-TX` / `BATCHED-{CURRENCY}-TX`
   - Metadata:
-    - `transfers`: a list of balance delta, for the native currency of the target chain
+    - `transfer_tokens`: `['0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee']`, the agreed upon address to represent native currencies
 
 For all the alerts:    
 
@@ -53,15 +53,17 @@ For all the alerts:
   - `chain_id`: the chain id
   - `from`: the transaction sender
   - `to`: the transaction recipient
-  - `token`: the type of token, IE ERC20 / ERC721 / NATIVE
-  - `count`: the number of transfers wrapped in the transaction
+  - `transfer_count`: the number of transfers wrapped in the transaction
+  - `transfer_total`: the total amount of all the transfers wrapped in the transaction
   - `anomaly_score`: the alert rate for this combination of bot / alert type
 - Labels:
   - `entity`: address of the sender, if the transaction is assessed as malicious
 
-## Filtering Options
+## Options
 
-The file [`options.py`](src/options.py) contains filtering options.
+The file [`options.py`](src/options.py) contains sets the options at their default values.
+
+### Filtering Options
 
 All of these criteria must be satisfied by a transaction to be reported:
 
@@ -114,6 +116,10 @@ First, the bot parses the transaction metadata and looks for relevant patterns:
 - on the events:
   - ERC20 and ERC721 standards are supposed to emit `Transfer` events when the tokens are moved
   - the bot parses the transaction log, looking for those events
+- on the value:
+  - the sums of each array are calculated
+  - and compared to the transaction value
+  - if there's a match, the transaction value is very likely to be sprayed among several transfers
 - on the balances:
   - the balances of all the addresses involved can be checked
   - in particular, the balance of the `from` address is expected to change (decrease) while the `to` is supposed to remain mostly unchanged (apart from the possible collection of a fee)
@@ -138,9 +144,9 @@ Given a list of probabilities $\{p_i\}$ and a extra probability $p$, the conflat
 For example:
 
 - when an indicator (presence / absence) doesn't add information it can be scored as `0.5`.
-- when it greatly increases the probability `0.9`
-- when it slightly decreases the probability `0.4`
-- when it strongly decreases the probability `0.1`
+- `0.9` to greatly increase the probability
+- `0.4` to slightly decrease the probability
+- `0.1` to strongly decrease the probability
 - etc
 
 Rather than each individual score, it is the tendency of the list of scores that drives the overall metric toward a low / high probability.

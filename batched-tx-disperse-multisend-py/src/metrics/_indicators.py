@@ -57,6 +57,14 @@ def log_has_multiple_erc721_mint_events(log: TransactionEvent, min_count: int) -
     _origins = [int(_e['from'], 16) == 0 for _e in _events] # creation / minting of tokens
     return len(_events) >= min_count and all(_origins)
 
+# VALUE INDICATORS ###########################################################
+
+def transaction_value_matches_input_arrays(value: int, data: str, min_count: int, tolerance: int) -> bool:
+    _args = inputs.get_matching_arrays_of_address_and_value(data=data, min_length=min_count)
+    _sums = [sum(_a[1]) for _a in _args] # sum each candidate array of amounts
+    _tests = [abs(value - _s) <= tolerance for _s in _sums] # account for a service fee with the tolerance
+    return any(_tests) # one of the input arrays has a sum equal to the transaction value
+
 # BALANCES INDICATORS #########################################################
 
 def multiple_native_token_balances_changed(w3: Web3, data: str, block: int, min_count: int, min_total: int) -> bool:
