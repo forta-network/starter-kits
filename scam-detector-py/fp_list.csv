@@ -134,3 +134,5 @@ address,chain_id,comment
 0x63ec5767f54f6943750a70eb6117ea2d9ca77313, 1, Polygon Old Mapper Deployer
 0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39, 137, Chainlink token
 0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39, 1, Chainlink token
+0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d, 56, Binance Deployer
+0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d, 56, BUSD
