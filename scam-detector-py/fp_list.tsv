@@ -1,9 +1,139 @@
-cluster	chain_id	comment
-0x1e0049783f008a0085193e00003d00cd54003c71	1	open sea relayer
-0x000000000022d473030f116ddee9f6b43ac78ba3	1	Uniswap Protocol: Permit2
-0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0	1	Wsteth token
-0x7ceb23fd6bc0add59e62ac25578270cff1b9f619	137	weth token
-0x10ed43c718714eb63d5aa57b78b54704e256024e	56	PancakeSwap: Router
-0x7c90784d6144967bf7b8c89ca06a3629d8abe642	1	MoSolid token
-0x55d398326f99059ff775485246999027b3197955	56	Binance Peg Token
-0x6F5aC65CA70F2a44d73c8f711Cb2bDf425D9F304	56	BitKeep: Swap Router v1
+address,chain_id,comment
+0x1e0049783f008a0085193e00003d00cd54003c71,1,open sea relayer
+0x000000000022d473030f116ddee9f6b43ac78ba3,1,Uniswap Protocol: Permit2
+0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0,1,Wsteth token
+0x7ceb23fd6bc0add59e62ac25578270cff1b9f619,137,weth token
+0x10ed43c718714eb63d5aa57b78b54704e256024e,56,PancakeSwap: Router
+0x7c90784d6144967bf7b8c89ca06a3629d8abe642,1,MoSolid token
+0x55d398326f99059ff775485246999027b3197955,56,Binance Peg Token
+0x6F5aC65CA70F2a44d73c8f711Cb2bDf425D9F304,56,BitKeep: Swap Router v1
+0xa30669c9ddb1cbf1594a923f7eccac8ce0eee7fa,1,Not a TP (the potenital hacker was not approved but somehow invoked the transfer from function)
+0x8d5064fd1b1e74405050ba297239bc2aff28ef1b,1,This is clearly an FP. 'Targets' are being drained several times by the same EOA. Also all targets are funded by crypto.com
+0x2356821b1a40d5d5e53352c5112f89b273a83aed,1,Likely FP. 'targets' are being funded then there's a short gap where they are stealed. Also funds are always sent to two different addresses
+0x576165c5c51A8E2571E798867405A939b8Dc9C5b,1,Likely FP. All targets are funded by Binance. As soon as funded 'stealed'
+0x8ed0533fe6622d1c08b32e9075b0f0d2e090ff80,1,Likely FP. All targets are funded by Binance. As soon as funded 'stealed'
+0x7ace242f32208d836a2245df957c08547059bf45,137,Scammer 'stealed' several times by the same 'hacker'. Also between steals it exists funding so it doesn have much sense.
+0x7ace242f32208d836a2245df957c08547059bf45,56,Scammer 'stealed' several times by the same 'hacker'. Also between steals it exists funding so it doesn have much sense.
+0x70cd4b20e81410767676f76c4446435caee0c80b,1, earni.fi is a site where people can claim their airdroips. earnifi.eth is their verified ENS
+0x96c9f810a9c91c81bfa401dd9f24b06307e06fec,1, 'targets' have the same kind of activity (low amount of txs and around 340 days ago)
+0x052b2fd0006375aedf5ebb9db3f42de037b83249,1, 'targets' interacting too many times with the potential hacker 
+0xaa12f94288bbfedd25ac5b349f3b7423876d31e5,1, 'targets' interacting too many times with the potential hacker 
+0x5f22a973cf87f5535e434d293018c6bbe77e7731,1, 'targets' as soon as funded then stealed.
+0x0005f82d812aa31da5185565a8d691ab15142678,1, 'targets' as soon as funded then stealed.
+0x1025905b15a5e2e27fec11318306a2f51b71f3d4,1, 'targets' as soon as funded then stealed.
+0x663862776c7879116d8afc5e559548c6723eecfd,1, 'Targets' are not fully drained. Also 'targets' are sending to the hacker they execute more ETH tx to other adddresses 
+0x7b704077d855c5da55729adffec78cd79ff0ced4,1, Doesn't seem like a TP
+0x7e3e08d573dd0844dc2e623bdbd4ec87c54629f6,1, targets are transferring more than once to the hacker
+0x9febd061f5955ecce02857f9f02210f1c937bcf8,1, Liklely FP - All targets funded by binance or OKX then interacted with ZKsynkEra - Seems more like an airdrop hunter
+0xb7f571d6a5850d58f90527407f535d5aecd780a1,1, Doesn't seem that the hacker is fully draining all the ETH but a low amount compared with all the eth these wallets have
+0x9aa9854658714b6aad07b3690cd3ed8d9ffd3f85,1, Doesn't seem that the hacker is fully draining all the ETH but a low amount compared with all the eth these wallets have. Also in some cases the 'target' interacted more than once with the 'hacker'
+0xecea96a55a12082eb71af6dfce7681195a1b7902,137, All the 'targets' are sending the same amount 
+0x42e650c55cd827d353e51e60632eff381861b3ce,137, Tranfers from the same wallet in three different moments
+0x5bbd726c0455ade17dea775ef32a5373b38a9a9b,137,
+0x7293c4fc440f91bb551302b8c28a443161e3aa84,56, Sending dust
+0x667d6e3b2a4c36792d6521d778215cbbf033028f,1, Hacker 'stealing' several times
+0xf36ac1a7c1bed1e5615af9a6fe35cfc2f5036043,137, 'Steling' always from the same wallet and a super low amount in USDC
+0x873ce34970cff81c77eb07217a8058c1861700bd,1,As soon as receiving the ETH the 'targets' are being drained. There's a pattern that shouldn't be happening
+0x95d896fb6ef54a601887b4ce5c4e3fd1e0226c6d,1,Interacted too many times with the 'hacker'
+0xe5ad66f494bb6d80ae79ce9265cebaa5c64848cc,1,'hackers' are stolen by only a slighty portion of the whole eth that they posses
+0xbd4d15053be2aeb70d544c6b8a7056f8a5c0250d,1,All targets seems like airdrop hunters. A same pattern happening (interation with ZKsync and starknet)
+0x66c7ad805d0d7f76038f2949574a93961032286b,1,'targets' are sending transfers to different EOAs
+0x2e6441363f7657fd31907ab58a7bc17ae5894113,1,'''Stealing'' the same target over and over again'
+0xbd4698e42e57b9e024a86c37659739a674ebd08f,1,I don't see any 0 value transfer
+0x53ed53e7f9a4821ed370fee3124e8bac5e11a61c,1,There is not a 0 value transfer
+0xbbbccd07e987ad2728b82685066e8b301bde0b12,1,The only target is being drained in three different moments
+0x08a34cac368f1206a30803787d5e00cf4265c347,1,Targets are only stealed usdt. also in the majority of the cases target is fooled more than once
+0x7b64a9d924c60e675759ee05a9e7aa9efa85e7ef,1,HAcker stealing more than one time to the target. This does not have much sense
+0xfc9a5730bcecebf14c863aecba57a6e399a252cd,1,Only stealing tether (usdt). also same target
+0x282d9c068b8ae384f40cf027151b3c0e125b9919,1,Only stealing tether (usdt). also same target
+0xc4a72063c03e77893b2f0181ffd22b34cab170fd,1,There are no indicators why this should be a TP
+0x8aa3ee7fd8af894deaf7ad2d6cc18fa8c1620a61,1,Bulk transfer issue
+0xf7195c434b17ceae7eec89c9be640cb8f633a174,1,Bulk transfer issue
+0xcd7c3ea4dfc48f78ad71acfe2333e0bae26050ad,1,Only stealing tether (usdt). also same target
+0xdac61a45d77cdef4e06fa20637b35fdb1a3b2871,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x000000697bb288f2528042e8844b65cd32beafca,1,Doesn't seem like an ice phishing
+0xc33d8f9b4859b7ce8267c5f6eb1526b16ecf0863,1,Doesn't seem like a TP. Targets are funded by exchanges. then stolen as soon as possible.
+0xbdfc0e5c25bdba5a8fb0cbde9c52c8abce4fafc5,1,Seems it isn't a phishing attack
+0x58cf5e7802b56b4a280a69ef659616dd89a6d81f,1,Seems it isn't a phishing attack
+0x328ebc7bb2ca4bf4216863042a960e3c64ed4c10,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x0766b0101d274f230b8db771dbb20196e2f50cb9,1,There is a sale of a bunch of bored ape at a lower price than the floor. however still is a big amount. Around 25 ETH
+0x1b1b43add616b0d1e0d1a23f5d43d0465107859a,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x77cb0e8af082d850f839d3324d324903d99919c0,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xb1a9752d702b9e50db15e3b641d7098591752805,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x50f808e2876c025a2322883eb084c58528cf930d,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xcdf4930c1e3167faa772fa463ae8ff44d61273f0,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x81c1eaf33ee522b0f986ec7d0152c545c0a87344,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xf599ad8eaf92938dc1c47cfce97a549c838d6e88,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xd30e17a73a788850a3a372393ceb0036406467c2,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x908141d3113e1701dba8786d4012c90e5813313b,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x202eca424a8db90924a4daa3e6bcecd9311f668e,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x11faa794cead8d315a06132425b0ac26e49f2cb1,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x457ae2c5d81f2b5be0829157947a7d739861147e,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x9083fed81f3ab2ddeb376db0e394c8ae565182c1,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xef321d58dd9f6c9f513d1f68150e40446e5e5fdd,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xdfad36565b8753e9d2b0bdcbaf652c17f7733047,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0x6231881cc679ad241ff5622cd1549008924f066a,1,I am not seiing why this should be considered as a TP. there was not any NFT sold for a low value
+0xfdd442e4d8752433e704da6b07c10b9e4236f62f,1,I don't see why this address should be considered as an address posioner. this address did not trigger any posonous transaction nor is the contract which sent the tokens
+0xd4bb298f935cdfa7eb5e363d168f838bb65cdff4,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0x42d403ab9b0603442ac991c0cfe124105dde0811,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0xb90973421e3B6bB342838989C86278d4601D42f3,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0xe7462ed316f6fd3442fd3e78fde1ef745a4c87b4,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0xfa080f371f2b9986dfd0a692da4da343178233d0,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0x4e283abd94aee0a5a64a582def7b22bba60576d8,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0xbf901f52aef5bb098f6f7918e1fa0c639720f409,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0x75444282050682a43d1220cc4a09362c032538a3,1,Customer reported FP; Christian investigated manually. https://docs.google.com/document/d/1Y6Tk1-ZKtpcyaassqw8trjOGp_c9LDyWaLM3f_kzb00/edit?usp=sharing
+0xbb7c3a9c23c1d9aded4f98e8270bc3ee9914ddad,1, Address is doing some swaps of some tokens but does not seem like ice phsihing
+0x56bf5b8db413f699d2649a39fc66b91dc858969b,1,	Address is swapping some unknow tokens but does not seem like icehishing
+0xb9045c0f6a9726f9f88b9af56e6c3a1910ba6984,1,	Seems to be executing swaps on uniswap. Does not seem like phsihing
+0x87b87f78917371aff305e719fbc8eaa8b3520bea,1, Seems to be executing swaps on uniswap. Does not seem like phsihing
+0x385fa52944e8041438a75949e07a780351f4a56d,1,	Seems to be executing swaps on uniswap. Does not sound like phsihing
+0x0dc6b208dc9bf42c3c23fa2e0a4dfddc2688c8a4,1,	Seem to be executing swaps on metamask
+0xfd679b70742938242c8566cb2525ca0283d30309,1,	Seem that swaps on uniswap are being triggered
+0xd0b801f002e08a15826d7ca963ab224426915041,1,	Seem this address is executing a bunch of swaps but does not seem like tp
+0xb5ad01603a45382c128fb9b7d150d7585323ab63,1,	Seems this address is being funded by binance then executing a bunch of swaps on uniswap buying low value tokens. Hard to associate this with a scammer
+0x4ce8bdc18e257db9ea29d11e290dfba99431ddd9,1,	Address is buying and selling coins. Does not seem like TP
+0x9382ae1604e645cc26ae50263268530d09a06ca3,1,	address is just swapping on uniswap - Does not seem like phishing
+0x77b5f2d89b33eedd7b8ab0ff72e1eaa186165f6d,1,	Address is swapping on uniswap. Also the living period of this address is more than 3 years
+0x205abee28c9a0104fb2f5ffd7f6656c9a366f75d,1,	Does not seem like ice phsihing. There are swaps but unverified contracts are called
+0x88e39e98079eca89e4cbee919656b23cc1d8e345,1,	Does not seem like phhisng 
+0x7f38cabc77a64fbac1a34141c307c0c8795a400a,1,	Excuting swaps on uniswap. Tokens that were exchanged are low value ones
+0x0f17b023309e1015841bd0058cfd252f2b5d67f7,1,	Excuting swaps on uniswap. Tokens that were exchanged are low value ones
+0x7c8233475d24c1a17ee48c0ec2b972b5b084620d,1,	Excuting swaps on uniswap. Tokens that were exchanged are low value ones. Living period of the wallet is 165 days
+0x307b50fa0cd6b9a7fd04668adc3eb47b54194107,1,	Swapping unknown tokens on uniswap. Does not seem like TP
+0x917bfbd942017e54704aec0764bcf06014cd1fd6,1,	This address seems to be executing swaps on uniswaps. Does not seem like phishing
+0x747fdd2878548a3e013a2f886b183d0321b72e9a,1,	Address executing swaps on uniswap but nothing uncommon
+0x5c43b066ea091cc8f6851d7cbc29843bf0726e3d,1,	Address executing a bunch of swaps. That's it
+0x69af7c5f6d88bba573d03617144bdae055f101b3,1,	Normal swaps. Does not seem like phishing
+0xf6055ba9f26fc7708bb5fad8de6194f8300780b9,1,	Normal swaps. Does not seem like phishing
+0xdbd64e0537f7629df84aed0dce9be0927a254e5f,1,	Likely FP. Considering the address only executed swaps on uniswap. Does not sound like phishing
+0x069a19665a0a032c9310ba7ec297138da61d9e0d,1,	Considering the living period of the address and that this one has no misterious acitivity - would say this is an FP
+0xa0025b8c1c82be938b668adb6d1107e4b14b3bec,1,	Executing swaps on uniswap. Does not seem like ice-phishing
+0x45c9b6f766a800846ce00bb21ef8a45f483bd584,1,	Executing swaps on uniswap. Does not seem like ice phishing
+0xa1a424e2fe48ba591e06a7ca5ef187f95df06901,1,	Execution of swaps. Does not seem like a TP alert
+0x759dd4f35aaf00fabd843ae1fa09ccac2acc1420,1,	Executing swaps on 1inch
+0xc15cfac8f3cafb9449687a5786251942506c7403,1,	Normal swaps. Does not seem like a TP
+0x4c360c914c32a3f0c45c4635161174b28cfc79e9,1, Executions of swaps. Does not seem like anything suspicious
+0x0ac8ca3a85edaa2de9b5776f63ca5d2ad470dc0c,1,	Living period of the wallet is more than two years. Does not seem like a scammer wallet due to their activities
+0x7159ef8c080b6bfd32bbb02547de4c43c0af0e5f,1,	Executing swaps on uniswap - Does not seem like a suspicious address
+0xc3ebe30f5b3aa266c3d1cf153b815b743f0aa14f,1,	Living period of the wallet is more than 2 year. Although this address is swapping unknown coins; does not seem to be scamming people
+0x008e12025b3637e099b4a5ea88c561d59fdde622,1,	Although this address is swapping unknown coins; does not seem to be scamming people
+0x46634774b210fa9a19b0f89d14f7d43e4d69ceaf,1,	Normal swaps. Does not seem like a phishing
+0x190029ef9a44c0a9ca83ece79367430a01b6643b,1,	Simple swaps on uniswap
+0xf39bcdc40c2c842bde8ac3c26d7391e188986df5,1,	Swaps on OKX dex
+0xd17c9fb467c27ce4e45eaf5c4ae02b56ac95ec7e,1,	Funded by coinbase. This address has normal activity and does not seem to have executed any attack
+0x00db4a28a036ec4f542163f2bdcec104313be22a,1,	This address has normal activity. Does not seem to be executing any type of scam
+0x85db41cce3050194bd2725efa34bb2081ee40f9f,1,	This address created a bunch of contracts. Does not seem to be gaining approvals and the draining
+0x8cc6b83d52b67f629fb3c5978cda3a6c2a456edc,1,	Normal activity. Does not sound like ice phishign
+0x8484ef722627bf18ca5ae6bcf031c23e6e922b30,137, Polygon bridge
+0x8484ef722627bf18ca5ae6bcf031c23e6e922b30,1, Polygon bridge
+0xA0c68C638235ee32657e8f720a23ceC1bFc77C77,137, Polygon bridge
+0xA0c68C638235ee32657e8f720a23ceC1bFc77C77,1, Polygon bridge
+0xdcfae11c70f1575fab9d6bd389a6188ae5524a56,137, Polygon Old Mapper Deployer
+0xdcfae11c70f1575fab9d6bd389a6188ae5524a56,1, Polygon Old Mapper Deployer
+0x63ec5767f54f6943750a70eb6117ea2d9ca77313,137, Polygon Old Mapper Deployer
+0x63ec5767f54f6943750a70eb6117ea2d9ca77313,1, Polygon Old Mapper Deployer
+0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39,137, Chainlink token
+0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39,1, Chainlink token
+0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d,56, Binance Deployer
+0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d,56, BUSD
+0xa2b726b1145a4773f68593cf171187d8ebe4d495,56, INJ Token
