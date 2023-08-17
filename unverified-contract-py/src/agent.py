@@ -371,8 +371,8 @@ def provide_handle_transaction(w3, blockexplorer):
 
         cache_contract_creation(w3, transaction_event)
         # uncomment for local testing; otherwise the process will exit
-        while thread.is_alive():
-            pass
+        # while thread.is_alive():
+        #     pass
 
         findings = FINDINGS_CACHE
         FINDINGS_CACHE = []
