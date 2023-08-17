@@ -135,13 +135,12 @@ class Utils:
 
     @staticmethod
     def update_fp_list(CHAIN_ID: int):
-        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/Scam-Detector-ML/scam-detector-py/fp_list.tsv')
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
         if res.status_code != 200:
             logging.warn(f"Failed to update fp_list.tsv: {res.status_code}")
             Utils.ERROR_CACHE.add(Utils.alert_error(f'request github {res.status_code}.', "utils.update_fp_list", ""))
-
-        content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.tsv', 'r').read()
-        df_fp = pd.read_csv(io.StringIO(content), sep='\t')
+        content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
+        df_fp = pd.read_csv(io.StringIO(content), sep=',')
         for index, row in df_fp.iterrows():
             chain_id = int(row['chain_id'])
             if chain_id != CHAIN_ID:
