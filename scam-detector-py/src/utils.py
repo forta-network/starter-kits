@@ -42,7 +42,7 @@ class Utils:
         content = open('fp_list_test.csv', 'r').read() if Utils.in_test_state() else open('fp_list.csv', 'r').read()
         if not Utils.in_test_state():
             res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/fp_list.csv')
-            logging.info(f"Manual finding: made request to fetch manual fp list: {res.status_code}")
+            logging.info(f"Made request to fetch fp list: {res.status_code}")
             content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
 
         df_fps = pd.read_csv(io.StringIO(content), sep=',')
@@ -53,7 +53,7 @@ class Utils:
         content = open('manual_alert_list_test.tsv', 'r').read() if Utils.in_test_state() else open('manual_alert_list.tsv', 'r').read()
         if not Utils.in_test_state():
             res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/manual_alert_list.tsv')
-            logging.info(f"Manual finding: made request to fetch manual alerts: {res.status_code}")
+            logging.info(f"Made request to fetch manual alerts: {res.status_code}")
             content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
 
         df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
@@ -66,7 +66,7 @@ class Utils:
                 return json.load(file).get('blacklist', [])
             
         res = requests.get('https://raw.githubusercontent.com/MetaMask/eth-phishing-detect/master/src/config.json')
-        logging.info(f"Metamask phishing list: made request to fetch metamask phishing list: {res.status_code}")
+        logging.info(f"Made request to fetch metamask phishing list: {res.status_code}")
         if res.status_code == 200:
             config_json = json.loads(res.content)
             if 'blacklist' in config_json:

@@ -846,10 +846,10 @@ def emit_new_fp_finding(w3) -> list:
         df_fp = Utils.get_fp_list()
         for index, row in df_fp.iterrows():
             try:
-                chain_id = int(row['chain_id'])
+                chain_id = int(row['chain_id'].strip())
                 if chain_id != CHAIN_ID:
                     continue
-                cluster = row['address'].lower()
+                cluster = row['address'].lower().strip()
                 if cluster not in ALERTED_FP_CLUSTERS.keys():
                     update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, cluster, "SCAM-DETECTOR-FALSE-POSITIVE")
                     for address in cluster.split(','):
