@@ -602,9 +602,9 @@ def emit_eoa_association_finding(w3, alert_event: forta_agent.alert_event.AlertE
                     # "central_node_alert_hash":"0xbda39ad1c0a53555587a8bc9c9f711f0cad81fe89ef235a6d79ee905bc70526c",
                     # "central_node_alert_id":"SCAM-DETECTOR-ICE-PHISHING",
                      
-                    existing_scammer_eoa = alert_event.alert.metadata['central_node'] if 'central_node' in alert_event.alert.metadata else float(alert_event.alert.metadata['centralNode'])
-                    original_alert_hash = alert_event.alert.metadata['central_node_alert_hash'] if 'central_node_alert_hash' in alert_event.alert.metadata else float(alert_event.alert.metadata['centralNodeAlertHash'])
-                    original_alert_id = alert_event.alert.metadata['central_node_alert_id'] if 'central_node_alert_id' in alert_event.alert.metadata else float(alert_event.alert.metadata['centralNodeAlertId'])
+                    existing_scammer_eoa = alert_event.alert.metadata['central_node'] if 'central_node' in alert_event.alert.metadata else alert_event.alert.metadata['centralNode']
+                    original_alert_hash = alert_event.alert.metadata['central_node_alert_hash'] if 'central_node_alert_hash' in alert_event.alert.metadata else alert_event.alert.metadata['centralNodeAlertHash']
+                    original_alert_id = alert_event.alert.metadata['central_node_alert_id'] if 'central_node_alert_id' in alert_event.alert.metadata else alert_event.alert.metadata['centralNodeAlertId']
 
                     finding = ScamDetectorFinding.scammer_association(block_chain_indexer, forta_explorer, scammer_address_lower, model_confidence, alert_event.alert.alert_id, alert_event.alert_hash, existing_scammer_eoa, original_alert_id, original_alert_hash, CHAIN_ID)
                     if(finding is not None):
@@ -1229,7 +1229,7 @@ def provide_handle_block(w3):
 
             global DF_CONTRACT_SIGNATURES
             try:
-                df_manual_list = get_manual_list()
+                df_manual_list = Utils.get_manual_list()
                 DF_CONTRACT_SIGNATURES = df_manual_list[df_manual_list['EntityType']=='Code']
                 logging.info(f"{BOT_VERSION}: Loaded {len(DF_CONTRACT_SIGNATURES)} contract signatures.")
             except BaseException as e:

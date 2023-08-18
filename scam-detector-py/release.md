@@ -1,10 +1,10 @@
 # Scam Detector Bot Release Notes
-s
-## v2.18.2 (August 14th - beta)
+
+## v2.18.2 (August 17th - beta, August 18th - prod test (without metmask, private key compromise, ice phishing ML bot, rake token nor gas minting))
 - integrate metamask phishing list
 - refactor from graphQL to get_labels API
 
-## v2.18.1 (August 4th - beta, August 8th - prod (without private key compromise, ice phishing ML bot, pig butchering, nor gas minting))
+## v2.18.1 (August 4th - beta, August 8th - prod (without private key compromise, ice phishing ML bot, nor gas minting))
 - updated README
 - updated confidence values based on July precision measurements
 
