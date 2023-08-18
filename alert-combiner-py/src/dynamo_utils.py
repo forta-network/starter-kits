@@ -5,7 +5,7 @@ import pandas as pd
 
 from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
 
-TEST_TAG = "attack-detector-test"
+TEST_TAG = "attack-detector-test_v2"
 PROD_TAG = "attack-detector-prod"
 
 class DynamoUtils:
