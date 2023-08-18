@@ -1,5 +1,9 @@
 # Attack Detector Bot Release Notes
 
+## v3.50.1 (August 17 2023: beta)
+- add unique_key to finding to reduce duplicate alerts
+- fixed bug of dynamo pointing to test tag
+
 ## v3.50.0 (August 8 2023: beta)
 - add more bridge balance monitoring bots
 - add fp_list and manual_alert_list

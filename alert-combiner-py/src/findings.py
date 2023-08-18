@@ -89,6 +89,7 @@ class AlertCombinerFinding:
                        'type': FindingType.Exploit,
                        'severity': severity,
                        'metadata': meta_data,
+                       'unique_key': hash(f'{addresses},{victim_clause},{alert_id}'),
                        'labels': labels
                        })
 
