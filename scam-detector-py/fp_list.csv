@@ -124,3 +124,16 @@ address,chain_id,comment
 0x00db4a28a036ec4f542163f2bdcec104313be22a,	1,	This address has normal activity. Does not seem to be executing any type of scam
 0x85db41cce3050194bd2725efa34bb2081ee40f9f,	1,	This address created a bunch of contracts. Does not seem to be gaining approvals and the draining
 0x8cc6b83d52b67f629fb3c5978cda3a6c2a456edc,	1,	Normal activity. Does not sound like ice phishign
+0x8484ef722627bf18ca5ae6bcf031c23e6e922b30, 137, Polygon bridge
+0x8484ef722627bf18ca5ae6bcf031c23e6e922b30, 1, Polygon bridge
+0xA0c68C638235ee32657e8f720a23ceC1bFc77C77, 137, Polygon bridge
+0xA0c68C638235ee32657e8f720a23ceC1bFc77C77, 1, Polygon bridge
+0xdcfae11c70f1575fab9d6bd389a6188ae5524a56, 137, Polygon Old Mapper Deployer
+0xdcfae11c70f1575fab9d6bd389a6188ae5524a56, 1, Polygon Old Mapper Deployer
+0x63ec5767f54f6943750a70eb6117ea2d9ca77313, 137, Polygon Old Mapper Deployer
+0x63ec5767f54f6943750a70eb6117ea2d9ca77313, 1, Polygon Old Mapper Deployer
+0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39, 137, Chainlink token
+0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39, 1, Chainlink token
+0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d, 56, Binance Deployer
+0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d, 56, BUSD
+0xa2b726b1145a4773f68593cf171187d8ebe4d495, 56, INJ Token

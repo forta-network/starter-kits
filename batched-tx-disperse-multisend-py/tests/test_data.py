@@ -9,7 +9,7 @@ import forta_agent
 
 TOKENS = {
     'ETH': '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-    'Тether USD (USDТ)': '0xd563bfda4539b837e85165444af825f30c4fa3af', # fake, used for phishing
+    'Тether USD (USDТ)': '0xdac17f958d2ee523a2206206994597c13d831ec7', # fake, used for phishing
     'ETH (ETH)': '0xb23a19d28a7e9bdec030782346b0d9ace11530f5'} # fake too
 
 # TRANSACTIONS ################################################################
