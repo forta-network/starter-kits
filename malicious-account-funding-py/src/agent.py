@@ -1,9 +1,7 @@
-from datetime import datetime
 import logging
 import sys
 from os import environ
 
-from expiring_dict import ExpiringDict
 from functools import lru_cache
 import forta_agent
 from forta_agent import get_json_rpc_url
