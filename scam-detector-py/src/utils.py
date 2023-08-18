@@ -98,8 +98,8 @@ class Utils:
                 url = secrets['jsonRpc']['optimism']
             elif chain_id == 42161:
                 url = secrets['jsonRpc']['arbitrum']
-            elif chain_id == 43114:
-                url = secrets['jsonRpc']['avalanche']
+            # elif chain_id == 43114:
+            #     url = secrets['jsonRpc']['avalanche']
             else:
                 url = get_json_rpc_url()
 
