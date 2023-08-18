@@ -5,7 +5,7 @@ from forta_agent import Finding, FindingType, FindingSeverity, EntityType, Label
 
 # CONSTANTS ###################################################################
 
-BOT_ID = '0x518619e99547b3c400f76d80c5371081f6952840d7c18b755082e7ddca5f644c'
+BOT_ID = '0x568bf7a13b62e5041705eff995328c84ce7b037961ab6cdded927c9ab3b59e58'
 
 # TEMPLATES ###################################################################
 
@@ -41,9 +41,9 @@ def FormatBatchTxFinding(sender: str, receiver: str, token: str, transfers: list
             'chain_id': str(chain_id),
             'from': sender,
             'to': receiver,
-            'token': token,
-            'transfers': str(transfers),
-            'count': str(len(transfers)),
+            'transfer_tokens': str(list(set([_t['token'] for _t in transfers]))),
+            'transfer_count': str(len(transfers)),
+            'transfer_total': str(sum([abs(int(_t['value'])) for _t in transfers])),
             'anomaly_score': _alert_rate},
         'labels': _labels
     })

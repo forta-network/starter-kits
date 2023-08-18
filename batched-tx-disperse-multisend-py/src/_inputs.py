@@ -114,3 +114,9 @@ def get_array_of_value_candidates(data: str, min_length: int=4) -> list:
         element_check=is_valid_value,
         parse_element=parse_value,
         min_length=min_length)
+
+def get_matching_arrays_of_address_and_value(data: str, min_length: int=4) -> list:
+    """Extract arrays of addresses and values when they match."""
+    _addresses = get_array_of_address_candidates(data=data, min_length=min_length)
+    _values = get_array_of_value_candidates(data=data, min_length=min_length)
+    return [(_a, _v) for _a in _addresses for _v in _values if len(_a) == len(_v)]

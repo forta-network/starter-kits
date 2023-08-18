@@ -18,7 +18,16 @@ import src.metrics.nft as nft
 import src.options as options
 import src.findings as findings
 
-# FILTERS #####################################################################
+# INIT ########################################################################
+
+CHAIN_ID = 1
+WEB3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
+
+def initialize():
+    """Initialize the state variables that are tracked across tx and blocks."""
+    global CHAIN_ID
+    CHAIN_ID = int(WEB3.eth.chain_id)
+    return {}
 
 # METRICS #####################################################################
 
@@ -27,13 +36,14 @@ def _score_transaction(
     w3: Web3,
     min_transfer_count: int=options.MIN_TRANSFER_COUNT,
     min_transfer_total_erc20: int=options.MIN_TRANSFER_TOTAL_ERC20,
-    min_transfer_total_native: int=options.MIN_TRANSFER_TOTAL_NATIVE
+    min_transfer_total_native: int=options.MIN_TRANSFER_TOTAL_NATIVE,
+    chain_id: int=1
 ) -> dict:
     """Estimate the probability that a transaction contains multiple transfers."""
-    _scores = {
+    return {
         'batch': {
-            'confidence': batch.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total_erc20=min_transfer_total_erc20, min_transfer_total_native=min_transfer_total_native),
-            'malicious': 0.5}, # compute only if necessary: network requests
+            'confidence': batch.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total_erc20=min_transfer_total_erc20, min_transfer_total_native=min_transfer_total_native, max_batching_fee=options.MAX_BATCHING_FEE[chain_id]),
+            'malicious': batch.malicious_score(log=log, w3=w3, min_transfer_count=min_transfer_count, max_batching_fee=options.MAX_BATCHING_FEE[chain_id])},
         'airdrop': {
             'confidence': airdrop.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total=min_transfer_total_erc20),
             'malicious': airdrop.malicious_score(log=log, w3=w3)},
@@ -44,14 +54,8 @@ def _score_transaction(
             'confidence': nft.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count),
             'malicious': nft.malicious_score(log=log, w3=w3)},
         'native': {
-            'confidence': 0.5, # compute only if necessary: network requests
-            'malicious': 0.5}} # compute only if necessary: network requests
-    # compute remaining scores, if relevant
-    if _scores['batch']['confidence'] >= 0.6:
-        _scores['batch']['malicious'] = batch.malicious_score(log=log, w3=w3)
-        if _scores['erc20']['confidence'] <= 0.5 and _scores['erc721']['confidence'] <= 0.5:
-            _scores['native']['malicious'] = native.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total=min_transfer_total_native)
-    return _scores
+            'confidence': native.confidence_score(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total=min_transfer_total_native, max_batching_fee=options.MAX_BATCHING_FEE[chain_id]),
+            'malicious': native.malicious_score(log=log, w3=w3, min_transfer_count=min_transfer_count, max_batching_fee=options.MAX_BATCHING_FEE[chain_id])}}
 
 # SCANNER #####################################################################
 
@@ -66,10 +70,9 @@ def handle_transaction_factory(
     min_malicious_score: int=options.MIN_MALICIOUS_SCORE
 ) -> callable:
     """Setup the main handler."""
-    _chain_id = int(w3.eth.chain_id)
-
     def _handle_transaction(log: TransactionEvent) -> list:
         """Main function called on the logs gathered by the Forta network."""
+        global CHAIN_ID
         _findings = []
         _token = ''
         _transfers = []
@@ -81,7 +84,7 @@ def handle_transaction_factory(
         # filter by contract
         if target_contract in _to:
             # analyse the transaction
-            _scores = _score_transaction(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total_erc20=min_transfer_total_erc20, min_transfer_total_native=min_transfer_total_native)
+            _scores = _score_transaction(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total_erc20=min_transfer_total_erc20, min_transfer_total_native=min_transfer_total_native, chain_id=CHAIN_ID)
             # identify the token
             if _scores['batch']['confidence'] >= min_confidence_score and _scores['batch']['malicious'] >= min_malicious_score:
                 if _scores['erc20']['confidence'] >= 0.6:
@@ -93,9 +96,9 @@ def handle_transaction_factory(
                     # filter by token
                     _transfers = [_e for _e in events.parse_log(log=log, abi=events.ERC721_TRANSFER_EVENT) if target_token in _e['token']]
                 elif _scores['native']['confidence'] >= 0.6:
-                    _token = chains.CURRENCIES.get(_chain_id, 'ETH')
-                    _recipients = chain.from_iterable(inputs.get_array_of_address_candidates(data=_data, min_length=min_transfer_count))
-                    _transfers = [balances.get_balance_delta(w3=w3, address=_r, block=_block) for _r in _recipients]
+                    _token = chains.CURRENCIES.get(CHAIN_ID, 'ETH')
+                    _args = inputs.get_matching_arrays_of_address_and_value(data=_data, min_length=min_transfer_count)
+                    _transfers = [{'token': '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'from': _to, 'to': _r, 'value': _v} for _a in _args for _r, _v in zip(*_a)]
                 # raise an alert
                 if _transfers:
                     _findings.append(findings.FormatBatchTxFinding(
@@ -103,7 +106,7 @@ def handle_transaction_factory(
                         receiver=_to,
                         token=_token,
                         transfers=_transfers,
-                        chain_id=_chain_id,
+                        chain_id=CHAIN_ID,
                         confidence_score=_scores['batch']['confidence'],
                         malicious_score=_scores['batch']['malicious']))
         return _findings
@@ -111,4 +114,4 @@ def handle_transaction_factory(
     return _handle_transaction
 
 # run with the default settings
-handle_transaction = handle_transaction_factory(w3=Web3(Web3.HTTPProvider(get_json_rpc_url())))
+handle_transaction = handle_transaction_factory(w3=WEB3)
