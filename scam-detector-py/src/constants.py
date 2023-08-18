@@ -76,9 +76,9 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE && SOFT-RUG-PULL-SUS-POOL-REMOVAL", "PassThrough", "SCAM-DETECTOR-SOFT-RUG-PULL"),  # soft rug pull bot
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-POOL-REMOVAL && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION", "PassThrough", "SCAM-DETECTOR-SOFT-RUG-PULL"),  # soft rug pull bot
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-POOL-REMOVAL", "PassThrough", "SCAM-DETECTOR-SOFT-RUG-PULL"),  # soft rug pull bot (when rug pull actually happens)
-                #("0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11", "RAKE-TOKEN-CONTRACT-1", "PassThrough", "SCAM-DETECTOR-RAKE-TOKEN"),  # rake token
-                #("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-1", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # local model
-                #("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-2", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # global model
+                ("0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11", "RAKE-TOKEN-CONTRACT-1", "PassThrough", "SCAM-DETECTOR-RAKE-TOKEN"),  # rake token
+                ("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-1", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # local model
+                ("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-2", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # global model
                 ("0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127", "IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR", "PassThrough", "SCAM-DETECTOR-IMPERSONATING-TOKEN"),  # IMPERSONATING token
                 ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_FUNDING", "Combination", ""),
                 ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_Laundering", "Combination", ""),
@@ -121,18 +121,18 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE", "Combination", ""),
                 ("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-1", "Combination", ""),
                 ("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-2", "Combination", ""),
-                #("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-3", "PassThrough", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE"),
+                ("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-3", "PassThrough", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE"),
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "omitted", "Combination", ""),
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Ice-phishing-web", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Fraudulent-nft-order", "PassThrough", "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER"),
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Ice-phishing", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"), 
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Native-ice-phishing", "PassThrough", "SCAM-DETECTOR-NATIVE-ICE-PHISHING"), 
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Address-poisoning", "PassThrough", "SCAM-DETECTOR-ADDRESS-POISONING"), 
-                #("0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e", "EOA-PHISHING-SCAMMER", "PassThrough", "SCAM-DETECTOR-UNKNOWN"), # unknown as it seems to pick up a lot of rug pulls
+                ("0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e", "EOA-PHISHING-SCAMMER", "PassThrough", "SCAM-DETECTOR-UNKNOWN"), # unknown as it seems to pick up a lot of rug pulls
                 ("0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e", "VICTIM-NOTIFIER-EOA", "PassThrough", "SCAM-DETECTOR-UNKNOWN"),
                 ("0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e", "SCAM-NOTIFIER-EOA", "PassThrough", "SCAM-DETECTOR-UNKNOWN"),
                 ("0xd45f7183783f5893f4b8e187746eaf7294f73a3bb966500d237bd0d5978673fa", "PHISHING-TOKEN-NEW", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),
-                #("0x715c40c11a3e24f3f21c3e2db1c109bba358ccfcbceada84ee1e0f4dba4410e7", "GAS-ANOMALOUS-LARGE-CONSUMPTION", "PassThrough", "SCAM-DETECTOR-GAS-MINTING"),
+                ("0x715c40c11a3e24f3f21c3e2db1c109bba358ccfcbceada84ee1e0f4dba4410e7", "GAS-ANOMALOUS-LARGE-CONSUMPTION", "PassThrough", "SCAM-DETECTOR-GAS-MINTING"),
                 ]
 
 # model information
