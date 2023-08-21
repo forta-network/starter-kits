@@ -464,7 +464,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                     logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
                                     fp_mitigated = True
 
-                                if (CHAIN_ID == 137 and len(alert_data) > POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD) or is_polygon_validator(w3, cluster, alert_event.alert.source.block.number):
+                                if (CHAIN_ID == 137 and len(alert_data) > POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD) or is_polygon_validator(w3, cluster, alert_event.alert.source.transaction_hash):
                                     logging.info(f"alert {alert_event.alert_hash} - {cluster} is polygon validator. Wont raise finding")
                                     fp_mitigated = True
 

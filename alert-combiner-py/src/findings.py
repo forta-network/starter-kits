@@ -4,6 +4,7 @@ import json
 import os
 import logging
 import forta_agent
+import hashlib
 
 from src.constants import ATTACK_DETECTOR_BOT_ID, ATTACK_DETECTOR_BETA_BOT_ID
 from src.utils import Utils
@@ -82,6 +83,9 @@ class AlertCombinerFinding:
             except Exception as e:
                 logging.warning(f"Error getting contracts for {address} {e}")
 
+        unique_key = hashlib.sha256(f'{addresses},{victim_clause},{alert_id}'.encode()).hexdigest()
+        logging.info(f"Unique key of {addresses},{victim_clause},{alert_id}: {unique_key}")
+
         return Finding({
                        'name': 'Attack detector identified an EOA with behavior consistent with an attack',
                        'description': f'{addresses} likely involved in an attack ({alert_event.alert_hash}){victim_clause}. Anomaly score: {anomaly_score}',
@@ -89,7 +93,7 @@ class AlertCombinerFinding:
                        'type': FindingType.Exploit,
                        'severity': severity,
                        'metadata': meta_data,
-                       'unique_key': hash(f'{addresses},{victim_clause},{alert_id}'),
+                       'unique_key': unique_key,
                        'labels': labels
                        })
 
