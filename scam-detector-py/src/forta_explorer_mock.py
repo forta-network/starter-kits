@@ -24,7 +24,7 @@ class FortaExplorerMock:
                 'addresss',
                 False,
                 0.9,
-                ["address_type=contract","logic=passthrough","threat_category=address-poisoner"],
+                {"address_type":"contract","logic":"passthrough","threat_category":"address-poisoner"},
                 '0.2.0'
             ]])
             labels_df = pd.concat([labels_df, temp])
@@ -43,7 +43,7 @@ class FortaExplorerMock:
                 'addresss',
                 False,
                 0.9,
-                ["address_type=EOA","logic=passthrough","threat_category=address-poisoner"],
+                {"address_type":"EOA","logic":"passthrough","threat_category":"address-poisoner"},
                 '0.2.0'
             ]])
             labels_df = pd.concat([labels_df, temp])
@@ -62,7 +62,7 @@ class FortaExplorerMock:
                 'addresss',
                 False,
                 0.9,
-                ["address_type=EOA","logic=passthrough","threat_category=address-poisoner"],
+                {"address_type":"EOA","logic":"passthrough","threat_category":"address-poisoner"},
                 '0.2.0'
             ]])
             labels_df = pd.concat([labels_df, temp])
@@ -81,7 +81,7 @@ class FortaExplorerMock:
                 'addresss',
                 False,
                 0.9,
-                ["address_type=contract","logic=passhthrough","threat_category=address-poisoner"],
+                {"address_type":"contract","logic":"passhthrough","threat_category":"address-poisoner"},
                 '0.2.0'
             ]])
             labels_df = pd.concat([labels_df, temp])
@@ -101,7 +101,7 @@ class FortaExplorerMock:
                 'addresss',
                 False,
                 0.9,
-                ["threat_category=similar-contract","address_type=contract","logic=propagation","base_bot_alert_ids=ADDRESS-POISONING-FAKE-TOKEN","base_bot_alert_hashes=0x003e7643042d22f54b817ed14003ad6acbee18f40a818b4e5edadd75d9e9b617","threat_description_url=https://forta.org/attacks#address-poisoning","bot_version=0.2.2","associated_scammer_contract=0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc6","deployer_info=Deployer 0x2320a28f52334d62622cc2eafa15de55f9987eaa deployed a contract 0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc5 that is similar to a contract 0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc6 deployed by a known scammer 0x2320a28f52334d62622cc2eafa15de55f9987ecc"],
+                {"threat_category":"similar-contract","address_type":"contract","logic":"propagation","base_bot_alert_ids":"ADDRESS-POISONING-FAKE-TOKEN","base_bot_alert_hashes":"0x003e7643042d22f54b817ed14003ad6acbee18f40a818b4e5edadd75d9e9b617","threat_description_url":"https://forta.org/attacks#address-poisoning","bot_version":"0.2.2","associated_scammer_contract":"0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc6","deployer_info":"Deployer 0x2320a28f52334d62622cc2eafa15de55f9987eaa deployed a contract 0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc5 that is similar to a contract 0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc6 deployed by a known scammer 0x2320a28f52334d62622cc2eafa15de55f9987ecc"},
                 '0.2.0'
             ]])
             labels_df = pd.concat([labels_df, temp])
@@ -120,7 +120,7 @@ class FortaExplorerMock:
                 'addresss',
                 False,
                 0.9,
-                ["threat_category=scammer-association","address_type=EOA","logic=propagation","base_bot_alert_ids=ADDRESS-POISONING-FAKE-TOKEN","base_bot_alert_hashes=0x003e7643042d22f54b817ed14003ad6acbee18f40a818b4e5edadd75d9e9b617","threat_description_url=https://forta.org/attacks#address-poisoning","bot_version=0.2.2","associated_scammer=0x3805ad836968b7d844eac2fe0eb312ccc37e4630"],
+                {"threat_category":"scammer-association","address_type":"EOA","logic":"propagation","base_bot_alert_ids":"ADDRESS-POISONING-FAKE-TOKEN","base_bot_alert_hashes":"0x003e7643042d22f54b817ed14003ad6acbee18f40a818b4e5edadd75d9e9b617","threat_description_url":"https://forta.org/attacks#address-poisoning","bot_version":"0.2.2","associated_scammer":"0x3805ad836968b7d844eac2fe0eb312ccc37e4630"},
                 '0.2.0'
             ]])
             labels_df = pd.concat([labels_df, temp])

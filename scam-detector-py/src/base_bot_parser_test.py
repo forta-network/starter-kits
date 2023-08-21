@@ -54,7 +54,7 @@ class TestBaseBotParser:
 
     def test_get_addresses_wash_trading_metadata(self):
         metadata = {"buyerWallet":"0xa53496B67eec749ac41B4666d63228A0fb0409cf","sellerWallet":"0xD73e0DEf01246b650D8a367A4b209bE59C8bE8aB","anomalyScore":"21.428571428571427% of total trades observed for test are possible wash trades","collectionContract":"test","collectionName":"test","exchangeContract":"test","exchangeName":"test","token":"Wash Traded NFT Token ID: 666688"}
-        alert_event = TestBaseBotParser.generate_alert("0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732", "NFT-WASH-TRADE", "description", metadata)
+        alert_event = TestBaseBotParser.generate_alert("0x8732dbb3858d65844d940f5de3705b4161c05258bdfedf1ff5afb6683e1274e5", "NFT-WASH-TRADE", "description", metadata)
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
         assert len(addresses) == 2, "should have extracted 2 addresses"
 
@@ -153,3 +153,22 @@ class TestBaseBotParser:
         alert_event = TestBaseBotParser.generate_alert("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PIG-BUTCHERING", "0x55FE002aefF02F77364de339a1292923A15844B8 received funds through a pig butchering attack", metadata)
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
         assert "0x55FE002aefF02F77364de339a1292923A15844B8".lower() in addresses, "this should be the scammer address"
+
+    def test_get_spam_phishing_token(self):
+        metadata = {"analysis":"{\"name\":\"2000$ USDC\",\"symbol\":\"Voucher\",\"urls\":[\"https://circleusd.co/.\"],\"descriptionByTokenId\":{\"0\":\"Congratulations! You can exchange this NFT voucher for $2000 USDC at the official site: https://circleusd.co/.\"}}","confidence":"0.8999999999999999","tokenAddress":"0x29a786e6f5eab2a475d61ce9aa81a1bebf2819ae","tokenDeployer":"0x586909c8cece4b3a62cc1f2ad086f3ffc40c0ff1","tokenStandard":"ERC-1155","urls":"[\"https://circleusd.co/.\"]"}
+        alert_event = TestBaseBotParser.generate_alert("0xd45f7183783f5893f4b8e187746eaf7294f73a3bb966500d237bd0d5978673fa", "PHISHING-TOKEN-NEW", "The ERC-1155 token 2000$ USDC (Voucher) 0x29a786e6f5eab2a475d61ce9aa81a1bebf2819ae shows signs of phishing behavior. Confidence: 0.9. Potential phishing URLs: https://circleusd.co/.", metadata)
+        addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
+        assert "0x586909c8cece4b3a62cc1f2ad086f3ffc40c0ff1".lower() in addresses, "this should be the scammer address"
+
+        contract_addresses = BaseBotParser.get_scammer_contract_addresses(w3,alert_event)
+        assert "0x29a786e6f5eab2a475d61ce9aa81a1bebf2819ae".lower() in contract_addresses, "this should be the scammer contract address"
+
+        urls = BaseBotParser.get_scammer_urls(w3,alert_event)
+        assert "https://circleusd.co/".lower() in urls, "this should be the scammer urls"
+
+    def test_get_gas_minting(self):
+        metadata = {"contractAddress":"\"0xe3e1147acd39687a25ca7716227c604500f5c31a\"","deployer":"\"0xdfb44e29fdf01adb886fbf9bc1521f79253b3176\"","function":"\"MethodId is 0x095ea7b3\"","mean":"\"77781.69054054054054054056\"","threshold":"\"6537343.74973840585266180776\"","value":"\"14246778\""}
+        alert_event = TestBaseBotParser.generate_alert("0x715c40c11a3e24f3f21c3e2db1c109bba358ccfcbceada84ee1e0f4dba4410e7", "GAS-ANOMALOUS-LARGE-CONSUMPTION", "Suspicious function with anomalous gas detected: 14246778", metadata)
+        addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
+        assert "0xdfb44e29fdf01adb886fbf9bc1521f79253b3176" in addresses, "this should be the attacker address"
+        assert "0xe3e1147acd39687a25ca7716227c604500f5c31a".lower() in addresses["0xdfb44e29fdf01adb886fbf9bc1521f79253b3176"]["scammer-contracts"]

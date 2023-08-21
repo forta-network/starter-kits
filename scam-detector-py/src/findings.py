@@ -2,8 +2,10 @@ from operator import inv
 from time import strftime
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType, get_labels
 from datetime import datetime
+import pandas as pd
 import requests
 import logging
+import re
 import traceback
 
 from src.utils import Utils
@@ -16,7 +18,7 @@ class ScamDetectorFinding:
     @staticmethod
     def get_threat_description_url(alert_id: str) -> str:
         url = "https://forta.org/attacks"
-        if alert_id == "SCAM-DETECTOR-ICE-PHISHING":
+        if alert_id == "SCAM-DETECTOR-ICE-PHISHING" or alert_id == "SCAM-DETECTOR-METAMASK-PHISHING":
             return url + "#ice-phishing"
         elif alert_id == "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER":
             return url + "#fraudulent-nft-order"
@@ -40,6 +42,8 @@ class ScamDetectorFinding:
             return url + "#impersonating-token"
         elif alert_id == "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE":
             return url + "#private-key-compromise"
+        elif alert_id == "SCAM-DETECTOR-GAS-MINTING":
+            return url + "#gas-minting"
         elif alert_id == "SCAM-DETECTOR-PIG-BUTCHERING":
             return url + "#pig-butchering"
         else:
@@ -47,7 +51,7 @@ class ScamDetectorFinding:
         
     @staticmethod
     def get_threat_category(alert_id: str) -> str:
-        if alert_id == "SCAM-DETECTOR-ICE-PHISHING":
+        if alert_id == "SCAM-DETECTOR-ICE-PHISHING" or alert_id == "SCAM-DETECTOR-METAMASK-PHISHING":
             return "ice-phishing"
         elif alert_id == "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER":
             return "fraudulent-nft-order"
@@ -85,6 +89,8 @@ class ScamDetectorFinding:
             return "private-key-compromise"
         elif alert_id == "SCAM-DETECTOR-PIG-BUTCHERING":
             return "pig-butchering"
+        elif alert_id == "SCAM-DETECTOR-GAS-MINTING":
+            return "gas-minting"
         elif alert_id == "SCAM-DETECTOR-UNKNOWN":
             return "unknown"
         else:
@@ -115,9 +121,8 @@ class ScamDetectorFinding:
         df_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = existing_scammer_contract_address.lower())
 
         for index, row in df_labels.iterrows():
-            if row['metadata'] is not None and any("address_type=contract" in s for s in row['metadata']) and any("threat_category=" in s for s in row['metadata']):
-                original_threat_category_pair = next((s for s in row['metadata'] if "threat_category" in s), None)
-                original_threat_category = original_threat_category_pair.split("=")[1] 
+            if row['metadata'] is not None and "address_type" in row['metadata'].keys() and "threat_category" in row['metadata'].keys() and row['metadata']['address_type'] == 'contract':
+                original_threat_category = row['metadata']['threat_category']
                 original_threat_categories.add(original_threat_category)
                 logging.info(f"retrieved original threat category for label {existing_scammer_contract_address.lower()}: {original_threat_category}")
         
@@ -217,6 +222,18 @@ class ScamDetectorFinding:
                 'metadata': metadata,
                 'labels': labels
             })
+        
+    @staticmethod
+    def get_url(metadata:dict) -> str:
+        url = metadata['URL'] if 'URL' in metadata.keys() else ""
+        if url == "":
+            urls = metadata['urls'] if 'urls' in metadata.keys() else ""
+            if urls != "":
+                for u in re.findall(r"(?:(?:https?|ftp)://)?[\w\-]+(?:\.[\w\-]+)+[\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#]", urls):
+                    url = u
+                    break
+        return url
+
 
     @staticmethod
     def scam_finding(block_chain_indexer, forta_explorer, scammer_addresses: str, start_date: datetime, end_date: datetime, scammer_contract_addresses: set, involved_addresses: set, involved_alert_ids: set, alert_id: str, involved_alert_hashes: set, metadata: dict, chain_id: int, logic: str, score = 0.0, feature_vector = None) -> Finding:
@@ -231,7 +248,7 @@ class ScamDetectorFinding:
         logging.info(f"Feature vector: {feature_vector_str}")
         logging.info(f"Model name: {MODEL_NAME}")
         
-        url = metadata['URL'] if 'URL' in metadata.keys() else ""
+        url = ScamDetectorFinding.get_url(metadata)
         url_scan_url = metadata['detail'] if ('detail' in metadata.keys() and 'URL' in metadata.keys()) else ""
 
         involved_addresses = list(involved_addresses)[0:10] if involved_addresses is not None else []
@@ -259,7 +276,7 @@ class ScamDetectorFinding:
         feature_vector_dict = {"feature_vector": feature_vector_str}
         model_name_dict = {"model_name": MODEL_NAME}
 
-        if alert_id in ["SCAM-DETECTOR-IMPERSONATING-TOKEN", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-NFT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING']:
+        if alert_id in ["SCAM-DETECTOR-IMPERSONATING-TOKEN", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-NFT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING', 'SCAM-DETECTOR-UNKNOWN', 'SCAM-DETECTOR-PIG-BUTCHERING', 'SCAM-DETECTOR-SLEEP-DROP', 'SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE', 'SCAM-DETECTOR-GAS-MINTING']:
             if scammer_addresses != '':
                 for scammer_address in scammer_addresses.split(","):
                     labels.append(Label({
@@ -379,7 +396,14 @@ class ScamDetectorFinding:
         })
 
     @staticmethod
-    def alert_FP(w3, address: str, label: str, metadata: dict) -> Finding:
+    def alert_FP(w3, address: str, label: str, metadata: tuple) -> Finding:
+
+        #metadata is a tuple and needs to convert to dict
+        metadata_dict = {}
+        for pair in metadata:
+            key = pair.split("=")[0]
+            value = pair.split("=")[1]
+            metadata_dict[key] = value
 
         labels = []
         labels.append(Label({
@@ -388,7 +412,7 @@ class ScamDetectorFinding:
                 'entity': address,
                 'confidence': 0.99,
                 'remove': "true",
-                'metadata': metadata
+                'metadata': metadata_dict
 
             }))
 
@@ -407,7 +431,7 @@ class ScamDetectorFinding:
 
 
     @staticmethod
-    def scam_finding_manual(block_chain_indexer, forta_explorer, entity_type: str, entities: str, threat_category: str, reported_by: str, chain_id: int, comment:str = '') -> Finding:
+    def scam_finding_manual(block_chain_indexer, forta_explorer, entity_type: str, entities: str, threat_category: str, reported_by: str, chain_id: int, comment:str = '', initial_metamask_list_consumption: bool = False) -> Finding:
         label_doesnt_exist = False
         
         labels = []
@@ -417,7 +441,7 @@ class ScamDetectorFinding:
 
         for entity in entities.split(","):
             source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
-            df_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = entity.lower())
+            df_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = entity.lower()) if not initial_metamask_list_consumption else pd.DataFrame()
             if df_labels.empty:
                 label_doesnt_exist = True
             
