@@ -1,6 +1,7 @@
 # Scam Detector Bot Release Notes
 
-## v2.18.3 (August 18th - beta (without metamask))
+## v2.18.3 (August 18th - beta (without metamask), August 21st - beta (without metamask, private key compromise, ice phishing ML bot, scammer-association, rake token))
+- small bug fix
 
 ## v2.18.2 (August 17th - beta (without metamask), August 18th - prod (without metmask, private key compromise, ice phishing ML bot, scammer-association, rake token nor gas minting))
 - integrate metamask phishing list
