@@ -1,5 +1,24 @@
 # Scam Detector Bot Release Notes
 
+## v2.18.3 (August 18th - beta (without metamask), August 21st - beta (without metamask, private key compromise, ice phishing ML bot, scammer-association, rake token))
+- small bug fix
+
+## v2.18.2 (August 17th - beta (without metamask), August 18th - prod (without metmask, private key compromise, ice phishing ML bot, scammer-association, rake token nor gas minting))
+- integrate metamask phishing list
+- refactor from graphQL to get_labels API
+- fixed bug on scammer association
+
+## v2.18.1 (August 4th - beta, August 8th - prod (without private key compromise, ice phishing ML bot, nor gas minting))
+- updated README
+- updated confidence values based on July precision measurements
+
+## v2.18.0 (August 3rd - beta)
+- swapped wash trading bot to community maintained bot
+- updated RPC endpoints to utilized paid RPC endpoints increasing reliability of the bot
+- integrated phish token alert from spam detection bot
+- incorporated gas minting bot
+
+
 ## v2.17.7 (July 31st 2023 - beta, August 1st 2023 - prod (without private key compromise, ice phishing ML bot nor pig butchering))
 - merge beta/ prod
 

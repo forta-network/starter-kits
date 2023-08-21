@@ -44,8 +44,9 @@ class TestUtils:
         assert Utils.get_max_tx_count(w3, EOA_ADDRESS_SMALL_TX) == 1999, "this should be 1999"
 
     def test_is_in_fp_mitigation_list(self):
+        Utils.TEST_STATE = True
         Utils.update_fp_list(1)
-        assert Utils.is_in_fp_mitigation_list("0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"), "it should be in list for chain 1"
+        assert Utils.is_in_fp_mitigation_list("0x8cc6b83d52b67f629fb3c5978cda3a6c2a456edc"), "it should be in list for chain 1"
 
     def test_fp_etherscan_label(self):
         assert Utils.is_fp(w3, "0xffc0022959f58aa166ce58e6a38f711c95062b99"), "this should be a false positive"

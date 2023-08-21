@@ -1,4 +1,5 @@
 DEBUG_ALERT_ENABLED = False
+ENABLE_METAMASK_CONSUMPTION = False
 
 ALERT_LOOKBACK_WINDOW_IN_DAYS = 7
 
@@ -16,8 +17,18 @@ FINDINGS_CACHE_BLOCK_KEY = "findings_cache_block_key"
 FINDINGS_CACHE_TRANSACTION_KEY = "findings_cache_transaction_key"
 FINDINGS_CACHE_ALERT_KEY = "findings_cache_alert_key"
 
-ALERTED_CLUSTERS_KEY = "alerted_clusters_per_alert_id_key"
-ALERTED_ENTITIES_QUEUE_SIZE = 250000
+ALERTED_ENTITIES_ML_KEY = "alerted_entities_ml_per_alert_id_key"
+ALERTED_ENTITIES_ML_QUEUE_SIZE = 100000
+ALERTED_ENTITIES_PASSTHROUGH_KEY = "alerted_entities_passthrough_per_alert_id_key"
+ALERTED_ENTITIES_PASSTHROUGH_QUEUE_SIZE = 100000
+ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY = "alerted_entities_scammer_association_per_alert_id_key"
+ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE = 100000
+ALERTED_ENTITIES_SIMILAR_CONTRACT_KEY = "alerted_entities_similar_contract_per_alert_id_key"
+ALERTED_ENTITIES_SIMILAR_CONTRACT_QUEUE_SIZE = 100000
+ALERTED_ENTITIES_MANUAL_KEY = "alerted_entities_manual_per_alert_id_key"
+ALERTED_ENTITIES_MANUAL_QUEUE_SIZE = 100000
+ALERTED_ENTITIES_MANUAL_METAMASK_KEY = "alerted_entities_manual_metamask_per_alert_id_key"
+ALERTED_ENTITIES_MANUAL_METAMASK_QUEUE_SIZE = 250000
 ALERTED_FP_CLUSTERS_KEY = "alerted_fp_addresses_per_alert_id_key"
 ALERTED_FP_CLUSTERS_QUEUE_SIZE = 10000
 
@@ -41,7 +52,7 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-SCAM-CREATOR-TRANSFER", "Combination", ""),  # ice phishing
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PULL-SWEEPTOKEN", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-OPENSEA-PROXY-UPGRADE", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
-                #("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PIG-BUTCHERING", "PassThrough", "SCAM-DETECTOR-PIG-BUTCHERING"),  # ice phishing
+                ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PIG-BUTCHERING", "PassThrough", "SCAM-DETECTOR-PIG-BUTCHERING"),  # ice phishing
                 ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", "Combination", ""),  # tornado cash withdrawl
                 ("0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a", "TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION", "Combination", ""),  # Tornado Cash Funded Account Interaction
                 ("0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2", "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", "Combination", ""),  # money laundering
@@ -62,7 +73,8 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502", "ADDRESS-POISONING-FAKE-TOKEN", "PassThrough", "SCAM-DETECTOR-ADDRESS-POISONING"),  # Malicious Token ML Model
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-1", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing with a social eng component (aka a function parameter)
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-4", "PassThrough", "SCAM-DETECTOR-NATIVE-ICE-PHISHING"),  # Native ice phishing without a social eng component
-                ("0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732", "NFT-WASH-TRADE", "PassThrough", "SCAM-DETECTOR-WASH-TRADE"),  # wash trading bot
+                ("0x8732dbb3858d65844d940f5de3705b4161c05258bdfedf1ff5afb6683e1274e5", "NFT-WASH-TRADE", "PassThrough", "SCAM-DETECTOR-WASH-TRADE"),  # wash trading bot maintained by nethermind
+                ("0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732", "NFT-WASH-TRADE", "Combination", ""),  # wash trading bot - for ML bot; need to replace after retraining
                 ("0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560", "NEW-SCAMMER-CONTRACT-CODE-HASH", "PassThrough", "SCAM-DETECTOR-SIMILAR-CONTRACT"),  # contract similarity bot
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-5", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing using soc eng contract (static)
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-6", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing using soc eng contract (dynamic)
@@ -74,9 +86,6 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE && SOFT-RUG-PULL-SUS-POOL-REMOVAL", "PassThrough", "SCAM-DETECTOR-SOFT-RUG-PULL"),  # soft rug pull bot
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-POOL-REMOVAL && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION", "PassThrough", "SCAM-DETECTOR-SOFT-RUG-PULL"),  # soft rug pull bot
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-POOL-REMOVAL", "PassThrough", "SCAM-DETECTOR-SOFT-RUG-PULL"),  # soft rug pull bot (when rug pull actually happens)
-                ("0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11", "RAKE-TOKEN-CONTRACT-1", "PassThrough", "SCAM-DETECTOR-RAKE-TOKEN"),  # rake token
-                ("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-1", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # local model
-                ("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-2", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # global model
                 ("0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127", "IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR", "PassThrough", "SCAM-DETECTOR-IMPERSONATING-TOKEN"),  # IMPERSONATING token
                 ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_FUNDING", "Combination", ""),
                 ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_Laundering", "Combination", ""),
@@ -119,16 +128,22 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE", "Combination", ""),
                 ("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-1", "Combination", ""),
                 ("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-2", "Combination", ""),
-                #("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-3", "PassThrough", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE"),
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "omitted", "Combination", ""),
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Ice-phishing-web", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Fraudulent-nft-order", "PassThrough", "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER"),
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Ice-phishing", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"), 
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Native-ice-phishing", "PassThrough", "SCAM-DETECTOR-NATIVE-ICE-PHISHING"), 
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Address-poisoning", "PassThrough", "SCAM-DETECTOR-ADDRESS-POISONING"), 
-                #("0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e", "EOA-PHISHING-SCAMMER", "PassThrough", "SCAM-DETECTOR-UNKNOWN"), 
                 ("0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e", "VICTIM-NOTIFIER-EOA", "PassThrough", "SCAM-DETECTOR-UNKNOWN"),
                 ("0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e", "SCAM-NOTIFIER-EOA", "PassThrough", "SCAM-DETECTOR-UNKNOWN"),
+                ("0xd45f7183783f5893f4b8e187746eaf7294f73a3bb966500d237bd0d5978673fa", "PHISHING-TOKEN-NEW", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),
+                ("0x715c40c11a3e24f3f21c3e2db1c109bba358ccfcbceada84ee1e0f4dba4410e7", "GAS-ANOMALOUS-LARGE-CONSUMPTION", "PassThrough", "SCAM-DETECTOR-GAS-MINTING"),
+                #("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-3", "PassThrough", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE"),
+                #("0x4aa29f0e18bd56bf85dd96f568a9affb5a#367cec4df4b67f5b4ed303ff15271e", "EOA-PHISHING-SCAMMER", "PassThrough", "SCAM-DETECTOR-UNKNOWN"), # unknown as it seems to pick up a lot of rug pulls
+                #("0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11", "RAKE-TOKEN-CONTRACT-1", "PassThrough", "SCAM-DETECTOR-RAKE-TOKEN"),  # rake token
+                #("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-1", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # local model
+                #("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-2", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # global model
+                
                 ]
 
 # model information
@@ -258,24 +273,25 @@ MODEL_ALERT_THRESHOLD_STRICT = 0.896  # precision of 100% on test and train set
 # these are sourced from manual analysis and represent precision - last updated 6/15/2023
 CONFIDENCE_MAPPINGS = {
         "sleep-minting": 0.7,
-        "ice-phishing": 0.82,
+        "ice-phishing": 0.88,
         "wash-trading": 0.99, 
-        "fraudulent-nft-order": 0.79,
-        "native-ice-phishing-social-engineering": 0.85,
-        "native-ice-phishing":  0.84,
-        "pig-butchering":  0.80,
-        "hard-rug-pull": 0.73,
-        "soft-rug-pull": 0.53,
-        "rake-token": 0.77,
+        "fraudulent-nft-order": 0.70,
+        "native-ice-phishing-social-engineering": 0.83,
+        "native-ice-phishing":  0.77,
+        "pig-butchering":  0.99,
+        "hard-rug-pull": 0.99,
+        "soft-rug-pull": 0.95,
+        "rake-token": 0.99,
         "address-poisoning": 0.99,
-        "address-poisoner": 0.99,
+        "address-poisoner": 0.85,
         "impersonating-token": 0.99,
         "attack-stages": 0.2,
-        "similar-contract": 0.4,
-        "scammer-deployed-contract": 0.4,
-        "scammer-association": 0.4,
+        "similar-contract": 0.99,
+        "scammer-deployed-contract": 0.8,
+        "scammer-association": 0.75,
         "private-key-compromise": 0.4,
-        "unknown": 0.6
+        "gas-minting": 0.9,
+        "unknown": 0.94
 }
 
 

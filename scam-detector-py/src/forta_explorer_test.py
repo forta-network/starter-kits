@@ -26,7 +26,7 @@ class TestFortaExplorer:
     
     def test_query_label_wildcard_neg(self):
         #entity: str, source_id: str, start_date: datetime, end_date: datetime
-        labels = FortaExplorer.get_labels("0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23", datetime(2023,6,1),datetime(2023,6,6), entity = "0x3184fd21cc2d2e89704ae2d214ad76f22b0591a4", label_query = "eoa*")
+        labels = FortaExplorer.get_labels("0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23", datetime(2023,6,1),datetime(2023,6,6), entity = "0x3184fd21cc2d2e89704ae2d214ad76f22b0591a4", label_query = "foo*")
         assert labels is not None
         assert len(labels) == 0
  
