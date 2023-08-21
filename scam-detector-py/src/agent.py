@@ -9,6 +9,7 @@ import numpy as np
 import io
 import re
 import json
+import math
 import traceback
 import joblib
 from sklearn.ensemble import RandomForestClassifier
@@ -673,7 +674,11 @@ def emit_manual_finding(w3, test = False) -> list:
             chain_id = -1
             try:
                 chain_id_float = row['Chain ID']
-                chain_id = int(chain_id_float)
+                if math.isnan(chain_id_float):
+                    logging.info("Manual finding: No chainID; setting to 1 as default.")
+                    chain_id = 1
+                else:
+                    chain_id = int(chain_id_float)
             except Exception as e:
                 logging.warning("Manual finding: Failed to get chain ID from manual finding")
                 Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding", traceback.format_exc()))
