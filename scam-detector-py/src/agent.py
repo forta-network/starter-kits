@@ -830,7 +830,6 @@ def emit_new_fp_finding(w3) -> list:
     global ALERTED_FP_CLUSTERS
     global CHAIN_ID
     global ALERTED_FP_CLUSTERS_QUEUE_SIZE
-    global FINDINGS_CACHE_BLOCK
 
     if CHAIN_ID == -1:
         reinitialize()
@@ -846,7 +845,7 @@ def emit_new_fp_finding(w3) -> list:
         df_fp = Utils.get_fp_list()
         for index, row in df_fp.iterrows():
             try:
-                chain_id = int(row['chain_id'].strip())
+                chain_id = int(str(row['chain_id']).strip())
                 if chain_id != CHAIN_ID:
                     continue
                 cluster = row['address'].lower().strip()
@@ -862,7 +861,7 @@ def emit_new_fp_finding(w3) -> list:
                             logging.info(f"{BOT_VERSION}: Emitting FP mitigation finding for {entity} {label}")
                             update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, entity, "SCAM-DETECTOR-FALSE-POSITIVE")
                             findings.append(ScamDetectorFinding.alert_FP(w3, entity, label, metadata))
-                            logging.info(f"{BOT_VERSION}: Findings count {len(FINDINGS_CACHE_BLOCK)}")
+                            logging.info(f"{BOT_VERSION}: Findings count {len(findings)}")
             except Exception as e:
                 logging.warning(f"{BOT_VERSION}: emit fp finding exception: {e} - {traceback.format_exc()}")
                 Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_new_fp_finding.internal", traceback.format_exc()))

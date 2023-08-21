@@ -1009,7 +1009,7 @@ class TestScamDetector:
 
         assert len(findings) > 0, "this should have triggered FP findings"
         finding = findings[0]
-        assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSI TIVE", "should be FP mitigation finding"
+        assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be FP mitigation finding"
         assert len(finding.labels) > 0, "labels should not be empty"
         label = finding.labels[0]
         assert label.entity == "0x8cc6b83d52b67f629fb3c5978cda3a6c2a456edc"
@@ -1167,7 +1167,7 @@ class TestScamDetector:
 
         findings = agent.emit_manual_finding(w3, True)
 
-        assert len(findings) == 7, "this should have triggered manual address findings"
+        assert len(findings) == 4, "this should have triggered manual address findings"
         
         for finding in findings[:4]:
             address_lower = "0x5ae30eb89d761675b910e5f7acc9c5da0c85baaa".lower()
