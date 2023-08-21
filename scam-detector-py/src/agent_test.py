@@ -1009,7 +1009,7 @@ class TestScamDetector:
 
         assert len(findings) > 0, "this should have triggered FP findings"
         finding = findings[0]
-        assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSI TIVE", "should be FP mitigation finding"
+        assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be FP mitigation finding"
         assert len(finding.labels) > 0, "labels should not be empty"
         label = finding.labels[0]
         assert label.entity == "0x8cc6b83d52b67f629fb3c5978cda3a6c2a456edc"
