@@ -1,8 +1,9 @@
 # Attack Detector Bot Release Notes
 
-## v3.50.1 (August 17 2023: beta)
+## v3.50.1 (August 21 2023: beta)
 - add unique_key to finding to reduce duplicate alerts
 - fixed bug of dynamo pointing to test tag
+- update to sdk 0.1.38/0.1.20
 
 ## v3.50.0 (August 8 2023: beta)
 - add more bridge balance monitoring bots
@@ -46,7 +47,7 @@
 
 ## v0.3.41 (May 11 2023: beta, May 31 2023: prod)
 
-- Attack detector often reports on end user related attacks, such as rake tokens, rug pulls as these attacks often follow the same patterns as a protocol exploit of funding, preparation, exploitation, and money laundering. The attack detector is supposed to only emit protocol exploits though. In this version, a new filter has been added where EOAs that are associated with specific end user attacks are degraded to a new alert Id: ATTACK-DETECTOR-6 (only will emitted in the beta version of the bot). The end user attacks are sourced from three bots: [hard rug pull](https://explorer.forta.network/bot/0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15), [soft rug pull](https://explorer.forta.network/bot/0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1) and [rake token bot](https://explorer.forta.network/bot/0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11)
+- Attack detector often reports on end user related attacks, such as rake tokens, rug pulls as these attacks often follow the same patterns as a protocol exploit of funding, preparation, exploitation, and money laundering. The attack detector is supposed to only emit protocol exploits though. In this version, a new filter has been added where EOAs that are associated with specific end user attacks are degraded to a new alert Id: ATTACK-DETECTOR-6 (only will emitted in the beta version of the bot). The end user attacks are sourced from three bots: [hard rug pull](https://explorer.forta.network/bot/0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15), [soft rug pull](https://explorer.forta.network/bot/0x1a6da262bff20404ce35e8d4f63622dd9fbe852e5def4dc45820649428da9ea1) and [rake token bot](https://explorer.forta.network/bot/0 x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11)
 
 ## v0.3.40 (May 10 2023: beta)
 

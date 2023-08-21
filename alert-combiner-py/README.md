@@ -2,7 +2,7 @@
 
 ## Description
 
-The Attack Detector bot combines past alerts under a common address from a variety of underlying base bots to emit a high precision alert. It does so by mapping each alert to the four attack stages (Funding, Preparation, Exploitaiton and Money Laundering/ Post Exploitation) utilizing an anomaly as well as heuristic detection approach.
+The Attack Detector identifies protocol attacks in real-time; often before any digital assets are being stolen. It does so by combining past alerts under a common address from a variety of underlying base bots to emit a high precision alert. Each alert is mapped to the four attack stages (Funding, Preparation, Exploitaiton and Money Laundering/ Post Exploitation) and subsequently combined utilizing an anomaly as well as heuristic detection approach.
 
 Individual alerts can have low precision (in other words raise false positives). This bot combines past alerts from base bots to separate the signal from noise.
 
@@ -120,6 +120,109 @@ The Attack Detector bot emits the following alerts:
   - Severity is always set to "info"
   - Type is always set to "exploit"
   - Note: the detection bot will only alert once per cluster observed
+
+
+The metadata for each alert will contain:
+ - anomaly_score - the overall anomaly score, which the bot thresholds on
+ - anomaly_score_stage_STAGE - the anomaly score per stage (funding, preparation, exploitation, money laundering)
+ - attacker address - the EOA that executed the attack
+ - involved_addresses_X - the address that was touched in any of the base alerts
+ - involved_address_bloom_filter_X - the bloom filter that contains all touched address of the base bot if the address field was capped
+ - involved_alert_X - the bot_id, alert_id, and alert_hash for all the base bot alerts
+
+
+For example:
+```
+  {
+    "createdAt": "2023-08-19T12:35:59.129519588Z",
+    "name": "Attack detector identified an EOA with behavior consistent with an attack",
+    "protocol": "ethereum",
+    "findingType": "EXPLOIT",
+    "severity": "CRITICAL",
+    "metadata": {
+      "anomalyScore": "0.0003399258343634117",
+      "anomalyScoreStageExploitation": "0.01",
+      "anomalyScoreStagePreparation": "0.03522867737948084",
+      "attackerAddress": "0x2439243727ac7d0bbfa962b6f21ca47a72eeb347",
+      "involvedAddresses1": "0xba12222222228d8ba445958a75a0704d566bf2c8",
+      "involvedAddresses10": "0xce88686553686da562ce7cea497ce749da109f9f",
+      "involvedAddresses11": "0x7effd7b47bfd17e52fb7559d3f924201b9dbff3d",
+      "involvedAddresses12": "0xe66a9c5007afc7d515dd63b8017d8cda6b0a97a4",
+      "involvedAddresses13": "0x0000000000000000000000000000000000000040",
+      "involvedAddresses14": "0xf1cd4193bbc1ad4a23e833170f49d60f3d35a621",
+      "involvedAddresses15": "0x1b1b16150a0dc7b444daa671dd84cd070c5b5e0e",
+      "involvedAddresses16": "0x2f39d218133afab8f2b819b1066c7e434ad94e9e",
+      "involvedAddresses17": "0x2439243727ac7d0bbfa962b6f21ca47a72eeb347",
+      "involvedAddresses18": "0x193a2daa500818840ad54bbdd39109a687193b49",
+      "involvedAddresses19": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "involvedAddresses2": "0x2b33cf282f867a7ff693a66e11b0fcc5552e4425",
+      "involvedAddresses20": "0x8164cc65827dcfe994ab23944cbc90e0aa80bfcb",
+      "involvedAddresses21": "0xc96113eed8cab59cd8a66813bcb0ceb29f06d2e4",
+      "involvedAddresses22": "0xea51d7853eefb32b6ee06b1c12e6dcca88be0ffe",
+      "involvedAddresses23": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "involvedAddresses24": "0x102633152313c81cd80419b6ecf66d14ad68949a",
+      "involvedAddresses25": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+      "involvedAddresses26": "0xac725cb59d16c81061bdea61041a8a5e73da9ec6",
+      "involvedAddresses27": "0xe7b67f44ea304dd7f6d215b13686637ff64cd2b2",
+      "involvedAddresses28": "0x0000000000000000000000000000000000000000",
+      "involvedAddresses29": "0x7b8fa4540246554e77fcff140f9114de00f8bb8d",
+      "involvedAddresses3": "0x15c5620dffac7c7366eed66c20ad222ddbb1ed57",
+      "involvedAddresses30": "0x53f57eaad604307889d87b747fc67ea9de430b01",
+      "involvedAddresses31": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+      "involvedAddresses32": "0x5d834ead0a80cf3b88c06feed6e8e0fcae2daee5",
+      "involvedAddresses33": "0x17144556fd3424edc8fc8a4c940b2d04936d17eb",
+      "involvedAddresses4": "0x4d5f47fa6a74757f35c14fd3a6ef8e3c9bc514e8",
+      "involvedAddresses5": "0x39739943199c0fbfe9e5f1b5b160cd73a64cb85d",
+      "involvedAddresses6": "0x39df4b1329d41a9ae20e17beff39aabd2f049128",
+      "involvedAddresses7": "0xdc24316b9ae028f1497c275eb9192a3ea0f67022",
+      "involvedAddresses8": "0x0b925ed163218f6662a35e0f0371ac234f9e9371",
+      "involvedAddresses9": "0xb8ffc3cd6e7cf5a098a1c92f48009765b24088dc",
+      "involvedAlerts0": "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99,SUSPICIOUS-CONTRACT-CREATION,0x961bb1cc483d69ec5515226bf1514141ab2851997473de0fb7349be752bbf9ec",
+      "involvedAlerts1": "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c,SUSPICIOUS-CONTRACT-CREATION,0xac618b991bcf8e2a719bc772baa041cd7d0590e6ba8c66775efd557d9bbfa994",
+      "involvedAlerts2": "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99,SUSPICIOUS-CONTRACT-CREATION,0xccdeb88c4ffdbdd9e9bafb6a07de2b231c8b09d3afc3d564b9a075e1d4b4b5ce",
+      "involvedAlerts3": "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c,SUSPICIOUS-CONTRACT-CREATION,0x5a6159dd6c3c727cf7bdbc4c38d48f98bce57cdb223e5c38460ba1c535041acf",
+      "involvedAlerts4": "0x492c05269cbefe3a1686b999912db1fb5a39ce2e4578ac3951b0542440f435d9,NETHFORTA-25,0x8d578c55e52d8e89f9419b617bca9fab2c893fb5d4fa957e787cfceafd4717d3"
+    },
+    "alertId": "ATTACK-DETECTOR-2",
+    "description": "0x2439243727ac7d0bbfa962b6f21ca47a72eeb347 likely involved in an attack (0x8d578c55e52d8e89f9419b617bca9fab2c893fb5d4fa957e787cfceafd4717d3). Anomaly score: {'anomaly_score': 0.0003399258343634117}",
+    "addresses": [
+      "0x0000000000000000000000000000000000000000",
+      "0xb8ffc3cd6e7cf5a098a1c92f48009765b24088dc",
+      "0x53f57eaad604307889d87b747fc67ea9de430b01",
+      "0xdc24316b9ae028f1497c275eb9192a3ea0f67022",
+      "0x193a2daa500818840ad54bbdd39109a687193b49",
+      "0x39df4b1329d41a9ae20e17beff39aabd2f049128",
+      "0xce88686553686da562ce7cea497ce749da109f9f",
+      "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+      "0xba12222222228d8ba445958a75a0704d566bf2c8",
+      "0xac725cb59d16c81061bdea61041a8a5e73da9ec6",
+      "0x2439243727ac7d0bbfa962b6f21ca47a72eeb347",
+      "0x7effd7b47bfd17e52fb7559d3f924201b9dbff3d",
+      "0x1b1b16150a0dc7b444daa671dd84cd070c5b5e0e",
+      "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "0x17144556fd3424edc8fc8a4c940b2d04936d17eb",
+      "0xe7b67f44ea304dd7f6d215b13686637ff64cd2b2",
+      "0x0b925ed163218f6662a35e0f0371ac234f9e9371",
+      "0x7b8fa4540246554e77fcff140f9114de00f8bb8d",
+      "0xc96113eed8cab59cd8a66813bcb0ceb29f06d2e4",
+      "0x2b33cf282f867a7ff693a66e11b0fcc5552e4425",
+      "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "0x2f39d218133afab8f2b819b1066c7e434ad94e9e",
+      "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+      "0xe66a9c5007afc7d515dd63b8017d8cda6b0a97a4",
+      "0xea51d7853eefb32b6ee06b1c12e6dcca88be0ffe",
+      "0x102633152313c81cd80419b6ecf66d14ad68949a",
+      "0x4d5f47fa6a74757f35c14fd3a6ef8e3c9bc514e8",
+      "0x8164cc65827dcfe994ab23944cbc90e0aa80bfcb",
+      "0x0000000000000000000000000000000000000040",
+      "0x15c5620dffac7c7366eed66c20ad222ddbb1ed57",
+      "0x5d834ead0a80cf3b88c06feed6e8e0fcae2daee5",
+      "0xf1cd4193bbc1ad4a23e833170f49d60f3d35a621",
+      "0x39739943199c0fbfe9e5f1b5b160cd73a64cb85d"
+    ],
+    "hash": "0xfcbf1c3d20fcfae7ebc7c963c78ca16b4454e64a8f6d8c459aab78bb45c1760e"
+  }
+```
 
 ## Labels
 
