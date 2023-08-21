@@ -27,7 +27,7 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 3/29/23	Address	0xcA357E19078356376A8A0235d8ac885f6c620354	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1641021372175466499?s=20	56	Protocol attack	
 3/29/23	Address	0xbd07ab4aa6d10b371bda15bcd653567a75b3c849	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641012683549081600?s=20	56	Soft rug pull	Token_appears_to_be_a_honeypot
 3/29/23	Address	0xB72a82be7c8a11c53e89a00b535E05E4736d12AC	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641082021522059264?s=20	1	Ice phishing	
-3/29/23	Address	0x513C285CD76884acC377a63DC63A4e83D7D21fb5.	@SlowMist_Team	https://twitter.com/SlowMist_Team/status/1640614440294035456?s=20	56	Ice phishing	Gas_fee_thieves_in_normal_transactions
+3/29/23	Address	0x513C285CD76884acC377a63DC63A4e83D7D21fb5	@SlowMist_Team	https://twitter.com/SlowMist_Team/status/1640614440294035456?s=20	56	Ice phishing	Gas_fee_thieves_in_normal_transactions
 3/30/23	Address	0x0E0EA0DAed97f36149eab4291D75C9136121B087	@CertiKAlert	https://twitter.com/CertiKAlert/status/1641271500832382976?s=20	1	Ice phishing	The_wallet_received_funds_from_Fake_Phishing38688.
 3/30/23	Address	0x1661F1B207629e4F385DA89cFF535C8E5Eb23Ee3	@PeckShieldAlert	https://twitter.com/DeDotFiSecurity/status/1641407929046777858?s=20	1	Ice phishing	Tag_Poap.eth
 4/2/23	Address	0x7F0a80d6966A131A66b8CEb2046cd8F7799f0240	@CertiKAlert	https://twitter.com/CertiKAlert/status/1642431687266017280?s=200	56	Soft rug pull	We_are_seeing_a_price_#slippage_on_OBB_(OBB)
@@ -128,9 +128,9 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 4/21/23	Address	0x2d550e85aa24bcd73c758ef949734dc30b33658b	Blocksec		137	Ice phishing	
 4/21/23	Address	0x2d550e85aa24bcd73c758ef949734dc30b33658b	Blocksec		42161	Ice phishing	
 4/21/23	Address	0x43ee4169d9fF5E5b10Ca42923b1e5D07a157bB71	@dedotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1649400977303142400?s=20	1	Soft rug pull	
-4/21/23	Address	0x2D2BCD3CAEd4b51B7090c78CfD73Ea091A4B44DE	@CertiKAlert	https://twitter.com/CertiKAlert/status/1649350138303840257?s=20			Flash loan exploit on WEDEX Reward token (APP).
-4/21/23	Address	0x3192472d6bf39aa1a48813c37613f05e554a6ad6	@realScamSniffer	https://twitter.com/realScamSniffer/status/1649406227124834305?s=20		Ice phishing	
-4/21/23	Address	0x8513235F37e3d073FB396a1511653810965a082f	@CertiKAlert	https://twitter.com/CertiKAlert/status/1649303944445808640?s=20			
+4/21/23	Address	0x2D2BCD3CAEd4b51B7090c78CfD73Ea091A4B44DE	@CertiKAlert	https://twitter.com/CertiKAlert/status/1649350138303840257?s=20	1		Flash loan exploit on WEDEX Reward token (APP).
+4/21/23	Address	0x3192472d6bf39aa1a48813c37613f05e554a6ad6	@realScamSniffer	https://twitter.com/realScamSniffer/status/1649406227124834305?s=20	1	Ice phishing	
+4/21/23	Address	0x8513235F37e3d073FB396a1511653810965a082f	@CertiKAlert	https://twitter.com/CertiKAlert/status/1649303944445808640?s=20	1		
 4/21/23	Address	0xfb4d3eb37bde8fa4b52c60aabe55b3cd9908ec73	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1649271752156127237?s=20	1	Ice phishing	
 4/21/23	Address	0xfb4d3eb37bde8fa4b52c60aabe55b3cd9908ec73	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1649271752156127237?s=20	56	Ice phishing	
 4/21/23	Address	0xfb4d3eb37bde8fa4b52c60aabe55b3cd9908ec73	@PeckShieldAlert	https://twitter.com/PeckShieldAlert/status/1649271752156127237?s=20	137	Ice phishing	
@@ -525,7 +525,7 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 6/5/23	Address	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	137	Ice phishing	
 6/5/23	Address	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	42161	Ice phishing	
 6/5/23	Address	0x00008F1149168C1D2fa1eBa1Ad3e9cD644510000	@CertiKAlert	https://twitter.com/CertiKAlert/status/1665507431647002626?s=20	43114	Ice phishing	
-6/5/23	Address	0xe80b7dd89d1cf4b709612dd9e045da93f33973f9	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1665451247019646978?s=20		Soft rug pull	
+6/5/23	Address	0xe80b7dd89d1cf4b709612dd9e045da93f33973f9	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1665451247019646978?s=20	1	Soft rug pull	
 6/5/23	Address	0xc37b38e6d2a1981a8e1e9420e5257b005f714da7	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	1	Protocol attack	Atomic_Wallet_hack
 6/5/23	Address	0xc9658b8aeb47b81ef1eff42a593772215fa55d47	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	56	Protocol attack	Atomic_Wallet_hack
 6/5/23	Address	0x8661a803d63b238a1d72e82deecc1a384b9860de	@SlowMist_Team	https://twitter.com/MistTrack_io/status/1665746407834124290?s=20	43114	Protocol attack	Atomic_Wallet_hack
@@ -3276,17 +3276,17 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 7/3/23	Address	0x906639ab20d12a95a8bec294758955870d0bb5cc	@BeosinAlert	https://twitter.com/BeosinAlert/status/1675708125683372032?s=20	1	Protocol attack	
 7/3/23	Address	0x4218e774634C1ED1761d3b169d89C2ba8B2D6C41	@DeDotFiSecurity	https://twitter.com/DeDotFiSecurity/status/1675473496674009089?s=20	1	Ice phishing	
 7/3/23	Address	0x4218e774634C1ED1761d3b169d89C2ba8B2D6C41	@realScamSniffer	https://twitter.com/realScamSniffer/status/1675464090343583746?s=20	1	Ice phishing	
-7/12/23	Address	0xf8b2207238bd56965db96f7520ac4365b7924bb7 	@Intell_On_Chain	https://twitter.com/Intell_On_Chain/status/1679155993916178432?s=20		Ice phishing	
-7/12/23	Address	0xdd7c4fb26a25774d1d6c94888053dc58e536919d	@Intell_On_Chain	https://twitter.com/Intell_On_Chain/status/1679155993916178432?s=20		Ice phishing	
+7/12/23	Address	0xf8b2207238bd56965db96f7520ac4365b7924bb7 	@Intell_On_Chain	https://twitter.com/Intell_On_Chain/status/1679155993916178432?s=20	1	Ice phishing	
+7/12/23	Address	0xdd7c4fb26a25774d1d6c94888053dc58e536919d	@Intell_On_Chain	https://twitter.com/Intell_On_Chain/status/1679155993916178432?s=20	1	Ice phishing	
 7/12/23	Address	0x39720be11da41f0b0bf37a3cc918b5d89a949ce9 	@Intell_On_Chain	https://twitter.com/Intell_On_Chain/status/1679155993916178432?s=20	1	Ice phishing	
 7/12/23	Address	0x0ADFAA2Fd26AF99ddDCc68C4eFbe479C1a04c4e3	@CertiKAlert	https://twitter.com/CertiKAlert/status/1679121615156592640?s=20	1	Ice phishing	
-7/12/23	Address	0x6ae0f79a8c2E1071E563F9E3191870546c8df18e	@CertiKAlert	https://twitter.com/CertiKAlert/status/1679119872444313602?s=20		Protocol attack	
+7/12/23	Address	0x6ae0f79a8c2E1071E563F9E3191870546c8df18e	@CertiKAlert	https://twitter.com/CertiKAlert/status/1679119872444313602?s=20	1	Protocol attack	
 7/12/23	Code	566572696669636174696f6e2e	@cseifert	N/A	1	sleep drop	SleepDrop Signature #1
 7/21/23	Url	https://rewards-uniswapx.org	@samczsun	https://github.com/MetaMask/eth-phishing-detect/pull/13088/files		Native Ice Phishing	
 7/21/23	Url	https://bounty-uniswap.com	@samczsun	https://github.com/MetaMask/eth-phishing-detect/pull/13088/files		Native Ice Phishing	
-8/2/23	Address	0xa7bf48749d2e4aa29e3209879956b9baa9e90570	@tayvano_	https://twitter.com/tayvano_/status/1686418992599273472?s=20		Address Poisoning	
-8/2/23	Address	0x3dC62E346843a418Db2D4e3745D2279b9FAfE317	@tayvano_	https://twitter.com/tayvano_/status/1686418992599273472?s=20		Address Poisoning	
-8/2/23	Address	0x9546122362B477dF74cAF55c1F2742f534826CDa	@tayvano_	https://twitter.com/tayvano_/status/1686418992599273472?s=20		Address Poisoning	
+8/2/23	Address	0xa7bf48749d2e4aa29e3209879956b9baa9e90570	@tayvano_	https://twitter.com/tayvano_/status/1686418992599273472?s=20	1	Address Poisoning	
+8/2/23	Address	0x3dC62E346843a418Db2D4e3745D2279b9FAfE317	@tayvano_	https://twitter.com/tayvano_/status/1686418992599273472?s=20	1	Address Poisoning	
+8/2/23	Address	0x9546122362B477dF74cAF55c1F2742f534826CDa	@tayvano_	https://twitter.com/tayvano_/status/1686418992599273472?s=20	1	Address Poisoning	
 7/17/23	Address	0x1fabd3b41bf33e14a4588595b5a76eaddac2ea87	@CertiKAlert	https://twitter.com/CertiKAlert/status/1680657569289846784	56	Hard rug pull	#exiscam
 7/17/23	Address	0x1FaBd3B41BF33e14A4588595B5a76eAddAC2eA87	@CertiKAlert	https://twitter.com/CertiKAlert/status/1680657569289846784	56	Hard rug pull	
 7/20/2023	Address	0x00005d0c9ac39db0798f6ca947202e5f55a10000	@ScamSniffer	https://twitter.com/realScamSniffer/status/1682030454235607045	1	Ice phishing	Blur phishing
