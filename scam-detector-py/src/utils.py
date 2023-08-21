@@ -193,7 +193,7 @@ class Utils:
         
         return Finding({
             'name': 'Scam detector encountered a recoverable error.',
-            'description': f'{error_description}',
+            'description': f'Error: {error_description}',
             'alert_id': 'DEBUG-ERROR',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
