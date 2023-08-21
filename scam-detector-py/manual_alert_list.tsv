@@ -3387,23 +3387,23 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 8/15/2023	Address	0x82b5F93a57c1777DEe880A784860C2D9f88781dF	@CertiKAlert	https://twitter.com/CertiKAlert/status/1691109489225691137	1	Address poisoning	
 8/15/2023	Address	0xE4982B6255661120859f8A8468a64E6F9937C793	@CertiKAlert	https://twitter.com/CertiKAlert/status/1691109489225691137	1	Address poisoning	
 8/15/2023	Address	0x7D725449fa17C4659E5625dC57A2C5e3c0091411	@CertiKAlert	https://twitter.com/CertiKAlert/status/1691109489225691137	1	Address poisoning	
-8/21/23	Address	0x2266362f414Bf2476C5465dc2eA953Fe2A99AE1c	@CertiKAlert	https://twitter.com/CertiKAlert/status/1693362027371123099	56	Hard rug pull
-8/21/23	Address	0x56d7e6a12f56dfca75fbb3f62b6f647f56f63445	@CertiKAlert	https://twitter.com/CertiKAlert/status/1693323464311226468	1	Hard rug pull
-8/21/23	Address	0x70747df6AC244979A2ae9CA1e1A82899d02bbea4	@CertiKAlert	https://twitter.com/CertiKAlert/status/1693299488125833691	1	Protocol attack
-8/21/23	Address	0x0D9DAc28De13F52F5D2f7A44CE6e2548598b426a	@CertiKAlert	https://twitter.com/CertiKAlert/status/1693260268749406710	1	Hard rug pull
-8/21/23	Address	0xE2A178C2C5C4920C1b2B947A35edDb4f8EcBb7dD	@SlowMist_Team	https://twitter.com/SlowMist_Team/status/1693172661697085760	56	Fraudulent seaport orders
-8/21/23	Address	0x2cf82a3Ad32AA580110278022a6493b631044beF	@CertiKAlert	https://twitter.com/CertiKAlert/status/1692932345249038650	1	Hard rug pull
-8/21/23	Address	0x1F373733ED5D6999908EA80B69B2d9Cd2d63D98B	@CertiKAlert	https://twitter.com/CertiKAlert/status/1692876010549600407	56	Hard rug pull
-8/21/23	Address	0x80aF73FEeF1b9D0f2EF230a548d752E7dC984646	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692709552486273431	1	Ice phishing
-8/21/23	Address	0x24e6d835f23b9716af984f6604625c6b074015cd	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692440160213061942	1	Ice phishing
-8/21/23	Address	0x5f0f3B3D335c8071580f3ABFbaC79B48B74e0494	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692342296761798696	1	Ice phishing
-8/21/23	Address	0x6BC41A79343b05a019F5d9a61FFf92664C1BC2F5	@CertiKAlert	https://twitter.com/CertiKAlert/status/1692249586616692936	1	Ice phishing
-8/21/23	Address	0x000014FB8dcA1D855ecAB28f955B17F20D0A0000	@AegisWeb3	https://twitter.com/AegisWeb3/status/1691639734802473220	1	Ice phishing
-8/21/23	Address	0xB88457b62491CBcEc42203672cFcb4269bd64c7e	@SlowMist_Team	https://twitter.com/SlowMist_Team/status/1693172661697085760	56	Fraudulent seaport orders
-8/21/23	Address	0x8522a1106B0e26584AF2658bd099005FDC33cCeD	@CertiKAlert	https://twitter.com/CertiKAlert/status/1692932345249038650	1	Hard rug pull
-8/21/23	Address	0x57a7D78065eE0ED28e9ca035a1998C99CA1793eF	@CertiKAlert	https://twitter.com/CertiKAlert/status/1692876010549600407	56	Hard rug pull
-8/21/23	Address	0x0000438e0f00FC35DFF19D0062608057a1d20000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692709552486273431	1	Ice phishing
-8/21/23	Address	0xb6effb0d2570a18c1ad503fb16a101bbe00215f9	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692440160213061942	1	Ice phishing
-8/21/23	Address	0xA0EC2733E8Aef26Dab0BE9abFBACD9eF337740E3	@AegisWeb3	https://twitter.com/AegisWeb3/status/1691639734802473220	1	Ice phishing
-8/21/23	Address	0x0000daf60a1becf1bd617c584dea964455890000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692709552486273431	1	Ice phishing
-8/21/23	Address	0x6B1F7068121b49fa551B21bdE5E0f51570fcf857	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692440160213061942	1	Ice phishing
+8/21/2023	Address	0x2266362f414Bf2476C5465dc2eA953Fe2A99AE1c	@CertiKAlert	https://twitter.com/CertiKAlert/status/1693362027371123099	56	Hard rug pull	
+8/21/2023	Address	0x56d7e6a12f56dfca75fbb3f62b6f647f56f63445	@CertiKAlert	https://twitter.com/CertiKAlert/status/1693323464311226468	1	Hard rug pull	
+8/21/2023	Address	0x70747df6AC244979A2ae9CA1e1A82899d02bbea4	@CertiKAlert	https://twitter.com/CertiKAlert/status/1693299488125833691	1	Protocol attack	
+8/21/2023	Address	0x0D9DAc28De13F52F5D2f7A44CE6e2548598b426a	@CertiKAlert	https://twitter.com/CertiKAlert/status/1693260268749406710	1	Hard rug pull	
+8/21/2023	Address	0xE2A178C2C5C4920C1b2B947A35edDb4f8EcBb7dD	@SlowMist_Team	https://twitter.com/SlowMist_Team/status/1693172661697085760	56	Fraudulent seaport orders	
+8/21/2023	Address	0x2cf82a3Ad32AA580110278022a6493b631044beF	@CertiKAlert	https://twitter.com/CertiKAlert/status/1692932345249038650	1	Hard rug pull	
+8/21/2023	Address	0x1F373733ED5D6999908EA80B69B2d9Cd2d63D98B	@CertiKAlert	https://twitter.com/CertiKAlert/status/1692876010549600407	56	Hard rug pull	
+8/21/2023	Address	0x80aF73FEeF1b9D0f2EF230a548d752E7dC984646	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692709552486273431	1	Ice phishing	
+8/21/2023	Address	0x24e6d835f23b9716af984f6604625c6b074015cd	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692440160213061942	1	Ice phishing	
+8/21/2023	Address	0x5f0f3B3D335c8071580f3ABFbaC79B48B74e0494	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692342296761798696	1	Ice phishing	
+8/21/2023	Address	0x6BC41A79343b05a019F5d9a61FFf92664C1BC2F5	@CertiKAlert	https://twitter.com/CertiKAlert/status/1692249586616692936	1	Ice phishing	
+8/21/2023	Address	0x000014FB8dcA1D855ecAB28f955B17F20D0A0000	@AegisWeb3	https://twitter.com/AegisWeb3/status/1691639734802473220	1	Ice phishing	
+8/21/2023	Address	0xB88457b62491CBcEc42203672cFcb4269bd64c7e	@SlowMist_Team	https://twitter.com/SlowMist_Team/status/1693172661697085760	56	Fraudulent seaport orders	
+8/21/2023	Address	0x8522a1106B0e26584AF2658bd099005FDC33cCeD	@CertiKAlert	https://twitter.com/CertiKAlert/status/1692932345249038650	1	Hard rug pull	
+8/21/2023	Address	0x57a7D78065eE0ED28e9ca035a1998C99CA1793eF	@CertiKAlert	https://twitter.com/CertiKAlert/status/1692876010549600407	56	Hard rug pull	
+8/21/2023	Address	0x0000438e0f00FC35DFF19D0062608057a1d20000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692709552486273431	1	Ice phishing	
+8/21/2023	Address	0xb6effb0d2570a18c1ad503fb16a101bbe00215f9	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692440160213061942	1	Ice phishing	
+8/21/2023	Address	0xA0EC2733E8Aef26Dab0BE9abFBACD9eF337740E3	@AegisWeb3	https://twitter.com/AegisWeb3/status/1691639734802473220	1	Ice phishing	
+8/21/2023	Address	0x0000daf60a1becf1bd617c584dea964455890000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692709552486273431	1	Ice phishing	
+8/21/2023	Address	0x6B1F7068121b49fa551B21bdE5E0f51570fcf857	@realScamSniffer	https://twitter.com/realScamSniffer/status/1692440160213061942	1	Ice phishing	
