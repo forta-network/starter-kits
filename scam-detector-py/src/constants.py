@@ -17,8 +17,18 @@ FINDINGS_CACHE_BLOCK_KEY = "findings_cache_block_key"
 FINDINGS_CACHE_TRANSACTION_KEY = "findings_cache_transaction_key"
 FINDINGS_CACHE_ALERT_KEY = "findings_cache_alert_key"
 
-ALERTED_CLUSTERS_KEY = "alerted_clusters_per_alert_id_key"
-ALERTED_ENTITIES_QUEUE_SIZE = 250000
+ALERTED_ENTITIES_ML_KEY = "alerted_entities_ml_per_alert_id_key"
+ALERTED_ENTITIES_ML_QUEUE_SIZE = 100000
+ALERTED_ENTITIES_PASSTHROUGH_KEY = "alerted_entities_passthrough_per_alert_id_key"
+ALERTED_ENTITIES_PASSTHROUGH_QUEUE_SIZE = 100000
+ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY = "alerted_entities_scammer_association_per_alert_id_key"
+ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE = 100000
+ALERTED_ENTITIES_SIMILAR_CONTRACT_KEY = "alerted_entities_similar_contract_per_alert_id_key"
+ALERTED_ENTITIES_SIMILAR_CONTRACT_QUEUE_SIZE = 100000
+ALERTED_ENTITIES_MANUAL_KEY = "alerted_entities_manual_per_alert_id_key"
+ALERTED_ENTITIES_MANUAL_QUEUE_SIZE = 100000
+ALERTED_ENTITIES_MANUAL_METAMASK_KEY = "alerted_entities_manual_metamask_per_alert_id_key"
+ALERTED_ENTITIES_MANUAL_METAMASK_QUEUE_SIZE = 250000
 ALERTED_FP_CLUSTERS_KEY = "alerted_fp_addresses_per_alert_id_key"
 ALERTED_FP_CLUSTERS_QUEUE_SIZE = 10000
 
