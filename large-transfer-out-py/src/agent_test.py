@@ -1,8 +1,9 @@
-from forta_agent import create_transaction_event, FindingSeverity, get_json_rpc_url, EntityType
 import timeit
 import agent
 from web3 import Web3
 from web3_mock import Web3Mock, ADDRESS_WITH_LARGE_BALANCE, ADDRESS_WITHOUT_LARGE_BALANCE, CURRENT_BLOCK, OLDER_CURRENT_BLOCK
+from forta_agent import create_transaction_event, FindingSeverity, get_json_rpc_url, EntityType
+from src.constants import SWAP_TOPICS
 
 w3 = Web3Mock()
 real_w3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -143,3 +144,28 @@ class TestLargeTransferOut:
         )["label"] == 'attacker', "should have attacker as label"
         assert findings[0].labels[0].toDict(
         )["confidence"] == 0.3, "should have 0.3 as label confidence"
+
+    def test_swaps(self, mocker):
+        agent.initialize()
+        tx_event = create_transaction_event({
+            'transaction': {
+                'hash': "0",
+                'to': "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4",
+                'from': ADDRESS_WITHOUT_LARGE_BALANCE,
+                'value': "50000000000000000000"
+            },
+            'block': {
+                'number': CURRENT_BLOCK
+            },
+            'logs': [
+                {
+                    'topics': [SWAP_TOPICS[0]],
+                }
+            ],
+            'receipt': {
+                'logs': []}
+        })
+
+        findings = agent.detect_suspicious_native_transfers(w3, tx_event)
+        assert len(
+            findings) == 0, "this should not have triggered a finding as transaction is a swap"
