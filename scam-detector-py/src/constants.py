@@ -139,11 +139,11 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e", "SCAM-NOTIFIER-EOA", "PassThrough", "SCAM-DETECTOR-UNKNOWN"),
                 ("0xd45f7183783f5893f4b8e187746eaf7294f73a3bb966500d237bd0d5978673fa", "PHISHING-TOKEN-NEW", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),
                 ("0x715c40c11a3e24f3f21c3e2db1c109bba358ccfcbceada84ee1e0f4dba4410e7", "GAS-ANOMALOUS-LARGE-CONSUMPTION", "PassThrough", "SCAM-DETECTOR-GAS-MINTING"),
-                #("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-3", "PassThrough", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE"),
-                #("0x4aa29f0e18bd56bf85dd96f568a9affb5a#367cec4df4b67f5b4ed303ff15271e", "EOA-PHISHING-SCAMMER", "PassThrough", "SCAM-DETECTOR-UNKNOWN"), # unknown as it seems to pick up a lot of rug pulls
-                #("0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11", "RAKE-TOKEN-CONTRACT-1", "PassThrough", "SCAM-DETECTOR-RAKE-TOKEN"),  # rake token
-                #("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-1", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # local model
-                #("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-2", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # global model
+                ("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-3", "PassThrough", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE"),
+                ("0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e", "EOA-PHISHING-SCAMMER", "PassThrough", "SCAM-DETECTOR-UNKNOWN"), # unknown as it seems to pick up a lot of rug pulls
+                ("0x36be2983e82680996e6ccc2ab39a506444ab7074677e973136fa8d914fc5dd11", "RAKE-TOKEN-CONTRACT-1", "PassThrough", "SCAM-DETECTOR-RAKE-TOKEN"),  # rake token
+                ("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-1", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # local model
+                ("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-2", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # global model
                 
                 ]
 

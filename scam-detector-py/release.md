@@ -1,7 +1,8 @@
 # Scam Detector Bot Release Notes
 
-## v2.19.0 
+## v2.19.0 (August 23rd - beta (without metamask)
 - updated SDK to 0.1.38/0.1.21
+- added FP check around contract tx count
 
 ## v2.18.3 (August 18th - beta (without metamask), August 21st - beta (without metamask, private key compromise, ice phishing ML bot, scammer-association, rake token))
 - small bug fix
