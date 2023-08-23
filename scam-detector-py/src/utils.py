@@ -205,34 +205,50 @@ class Utils:
         })
 
     @staticmethod
-    def is_fp(w3, cluster: str) -> bool:
+    def is_fp(w3, cluster: str, chain_id, is_address: bool = True) -> bool:
         global ERROR_CACHE
 
-        etherscan_label = ','.join(Utils.get_etherscan_label(cluster)).lower()
-        if not ('attack' in etherscan_label
-                or 'phish' in etherscan_label
-                or 'hack' in etherscan_label
-                or 'heist' in etherscan_label
-                or 'exploit' in etherscan_label
-                or 'drainer' in etherscan_label
-                or 'scam' in etherscan_label
-                or 'fraud' in etherscan_label
-                or '.eth' in etherscan_label
-                or etherscan_label == ''):
-            logging.info(f"Cluster {cluster} etherscan label: {etherscan_label}")
-            return True
+        if is_address: # if it's not a URL
+            etherscan_label = ','.join(Utils.get_etherscan_label(cluster)).lower()
+            if not ('attack' in etherscan_label
+                    or 'phish' in etherscan_label
+                    or 'hack' in etherscan_label
+                    or 'heist' in etherscan_label
+                    or 'exploit' in etherscan_label
+                    or 'drainer' in etherscan_label
+                    or 'scam' in etherscan_label
+                    or 'fraud' in etherscan_label
+                    or '.eth' in etherscan_label
+                    or etherscan_label == ''):
+                logging.info(f"Cluster {cluster} etherscan label: {etherscan_label}")
+                return True
 
-        tx_count = 0
-        try:
-            tx_count = Utils.get_max_tx_count(w3, cluster)
-        except BaseException as e:
-            error_finding = Utils.alert_error(str(e), "Utils.get_max_tx_count", f"{traceback.format_exc()}")
-            Utils.ERROR_CACHE.add(error_finding)
-            logging.error(f"Exception in assessing get_transaction_count for cluster {cluster}: {e}")
+            tx_count = 0
+            try:
+                tx_count = Utils.get_max_tx_count(w3, cluster)
+            except BaseException as e:
+                error_finding = Utils.alert_error(str(e), "Utils.get_max_tx_count", f"{traceback.format_exc()}")
+                Utils.ERROR_CACHE.add(error_finding)
+                logging.error(f"Exception in assessing get_transaction_count for cluster {cluster}: {e}")
 
-        if tx_count > TX_COUNT_FILTER_THRESHOLD:
-            logging.info(f"Cluster {cluster} transacton count: {tx_count}")
-            return True
+            if tx_count > TX_COUNT_FILTER_THRESHOLD:
+                logging.info(f"Cluster {cluster} transacton count: {tx_count}")
+                return True
+            
+            try:
+                from src.blockchain_indexer_service import BlockChainIndexer
+                block_chain_indexer = BlockChainIndexer()
+                if block_chain_indexer.has_deployed_high_tx_count_contract(cluster, chain_id):
+                    logging.info(f"Cluster {cluster} has deployed a high tx count contract")
+                    return True
+                else:
+                    logging.info(f"Cluster {cluster} has not deployed a high tx count contract")
+
+            except BaseException as e:
+                error_finding = Utils.alert_error(str(e), "Utils.block_chain_indexer.has_deployed_high_tx_count_contract", f"{traceback.format_exc()}")
+                Utils.ERROR_CACHE.add(error_finding)
+                logging.error(f"Exception in assessing has_deployed_high_tx_count_contract for cluster {cluster}: {e}")
+                return False
 
         if Utils.is_in_fp_mitigation_list(cluster):
             logging.info(f"Cluster {cluster} is in fp mitigation list")

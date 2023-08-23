@@ -14,10 +14,11 @@ from datetime import datetime, timedelta
 
 from src.storage import get_secrets
 from src.utils import Utils
+from src.constants import CONTRACTS_TX_COUNT_FILTER_THRESHOLD
 
 class BlockChainIndexer:
 
-    FIRST_BLOCK_NUMBER = 15000000
+    FIRST_BLOCK_NUMBER = 1500000
     SECRETS_JSON = None
 
     @staticmethod
@@ -171,3 +172,30 @@ class BlockChainIndexer:
 
         logging.info(f"get_contracts for {address} on {chain_id}; returning {len(contracts)}.")
         return contracts
+    
+    @staticmethod
+    @RateLimiter(max_calls=1, period=1)
+    def has_deployed_high_tx_count_contract(address, chain_id) -> bool:
+        contracts = BlockChainIndexer.get_contracts(address, chain_id)
+        logging.info(f"has_deployed_high_tx_count_contract for address {address} on {chain_id} called.")
+
+        for contract in contracts:
+            transactions_for_contract = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={contract}&startblock={BlockChainIndexer.FIRST_BLOCK_NUMBER}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
+
+            success = False
+            count = 0
+            while not success:
+                data = requests.get(transactions_for_contract)
+                if data.status_code == 200:
+                    json_data = json.loads(data.content)
+                    success = True
+                    if len(json_data["result"]) > CONTRACTS_TX_COUNT_FILTER_THRESHOLD:
+                        return True                   
+                else:
+                    logging.warning(f"Error getting contract on etherscan for {contract}, {chain_id} {data.status_code} {data.content}")
+                    count += 1
+                    if count > 10:
+                        Utils.ERROR_CACHE.add(Utils.alert_error(f'request etherscan {data.status_code}', "blockchain_indexer_service.get_contracts", ""))
+                        break
+                    time.sleep(1)
+        return False
