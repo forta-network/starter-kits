@@ -33,6 +33,7 @@ ALERTED_FP_CLUSTERS_KEY = "alerted_fp_addresses_per_alert_id_key"
 ALERTED_FP_CLUSTERS_QUEUE_SIZE = 10000
 
 TX_COUNT_FILTER_THRESHOLD = 2000  # ignore EOAs with tx count larger than this threshold to mitigate FPs
+CONTRACTS_TX_COUNT_FILTER_THRESHOLD = 5000 # ignore EOAs that have deployed a contract with tx count larger than this threshold to mitigate FPs
 
 BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "nft-phishing-sale", "PassThrough", "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER"),  # seaport orders
              ("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "nft-possible-phishing-transfer", "Combination", ""),
