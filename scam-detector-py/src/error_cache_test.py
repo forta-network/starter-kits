@@ -12,7 +12,7 @@ class TestErrorCache:
         assert is_fp == False
         assert Utils.ERROR_CACHE.len() == 1, "ERROR_CACHE should have 1 error"
         error_findings = Utils.ERROR_CACHE.get_all()
-        assert error_findings[0].description == "unable to get tx account"
+        assert error_findings[0].description == "Error: unable to get tx account"
         assert error_findings[0].metadata['error_source'] == 'Utils.get_max_tx_count'
         assert len(error_findings[0].metadata['error_stacktrace']) >0 
         

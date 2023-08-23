@@ -91,7 +91,7 @@ class TestUtils:
 
     def test_debug_error(self):
         finding = Utils.alert_error("description", "source", "stacktrace")
-        assert finding.description == "description"
+        assert finding.description == "Error: description"
         assert finding.alert_id == "DEBUG-ERROR"
         assert finding.severity == FindingSeverity.Info
         assert finding.name == "Scam detector encountered a recoverable error."
