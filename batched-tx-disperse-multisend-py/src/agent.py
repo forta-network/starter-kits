@@ -1,32 +1,41 @@
 """Forta agent scanning for batched transactions."""
 
-from itertools import chain
+import logging
+import os
 
 from forta_agent import get_json_rpc_url
 from forta_agent.transaction_event import TransactionEvent
 from web3 import Web3
 
-import src._balances as balances
 import src._chains as chains
 import src._events as events
 import src._inputs as inputs
+import src.findings as findings
 import src.metrics.airdrop as airdrop
 import src.metrics.batch as batch
 import src.metrics.erc20 as erc20
 import src.metrics.native as native
 import src.metrics.nft as nft
 import src.options as options
-import src.findings as findings
+import src.utils as utils
 
 # INIT ########################################################################
 
-CHAIN_ID = 1
+utils.setup_logger(logging.INFO)
+utils.load_secrets()
+CHAIN_ID = -1
 WEB3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 def initialize():
     """Initialize the state variables that are tracked across tx and blocks."""
     global CHAIN_ID
-    CHAIN_ID = int(WEB3.eth.chain_id)
+    try:
+        CHAIN_ID = int(os.environ.get('FORTA_CHAIN_ID', '')) or int(WEB3.eth.chain_id)
+        os.environ['FORTA_CHAIN_ID'] = str(CHAIN_ID)
+        logging.info(f'set chain id to {CHAIN_ID}')
+    except Exception as e:
+        logging.error(f'error getting chain id (kept to {CHAIN_ID})')
+        raise e
     return {}
 
 # METRICS #####################################################################
@@ -102,6 +111,7 @@ def handle_transaction_factory(
                 # raise an alert
                 if _transfers:
                     _findings.append(findings.FormatBatchTxFinding(
+                        txhash=log.transaction.hash,
                         sender=_from,
                         receiver=_to,
                         token=_token,

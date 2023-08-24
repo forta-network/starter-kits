@@ -1,5 +1,7 @@
 """Format the agent findings into Forta alerts"""
 
+import logging
+
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 from forta_agent import Finding, FindingType, FindingSeverity, EntityType, Label
 
@@ -9,9 +11,10 @@ BOT_ID = '0x568bf7a13b62e5041705eff995328c84ce7b037961ab6cdded927c9ab3b59e58'
 
 # TEMPLATES ###################################################################
 
-def FormatBatchTxFinding(sender: str, receiver: str, token: str, transfers: list, chain_id: int, confidence_score: float, malicious_score: float) -> Finding:
+def FormatBatchTxFinding(txhash: str, sender: str, receiver: str, token: str, transfers: list, chain_id: int, confidence_score: float, malicious_score: float) -> Finding:
+    _supported = chain_id not in [10, 250, 43114]
     _alert_id = f'BATCH-{token}-TX'
-    _alert_rate = '0' #calculate_alert_rate(chain_id, BOT_ID, _id, ScanCountType.TRANSFER_COUNT)
+    _alert_rate = calculate_alert_rate(chain_id, BOT_ID, _alert_id, ScanCountType.TRANSFER_COUNT) if _supported else '0' # Optimism, Fantom & Avalanche are not supported yet
     _labels = []
 
     # label the sender if the transaction is malicious
@@ -44,8 +47,10 @@ def FormatBatchTxFinding(sender: str, receiver: str, token: str, transfers: list
             'transfer_tokens': str(list(set([_t['token'] for _t in transfers]))),
             'transfer_count': str(len(transfers)),
             'transfer_total': str(sum([abs(int(_t['value'])) for _t in transfers])),
-            'anomaly_score': _alert_rate},
+            'anomaly_score': str(_alert_rate)},
         'labels': _labels
     })
+
+    logging.info(f'{_alert_id}: found {len(transfers)} transfers of {token} batched in {txhash}')
 
     return _finding
