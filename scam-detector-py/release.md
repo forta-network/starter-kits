@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## v2.19.1 (August 24th - beta (without metamask), August 24th - beta (without metamask, private key compromise, ice phishing ML bot, scammer-association, rake token))
+- removed expansion of ADDRESS-POISONING-FAKE-TOKEN in basebot parser due to issue https://github.com/tf0rs/forta-address-poisoning-agent/issues/6
+
 ## v2.19.0 (August 23rd - beta (without metamask), August 23rd - beta (without metamask, private key compromise, ice phishing ML bot, scammer-association, rake token))
 - updated SDK to 0.1.38/0.1.21
 - added FP check around contract tx count
