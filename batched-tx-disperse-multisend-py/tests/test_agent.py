@@ -1,6 +1,5 @@
 """Test the agent on a fork"""
 
-import forta_agent
 import pytest
 import web3
 

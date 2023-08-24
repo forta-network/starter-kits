@@ -2,7 +2,7 @@
 
 import pytest
 
-import src._selectors as selectors
+import src.parsing.selectors as selectors
 import tests.test_data as data
 
 # FIXTURES ####################################################################

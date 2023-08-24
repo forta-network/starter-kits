@@ -35,7 +35,7 @@ def _parse_event(log: 'AttributeDict', names: list) -> dict:
         'to': _get_arg_value(log=log, name=names[1]),
         'value': _get_arg_value(log=log, name=names[2])}
 
-def parse_log(log: TransactionEvent, abi: str=ERC20_TRANSFER_EVENT) -> list:
+def parse_log(log: TransactionEvent, abi: str=ERC20_TRANSFER_EVENT, filters: dict={}) -> list:
     """Extract all the event matching a given ABI."""
     _inputs = _get_input_names(abi)
     _logs = log.filter_log(abi)

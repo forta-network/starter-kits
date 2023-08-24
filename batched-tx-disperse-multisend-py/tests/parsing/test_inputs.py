@@ -3,7 +3,7 @@
 import pytest
 import re
 
-import src._inputs as inputs
+import src.parsing.inputs as inputs
 import tests.test_data as data
 
 # FIXTURES ####################################################################

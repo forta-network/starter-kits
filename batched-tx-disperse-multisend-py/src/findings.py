@@ -51,6 +51,6 @@ def FormatBatchTxFinding(txhash: str, sender: str, receiver: str, token: str, tr
         'labels': _labels
     })
 
-    logging.info(f'{_alert_id}: found {len(transfers)} transfers of {token} batched in {txhash}')
+    logging.info(f'{_alert_id}: found {len(transfers)} transfers of {token} bundled in {txhash}')
 
     return _finding

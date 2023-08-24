@@ -7,9 +7,9 @@ from forta_agent import get_json_rpc_url
 from forta_agent.transaction_event import TransactionEvent
 from web3 import Web3
 
-import src._chains as chains
-import src._events as events
-import src._inputs as inputs
+import src.parsing.chains as chains
+import src.parsing.events as events
+import src.parsing.inputs as inputs
 import src.findings as findings
 import src.metrics.airdrop as airdrop
 import src.metrics.batch as batch
@@ -23,7 +23,7 @@ import src.utils as utils
 
 utils.setup_logger(logging.INFO)
 utils.load_secrets()
-CHAIN_ID = -1
+CHAIN_ID = 1
 WEB3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 def initialize():
