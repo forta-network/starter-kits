@@ -5,10 +5,10 @@ from itertools import chain
 from forta_agent.transaction_event import TransactionEvent
 from web3 import Web3
 
-import src._balances as balances
-import src._events as events
-import src._inputs as inputs
-import src._selectors as selectors
+import src.parsing.balances as balances
+import src.parsing.events as events
+import src.parsing.inputs as inputs
+import src.parsing.selectors as selectors
 
 # SELECTORS INDICATORS ########################################################
 
