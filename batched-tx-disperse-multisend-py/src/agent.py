@@ -66,8 +66,6 @@ def _score_transaction(
 
 def handle_transaction_factory(
     w3: Web3,
-    target_token: str=options.TARGET_TOKEN,
-    target_contract: str=options.TARGET_CONTRACT,
     min_transfer_count: int=options.MIN_TRANSFER_COUNT,
     min_transfer_total_erc20: int=options.MIN_TRANSFER_TOTAL_ERC20,
     min_transfer_total_native: int=options.MIN_TRANSFER_TOTAL_NATIVE,
@@ -90,43 +88,45 @@ def handle_transaction_factory(
         _to = str(getattr(log.transaction, 'to', '')).lower()
         _data = str(getattr(log.transaction, 'data', '')).lower()
         _block = int(log.block.number)
-        # filter by contract
-        if target_contract in _to:
-            # analyse the transaction
-            _scores = _score_transaction(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total_erc20=min_transfer_total_erc20, min_transfer_total_native=min_transfer_total_native, chain_id=CHAIN_ID)
-            # identify the token
-            if _scores['batch']['confidence'] >= min_confidence_score and _scores['batch']['malicious'] >= min_malicious_score:
-                if _scores['erc20']['confidence'] >= 0.6:
-                    _token = 'ERC20'
-                    # filter by token
-                    _transfers = [_e for _e in events.parse_log(log=log, abi=events.ERC20_TRANSFER_EVENT) if target_token in _e['token']]
-                elif _scores['erc721']['confidence'] >= 0.6:
-                    _token = 'ERC721'
-                    # filter by token
-                    _transfers = [_e for _e in events.parse_log(log=log, abi=events.ERC721_TRANSFER_EVENT) if target_token in _e['token']]
-                elif _scores['native']['confidence'] >= 0.6:
-                    _token = chains.CURRENCIES.get(CHAIN_ID, 'ETH')
-                    _args = inputs.get_matching_arrays_of_address_and_value(data=_data, min_length=min_transfer_count)
-                    _transfers = [{'token': '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'from': _to, 'to': _r, 'value': _v} for _a in _args for _r, _v in zip(*_a)]
-                # raise an alert
-                if _transfers:
-                    # metadata
-                    _alert_id = findings.alert_id(_token)
-                    # stats
-                    _alert_history.append((_alert_id,))
-                    _alert_rate = stats.calculate_alert_rate(_alert_history, _alert_id)
-                    # format
-                    _findings.append(findings.FormatBatchTxFinding(
-                        txhash=log.transaction.hash,
-                        sender=_from,
-                        receiver=_to,
-                        token=_token,
-                        transfers=_transfers,
-                        chain_id=CHAIN_ID,
-                        confidence_score=_scores['batch']['confidence'],
-                        malicious_score=_scores['batch']['malicious'],
-                        alert_id=_alert_id,
-                        alert_rate=_alert_rate))
+        # analyse the transaction
+        _scores = _score_transaction(log=log, w3=w3, min_transfer_count=min_transfer_count, min_transfer_total_erc20=min_transfer_total_erc20, min_transfer_total_native=min_transfer_total_native, chain_id=CHAIN_ID)
+        # identify the token
+        if _scores['batch']['confidence'] >= min_confidence_score and _scores['batch']['malicious'] >= min_malicious_score:
+            if _scores['erc20']['confidence'] >= 0.6:
+                _token = 'ERC20'
+                # filter by token
+                _transfers = events.parse_log(tx=log, abi=events.ERC20_TRANSFER_EVENT)
+            elif _scores['erc721']['confidence'] >= 0.6:
+                _token = 'ERC721'
+                # filter by token
+                _transfers = events.parse_log(tx=log, abi=events.ERC721_TRANSFER_EVENT)
+            elif _scores['native']['confidence'] >= 0.6:
+                _token = chains.CURRENCIES.get(CHAIN_ID, 'ETH')
+                _args = inputs.get_matching_arrays_of_address_and_value(data=_data, min_length=min_transfer_count)
+                _transfers = [{'token': '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'from': _to, 'to': _r, 'value': _v} for _a in _args for _r, _v in zip(*_a)]
+            # raise an alert
+            if _transfers:
+                # metadata
+                _alert_id = findings.alert_id(_token)
+                # stats
+                _alert_history.append((_alert_id,))
+                _alert_rate = stats.calculate_alert_rate(_alert_history, _alert_id)
+                # format
+                _findings.append(findings.FormatBatchTxFinding(
+                    txhash=log.transaction.hash,
+                    sender=_from,
+                    receiver=_to,
+                    token=_token,
+                    transfers=_transfers,
+                    chain_id=CHAIN_ID,
+                    confidence_score=_scores['batch']['confidence'],
+                    malicious_score=_scores['batch']['malicious'],
+                    alert_id=_alert_id,
+                    alert_rate=_alert_rate))
+            else:
+                # stats
+                _alert_history.append(()) # no findings for this transaction
+
         return _findings
 
     return _handle_transaction

@@ -21,7 +21,7 @@ def confidence_score(
     _scores = []
     # events
     _scores.append(probabilities.indicator_to_probability(
-        indicator=indicators.log_has_multiple_erc20_transfer_events(log=log, min_count=min_transfer_count, min_total=min_transfer_total),
+        indicator=indicators.log_has_multiple_erc20_transfer_events(tx=log, min_count=min_transfer_count, min_total=min_transfer_total),
         true_score=0.9, # certainty
         false_score=0.2)) # the token could follow another std
     return probabilities.conflation(_scores)
@@ -35,7 +35,7 @@ def malicious_score(log: TransactionEvent, w3: Web3) -> float:
     _scores = []
     # transfer of amount 0
     _scores.append(probabilities.indicator_to_probability(
-        indicator=indicators.log_has_erc20_transfer_of_null_amount(log=log),
+        indicator=indicators.log_has_erc20_transfer_of_null_amount(tx=log),
         true_score=0.9, # certainty
         false_score=0.5)) # neutral
     return probabilities.conflation(_scores)

@@ -11,7 +11,7 @@ def init_alert_history(size: int) -> collections.deque:
 # UPDATE ######################################################################
 
 def update_alert_history(fifo: collections.deque, alerts: tuple) -> None:
-    """Push"""
+    """Push the alert ids for the latest block into the history."""
     fifo.append(alerts)
 
 # PROCESS #####################################################################
