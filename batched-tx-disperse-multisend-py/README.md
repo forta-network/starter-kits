@@ -67,14 +67,6 @@ The file [`options.py`](src/options.py) contains sets the options at their defau
 
 All of these criteria must be satisfied by a transaction to be reported:
 
-- `TARGET_CONTRACT` (`str`, length 42)
-  - should be either the empty string `''` or an address like `'0x767fe9edc9e0df98e07454847909b5e959d7ca0e'`
-  - if empty the agent reports all findings
-  - otherwise it will only report transactions sent the given contract address
-- `TARGET_TOKEN` (`str`, length 42)
-  - should be either the empty string `''` or an address like `'0x767fe9edc9e0df98e07454847909b5e959d7ca0e'` (`0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee` for native currencies)
-  - if empty the agent reports all findings
-  - otherwise it will only report transfers of the given 
 - `MIN_TRANSFER_COUNT` (`int`)
   - the minimum number of transfers wrapped in the transaction
 - `MIN_TRANSFER_TOTAL_ERC20`:

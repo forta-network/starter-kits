@@ -13,12 +13,12 @@ import web3
 # TODO: add optional prefix "safe"
 # TODO: add optional argument "_from"
 # TODO: "transfer(address[],address[],address[],uint256[])" => transfer(token,from,to,amount)
-PATTERNS = [
+PATTERNS = (
     '{verb}{adjective}{token}{noun}{args}',
-    '{adjective}{verb}{token}{noun}{args}',]
+    '{adjective}{verb}{token}{noun}{args}',)
 
 # TODO: sort signatures by action (batch, airdrop, etc)
-VERBS = [
+VERBS = (
     '',
     'Multisend',
     'Disperse',
@@ -26,9 +26,9 @@ VERBS = [
     'Send',
     'Batch',
     'Bundle',
-    'Multicall']
+    'Multicall')
 
-ADJECTIVES = [
+ADJECTIVES = (
     '',
     'Multi',
     'Multiple',
@@ -37,16 +37,16 @@ ADJECTIVES = [
     'Bundled',
     'Batch',
     'Bundle',
-    'Mass']
+    'Mass')
 
 # TODO: sort signatures by token
-TOKENS = ['', 'ETH', 'Eth', 'Ether', 'Token', 'Coin', 'NFT', 'Nft', 'ERC20', 'Erc20', 'ERC721', 'Erc721']
+TOKENS = ('', 'ETH', 'Eth', 'Ether', 'Token', 'Coin', 'NFT', 'Nft', 'ERC20', 'Erc20', 'ERC721', 'Erc721')
 
-NOUNS = ['', 'Sender', 'Transfer', 'Transaction']
+NOUNS = ('', 'Sender', 'Transfer', 'Transaction')
 
 # TODO: add argument pattern
 # TODO: single value for all addresses
-ARGS = [
+ARGS = (
     '(address,address[],uint256[])',
     '(address,uint256[],address[])',
     '(address[],uint256[],address)',
@@ -58,17 +58,17 @@ ARGS = [
     '(address[],uint[],address)',
     '(uint[],address[],address)',
     '(address[],uint[])',
-    '(uint[],address[])']
+    '(uint[],address[])')
 
 # WORDLIST GENERATION #########################################################
 
 def generate_signature_wordlist(
-    pattern: list=PATTERNS[0],
-    verbs: list=VERBS,
-    adjectives: list=ADJECTIVES,
-    tokens: list=TOKENS,
-    nouns: list=NOUNS,
-    args: list=ARGS
+    pattern: tuple=PATTERNS[0],
+    verbs: tuple=VERBS,
+    adjectives: tuple=ADJECTIVES,
+    tokens: tuple=TOKENS,
+    nouns: tuple=NOUNS,
+    args: tuple=ARGS
 ) -> list:
     """Generate a list of plausible method signatures."""
     _signatures = []

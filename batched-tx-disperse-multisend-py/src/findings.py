@@ -11,9 +11,10 @@ BOT_ID = '0x568bf7a13b62e5041705eff995328c84ce7b037961ab6cdded927c9ab3b59e58'
 # ALERTS ######################################################################
 
 def alert_id(token) -> str:
+    """Generate the alert id for a transaction of a particular token."""
     return f'BATCH-{token}-TX'
 
-# TEMPLATES ###################################################################
+# FINDINGS ####################################################################
 
 def FormatBatchTxFinding(
     txhash: str,

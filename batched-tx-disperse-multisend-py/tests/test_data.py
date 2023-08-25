@@ -37,4 +37,4 @@ for _root, _, _files in os.walk('tests/.data/'):
 
 # ALL #########################################################################
 
-ALL_TRANSACTIONS = itertools.chain.from_iterable([TRANSACTIONS[_type][_token] for _type in TRANSACTIONS for _token in TRANSACTIONS[_type]])
+ALL_TRANSACTIONS = tuple(itertools.chain.from_iterable([TRANSACTIONS[_type][_token] for _type in TRANSACTIONS for _token in TRANSACTIONS[_type]]))

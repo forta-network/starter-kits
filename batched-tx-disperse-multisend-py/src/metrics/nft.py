@@ -18,7 +18,7 @@ def confidence_score(
     _scores = []
     # events
     _scores.append(probabilities.indicator_to_probability(
-        indicator=indicators.log_has_multiple_erc721_transfer_events(log=log, min_count=min_transfer_count),
+        indicator=indicators.log_has_multiple_erc721_transfer_events(tx=log, min_count=min_transfer_count),
         true_score=0.9, # certainty
         false_score=0.2)) # the token could follow another std
     return probabilities.conflation(_scores)
