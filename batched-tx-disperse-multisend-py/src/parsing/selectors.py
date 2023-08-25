@@ -4,8 +4,8 @@ Ex:
 - bulkTransferToken(address,address[],uint[])
 """
 
-from itertools import product
-from web3 import Web3
+import itertools
+import web3
 
 # DEFAULT ARGUMENTS ###########################################################
 
@@ -72,15 +72,15 @@ def generate_signature_wordlist(
 ) -> list:
     """Generate a list of plausible method signatures."""
     _signatures = []
-    for _a in product(verbs, adjectives, tokens, nouns, args):
+    for _a in itertools.product(verbs, adjectives, tokens, nouns, args):
         _signature = pattern.format(verb=_a[0], adjective=_a[1], token=_a[2], noun=_a[3], args=_a[-1])
         _signature = _signature[0].lower() + _signature[1:] # camel case
         _signatures.append(_signature)
-        #_signatures.append((Web3.keccak(text=_signature).hex())[:10]) # 0x + first 4 bytes of the hash
+        #_signatures.append((web3.Web3.keccak(text=_signature).hex())[:10]) # 0x + first 4 bytes of the hash
     return _signatures
 
 # SELECTOR ####################################################################
 
 def selector(signature: str) -> str:
     """Compute the web3 method selector for a single signature."""
-    return (Web3.keccak(text=signature).hex().lower())[:10] # "0x" prefix + 4 bytes
+    return (web3.Web3.keccak(text=signature).hex().lower())[:10] # "0x" prefix + 4 bytes

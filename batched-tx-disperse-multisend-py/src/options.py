@@ -10,6 +10,10 @@ MIN_TRANSFER_TOTAL_NATIVE = 10**18 # 1 ETH
 MIN_CONFIDENCE_SCORE = 0.6
 MIN_MALICIOUS_SCORE = 0.5
 
+# STATS #######################################################################
+
+ALERT_HISTORY_SIZE = 2048 # in number of transactions recorded
+
 # INDICATORS ##################################################################
 
 MAX_BATCHING_FEE = {
