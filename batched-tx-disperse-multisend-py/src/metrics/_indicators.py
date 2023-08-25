@@ -1,6 +1,6 @@
 """Base indicators on transactions and their metadata."""
 
-from itertools import chain
+import itertools
 
 from forta_agent.transaction_event import TransactionEvent
 from web3 import Web3
@@ -68,7 +68,7 @@ def transaction_value_matches_input_arrays(value: int, data: str, min_count: int
 # BALANCES INDICATORS #########################################################
 
 def multiple_native_token_balances_changed(w3: Web3, data: str, block: int, min_count: int, min_total: int) -> bool:
-    _recipients = chain.from_iterable(inputs.get_array_of_address_candidates(data=data, min_length=min_count)) # list of candidates = list of lists
+    _recipients = itertools.chain.from_iterable(inputs.get_array_of_address_candidates(data=data, min_length=min_count)) # list of candidates = list of lists
     _deltas = [balances.get_balance_delta(w3=w3, address=_a, block=block) for _a in _recipients] # _recipients is now a flat list
     return len(_deltas) >= min_count and sum(_deltas) >= min_total
 
