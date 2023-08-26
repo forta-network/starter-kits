@@ -1,6 +1,6 @@
 {
   "name": "batched-tx-bot",
-  "version": "1.3.2",
+  "version": "1.4.2",
   "description": "Bot scanning for multiple transfers batched in a single transaction",
   "repository": "https://github.com/forta-network/starter-kits/tree/main//batched-tx-disperse-multisend-py",
   "chainIds": [1, 10, 56, 61, 137, 250, 42161, 43114],

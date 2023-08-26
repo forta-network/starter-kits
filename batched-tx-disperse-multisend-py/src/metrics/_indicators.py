@@ -34,26 +34,26 @@ def input_data_has_array_of_values(data: str, min_length: int) -> bool:
 # TODO: add ERC1155
 
 def log_has_multiple_erc20_transfer_events(tx: TransactionEvent, min_count: int, min_total: int) -> bool:
-    _events = events.parse_log(tx=tx, abi=events.ERC20_TRANSFER_EVENT)
+    _events = events.parse_logs(logs=tuple(tx.logs), abi=events.ERC20_TRANSFER_EVENT)
     _amounts = [int(_e['value']) for _e in _events]
     return len(_events) >= min_count and sum(_amounts) >= min_total
 
 def log_has_multiple_erc20_mint_events(tx: TransactionEvent, min_count: int, min_total: int) -> bool:
-    _events = events.parse_log(tx=tx, abi=events.ERC20_TRANSFER_EVENT)
+    _events = events.parse_logs(logs=tuple(tx.logs), abi=events.ERC20_TRANSFER_EVENT)
     _amounts = [int(_e['value']) for _e in _events]
     _origins = [int(_e['from'], 16) == 0 for _e in _events] # creation / minting of tokens
     return len(_events) >= min_count and sum(_amounts) >= min_total and all(_origins)
 
 def log_has_erc20_transfer_of_null_amount(tx: TransactionEvent) -> bool:
-    _events = events.parse_log(tx=tx, abi=events.ERC20_TRANSFER_EVENT)
+    _events = events.parse_logs(logs=tuple(tx.logs), abi=events.ERC20_TRANSFER_EVENT)
     _amounts = [int(_e['value']) for _e in _events]
     return any([_a == 0 for _a in _amounts])
 
 def log_has_multiple_erc721_transfer_events(tx: TransactionEvent, min_count: int) -> bool:
-    return len(events.parse_log(tx=tx, abi=events.ERC721_TRANSFER_EVENT)) >= min_count
+    return len(events.parse_logs(logs=tuple(tx.logs), abi=events.ERC721_TRANSFER_EVENT)) >= min_count
 
 def log_has_multiple_erc721_mint_events(tx: TransactionEvent, min_count: int) -> bool:
-    _events = events.parse_log(tx=tx, abi=events.ERC721_TRANSFER_EVENT)
+    _events = events.parse_logs(logs=tuple(tx.logs), abi=events.ERC721_TRANSFER_EVENT)
     _origins = [int(_e['from'], 16) == 0 for _e in _events] # creation / minting of tokens
     return len(_events) >= min_count and all(_origins)
 
