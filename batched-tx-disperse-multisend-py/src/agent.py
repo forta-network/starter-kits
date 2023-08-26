@@ -76,7 +76,6 @@ def handle_transaction_factory(
     """Setup the main handler."""
     _alert_history = stats.init_alert_history(size=history_size)
 
-    @utils.timeit
     def _handle_transaction(log: TransactionEvent) -> list:
         """Main function called on the logs gathered by the Forta network."""
         global CHAIN_ID
@@ -95,11 +94,11 @@ def handle_transaction_factory(
             if _scores['erc20']['confidence'] >= 0.6:
                 _token = 'ERC20'
                 # filter by token
-                _transfers = events.parse_log(tx=log, abi=events.ERC20_TRANSFER_EVENT)
+                _transfers = events.parse_logs(logs=tuple(log.logs), abi=events.ERC20_TRANSFER_EVENT)
             elif _scores['erc721']['confidence'] >= 0.6:
                 _token = 'ERC721'
                 # filter by token
-                _transfers = events.parse_log(tx=log, abi=events.ERC721_TRANSFER_EVENT)
+                _transfers = events.parse_logs(logs=tuple(log.logs), abi=events.ERC721_TRANSFER_EVENT)
             elif _scores['native']['confidence'] >= 0.6:
                 _token = chains.CURRENCIES.get(CHAIN_ID, 'ETH')
                 _args = inputs.get_matching_arrays_of_address_and_value(data=_data, min_length=min_transfer_count)
@@ -138,7 +137,7 @@ WEB3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 # MAIN ########################################################################
 
-utils.setup_logger(logging.DEBUG)
+utils.setup_logger(logging.INFO)
 utils.load_secrets()
 
 # run with the default settings
