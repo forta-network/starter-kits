@@ -94,11 +94,11 @@ def handle_transaction_factory(
             if _scores['erc20']['confidence'] >= 0.6:
                 _token = 'ERC20'
                 # filter by token
-                _transfers = events.parse_logs(logs=tuple(log.logs), abi=events.ERC20_TRANSFER_EVENT)
+                _transfers = events.filter_logs_for_erc20_transfer_events(logs=tuple(log.logs))
             elif _scores['erc721']['confidence'] >= 0.6:
                 _token = 'ERC721'
                 # filter by token
-                _transfers = events.parse_logs(logs=tuple(log.logs), abi=events.ERC721_TRANSFER_EVENT)
+                _transfers = events.filter_logs_for_erc721_transfer_events(logs=tuple(log.logs))
             elif _scores['native']['confidence'] >= 0.6:
                 _token = chains.CURRENCIES.get(CHAIN_ID, 'ETH')
                 _args = inputs.get_matching_arrays_of_address_and_value(data=_data, min_length=min_transfer_count)

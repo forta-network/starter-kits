@@ -19,9 +19,10 @@ def confidence_score(
 ) -> float:
     """Evaluate the probability that a transaction handled ERC20 tokens."""
     _scores = []
+    _logs = tuple(log.logs)
     # events
     _scores.append(probabilities.indicator_to_probability(
-        indicator=indicators.log_has_multiple_erc20_transfer_events(tx=log, min_count=min_transfer_count, min_total=min_transfer_total),
+        indicator=indicators.log_has_multiple_erc20_transfer_events(logs=_logs, min_count=min_transfer_count, min_total=min_transfer_total),
         true_score=0.9, # certainty
         false_score=0.2)) # the token could follow another std
     return probabilities.conflation(_scores)
@@ -33,9 +34,10 @@ def confidence_score(
 def malicious_score(log: TransactionEvent, w3: Web3) -> float:
     """Evaluate the provabability that an ERC20 transaction is malicious."""
     _scores = []
+    _logs = tuple(log.logs)
     # transfer of amount 0
     _scores.append(probabilities.indicator_to_probability(
-        indicator=indicators.log_has_erc20_transfer_of_null_amount(tx=log),
+        indicator=indicators.log_has_erc20_transfer_of_null_amount(logs=_logs),
         true_score=0.9, # certainty
         false_score=0.5)) # neutral
     return probabilities.conflation(_scores)
