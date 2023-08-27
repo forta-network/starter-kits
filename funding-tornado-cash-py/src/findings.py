@@ -19,18 +19,23 @@ class FundingTornadoCashFindings:
                 }
             })]
 
+            metadata = {}
+
+            if chain_id not in [43114, 10, 250]:
+                metadata['anomaly_score'] = calculate_alert_rate(
+                    chain_id,
+                    BOT_ID,
+                    'FUNDING-TORNADO-CASH',
+                    ScanCountType.TRANSFER_COUNT,
+                )
+
             finding = Finding({
                 'name': 'Tornado Cash Funding',
                 'description': f'{to_address} received initial funds from Tornado Cash',
                 'alert_id': 'FUNDING-TORNADO-CASH',
                 'type': FindingType.Suspicious,
                 'severity': FindingSeverity.Low,
-                'metadata': {'anomaly_score': calculate_alert_rate(
-                    chain_id,
-                    BOT_ID,
-                    'FUNDING-TORNADO-CASH',
-                    ScanCountType.TRANSFER_COUNT,
-                )},
+                'metadata': metadata,
                 'labels': labels
             })
         else:
@@ -45,18 +50,23 @@ class FundingTornadoCashFindings:
                 }
             })]
 
+            metadata = {}
+
+            if chain_id not in [43114, 10, 250]:
+                metadata['anomaly_score'] = calculate_alert_rate(
+                    chain_id,
+                    BOT_ID,
+                    'FUNDING-TORNADO-CASH-HIGH',
+                    ScanCountType.TRANSFER_COUNT,
+                )
+
             finding = Finding({
                 'name': 'Tornado Cash Funding',
                 'description': f'{to_address} received large funds from Tornado Cash',
                 'alert_id': 'FUNDING-TORNADO-CASH-HIGH',
                 'type': FindingType.Info,
                 'severity': FindingSeverity.Info,
-                'metadata': {'anomaly_score': calculate_alert_rate(
-                    chain_id,
-                    BOT_ID,
-                    'FUNDING-TORNADO-CASH',
-                    ScanCountType.TRANSFER_COUNT,
-                )},
+                'metadata': metadata,
                 'labels': labels
             })
         return finding

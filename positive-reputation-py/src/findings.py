@@ -20,6 +20,15 @@ class PositiveReputationFindings:
             }
         }))
 
+        metadata = {}
+
+        if chain_id not in [43114, 10, 250]:
+            metadata['anomaly_score'] = calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                'POSITIVE-REPUTATION-1',
+                ScanCountType.TX_COUNT)
+
         finding = Finding({
             'name': 'Positive Reputation',
             'description': f'{address} has positive reputation',
@@ -27,6 +36,6 @@ class PositiveReputationFindings:
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'labels': labels,
-            'metadata': {"anomaly_score": calculate_alert_rate(chain_id, BOT_ID, "POSITIVE-REPUTATION-1", ScanCountType.TX_COUNT)}
+            'metadata': metadata
         })
         return finding

@@ -77,7 +77,7 @@ class EntityClusterAgent:
         self.tx_save_step = tx_save_step
         self.GRAPH = nx.DiGraph()
         environ["ZETTABLOCK_API_KEY"] = ZETTABLOCK_KEY
-        
+
 
 
     def load(self, key: str) -> object:
@@ -104,7 +104,7 @@ class EntityClusterAgent:
 
         if "00000000" in address:
             return False
-        
+
         checksum_address = Web3.toChecksumAddress(address)
         return w3.eth.get_transaction_count(checksum_address) <= MAX_NONCE
 
@@ -151,7 +151,7 @@ class EntityClusterAgent:
         """
         if address is None:
             return True
-        
+
         checksum_address = Web3.toChecksumAddress(address)
         if checksum_address in self.contract_cache:
             logging.info(f"Using cache for is contract for contract {checksum_address}")
@@ -250,7 +250,7 @@ class EntityClusterAgent:
                 logging.info(f"Persist at {self.tx_save_step} tx")
 
         return findings
- 
+
 
     def filter_edge(a_graph):
         def f(n1, n2):
@@ -282,7 +282,7 @@ class EntityClusterAgent:
         # uses ego graph where the from address is the ego node and look for all his alters up to level 100
         # https://networkx.org/documentation/stable/auto_examples/drawing/plot_ego_graph.html
 
-        
+
         ego_g = nx.ego_graph(filtered_graph, Web3.toChecksumAddress(checksum_addr), 100)
         nodes = list(ego_g.nodes)
         n_nodes = len(nodes)
@@ -301,15 +301,16 @@ class EntityClusterAgent:
 
         alert_id = 'ENTITY-CLUSTER'
         anomality_score = 0
-        try:
-            anomality_score = calculate_alert_rate(
-                                self.chain_id,
-                                BOT_ID,
-                                alert_id,
-                                ScanCountType.TRANSFER_COUNT,
-                            )
-        except Exception as e:
-            logging.error(f"Error doing calculate_alert_rate  {e}, default to {anomality_score}")
+        if self.chain_id not in [43114, 10, 250]:
+            try:
+                anomality_score = calculate_alert_rate(
+                                    self.chain_id,
+                                    BOT_ID,
+                                    alert_id,
+                                    ScanCountType.TRANSFER_COUNT,
+                                )
+            except Exception as e:
+                logging.error(f"Error doing calculate_alert_rate  {e}, default to {anomality_score}")
 
         #  find the connected component that contains the from_ address
         if checksum_addr in nodes and n_nodes > 1:
@@ -335,7 +336,7 @@ class EntityClusterAgent:
         if PROFILING:
             with cProfile.Profile() as profile:
                 f = self.cluster_entities(w3, transaction_event)
-            
+
             with open('profiling_stats.txt', 'w') as stream:
                 stats = pstats.Stats(profile, stream=stream)
                 stats.strip_dirs()
