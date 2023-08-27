@@ -14,9 +14,20 @@ class NegativeReputationFinding:
         labels = []
         for attacker_address in attacker_addresses:
             labels.append({"entity": attacker_address,
-                    "entityType": EntityType.Address,
-                    "label": "attacker",
-                    "confidence": 0.6})
+                           "entityType": EntityType.Address,
+                           "label": "attacker",
+                           "confidence": 0.6})
+
+        metadata = {"bot_id": alert_event.bot_id,
+                    "alert_id": alert_event.alert_id, "alert_hash": alert_event.alert_hash}
+
+        if chain_id not in [43114, 10, 250]:
+            metadata['anomaly_score'] = calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                "NEGATIVE-REPUTATION-END-USER-ATTACK-1",
+                ScanCountType.TRANSFER_COUNT,
+            )
 
         return Finding({
                        'name': 'Negative Reputation (end-user attack) Assigned',
@@ -24,11 +35,6 @@ class NegativeReputationFinding:
                        'alert_id': 'NEGATIVE-REPUTATION-END-USER-ATTACK-1',
                        'type': FindingType.Exploit,
                        'severity': FindingSeverity.Critical,
-                       'metadata': {"anomaly_score": calculate_alert_rate(
-                            chain_id,
-                            BOT_ID,
-                            "NEGATIVE-REPUTATION-END-USER-ATTACK-1",
-                            ScanCountType.TRANSFER_COUNT,
-                        ),"bot_id": alert_event.bot_id, "alert_id": alert_event.alert_id, "alert_hash": alert_event.alert_hash},
+                       'metadata': metadata,
                        'labels': labels
                        })

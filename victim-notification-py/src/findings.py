@@ -30,12 +30,15 @@ class VictimNotificationFinding:
             }
         }))
 
-        metadata = {"anomaly_score": calculate_alert_rate(
-            chain_id,
-            BOT_ID,
-            'VICTIM-NOTIFICATION-1',
-            ScanCountType.TX_WITH_INPUT_DATA_COUNT,
-        )}
+        metadata = {}
+
+        if chain_id not in [43114, 10, 250]:
+            metadata["anomaly_score"] = calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                'VICTIM-NOTIFICATION-1',
+                ScanCountType.TX_WITH_INPUT_DATA_COUNT
+            )
 
         finding = Finding({
             'name': 'Victim Notified',

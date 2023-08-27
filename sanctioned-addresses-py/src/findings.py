@@ -28,13 +28,16 @@ class SanctionedAddressTx(SanctionedAddressFinding):
         self.name = 'Sanctioned Address'
         self.severity = FindingSeverity.High
         self.type = FindingType.Suspicious
-        self.metadata = dict(anomaly_score=calculate_alert_rate(
-            chain_id,
-            BOT_ID,
-            self.alert_id,
-            ScanCountType.TX_COUNT,
-        ), sanctioned_address=self.address,
-            data_source=self.data_source)
+        self.metadata = dict(sanctioned_address=self.address,
+                             data_source=self.data_source)
+
+        if chain_id not in [43114, 10, 250]:
+            self.metadata['anomaly_score'] = calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                self.alert_id,
+                ScanCountType.TX_COUNT,
+            )
 
 
 class SanctionedAddressesEvent(SanctionedAddressFinding):
@@ -46,13 +49,16 @@ class SanctionedAddressesEvent(SanctionedAddressFinding):
         self.name = 'Sanctioned Addresses Event'
         self.severity = FindingSeverity.Medium
         self.type = FindingType.Info
-        self.metadata = dict(anomaly_score=calculate_alert_rate(
-            chain_id,
-            BOT_ID,
-            self.alert_id,
-            ScanCountType.TX_COUNT,
-        ), addresses=self.addresses,
-            data_source=self.data_source)
+        self.metadata = dict(addresses=self.addresses,
+                             data_source=self.data_source)
+
+        if chain_id not in [43114, 10, 250]:
+            self.metadata['anomaly_score'] = calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                self.alert_id,
+                ScanCountType.TX_COUNT,
+            )
 
 
 class UnsanctionedAddressesEvent(SanctionedAddressFinding):
@@ -64,10 +70,13 @@ class UnsanctionedAddressesEvent(SanctionedAddressFinding):
         self.name = 'Unsanctioned Addresses Event'
         self.severity = FindingSeverity.Low
         self.type = FindingType.Info
-        self.metadata = dict(anomaly_score=calculate_alert_rate(
-            chain_id,
-            BOT_ID,
-            self.alert_id,
-            ScanCountType.TX_COUNT,
-        ), addresses=self.addresses,
-            data_source=self.data_source)
+        self.metadata = dict(addresses=self.addresses,
+                             data_source=self.data_source)
+
+        if chain_id not in [43114, 10, 250]:
+            self.metadata['anomaly_score'] = calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                self.alert_id,
+                ScanCountType.TX_COUNT,
+            )

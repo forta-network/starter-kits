@@ -36,14 +36,15 @@ class ContractFindings:
         chain_id: int,
         labels: list,
     ) -> Finding:
-        # self.metadata["anomaly_score"] = (
-        #     calculate_alert_rate(
-        #         chain_id,
-        #         BOT_ID,
-        #         "SUSPICIOUS-CONTRACT-CREATION",
-        #         ScanCountType.CONTRACT_CREATION_COUNT,
-        #     ),
-        # )
+        if chain_id not in [43114, 10, 250]:
+            self.metadata["anomaly_score"] = (
+                calculate_alert_rate(
+                    chain_id,
+                    BOT_ID,
+                    "SUSPICIOUS-CONTRACT-CREATION",
+                    ScanCountType.CONTRACT_CREATION_COUNT,
+                ),
+            )
         self.label = labels
         return Finding(
             {
@@ -63,14 +64,15 @@ class ContractFindings:
         labels: list,
     ) -> Finding:
         self.label = labels
-        self.metadata["anomaly_score"] = (
-            calculate_alert_rate(
-                chain_id,
-                BOT_ID,
-                "SAFE-CONTRACT-CREATION",
-                ScanCountType.CONTRACT_CREATION_COUNT,
-            ),
-        )
+        if chain_id not in [43114, 10, 250]:
+            self.metadata["anomaly_score"] = (
+                calculate_alert_rate(
+                    chain_id,
+                    BOT_ID,
+                    "SAFE-CONTRACT-CREATION",
+                    ScanCountType.CONTRACT_CREATION_COUNT,
+                ),
+            )
         return Finding(
             {
                 "name": "Safe Contract Creation",

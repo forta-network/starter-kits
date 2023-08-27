@@ -22,6 +22,22 @@ class CEXFundingFinding:
             }
         ]  # very low
 
+        metadata = {
+            "CEX_name": self.name,
+            "to": self.to,
+            "value": self.value,
+        }
+
+        if self.chain_id not in [43114, 10, 250]:
+            metadata["anomaly_score"] = (
+                calculate_alert_rate(
+                    self.chain_id,
+                    BOT_ID,
+                    self.alert_id,
+                    ScanCountType.TRANSFER_COUNT,
+                )
+            )
+
         return Finding(
             {
                 "name": "CEX Funding",
@@ -29,17 +45,7 @@ class CEXFundingFinding:
                 "alert_id": self.alert_id,
                 "type": FindingType.Suspicious,
                 "severity": FindingSeverity.Low,
-                "metadata": {
-                    "anomaly_score": calculate_alert_rate(
-                        self.chain_id,
-                        BOT_ID,
-                        self.alert_id,
-                        ScanCountType.TRANSFER_COUNT,
-                    ),
-                    "CEX_name": self.name,
-                    "to": self.to,
-                    "value": self.value,
-                },
+                "metadata": metadata,
                 "labels": labels,
             }
         )
