@@ -1,6 +1,8 @@
 """Filter the logs for relevant ERC20 / ERC721 events."""
 
+import copy
 import functools
+import itertools
 import json
 import logging
 
@@ -30,6 +32,16 @@ def _get_input_names(abi: ABIEvent) -> tuple:
 def _abi_codec() -> ABICodec:
     """Wrapper around the registry for encoding & decoding ABIs."""
     return ABICodec(build_strict_registry())
+
+def _generate_all_abi_indexation_variants(abi: ABIEvent) -> tuple:
+    """Generate all the variants of the input ABI by switching each "indexed" field true / false for the inputs."""
+    _count = len(abi.get('inputs', ()))
+    _indexed = tuple(itertools.product(*(_count * ((True, False), ))))
+    _abis = tuple(copy.deepcopy(abi) for _ in range(2 ** _count))
+    for _i in range(2 ** _count): # each indexation variant
+        for _j in range(_count): # each input
+            _abis[_i]['inputs'][_j]['indexed'] = _indexed[_i][_j]
+    return _abis
 
 # FORMAT ######################################################################
 
