@@ -74,8 +74,8 @@ def handle_transaction_factory(
     history_size: int=options.ALERT_HISTORY_SIZE
 ) -> callable:
     """Setup the main handler."""
-    _alert_history = stats.init_alert_history(size=history_size)
 
+    @stats.alert_history(size=history_size)
     def _handle_transaction(log: TransactionEvent) -> list:
         """Main function called on the logs gathered by the Forta network."""
         global CHAIN_ID
@@ -105,11 +105,6 @@ def handle_transaction_factory(
                 _transfers = [{'token': '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'from': _to, 'to': _r, 'value': _v} for _a in _args for _r, _v in zip(*_a)]
             # raise an alert
             if _transfers:
-                # metadata
-                _alert_id = findings.alert_id(_token)
-                # stats
-                _alert_history.append((_alert_id,))
-                _alert_rate = stats.calculate_alert_rate(_alert_history, _alert_id)
                 # format
                 _findings.append(findings.FormatBatchTxFinding(
                     txhash=log.transaction.hash,
@@ -119,12 +114,7 @@ def handle_transaction_factory(
                     transfers=_transfers,
                     chain_id=CHAIN_ID,
                     confidence_score=_scores['batch']['confidence'],
-                    malicious_score=_scores['batch']['malicious'],
-                    alert_id=_alert_id,
-                    alert_rate=_alert_rate))
-            else:
-                # stats
-                _alert_history.append(()) # no findings for this transaction
+                    malicious_score=_scores['batch']['malicious']))
 
         return _findings
 

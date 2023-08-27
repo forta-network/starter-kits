@@ -24,9 +24,7 @@ def FormatBatchTxFinding(
     transfers: list,
     chain_id: int,
     confidence_score: float,
-    malicious_score: float,
-    alert_id: str,
-    alert_rate: float
+    malicious_score: float
 ) -> Finding:
     """Structure all the metadata of the transaction in a Forta "Finding" object."""
     _labels = []
@@ -50,7 +48,7 @@ def FormatBatchTxFinding(
     _finding = Finding({
         'name': f'Batch {token} transaction',
         'description': f'{sender} is transfering {token} in batch from the {receiver} contract',
-        'alert_id': alert_id,
+        'alert_id': alert_id(token),
         'type': FindingType.Info,
         'severity': FindingSeverity.Info if malicious_score <= 0.5 else FindingSeverity.Low,
         'metadata': {
@@ -61,12 +59,11 @@ def FormatBatchTxFinding(
             'to': receiver,
             'transfer_tokens': str(list(set([_t['token'] for _t in transfers]))),
             'transfer_count': str(len(transfers)),
-            'transfer_total': str(sum([abs(int(_t['value'])) for _t in transfers])),
-            'anomaly_score': str(alert_rate)},
+            'transfer_total': str(sum([abs(int(_t['value'])) for _t in transfers]))},
         'labels': _labels
     })
 
     # keep a trace on the node
-    logging.info(f'{alert_id}: found {len(transfers)} transfers of {token} bundled in {txhash}')
+    logging.info(f'{alert_id(token)}: found {len(transfers)} transfers of {token} bundled in {txhash}')
 
     return _finding
