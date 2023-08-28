@@ -7,7 +7,9 @@ import json
 import logging
 
 from eth_abi.abi import ABICodec
+from eth_utils.abi  import event_abi_to_log_topic
 from hexbytes import HexBytes
+from forta_agent.receipt import Log
 from forta_agent.transaction_event import TransactionEvent
 from web3._utils.abi import build_strict_registry
 from web3._utils.events import get_event_data
@@ -33,15 +35,33 @@ def _abi_codec() -> ABICodec:
     """Wrapper around the registry for encoding & decoding ABIs."""
     return ABICodec(build_strict_registry())
 
-def _generate_all_abi_indexation_variants(abi: ABIEvent) -> tuple:
-    """Generate all the variants of the input ABI by switching each "indexed" field true / false for the inputs."""
+def _apply_indexation_mask(abi: ABIEvent, mask: tuple) -> ABIEvent:
+    """Change the "indexed" field of the ABI according to the mask."""
+    _abi = copy.deepcopy(abi)
+    for _i in range(len(mask)):
+        _abi['inputs'][_i]['indexed'] = mask[_i]
+    return _abi
+
+def _generate_all_abi_indexation_variants(abi: ABIEvent) -> dict:
+    """Generate all the variants of the ABI by switching each "indexed" field true / false for the inputs."""
     _count = len(abi.get('inputs', ()))
     _indexed = tuple(itertools.product(*(_count * ((True, False), ))))
-    _abis = tuple(copy.deepcopy(abi) for _ in range(2 ** _count))
-    for _i in range(2 ** _count): # each indexation variant
-        for _j in range(_count): # each input
-            _abis[_i]['inputs'][_j]['indexed'] = _indexed[_i][_j]
+    _abis = {_c: [] for _c in range(_count + 1)} # order by number of indexed inputs
+    for _i in _indexed: # each indexation variant
+        _abis[sum(_i)].append(_apply_indexation_mask(abi=abi, mask=_i))
     return _abis
+
+def _generate_the_most_probable_abi_indexation_variants(abi: ABIEvent) -> dict:
+    """Generate the most probable variant of the ABI for each count of indexed inputs."""
+    _count = len(abi.get('inputs', ()))
+    _indexed = tuple((_i * [True] + (_count - _i) * [False]) for _i in range(_count + 1)) # index from left to right, without gaps
+    return {sum(_i): _apply_indexation_mask(abi=abi, mask=_i) for _i in _indexed} # order by number of indexed inputs
+
+def _compare_abi_to_log(abi: ABIEvent, log: Log) -> bool:
+    """Returns True if abit and log match, False otherwise."""
+    return (
+        bool(log['topics'])
+        and event_abi_to_log_topic(abi) == log['topics'][0])
 
 # FORMAT ######################################################################
 
@@ -68,6 +88,7 @@ def _parse_event(event: 'AttributeDict', names: tuple) -> dict:
 
 def get_event_data_factory(abi: ABIEvent, codec: ABICodec) -> list:
     """Adapt the parsing logic to a given event."""
+    _abi_variants = _generate_the_most_probable_abi_indexation_variants(abi=abi)
 
     @functools.lru_cache(maxsize=128)
     def _get_event_data(logs: tuple) -> list:
@@ -75,15 +96,10 @@ def get_event_data_factory(abi: ABIEvent, codec: ABICodec) -> list:
         _results = []
         for _log in logs:
             _log.topics = [HexBytes(_topic) for _topic in _log.topics]
-            try:
-                _results.append(get_event_data(codec, abi, _log))
-            except MismatchedABI: # topic and event don't match
-                continue
-            except LogTopicError: # topic and event match, but the args are not split between topic and data as expected ("indexed" issue)
-                continue
-            except Exception as e:
-                logging.error(e)
-                raise e
+            if _compare_abi_to_log(abi=abi, log=_log): # avoid MismatchedABI exception
+                _abi = _abi_variants.get(len(_log['topics']) - 1, None) # avoid LogTopicError exception
+                if _abi:
+                    _results.append(get_event_data(codec, _abi, _log))
         return _results
 
     return _get_event_data
