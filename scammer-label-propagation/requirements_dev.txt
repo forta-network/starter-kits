@@ -1,4 +1,5 @@
 -r requirements.txt
+torch==2.0.0
 pytest==6.2.5
 pytest-env==0.6.2
 xgboost
@@ -9,4 +10,3 @@ dask
 dask[distributed]
 bokeh!=3.0.*,>=2.4.2
 imbalanced-learn
-```
