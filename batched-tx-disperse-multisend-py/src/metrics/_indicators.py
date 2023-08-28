@@ -33,6 +33,10 @@ def input_data_has_array_of_addresses(data: str, min_length: int) -> bool:
 def input_data_has_array_of_values(data: str, min_length: int) -> bool:
     return len(inputs.get_array_of_value_candidates(data=data, min_length=min_length)) > 0 # at least one candidate array
 
+@functools.lru_cache(maxsize=128)
+def input_data_has_matching_arrays_of_values_and_addresses(data: str, min_length: int) -> bool:
+    return bool(inputs.get_matching_arrays_of_address_and_value(data=data, min_length=min_length))
+
 # EVENTS INDICATORS ###########################################################
 
 # TODO: add ERC1155

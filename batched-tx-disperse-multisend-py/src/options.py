@@ -5,7 +5,7 @@
 MIN_TRANSFER_COUNT = 8
 MIN_TRANSFER_TOTAL_ERC20 = 0
 MIN_TRANSFER_TOTAL_NATIVE = 10**18 # 1 ETH
-MIN_CONFIDENCE_SCORE = 0.6
+MIN_CONFIDENCE_SCORE = 0.7
 MIN_MALICIOUS_SCORE = 0.5
 
 # STATS #######################################################################
