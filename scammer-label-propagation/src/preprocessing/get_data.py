@@ -5,6 +5,7 @@ import requests
 import numpy as np
 import pandas as pd
 from datetime import datetime
+from forta_agent import get_labels
 
 from src.constants import attacker_bots, victim_bots, SIMULTANEOUS_ADDRESSES, MIN_NEIGHBORS, MAX_NEIGHBORS
 from src.storage import get_secrets, dynamo_table
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def collect_data_zettablock(central_node, secrets):
+    t = time.time()
     n_retries = 3
     API_key = secrets['apiKeys']['ZETTABLOCK']
     global dynamo
@@ -25,15 +27,13 @@ def collect_data_zettablock(central_node, secrets):
     erc20_data = get_erc20_data_zettablock(list_of_addresses, API_key=API_key, n_retries=n_retries)
     eth_data = get_eth_data_zettablock(list_of_addresses, API_key=API_key, n_retries=n_retries)
     data = {**erc20_data, **eth_data}
-    logger.info(f'{central_node}:\tData collected')
+    logger.info(f'{central_node}:\tData collected; Time needed: {time.time() - t:.2f} s')
     return data
 
 
 def get_list_of_addresses_zettablock(central_node, API_key, n_retries=3):
     # Fist step is to query all the addresses that had some interaction with the central node
     all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_4afc4b8183174d1dbbef855a0144efd4/graphql"  # 1 year
-    # all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_bb1d414ac0ac4d76a1ff1ae2e2b5c3f0/graphql"  # 6 months
-    # all_addresses_url = "https://api.zettablock.com/api/v1/dataset/sq_1e1871c668514f47900937484d974d68/graphql"  # new 6 months
     all_addresses_query = """
     query associatedAddresses($address: String) {
       receiver: records(from_address: $address) {
@@ -230,230 +230,6 @@ def get_eth_data_zettablock(list_of_addresses, API_key, n_retries=3):
     return eth_data
 
 
-def get_all_related_addresses(central_node) -> str:
-    """
-    Querying allium. Returns the list of addresses that are first order neighbours of the central node.
-    :param central_node: str Address that will be the center of the graph
-    :return: str All addresses that are first order neighbours of the central node comma separated in a string
-    """
-    # The SQL query for this can be found in file src/preprocessing/queries.sql
-    logger.info(f'{central_node}\tQuerying all related addresses')
-    API_key = get_secrets()['apiKeys']['ALLIUM']
-    query_name = 'get_addresses'
-    run_id = get_query_id_dynamo(central_node, query_name)
-    logger.debug(f'{central_node}:\t{query_name}:\t{run_id}')
-    api_url = f'https://api.allium.so/api/v1/explorer/queries/Q71VcKtUFjBtloXNZtpD/run-async'
-    max_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    if run_id is None:
-        # Retry mechanism in case the request fails
-        for i in range(5):
-            try:
-                response = requests.post(
-                    api_url,
-                    json={"parameters" :{"address":central_node, "tt": max_datetime}},
-                    headers={"X-API-Key": API_key},
-                )
-                run_id = response.json()["run_id"]
-            except Exception as e:
-                logger.debug(f'Retrying for {i+1} time')
-                if i == 4:
-                    raise ValueError(f'{central_node}:\t{query_name} query failed. {response}.\n{e}', exc_info=True)
-            else:
-                break
-        put_query_id_dynamo(central_node, query_name, run_id)
-    continue_querying = True
-    max_number_of_retries = 50  # 50 * 20 seconds = 1000 seconds = 16 minutes max time running
-    n_retry = 0
-    while continue_querying:
-        # Retry mechanism in case the request fails
-        for i in range(5):
-            try:
-                response = requests.get(
-                    f"https://api.allium.so/api/v1/explorer/query-runs/{run_id}/status",
-                    headers={"X-API-Key": API_key},
-                    timeout=20,
-                )
-                run_status = response.json()
-            except Exception as e:
-                logger.debug(f'Retrying for {i+1} time')
-                if i == 4:
-                    raise ValueError(f'{central_node}:\tGet addresses query failed. {response}.\n{e}', exc_info=True)
-            else:
-                break
-        logger.info(f"{central_node}:\t{query_name} query still {run_status} with id {run_id}")
-        if run_status in ['failed', 'canceled']:
-            logger.debug(f"{central_node}:\t{query_name} query failed. Re-querying. {response.json()}")
-            # Retry mechanism in case the request fails
-            for i in range(5):
-                try:
-                    response = requests.post(
-                        api_url,
-                        json={"parameters" :{"address":central_node, "tt": max_datetime}},
-                        headers={"X-API-Key": API_key},
-                    )
-                    run_id = response.json()["run_id"]
-                except Exception as e:
-                    logger.debug(f'Retrying for {i+1} time')
-                    if i == 4:
-                        raise ValueError(f'{central_node}:\t{query_name} query failed. {response}.\n{e}', exc_info=True)
-                else:
-                    break
-            put_query_id_dynamo(central_node, query_name, run_id)
-        elif run_status == 'success':
-            # Query is finished, we download the data. Retry more times to reduce costs.
-            for i in range(5):
-                try:
-                    response = requests.get(
-                        f"https://api.allium.so/api/v1/explorer/query-runs/{run_id}/results?f=json",
-                        headers={"X-API-Key": API_key},
-                    )
-                    _ = response.json()  # Try to parse the response. If answer is not 200, it will retry the request
-                    continue_querying = False
-                except Exception as e:
-                    logger.debug(f'Retrying for {i+1} time')
-                    if i == 4:
-                        raise ValueError(f'{central_node}:\t{query_name} query failed. {response}.\n{e}', exc_info=True)
-                else:
-                    break
-        n_retry += 1
-        if n_retry > max_number_of_retries:
-            raise Warning(f'{central_node}:\t{query_name} query took too long, skipping')
-        if continue_querying:
-            logger.debug(f"{central_node}:\t{query_name} query still running")
-            time.sleep(20)
-    if 'data' not in response.json().keys():
-        raise ValueError(f'{central_node}:\tMore than 3 errors querying list of neighbors, skipping')
-    if len(response.json()['data']) < MIN_NEIGHBORS:
-        raise Warning(f'{central_node}:\tNot enough neighbors, skipping')
-    if len(response.json()['data']) > MAX_NEIGHBORS:
-        raise Warning(f'{central_node}:\tToo many neighbors, skipping')
-    list_of_addresses = str(tuple(pd.DataFrame(response.json()['data'])['address'].tolist()))
-    return list_of_addresses
-
-
-def collect_data_parallel_parts(central_node) -> pd.DataFrame:
-    """
-    Querying allium. Based on the central node, obtains all the addresses that are first order neighbors, 
-    and then queries allium for the transactions of those addresses. Transactions are divided into 6 categories:
-    - all_eth_transactions: all transactions that involve ETH
-    - all_erc20_transactions: all transactions that involve ERC20 tokens
-    - eth_out: all transactions that involve ETH and are outgoing
-    - eth_in: all transactions that involve ETH and are incoming
-    - erc20_out: all transactions that involve ERC20 tokens and are outgoing
-    - erc20_in: all transactions that involve ERC20 tokens and are incoming
-    :param central_node: str Address that will be the center of the graph
-    :return: dict Dictionary with the 6 categories of transactions
-    """
-    waiting_time = 30
-    API_key = get_secrets()['apiKeys']['ALLIUM']
-    max_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    list_of_addresses = get_all_related_addresses(central_node)
-    # The SQL query for this can be found in file src/preprocessing/queries.sql
-    queries = {
-        'all_eth_transactions': 'yteFwmN3zZbQLoc9bY9g',
-        'all_erc20_transactions': 'YgEXG57MAP1VMZMxTXDe',
-        'eth_out': 'SBgNG6VWYcTXMlG9s3Ar',
-        'eth_in': 'hLnejllWt6nfij115dLA',
-        'erc20_out': 'C0O5JAZPY4YIs5yJCiUE',
-        'erc20_in': 'i61RQqEcLRLidt9qAIrg'
-    }
-    active_queries = {}
-    total_retries = 0
-    max_retries = 10
-    data = {}
-    logger.info(f'{central_node}:\tDownloading the data')
-    for key in queries.keys():
-        logger.debug(f'{central_node}:\t{key}')
-        api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
-        run_id = get_query_id_dynamo(central_node, key)
-        logger.debug(f'{central_node}:\t{key}:\t{run_id}')
-        if run_id is None:
-            # Retry mechanism in case the request fails
-            for i in range(5):
-                try:
-                    response = requests.post(
-                        api_url,
-                        json={"parameters" :{"addresses":list_of_addresses,"tt":max_datetime}},
-                        headers={"X-API-Key": API_key},
-                    )
-                    active_queries[key] = response.json()["run_id"]
-                except Exception as e:
-                    logger.debug(f'Retrying for {i+1} time')
-                    if i == 4:
-                        raise ValueError(f'{central_node}:\t{key} query failed. {response}.\n{e}', exc_info=True)
-                else:
-                    break
-            put_query_id_dynamo(central_node, key, active_queries[key])
-        else:
-            active_queries[key] = run_id
-    while len(active_queries) > 0 and total_retries < max_retries:
-        keys_to_pop = []
-        logger_str = f'{central_node}:\t'
-        for key in active_queries.keys():
-            # Retry mechanism in case the request fails
-            for i in range(5):
-                try:
-                    response = requests.get(
-                        f"https://api.allium.so/api/v1/explorer/query-runs/{active_queries[key]}/status",
-                        headers={"X-API-Key": API_key},
-                        timeout=10,
-                    )
-                    run_status = response.json()
-                except Exception as e:
-                    logger.debug(f'Retrying for {i+1} time')
-                    if i == 4:
-                        raise ValueError(f'{central_node}:\t{key} query failed. {response}.\n{e}', exc_info=True)
-                else:
-                    break
-            # logger.info(f'{central_node}:\t{key}\t{active_queries[key]}\t{run_status}')
-            logger_str += f'{key}:\t{active_queries[key]}-{run_status}\t'
-            if run_status in ['failed', 'canceled']:
-                logger.debug(f"{central_node}:\t{key} query failed. Re-querying. {response.json()}")
-                api_url = f'https://api.allium.so/api/v1/explorer/queries/{queries[key]}/run-async'
-                # Retry mechanism in case the request fails
-                for i in range(5):
-                    try:
-                        response = requests.post(
-                            api_url,
-                            json={"parameters" :{"addresses":list_of_addresses,"tt":max_datetime}},
-                            headers={"X-API-Key": API_key},
-                        )
-                        active_queries[key] = response.json()["run_id"]
-                        total_retries += 1
-                    except Exception as e:
-                        logger.debug(f'Retrying for {i+1} time')
-                        if i == 4:
-                            raise ValueError(f'{central_node}:\t{key} query failed. {response}.\n{e}', exc_info=True)
-                    else:
-                        break
-                put_query_id_dynamo(central_node, key, active_queries[key])
-            elif run_status == 'success':
-                # Query is finished, we download the data. Retry more times to reduce costs.
-                for i in range(5):
-                    try:
-                        response = requests.get(
-                            f"https://api.allium.so/api/v1/explorer/query-runs/{active_queries[key]}/results?f=json",
-                            headers={"X-API-Key": API_key},
-                        )
-                        data[key] = pd.DataFrame(response.json()['data'])
-                        keys_to_pop.append(key)
-                        logger.debug(f"{central_node}:\t{key} Finished")
-                    except Exception as e:
-                        logger.debug(f'Retrying for {i+1} time')
-                        if i == 4:
-                            raise ValueError(f'{central_node}:\t{key} query failed. {response}.\n{e}', exc_info=True)
-                    else:
-                        break
-        for key in keys_to_pop:
-            active_queries.pop(key)
-        logger.info(logger_str)
-        if len(active_queries) > 0:
-            logger.debug(f"{central_node}:\t{len(active_queries)} queries still running")
-            time.sleep(waiting_time)
-    logger.info(f'{central_node}:\tFinished downloading the data')
-    return data
-
-
 def prepare_labels(df) -> pd.DataFrame:
     """
     Converts all the label requests from state into a dataframe with the probability of being an attacker/victim 
@@ -461,7 +237,7 @@ def prepare_labels(df) -> pd.DataFrame:
     :param df: pd.DataFrame Dataframe with the label requests
     :return: pd.DataFrame Dataframe with the probability of being an attacker/victim of an scam
     """
-    attack_words  = ['phish', 'hack', 'attack', 'Attack', 'scam']
+    attack_words  = ['phish', 'hack', 'attack', 'Attack', 'scam', 'attacker', 'Attacker', 'scammer-eoa', 'scammer']
     victim_words = ['Victim', 'victim', 'benign']
 
     labeled = []
@@ -481,105 +257,56 @@ def prepare_labels(df) -> pd.DataFrame:
     return pd.DataFrame(labeled)
 
 
-def download_labels_graphql(all_nodes_dict, central_node) -> pd.DataFrame:
-    """
-    Downloads the labels of the nodes in all_nodes_dict. It uses the graphql API of Forta.
-    :param all_nodes_dict: dict Dictionary with the nodes to download the labels from
-    :param central_node: str Central node
-    :return: pd.DataFrame Dataframe with the labels"""
+def download_labels_agent(all_nodes_dict, central_node) -> pd.DataFrame:
+    t = time.time()
     logger.info(f'{central_node}\tDownloading the automatic labels')
-    forta_api = "https://api.forta.network/graphql"
-    headers = {"content-type": "application/json"}
-    query = """
-    query Query($labelsInput: LabelsInput) {
-    labels(input: $labelsInput) {
-        labels {
-        label {
-            label
-            entity
-            confidence
-        }
-        source {
-            bot {
-            id
-            }
-        }
-        }
-    pageInfo {
-        endCursor {
-            pageToken
-        }
-        hasNextPage
-        }
-    }
-    }
-    """
     all_nodes_list = list(all_nodes_dict.keys())
     all_labels = []
+    attack_words  = ['phish', 'hack', 'attack', 'Attack', 'scam', 'attacker', 'Attacker', 'scammer-eoa', 'scammer']
+
     for i in range(int(len(all_nodes_list) / SIMULTANEOUS_ADDRESSES) + 1):
         # This happens if the length of all_nodes_list is a multiple of SIMULTANEOUS_ADDRESSES
         if len(all_nodes_list[(i * SIMULTANEOUS_ADDRESSES):((i + 1) * SIMULTANEOUS_ADDRESSES)]) == 0:
             continue
-        # We query first the potential attackers.
         query_variables = {
-            "labelsInput": {
                 "state": True,
                 "first": 50,
                 "sourceIds": attacker_bots,
-                "entities": all_nodes_list[(i * SIMULTANEOUS_ADDRESSES):((i + 1) * SIMULTANEOUS_ADDRESSES)]
+                "entities": all_nodes_list[(i * SIMULTANEOUS_ADDRESSES):((i + 1) * SIMULTANEOUS_ADDRESSES)],
+                "labels": attack_words,
                 }
-            }
         next_page_exists = True
         # We allow at most n_addresses pages to not overcharge the system, in case there is a contract
         current_page = 0
         while next_page_exists and current_page < SIMULTANEOUS_ADDRESSES:
-            for i in range(5):
-                try:
-                    payload = dict(query=query, variables=query_variables)
-                    response = requests.request("POST", forta_api, json=payload, headers=headers)
-                    all_labels += response.json()['data']['labels']['labels']
-                except Exception as e:
-                    logger.debug(f'Retrying for {i+1} time')
-                    if i == 4:
-                        raise ValueError(f'{central_node}:\tLabels query failed. {response}.\n{e}', exc_info=True)
-                else:
-                    break
-            next_page_exists = response.json()['data']['labels']['pageInfo']['hasNextPage']
-            query_variables['labelsInput']['after'] = response.json()['data']['labels']['pageInfo']['endCursor']
-            current_page += 1
-        # Now query victims
-        query_variables = {
-            "labelsInput": {
-                "state": True,
-                "first": 50,
-                "sourceIds": victim_bots,
-                "labels": ['Victim', 'victim', 'benign'],
-                "entities": all_nodes_list[(i * SIMULTANEOUS_ADDRESSES):((i + 1) * SIMULTANEOUS_ADDRESSES)]
+            response = get_labels(query_variables)
+            next_page_exists = response.page_info.has_next_page
+            if next_page_exists:
+                query_variables['starting_cursor'] = {
+                    "pageToken": response.page_info.end_cursor.page_token,
                 }
-            }
+            all_labels += response.labels
+        query_variables.pop('starting_cursor', None)
+        query_variables['sourceIds'] = victim_bots
+        query_variables['labels'] = ['Victim', 'victim', 'benign']
         next_page_exists = True
-        # We allow at most n_addresses pages to not overcharge the system, in case there is a contract
         current_page = 0
         while next_page_exists and current_page < SIMULTANEOUS_ADDRESSES:
-            for i in range(5):
-                try:
-                    payload = dict(query=query, variables=query_variables)
-                    response = requests.request("POST", forta_api, json=payload, headers=headers)
-                    all_labels += response.json()['data']['labels']['labels']
-                except Exception as e:
-                    logger.debug(f'Retrying for {i+1} time')
-                    if i == 4:
-                        raise ValueError(f'{central_node}:\tLabels query failed. {response}.\n{e}', exc_info=True)
-                else:
-                    break
-            next_page_exists = response.json()['data']['labels']['pageInfo']['hasNextPage']
-            end_cursor = response.json()['data']['labels']['pageInfo']['endCursor']
-            query_variables['labelsInput']['after'] = end_cursor
-            current_page += 1
-    all_labels_df = pd.DataFrame([response['label'] for response in all_labels])
+            response = get_labels(query_variables)
+            next_page_exists = response.page_info.has_next_page
+            if next_page_exists:
+                query_variables['starting_cursor'] = {
+                    "pageToken": response.page_info.end_cursor.page_token,
+                }
+            all_labels += response.labels
+    all_labels_df = pd.DataFrame({'entity': [response.entity for response in all_labels],
+                                  'label': [response.label for response in all_labels],
+                                  'confidence': [response.confidence for response in all_labels],
+                                  'entity_type': [response.entity_type for response in all_labels],})
     if all_labels_df.shape[0] == 0:
         raise Warning(f'{central_node}:\tNo labels found, skipping')
     labels_df = prepare_labels(all_labels_df)
+    logger.info(f'{central_node}\tDownloaded the automatic labels in {time.time() - t} seconds')
     return labels_df
 
 
