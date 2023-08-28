@@ -185,8 +185,8 @@ def provide_handle_alert(w3):
         global global_futures
 
         list_of_addresses = []
-        if alert_event.alert.alert_id == 'SCAM-DETECTOR-ADDRESS-POISONING':
-            logger.debug(f"Address poisoning. Addresses: {';'.join([label.entity for label in alert_event.alert.labels])}")
+        if alert_event.alert.alert_id in ['SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-SCAMMER-ASSOCIATION']:
+            logger.debug(f"Invalid alert id. Addresses: {';'.join([label.entity for label in alert_event.alert.labels])}")
             return []
         for label in alert_event.alert.labels:
             # if label.confidence >= ATTACKER_CONFIDENCE and label.entity_type == forta_agent.EntityType.Address:
