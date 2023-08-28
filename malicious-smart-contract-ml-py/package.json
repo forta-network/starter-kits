@@ -1,6 +1,6 @@
 {
   "name": "malicious-smart-contract-ml-v3",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/malicious-smart-contract-ml-py",
   "description": "Malicious Smart Contract Detection Bot V3",
   "chainIds": [

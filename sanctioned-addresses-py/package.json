@@ -1,6 +1,6 @@
 {
   "name": "forta-sanctioned-address-bot",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Forta Sanctioned Addresses Bot",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250

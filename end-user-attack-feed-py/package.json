@@ -1,6 +1,6 @@
 {
   "name": "end-user-attack-feed",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "This bot generates a negative reputation threat intel feed focused on protocol attacks",
   "repository": "https://github.com/forta-network/starter-kits",
   "chainIds": [
