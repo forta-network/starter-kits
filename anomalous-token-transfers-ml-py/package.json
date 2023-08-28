@@ -1,6 +1,6 @@
 {
   "name": "anomalous-token-transfers-detection-ml",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "ML Anomaly Detection of Transactions with Token Transfers",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/anomalous-token-transfers-ml-py#anomalous-transaction-with-token-transfers",
   "chainIds": [
@@ -8,8 +8,8 @@
   ],
   "chainSettings": {
     "1": {
-      "shards": 6,
-      "target": 2
+      "shards": 8,
+      "target": 3
     },
     "default": {
       "shards": 2,
