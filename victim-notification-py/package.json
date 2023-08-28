@@ -1,6 +1,6 @@
 {
   "name": "victim-notification",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Alerts when victim is notified about being hacked on-chain",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
