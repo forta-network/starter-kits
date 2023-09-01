@@ -13,8 +13,10 @@ TORNADO_CASH_ADDRESSES = {"0xa160cdab225685da1d56aa342ad8841c3b53f291": 100, "0x
 
 
 class TestSuspiciousContractAgent:
+    @patch("agent.put_tc_ml", return_value=None)
+    @patch("agent.read_tc_ml", return_value=[])
     @patch("src.findings.calculate_alert_rate", return_value=0.33)
-    def test_detect_money_laundering_at_low_threshold_within_blockrange(self, mocker):
+    def test_detect_money_laundering_at_low_threshold_within_blockrange(self, mock_put, mock_read, mocker):
         agent.initialize()
 
         tx_event = create_transaction_event({
@@ -95,8 +97,10 @@ class TestSuspiciousContractAgent:
         assert finding.labels[0].toDict(
         )["confidence"] == 0.5, "should have 0.3 as label confidence"
 
+    @patch("agent.put_tc_ml", return_value=None)
+    @patch("agent.read_tc_ml", return_value=[])
     @patch("src.findings.calculate_alert_rate", return_value=0.33)
-    def test_detect_money_laundering_at_medium_threshold_within_blockrange(self, mocker):
+    def test_detect_money_laundering_at_medium_threshold_within_blockrange(self, mock_put, mock_read, mocker):
         agent.initialize()
 
         tx_event = create_transaction_event({
@@ -176,8 +180,10 @@ class TestSuspiciousContractAgent:
         assert finding.metadata == {
             "anomaly_score": 0.33, "total_funds_transferred": "210"}
 
+    @patch("agent.put_tc_ml", return_value=None)
+    @patch("agent.read_tc_ml", return_value=[])
     @patch("src.findings.calculate_alert_rate", return_value=0.33)
-    def test_detect_money_laundering_at_high_threshold_within_blockrange(self, mocker):
+    def test_detect_money_laundering_at_high_threshold_within_blockrange(self, mock_put, mock_read, mocker):
         agent.initialize()
 
         tx_event = create_transaction_event({
@@ -307,7 +313,9 @@ class TestSuspiciousContractAgent:
         assert finding.metadata == {
             "anomaly_score": 0.33, "total_funds_transferred": "500"}
 
-    def test_detect_money_laundering_below_threshold(self):
+    @patch("agent.put_tc_ml", return_value=None)
+    @patch("agent.read_tc_ml", return_value=[])
+    def test_detect_money_laundering_below_threshold(self, mock_put, mock_read, mocker):
         agent.initialize()
 
         tx_event = create_transaction_event({
@@ -331,8 +339,10 @@ class TestSuspiciousContractAgent:
         findings = agent.detect_money_laundering(w3, tx_event)
         assert len(findings) == 0, "this should not have triggered a finding"
 
+    @patch("agent.put_tc_ml", return_value=None)
+    @patch("agent.read_tc_ml", return_value=[])
     @patch("src.findings.calculate_alert_rate", return_value=0.33)
-    def test_detect_money_laundering_below_threshold_polygon(self, mocker):
+    def test_detect_money_laundering_below_threshold_polygon(self, mock_put, mock_read, mocker):
         agent.initialize()
 
         w3.eth.chain_id = 137
