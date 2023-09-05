@@ -24,32 +24,17 @@ def confidence_score(
     _from = str(getattr(log.transaction, 'from_', '')).lower()
     _data = str(getattr(log.transaction, 'data', '')).lower()
     _value = int(getattr(log.transaction, 'value', ''))
+    _logs = tuple(log.logs)
     # method selector
     _scores.append(probabilities.indicator_to_probability(
         indicator=indicators.input_data_has_batching_selector(_data),
         true_score=0.9, # almost certainty
         false_score=0.5)) # not all selectors are in the wordlist: neutral
-    # list of recipients
+    # list of recipients and amounts with same length
     _scores.append(probabilities.indicator_to_probability(
-        indicator=indicators.input_data_has_array_of_addresses(data=_data, min_length=min_transfer_count),
-        true_score=0.7, # the list of recipients is necessary for batching, and not seen in many other types of transactions
-        false_score=0.1)) # without a list of recipients, there is almost no chance the contract performs batching
-    # list of amounts to transfer
-    _scores.append(probabilities.indicator_to_probability(
-        indicator=indicators.input_data_has_array_of_values(data=_data, min_length=min_transfer_count),
-        true_score=0.6, # low prob: the array of values could have another meaning
-        false_score=0.4)) # batching can happpen without a list of values: NFT transfers or same amount for all
-    # erc20 events OR erc721 events OR balance updates
-    _has_any_token_transfers = (
-        indicators.log_has_multiple_erc20_transfer_events(log=log, min_count=min_transfer_count, min_total=min_transfer_total_erc20) # erc20
-        or indicators.log_has_multiple_erc721_transfer_events(log=log, min_count=min_transfer_count) # erc721
-        or (
-            _value >= max_batching_fee # don't go further if the sender's balance didn't move
-            and indicators.transaction_value_matches_input_arrays(value=_value, data=_data, min_count=min_transfer_count, tolerance=max_batching_fee))) # only called if there are no ERC20 / ERC721 events (net opt)
-    _scores.append(probabilities.indicator_to_probability(
-        indicator=_has_any_token_transfers,
-        true_score=0.8, # a list of transfers almost certainly means batching
-        false_score=0.2)) # it's possible the transfered token doesn't follow standards and did not emit an event
+        indicator=indicators.input_data_has_matching_arrays_of_values_and_addresses(data=_data, min_length=min_transfer_count),
+        true_score=0.8, # having both lists is necessary, and rarely seen in other transactions
+        false_score=0.1)) # without lists of recipients and amounts, there is little chance the contract performs batching
     return probabilities.conflation(_scores)
 
 # MALICIOUS ###################################################################
@@ -64,9 +49,10 @@ def malicious_score(
 ) -> float:
     """Evaluate the provabability that a batch transaction is malicious."""
     _scores = []
+    _logs = tuple(log.logs)
     # transfer of amount 0
     _scores.append(probabilities.indicator_to_probability(
-        indicator=indicators.log_has_erc20_transfer_of_null_amount(log=log),
+        indicator=indicators.log_has_erc20_transfer_of_null_amount(logs=_logs),
         true_score=0.9, # certainty
         false_score=0.5)) # neutral
     return probabilities.conflation(_scores)

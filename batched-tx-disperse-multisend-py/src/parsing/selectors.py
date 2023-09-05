@@ -4,8 +4,8 @@ Ex:
 - bulkTransferToken(address,address[],uint[])
 """
 
-from itertools import product
-from web3 import Web3
+import itertools
+import web3
 
 # DEFAULT ARGUMENTS ###########################################################
 
@@ -13,12 +13,12 @@ from web3 import Web3
 # TODO: add optional prefix "safe"
 # TODO: add optional argument "_from"
 # TODO: "transfer(address[],address[],address[],uint256[])" => transfer(token,from,to,amount)
-PATTERNS = [
+PATTERNS = (
     '{verb}{adjective}{token}{noun}{args}',
-    '{adjective}{verb}{token}{noun}{args}',]
+    '{adjective}{verb}{token}{noun}{args}',)
 
 # TODO: sort signatures by action (batch, airdrop, etc)
-VERBS = [
+VERBS = (
     '',
     'Multisend',
     'Disperse',
@@ -26,9 +26,9 @@ VERBS = [
     'Send',
     'Batch',
     'Bundle',
-    'Multicall']
+    'Multicall')
 
-ADJECTIVES = [
+ADJECTIVES = (
     '',
     'Multi',
     'Multiple',
@@ -37,16 +37,16 @@ ADJECTIVES = [
     'Bundled',
     'Batch',
     'Bundle',
-    'Mass']
+    'Mass')
 
 # TODO: sort signatures by token
-TOKENS = ['', 'ETH', 'Eth', 'Ether', 'Token', 'Coin', 'NFT', 'Nft', 'ERC20', 'Erc20', 'ERC721', 'Erc721']
+TOKENS = ('', 'ETH', 'Eth', 'Ether', 'Token', 'Coin', 'NFT', 'Nft', 'ERC20', 'Erc20', 'ERC721', 'Erc721')
 
-NOUNS = ['', 'Sender', 'Transfer', 'Transaction']
+NOUNS = ('', 'Sender', 'Transfer', 'Transaction')
 
 # TODO: add argument pattern
 # TODO: single value for all addresses
-ARGS = [
+ARGS = (
     '(address,address[],uint256[])',
     '(address,uint256[],address[])',
     '(address[],uint256[],address)',
@@ -58,29 +58,29 @@ ARGS = [
     '(address[],uint[],address)',
     '(uint[],address[],address)',
     '(address[],uint[])',
-    '(uint[],address[])']
+    '(uint[],address[])')
 
 # WORDLIST GENERATION #########################################################
 
 def generate_signature_wordlist(
-    pattern: list=PATTERNS[0],
-    verbs: list=VERBS,
-    adjectives: list=ADJECTIVES,
-    tokens: list=TOKENS,
-    nouns: list=NOUNS,
-    args: list=ARGS
+    pattern: tuple=PATTERNS[0],
+    verbs: tuple=VERBS,
+    adjectives: tuple=ADJECTIVES,
+    tokens: tuple=TOKENS,
+    nouns: tuple=NOUNS,
+    args: tuple=ARGS
 ) -> list:
     """Generate a list of plausible method signatures."""
     _signatures = []
-    for _a in product(verbs, adjectives, tokens, nouns, args):
+    for _a in itertools.product(verbs, adjectives, tokens, nouns, args):
         _signature = pattern.format(verb=_a[0], adjective=_a[1], token=_a[2], noun=_a[3], args=_a[-1])
         _signature = _signature[0].lower() + _signature[1:] # camel case
         _signatures.append(_signature)
-        #_signatures.append((Web3.keccak(text=_signature).hex())[:10]) # 0x + first 4 bytes of the hash
+        #_signatures.append((web3.Web3.keccak(text=_signature).hex())[:10]) # 0x + first 4 bytes of the hash
     return _signatures
 
 # SELECTOR ####################################################################
 
 def selector(signature: str) -> str:
     """Compute the web3 method selector for a single signature."""
-    return (Web3.keccak(text=signature).hex().lower())[:10] # "0x" prefix + 4 bytes
+    return (web3.Web3.keccak(text=signature).hex().lower())[:10] # "0x" prefix + 4 bytes
