@@ -13,21 +13,23 @@ class MoneyLaunderingTornadoCashFindings:
                    "label": "attacker",
                    "confidence": 0.5}]
 
+        metadata = {"total_funds_transferred": str(funds_transferred)}
+
+        if chain_id not in [43114, 10, 250]:
+            metadata['anomaly_score'] = calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH',
+                ScanCountType.TRANSFER_COUNT,
+            )
+
         return Finding({
             'name': 'Possible Money Laundering With Tornado Cash',
             'description': f'{from_address} potentially engaged in money laundering',
             'alert_id': 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH',
             'type': FindingType.Suspicious,
             'severity': FindingSeverity.High,
-            'metadata': {
-                "anomaly_score": calculate_alert_rate(
-                        chain_id,
-                        BOT_ID,
-                        'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH',
-                        ScanCountType.TRANSFER_COUNT,
-                ),
-                "total_funds_transferred": str(funds_transferred)
-            },
+            'metadata': metadata,
             "labels": labels
         })
 
@@ -38,21 +40,23 @@ class MoneyLaunderingTornadoCashFindings:
                    "label": "attacker",
                    "confidence": 0.5}]
 
+        metadata = {"total_funds_transferred": str(funds_transferred)}
+
+        if chain_id not in [43114, 10, 250]:
+            metadata['anomaly_score'] = calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM',
+                ScanCountType.TRANSFER_COUNT,
+            )
+
         return Finding({
             'name': 'Possible Money Laundering With Tornado Cash',
             'description': f'{from_address} potentially engaged in money laundering',
             'alert_id': 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM',
             'type': FindingType.Suspicious,
             'severity': FindingSeverity.Medium,
-            'metadata': {
-                "anomaly_score": calculate_alert_rate(
-                        chain_id,
-                        BOT_ID,
-                        'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM',
-                        ScanCountType.TRANSFER_COUNT,
-                ),
-                "total_funds_transferred": str(funds_transferred)
-            },
+            'metadata': metadata,
             "labels": labels
         })
 
@@ -63,20 +67,22 @@ class MoneyLaunderingTornadoCashFindings:
                    "label": "attacker",
                    "confidence": 0.5}]
 
+        metadata = {"total_funds_transferred": str(funds_transferred)}
+
+        if chain_id not in [43114, 10, 250]:
+            metadata['anomaly_score'] = calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-LOW',
+                ScanCountType.TRANSFER_COUNT,
+            )
+
         return Finding({
             'name': 'Possible Money Laundering With Tornado Cash',
             'description': f'{from_address} potentially engaged in money laundering',
             'alert_id': 'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-LOW',
             'type': FindingType.Suspicious,
             'severity': FindingSeverity.Low,
-            'metadata': {
-                "anomaly_score": calculate_alert_rate(
-                        chain_id,
-                        BOT_ID,
-                        'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-LOW',
-                        ScanCountType.TRANSFER_COUNT,
-                ),
-                "total_funds_transferred": str(funds_transferred)
-            },
+            'metadata': metadata,
             "labels": labels
         })

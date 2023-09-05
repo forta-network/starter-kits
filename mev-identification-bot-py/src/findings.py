@@ -21,18 +21,23 @@ class MEVAccountFinding:
             }
         }))
 
+        metadata = {'transfer_event_count': transfer_event_count, 'unique_token_count': unique_token_count,
+                    'unique_contract_address_count': unique_contract_address_count}
+
+        if chain_id not in [43114, 10, 250]:
+            metadata['anomaly_score'] = calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                'MEV-ACCOUNT',
+                ScanCountType.TX_WITH_INPUT_DATA_COUNT)
+
         finding = Finding({
             'name': 'MEV Account Identified',
             'description': f'{address} seems to be engaged in MEV activity',
             'alert_id': 'MEV-ACCOUNT',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
-            'metadata': {'anomaly_score': calculate_alert_rate(
-                        chain_id,
-                        BOT_ID,
-                        'MEV-ACCOUNT',
-                        ScanCountType.TX_WITH_INPUT_DATA_COUNT,
-            ), 'transfer_event_count': transfer_event_count, 'unique_token_count': unique_token_count, 'unique_contract_address_count': unique_contract_address_count},
+            'metadata': metadata,
             'labels': labels
         })
         return finding

@@ -20,12 +20,14 @@ class UnverifiedCodeContractFindings:
 
         addresses = {"address_contained_in_created_contract_" +
                      str(i): address for i, address in enumerate(contained_addresses, 1)}
-        metadata = {"anomaly_score": calculate_alert_rate(
-            chain_id,
-            BOT_ID,
-            'UNVERIFIED-CODE-CONTRACT-CREATION',
-            ScanCountType.CONTRACT_CREATION_COUNT,
-        ), **addresses}
+        metadata = {**addresses}
+
+        if chain_id not in [43114, 10, 250]:
+            metadata['anomaly_score'] = calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                'UNVERIFIED-CODE-CONTRACT-CREATION',
+                ScanCountType.CONTRACT_CREATION_COUNT)
 
         return Finding({
             'name': 'Contract with unverified code was created',

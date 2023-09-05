@@ -1,6 +1,6 @@
 {
   "name": "social-eng-contract-creation",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Identifies when a new social engineering contract is created.",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250

@@ -51,27 +51,31 @@ def detect_suspicious_native_transfers(w3, transaction_event: forta_agent.transa
                        "label": "attacker",
                        "confidence": 0.3}]
 
+            metadata = {
+                'to': to,
+                'from': from_,
+                'current_block': block_number,
+                'balance_at_current_block': current_value,
+                'balance_at_older_block': older_value,
+                'older_block': older_block_number,
+                'transfer_value': value
+            }
+
+            if CHAIN_ID not in [43114, 10, 250]:
+                metadata['anomaly_score'] = calculate_alert_rate(
+                    CHAIN_ID,
+                    BOT_ID,
+                    'LARGE-TRANSFER-OUT',
+                    ScanCountType.LARGE_VALUE_TRANSFER_COUNT,
+                )
+
             findings.append(Finding({
                 'name': 'Large Native Transfer Out',
                 'description': f'High amount of native tokens transferred: {value}',
                 'alert_id': 'LARGE-TRANSFER-OUT',
                 'severity': FindingSeverity.Low,
                 'type': FindingType.Info,
-                'metadata': {
-                    'anomaly_score': calculate_alert_rate(
-                        CHAIN_ID,
-                        BOT_ID,
-                        'LARGE-TRANSFER-OUT',
-                        ScanCountType.LARGE_VALUE_TRANSFER_COUNT,
-                    ),
-                    'to': to,
-                    'from': from_,
-                    'current_block': block_number,
-                    'balance_at_current_block': current_value,
-                    'balance_at_older_block': older_value,
-                    'older_block': older_block_number,
-                    'transfer_value': value
-                },
+                'metadata': metadata,
                 'labels': labels
             }))
 

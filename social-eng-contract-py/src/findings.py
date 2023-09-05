@@ -21,17 +21,21 @@ class SocialEngContractFindings:
                    "label": "victim",
                    "confidence": 0.6}]  # low
 
+        metadata = {"impersonated_contract": impersonated_contract}
+
+        if chain_id not in [43114, 10, 250]:
+            metadata['anomaly_score'] = calculate_alert_rate(
+                chain_id,
+                BOT_ID,
+                'SOCIAL-ENG-CONTRACT-CREATION',
+                ScanCountType.CONTRACT_CREATION_COUNT)
+
         return Finding({
             'name': 'A social engineering contract was created.',
             'description': f'{from_address} created contract {contract_address} impersonating {impersonated_contract}',
             'alert_id': 'SOCIAL-ENG-CONTRACT-CREATION',
             'type': FindingType.Exploit,
             'severity': FindingSeverity.High,
-            'metadata': {"anomaly_score": calculate_alert_rate(
-                chain_id,
-                BOT_ID,
-                "SOCIAL-ENG-CONTRACT-CREATION",
-                ScanCountType.CONTRACT_CREATION_COUNT,
-            ), "impersonated_contract": impersonated_contract},
+            'metadata': metadata,
             'labels': labels
         })
