@@ -4,18 +4,15 @@ import pickle
 import numpy as np
 import pandas as pd
 import torch
-from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
 
 from src.constants import (ATTACKER_CONFIDENCE, MIN_FOLDS_ATTACKER, N_FOLDS,
                            PREDICTED_ATTACKER_CONFIDENCE, VICTIM_SAMPLING, SEED, MAX_NEIGHBORS_INDIVIDUAL_MODEL)
 from src.model.aux import cross_entropy_masked
-from src.model.model import ModelAttention, ModelAttentionMultiHead
+from src.model.model import ModelAttentionMultiHead
 from src.model.train import prepare_graph_and_train, prepare_graph_and_predict
-from src.preprocessing.get_data import (collect_data_parallel_parts, collect_data_zettablock,
-                                        download_labels_graphql,
-                                        get_automatic_labels)
+from src.preprocessing.get_data import (collect_data_zettablock, download_labels_agent, get_automatic_labels)
 from src.preprocessing.process_data import prepare_data
 
 logger = logging.getLogger(__name__)
@@ -34,7 +31,6 @@ def run_all(central_node, secrets, web3):
     model_type = ModelAttentionMultiHead
     loss_function = cross_entropy_masked
 
-    # data = collect_data_parallel_parts(central_node)
     data = collect_data_zettablock(central_node, secrets)
     if not 'production' in os.environ.get('NODE_ENV', ''):
         data_path = 'data3'
@@ -42,9 +38,8 @@ def run_all(central_node, secrets, web3):
         with open(node_path, 'wb') as f:
             pickle.dump(data, f)
     all_nodes_dict, node_feature, transactions_overview, edge_indexes, edge_features = prepare_data(data)
-    labels_df = download_labels_graphql(all_nodes_dict, central_node)
+    labels_df = download_labels_agent(all_nodes_dict, central_node)
     np.random.seed(SEED)
-    # web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
     if len(all_nodes_dict) >= MAX_NEIGHBORS_INDIVIDUAL_MODEL:
         logger.info(f"{central_node}:\tToo many neighbors for individual model ({len(all_nodes_dict)}), using only global model")
         filtered_attackers_df = pd.DataFrame(columns=['n_predicted_attacker', 'mean_probs_victim', 'mean_probs_attacker'])

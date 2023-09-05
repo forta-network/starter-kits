@@ -10,15 +10,15 @@ from src.constants import (TORNADO_CASH_ACCOUNTS_QUEUE_SIZE,
                            TORNADO_CASH_ADDRESSES, TORNADO_CASH_TRANSFER_AMOUNT_THRESHOLDS,
                            TORNADO_CASH_DEPOSIT_TOPIC,)
 from src.findings import MoneyLaunderingTornadoCashFindings
-from src.storage import get_secrets
-
-SECRETS_JSON = get_secrets()
+from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
-# dict of accounts to dicts of blocks to counts; e.g. # account 1, block 101, 1
-ACCOUNT_QUEUE = []
 
+s3 = None
+dynamo = None
+secrets = None
+item_id_prefix = ""
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -37,17 +37,80 @@ def initialize():
     it is called from test to reset state between tests
     """
 
-    global ACCOUNT_QUEUE
-    ACCOUNT_QUEUE = []
-
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
-    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
+    global s3
+    global dynamo
+    global secrets
+
+    try:
+        # initialize dynamo DB
+        if dynamo is None:
+            secrets = get_secrets()
+            s3 = s3_client(secrets)
+            dynamo = dynamo_table(secrets)
+            logging.info("Initialized dynamo DB successfully.")
+    except Exception as e:
+        logging.error("Error getting chain id: {e}")
+        raise e
+
+    environ["ZETTABLOCK_API_KEY"] = secrets['apiKeys']['ZETTABLOCK']
+
+
+def put_tc_ml(account_queue: list):
+    global CHAIN_ID
+    global BOT_VERSION
+
+    logging.debug(
+        f"putting tornado cash money laundering object in dynamo DB")
+
+    itemId = f"{item_id_prefix}|{CHAIN_ID}|ml_tct"
+
+    response = dynamo.put_item(Item={
+        "itemId": itemId,
+        "sortKey": "tc-ml",
+        "accountQueue": account_queue
+    })
+
+    if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+        logging.error(f"Error putting alert in dynamoDB: {response}")
+        Utils.ERROR_CACHE.add(Utils.alert_error(
+            f'dynamo.put_item HTTPStatusCode {response["ResponseMetadata"]["HTTPStatusCode"]}', "agent.put_tc_ml", ""))
+        return
+    else:
+        logging.info(f"Successfully put alert in dynamoDB: {response}")
+        return
+
+
+def read_tc_ml() -> list:
+    global CHAIN_ID
+
+    account_queue = []
+
+    itemId = f"{item_id_prefix}|{CHAIN_ID}|ml_tct"
+
+    logging.info(
+        f"Reading tornado cash money laundering object from itemId {itemId}")
+    logging.info(f"Dynamo : {dynamo}")
+    response = dynamo.query(KeyConditionExpression='itemId = :id',
+                            ExpressionAttributeValues={
+                                ':id': itemId
+                            }
+                            )
+
+    items = response.get('Items', [])
+
+    if len(items) > 0:
+        account_queue = items[0]['accountQueue']
+
+    return account_queue
 
 
 def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
-    global ACCOUNT_QUEUE
+    isTornadoDeposit = False
+    cur_account_queue = []
+    db_account_queue = []
 
     logging.info(
         f"Analyzing transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
@@ -62,24 +125,41 @@ def detect_money_laundering(w3, transaction_event: forta_agent.transaction_event
         if (transaction_event.transaction.value is not None and transaction_event.transaction.value > 0 and
            log.address in TORNADO_CASH_ADDRESSES and TORNADO_CASH_DEPOSIT_TOPIC in log.topics):
 
-            if not any(d['account'] == account for d in ACCOUNT_QUEUE):
-                ACCOUNT_QUEUE.append(
-                    {"account": account, "value": TORNADO_CASH_ADDRESSES[log.address]})
+            isTornadoDeposit = True
+
+            if not any(d['account'] == account for d in cur_account_queue):
+                cur_account_queue.append(
+                    {"value": TORNADO_CASH_ADDRESSES[log.address], "account": account})
             else:
-                for d in ACCOUNT_QUEUE:
+                for d in cur_account_queue:
                     if d['account'] == account:
                         d['value'] += TORNADO_CASH_ADDRESSES[log.address]
 
             logging.info(
                 f"Identified account {account} on chain {w3.eth.chain_id}")
 
-            #  maintain a size
-            if len(ACCOUNT_QUEUE) > TORNADO_CASH_ACCOUNTS_QUEUE_SIZE:
-                acc = ACCOUNT_QUEUE.pop(0)
+    if isTornadoDeposit:
+        db_account_queue = read_tc_ml()
 
-    if any(d['account'] == account for d in ACCOUNT_QUEUE):
+        # merge records from db with the new account queue
+        for d in cur_account_queue:
+            if not any(db_d['account'] == d['account'] for db_d in db_account_queue):
+                db_account_queue.append(d)
+
+            else:
+                for db_d in db_account_queue:
+                    if db_d['account'] == d['account']:
+                        db_d['value'] += d['value']
+
+        #  maintain a size
+        if len(db_account_queue) > TORNADO_CASH_ACCOUNTS_QUEUE_SIZE:
+            db_account_queue.pop(0)
+
+        put_tc_ml(db_account_queue)
+
+    if any(d['account'] == account for d in db_account_queue):
         # if the account's value is greater than the threshold, then we have a finding
-        for d in ACCOUNT_QUEUE:
+        for d in db_account_queue:
             if d['account'] == account:
                 if d['value'] >= TORNADO_CASH_TRANSFER_AMOUNT_THRESHOLDS[w3.eth.chain_id]["high"]:
                     findings.append(MoneyLaunderingTornadoCashFindings.possible_money_laundering_tornado_cash(

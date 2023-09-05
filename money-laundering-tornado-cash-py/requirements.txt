@@ -1,3 +1,4 @@
 forta_agent>=0.1.17
 setuptools>=61.3.1
 bot-alert-rate>=0.0.4
+boto3>=1.26.155

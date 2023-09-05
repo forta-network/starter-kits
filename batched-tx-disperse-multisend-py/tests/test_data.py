@@ -1,5 +1,6 @@
 """Historic blockchain data"""
 
+import itertools
 import os
 import pickle
 
@@ -33,3 +34,7 @@ for _root, _, _files in os.walk('tests/.data/'):
         _path = os.path.join(*_parent, _filename)
         with open(_path, 'rb') as _f:
             TRANSACTIONS[_type][_token].append(pickle.load(_f))
+
+# ALL #########################################################################
+
+ALL_TRANSACTIONS = tuple(itertools.chain.from_iterable([TRANSACTIONS[_type][_token] for _type in TRANSACTIONS for _token in TRANSACTIONS[_type]]))
