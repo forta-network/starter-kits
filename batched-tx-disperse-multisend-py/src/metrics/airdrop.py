@@ -18,10 +18,11 @@ def confidence_score(
     """Evaluate the probability that a transaction is an airdrop."""
     _scores = []
     _data = str(getattr(log.transaction, 'data', '')).lower()
+    _logs = tuple(log.logs)
     # performs token transfers
     _has_token_mint_events = (
-        indicators.log_has_multiple_erc20_mint_events(log=log, min_count=min_transfer_count, min_total=min_transfer_total)
-        or indicators.log_has_multiple_erc721_mint_events(log=log, min_count=min_transfer_count))
+        indicators.log_has_multiple_erc20_mint_events(logs=_logs, min_count=min_transfer_count, min_total=min_transfer_total)
+        or indicators.log_has_multiple_erc721_mint_events(logs=_logs, min_count=min_transfer_count))
     _scores.append(probabilities.indicator_to_probability(
         indicator=_has_token_mint_events,
         true_score=0.9, # the tokens were minted
