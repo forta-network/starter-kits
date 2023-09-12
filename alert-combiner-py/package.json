@@ -1,6 +1,6 @@
 {
   "name": "attack-detector-feed-beta",
-  "version": "3.50.1",
+  "version": "3.50.3",
   "displayName": "Attack Detector Feed (beta)",
   "description": "Identifies protocol attacks in real-time; often before any digital assets are being stolen",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/alert-combiner-py",
@@ -44,7 +44,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.38"
+    "forta-agent": "^0.1.40"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

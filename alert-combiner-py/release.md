@@ -1,5 +1,8 @@
 # Attack Detector Bot Release Notes
 
+## v3.50.3 (Seot 12 2023: beta)
+- update to sdk 0.1.40/0.1.21
+
 ## v3.50.1 (August 21 2023: beta)
 - add unique_key to finding to reduce duplicate alerts
 - fixed bug of dynamo pointing to test tag
