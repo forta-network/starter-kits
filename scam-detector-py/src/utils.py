@@ -11,11 +11,12 @@ import gnupg
 import pandas as pd
 import json
 import os
+from datetime import datetime, timedelta
 import traceback
 from web3 import Web3
 from forta_agent import get_json_rpc_url
 
-from src.constants import TX_COUNT_FILTER_THRESHOLD
+from src.constants import TX_COUNT_FILTER_THRESHOLD, CONFIDENCE_MAPPINGS
 from src.error_cache import ErrorCache
 from src.storage import get_secrets
 
@@ -28,6 +29,8 @@ class Utils:
     BOT_VERSION = None
     TOTAL_SHARDS = None
     IS_BETA = None
+
+    QUALITY_METRICS = None
 
     RPC_ENDPOINT = None
     TEST_STATE = False
@@ -58,6 +61,45 @@ class Utils:
 
         df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
         return df_manual_findings
+    
+    @staticmethod
+    def get_quality_metrics() -> dict:
+        if Utils.QUALITY_METRICS is None or datetime.now().minute == 00:
+            content = open('quality_metrics_test.json', 'r').read() if Utils.in_test_state() else open('quality_metrics.json', 'r').read()
+            if not Utils.in_test_state():
+                res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/quality_metrics.json')
+                logging.info(f"Made request to fetch quality metrics: {res.status_code}")
+                content = res.content.decode('utf-8') if res.status_code == 200 else open('quality_metrics.json', 'r').read()
+            Utils.QUALITY_METRICS = json.loads(content)
+        return Utils.QUALITY_METRICS
+        
+       
+    @staticmethod
+    def get_confidence_value(threat_category: str) -> float:
+        try:
+            quality_metrics = Utils.get_quality_metrics()
+
+            # look at monthly precision; use the latest month and fallback to constants.CONFIDENCE_MAPPINGS if there are none
+            monthly_metrics = quality_metrics.get('monthly')
+            lookup_month = datetime.now()
+            if monthly_metrics is not None:
+                current_month_metrics = monthly_metrics.get(lookup_month.strftime('%Y-%m'))
+                if current_month_metrics is not None:
+                    current_threat_category = current_month_metrics.get(threat_category)
+                    if current_threat_category is not None:
+                        precision =  current_threat_category.get('precision')
+                        if precision is not None:
+                            return precision
+                else:
+                    return CONFIDENCE_MAPPINGS[threat_category]
+        except BaseException as e:
+            error_finding = Utils.alert_error(str(e), "Utils.get_confidence_value", f"{traceback.format_exc()}")
+            Utils.ERROR_CACHE.add(error_finding)
+            logging.error(f"Exception in trying to obtain confidence value for threat category {threat_category}: {e}")
+            return False
+        
+        return CONFIDENCE_MAPPINGS[threat_category]
+
 
     @staticmethod
     def get_metamask_phishing_list() -> list:

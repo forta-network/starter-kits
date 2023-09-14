@@ -1,6 +1,6 @@
 # Scam Detector Master User Guide
 
-Download a sample data set from the Scam Detector [here](https://github.com/forta-network/starter-kits/raw/main/scam-detector-py/ScamDetector_0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23_labels_20230701-20230801.zip)
+Download a sample data set from the Scam Detector [here](https://github.com/forta-network/starter-kits/raw/main/scam-detector-py/ScamDetector_0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23_labels_20230801-20230901.csv.zip)
 
 ## Table of Contents
 

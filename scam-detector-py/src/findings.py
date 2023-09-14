@@ -9,7 +9,7 @@ import re
 import traceback
 
 from src.utils import Utils
-from src.constants import CONFIDENCE_MAPPINGS, MODEL_NAME
+from src.constants import MODEL_NAME
 
 class ScamDetectorFinding:
 
@@ -130,7 +130,7 @@ class ScamDetectorFinding:
         if len(original_threat_categories.intersection(set(['address-poisoner', 'native-ice-phishing-social-engineering', 'hard-rug-pull', 'soft-rug-pull', 'rake-token', 'impersonating-token'])))>0:
             labels = []
             threat_category = ScamDetectorFinding.get_threat_category(alert_id)
-            confidence = CONFIDENCE_MAPPINGS[threat_category]
+            confidence = Utils.get_confidence_value(threat_category)
             labels.append(Label({
                 'entityType': EntityType.Address,
                 'label': 'scammer',
@@ -266,7 +266,7 @@ class ScamDetectorFinding:
 
         labels = []
         threat_category = ScamDetectorFinding.get_threat_category(alert_id)
-        confidence = CONFIDENCE_MAPPINGS[threat_category]
+        confidence = Utils.get_confidence_value(threat_category)
         if logic == "ml" and score != 0.0:
             confidence = score
         elif metadata is not None and 'model_score' in metadata.keys():
@@ -504,7 +504,7 @@ class ScamDetectorFinding:
         if original_threat_category in ['address-poisoner', 'ice-phishing', 'native-ice-phishing-social-engineering', 'hard-rug-pull', 'soft-rug-pull', 'rake-token', 'impersonating-token'] or original_threat_category == "unknown":  # 2nd check for when threat category wasnt included in the label, but was rather part of metadata; this changed with 0.2.2
             labels = []
             threat_category = ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT")
-            confidence = CONFIDENCE_MAPPINGS[threat_category]
+            confidence = Utils.get_confidence_value(threat_category)
             labels.append(Label({
                 'entityType': EntityType.Address,
                 'label': 'scammer',
@@ -547,7 +547,7 @@ class ScamDetectorFinding:
         original_threat_category = ScamDetectorFinding.get_threat_category(original_alert_id)
 
         labels = []
-        confidence = CONFIDENCE_MAPPINGS[original_threat_category]
+        confidence = Utils.get_confidence_value(original_threat_category)
         labels.append(Label({
             'entityType': EntityType.Address,
             'label': 'scammer',

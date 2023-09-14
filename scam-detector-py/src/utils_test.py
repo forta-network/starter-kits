@@ -3,6 +3,7 @@ import json
 from forta_agent import get_json_rpc_url, FindingSeverity
 from web3 import Web3
 from utils import Utils
+from constants import CONFIDENCE_MAPPINGS
 from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX
 
 w3 = Web3Mock()
@@ -97,3 +98,15 @@ class TestUtils:
         assert finding.name == "Scam detector encountered a recoverable error."
         assert finding.metadata['error_source'] == "source"
         assert finding.metadata['error_stacktrace'] == "stacktrace"
+
+    def test_get_confidence_value_latest(self):
+        Utils.TEST_STATE = True
+        assert 0.91==Utils.get_confidence_value('ice-phishing')
+
+    def test_get_confidence_value_latest_fallback(self):
+        Utils.TEST_STATE = True
+        assert 0.98==Utils.get_confidence_value('wash-trading')
+
+    def test_get_confidence_value_default(self):
+        Utils.TEST_STATE = True
+        assert CONFIDENCE_MAPPINGS['sleep-minting']==Utils.get_confidence_value('sleep-minting')

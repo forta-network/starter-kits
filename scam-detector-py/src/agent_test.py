@@ -13,7 +13,7 @@ import requests
 import agent
 from unittest.mock import patch
 
-from constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES, CONFIDENCE_MAPPINGS
+from constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES
 from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX, CONTRACT2
 from web3_errormock import Web3ErrorMock
 from forta_explorer_mock import FortaExplorerMock
@@ -746,12 +746,12 @@ class TestScamDetector:
         label = findings[0].labels[0]
         assert label.entity == "0xa4f58353711f9f29b483fe41be8f0dcc893d9f8a", "entity should be attacker address"
         assert label.label == "scammer", "entity should labeled as scam"
-        assert label.confidence == CONFIDENCE_MAPPINGS['similar-contract'], "entity should labeled with 0.7 confidence"
+        assert label.confidence == Utils.get_confidence_value('similar-contract'), "entity should labeled with 0.7 confidence"
 
         label = findings[0].labels[1]
         assert label.entity == "0xfe551e214563283c8ab5df967d7d69f630b64079", "entity should be attacker address"
         assert label.label == "scammer", "entity should labeled as scam"
-        assert label.confidence == CONFIDENCE_MAPPINGS['similar-contract'], "entity should labeled with 0.7 confidence"
+        assert label.confidence == Utils.get_confidence_value('similar-contract'), "entity should labeled with 0.7 confidence"
 
     def test_put_entity_cluster(self):
         agent.initialize()

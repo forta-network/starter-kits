@@ -1,6 +1,14 @@
 # Scam Detector Bot Release Notes
 
-## v2.19.1 (August 24th - beta (without metamask), August 24th - beta (without metamask, private key compromise, ice phishing ML bot, scammer-association, rake token))
+## v2.19.2 (September 14th - beta (without metamask))
+- reenabled expansion of ADDRESS-POISONING-FAKE-TOKEN in basebot parser as https://github.com/tf0rs/forta-address-poisoning-agent/issues/6 has been deemed not an issue
+- reenable rake token bot and scammer association bot for prod
+- incorporated quality_metrics.json to source confidence values from
+- update long description
+- update docker to contain ML libraries (step 1/2 for ML FP mitigation)
+
+
+## v2.19.1 (August 24th - beta (without metamask), August 24th - prod (without metamask, private key compromise, ice phishing ML bot, scammer-association, rake token))
 - removed expansion of ADDRESS-POISONING-FAKE-TOKEN in basebot parser due to issue https://github.com/tf0rs/forta-address-poisoning-agent/issues/6
 
 ## v2.19.0 (August 23rd - beta (without metamask), August 23rd - beta (without metamask, private key compromise, ice phishing ML bot, scammer-association, rake token))
