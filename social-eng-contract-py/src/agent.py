@@ -7,9 +7,10 @@ import pandas as pd
 from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
+from os import environ
+
 from src.constants import CONTRACT_QUEUE_SIZE
 from src.findings import SocialEngContractFindings
-from os import environ
 from src.storage import get_secrets
 
 SECRETS_JSON = get_secrets()
@@ -37,6 +38,9 @@ def initialize():
 
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
+
+    global CONTRACTS_QUEUE
+    CONTRACTS_QUEUE = pd.concat([CONTRACTS_QUEUE, pd.DataFrame({'contract_address': '0x0000000000000000000000000000000000000000', 'first_four_char': '0000', 'last_four_char': '0000'}, index=[len(CONTRACTS_QUEUE)])])
 
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
@@ -73,9 +77,11 @@ def append_finding(findings: list, from_: str, created_contract_address: str) ->
     criteria2 = CONTRACTS_QUEUE["last_four_char"] == created_contract_address[-4:]
 
     impersonated_contract_address = CONTRACTS_QUEUE[criteria1 & criteria2]["contract_address"]
-    if len(impersonated_contract_address) > 0 and impersonated_contract_address[0] is not None and impersonated_contract_address[0] != created_contract_address:
-
-        findings.append(SocialEngContractFindings.social_eng_contract_creation(from_, created_contract_address, impersonated_contract_address[0], CHAIN_ID))
+    if len(impersonated_contract_address) > 0 and impersonated_contract_address.iloc[0] is not None and impersonated_contract_address.iloc[0] != created_contract_address:
+        if impersonated_contract_address.iloc[0] == '0x0000000000000000000000000000000000000000':
+            findings.append(SocialEngContractFindings.social_eng_contract_creation(from_, created_contract_address, impersonated_contract_address.iloc[0], CHAIN_ID, 'SOCIAL-ENG-CONTRACT-CREATION-NULL-ADDRESS'))
+        else:
+            findings.append(SocialEngContractFindings.social_eng_contract_creation(from_, created_contract_address, impersonated_contract_address.iloc[0], CHAIN_ID, 'SOCIAL-ENG-CONTRACT-CREATION'))
 
 
 def detect_social_eng_contract_creations(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
@@ -87,10 +93,14 @@ def detect_social_eng_contract_creations(w3, transaction_event: forta_agent.tran
             if len(CONTRACTS_QUEUE[CONTRACTS_QUEUE["contract_address"] == to]) == 0:
                 logging.info("Adding contract to queue: " + to)
                 logging.info("Contract size: " + str(len(CONTRACTS_QUEUE)))
-                CONTRACTS_QUEUE = pd.concat([CONTRACTS_QUEUE, pd.DataFrame({'contract_address': to, 'first_four_char': to[2:6], 'last_four_char': to[-4:]}, index=[len(CONTRACTS_QUEUE)])])
+                if not (to[2:6] == '0000' and to[-4:] == '0000'):
+                    CONTRACTS_QUEUE = pd.concat([CONTRACTS_QUEUE, pd.DataFrame({'contract_address': to, 'first_four_char': to[2:6], 'last_four_char': to[-4:]}, index=[len(CONTRACTS_QUEUE)])])
             if len(CONTRACTS_QUEUE) > CONTRACT_QUEUE_SIZE:
-                logging.info("Removing contract to queue: " + CONTRACTS_QUEUE.iloc[0]["contract_address"])
+                contract_to_remove = CONTRACTS_QUEUE.iloc[0]["contract_address"]
+                logging.info("Removing contract to queue: " + contract_to_remove)
                 CONTRACTS_QUEUE = CONTRACTS_QUEUE.drop(CONTRACTS_QUEUE.index[0])
+                if contract_to_remove == '0x0000000000000000000000000000000000000000':
+                    CONTRACTS_QUEUE = pd.concat([CONTRACTS_QUEUE, pd.DataFrame({'contract_address': '0x0000000000000000000000000000000000000000', 'first_four_char': '0000', 'last_four_char': '0000'}, index=[len(CONTRACTS_QUEUE)])])
 
     findings = []
     created_contract_addresses = []

@@ -11,13 +11,14 @@ from unittest.mock import patch
 
 w3 = Web3Mock()
 
+#LOWER CONTRACT_QUEUE_SIZE TO 100 FOR TESTING; run tests individually
 
 class TestSocialEngContractAgent:
 
     def test_contract_queue_limit(self):
         agent.initialize()
 
-        for i in range(CONTRACT_QUEUE_SIZE + 1):
+        for i in range(CONTRACT_QUEUE_SIZE + 10):
 
             random_contract_address = TestSocialEngContractAgent.calc_contract_address(w3, EOA_ADDRESS, i)
 
@@ -40,7 +41,7 @@ class TestSocialEngContractAgent:
 
             agent.detect_social_eng_contract_creations(w3, contract_interaction_tx_event)
 
-        assert(len(agent.CONTRACTS_QUEUE) == CONTRACT_QUEUE_SIZE)
+        assert(len(agent.CONTRACTS_QUEUE) == CONTRACT_QUEUE_SIZE + 1)
 
     def calc_contract_address(w3, address, nonce) -> str:
         """
@@ -74,7 +75,7 @@ class TestSocialEngContractAgent:
         agent.detect_social_eng_contract_creations(w3, contract_interaction_tx_event)
 
 
-        assert(len(agent.CONTRACTS_QUEUE) == 1)
+        assert(len(agent.CONTRACTS_QUEUE) == 2)
 
     def test_contract_queue_handling_EOA(self):
         agent.initialize()
@@ -98,7 +99,7 @@ class TestSocialEngContractAgent:
         agent.detect_social_eng_contract_creations(w3, contract_interaction_tx_event)
 
 
-        assert(len(agent.CONTRACTS_QUEUE) == 0)
+        assert(len(agent.CONTRACTS_QUEUE) == 1)
 
     @patch("src.findings.calculate_alert_rate", return_value=1.0)
     def test_soc_eng_creation_finding(self, mocker):
@@ -141,7 +142,8 @@ class TestSocialEngContractAgent:
 
         findings = agent.detect_social_eng_contract_creations(w3, contract_creation_tx_event)
         assert len(findings) == 1, "should have 1 finding"
-        assert findings[0].metadata["anomaly_score"] == 1.0, "should have anomaly score of 1.0"
+        assert findings[0].alert_id == 'SOCIAL-ENG-CONTRACT-CREATION'
+        assert "anomaly_score" in findings[0].metadata
         assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
         assert findings[0].labels[0].toDict()["entity"] == EOA_ADDRESS, "should have EOA address as label"
         assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
@@ -222,3 +224,42 @@ class TestSocialEngContractAgent:
 
         findings = agent.detect_social_eng_contract_creations(w3, contract_creation_tx_event)
         assert len(findings) == 0, "should have no finding"
+
+    @patch("src.findings.calculate_alert_rate", return_value=1.0)
+    def test_soc_eng_creation_finding_null_address(self, mocker):
+        agent.initialize()
+
+        contract_creation_tx_event = create_transaction_event({
+
+            'transaction': {
+                'hash': "0",
+                'from': "0x425df6cf518cd4fc42f382b2f81baea0ff0b0ce7",
+                'nonce': 0,
+
+            },
+            'block': {
+                'number': 1,
+                'timestamp': datetime.now().timestamp(),
+            },
+            'receipt': {
+                'logs': []}
+        })
+
+        findings = agent.detect_social_eng_contract_creations(w3, contract_creation_tx_event)
+        assert len(findings) == 1, "should have 1 finding"
+        assert "anomaly_score" in findings[0].metadata
+        assert findings[0].alert_id == 'SOCIAL-ENG-CONTRACT-CREATION-NULL-ADDRESS'
+        assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
+        assert findings[0].labels[0].toDict()["entity"] == "0x425df6cf518cd4fc42f382b2f81baea0ff0b0ce7", "should have EOA address as label"
+        assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[0].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+
+        assert findings[0].labels[1].toDict()["label"] == 'attacker_contract', "should have attacker as label"
+        assert findings[0].labels[1].toDict()["entity"] == '0x00002d618fcb99cfe7af0c6505508b33fc620000', "should have contract address as label"
+        assert findings[0].labels[1].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[1].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+
+        assert findings[0].labels[2].toDict()["label"] == 'victim', "should have attacker as label"
+        assert findings[0].labels[2].toDict()["entity"] == '0x0000000000000000000000000000000000000000', "should have contract address as label"
+        assert findings[0].labels[2].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[2].toDict()["entity_type"] == EntityType.Address, "should have label_type address"

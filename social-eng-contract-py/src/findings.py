@@ -7,7 +7,7 @@ BOT_ID = "0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8"
 class SocialEngContractFindings:
 
     @staticmethod
-    def social_eng_contract_creation(from_address: str, contract_address: str, impersonated_contract: str, chain_id: int) -> Finding:
+    def social_eng_contract_creation(from_address: str, contract_address: str, impersonated_contract: str, chain_id: int, alert_id: str) -> Finding:
         labels = [{"entity": from_address,
                    "entityType": EntityType.Address,
                    "label": "attacker",
@@ -27,13 +27,13 @@ class SocialEngContractFindings:
             metadata['anomaly_score'] = calculate_alert_rate(
                 chain_id,
                 BOT_ID,
-                'SOCIAL-ENG-CONTRACT-CREATION',
+                alert_id,
                 ScanCountType.CONTRACT_CREATION_COUNT)
 
         return Finding({
             'name': 'A social engineering contract was created.',
             'description': f'{from_address} created contract {contract_address} impersonating {impersonated_contract}',
-            'alert_id': 'SOCIAL-ENG-CONTRACT-CREATION',
+            'alert_id': alert_id,
             'type': FindingType.Exploit,
             'severity': FindingSeverity.High,
             'metadata': metadata,
