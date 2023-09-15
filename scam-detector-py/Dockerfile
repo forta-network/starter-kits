@@ -21,6 +21,7 @@ ENV NODE_ENV=production
 LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
 COPY ./fp_list.csv ./
+COPY ./quality_metrics.json ./
 COPY ./v3_scammer_model.joblib ./
 COPY ./manual_alert_list.tsv ./
 COPY ./LICENSE ./

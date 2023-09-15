@@ -1,1 +1,920 @@
-Date,Chain,Indicator,Verdict
+Date	ChainId	Indicator	Verdict	ThreatCategory	Metric
+8/31/23	56	0xbff5188881d325bddde9918d243c4aa1dae30471	Likely TP	soft-rug-pull	precision
+8/29/23	56	0x50e7bcd8706bfa09ab5cb3311ff0bc8d3bbfcff6	TP	address-poisoner	precision
+8/31/23	56	0x954f3a073eb1748fce40c0cb3a2bd1565924c05f	Likely TP	address-poisoner	precision
+8/29/23	56	0x6ebcc4b62b7a27e8890518c7bca7101c0ff2fcea	Likely TP	address-poisoner	precision
+8/31/23	56	0x627092447cdb7f8778bccbad462fc88a40f7f6a3	Likely TP	native-ice-phishing	precision
+8/31/23	56	0x68d554e74924faa5196566f9984de448a136963a	Likely TP	native-ice-phishing-social-engineering	precision
+8/31/23	56	0xd2e4c86dc71a9471ed5e992e4f16db72fc2fe639	Likely TP	native-ice-phishing-social-engineering	precision
+8/30/23	56	0x573404d01216da08f52edc4a28af95c78e419022	Likely TP	native-ice-phishing-social-engineering	precision
+8/31/23	56	0x519e087efdf51cd85238e2ec75576bb882189b12	Likely TP	native-ice-phishing-social-engineering	precision
+8/31/23	56	0x2feafe398289cf20a9dcab80b2de66b7c86f72a9	Likely TP	native-ice-phishing-social-engineering	precision
+8/31/23	56	0xa2c203d7ef78ed80810da8404090f926d67cd892	Likely TP	native-ice-phishing-social-engineering	precision
+8/29/23	56	0x8e2571794c1897c03f1d8aa9bfd2c01c0efe80a4	Likely TP	ice-phishing	precision
+8/31/23	56	0x54f40fe16375a34f74638c8924e78bec07d4c6a2	Likely TP	ice-phishing	precision
+8/30/23	56	0x0a3f582635b88c8c2fcfdd0a81dc10dff143b76f	Likely TP	ice-phishing	precision
+8/30/23	56	0x98e0c1c7e8e39f3f34edfa9d6ebe00854796b73e	Likely TP	ice-phishing	precision
+8/26/23	56	0x8f9c78aa3925ef86f2b93ce1dc5f04709be00ed0	TP	address-poisoner	precision
+8/24/23	56	0xded031ea774c00aaaf757a4ca5c62db7fe8c0d1b	TP	address-poisoner	precision
+8/22/23	56	0x50e7bcd8706bfa09ab5cb3311ff0bc8d3bbfcff6	TP	address-poisoner	precision
+8/22/23	56	0x92cfb1a3b0babfd08584372f9cbd493b6c266f72	TP	address-poisoner	precision
+8/27/23	56	0x537abb8e5be7e6d17a8e51a899f508fd3ccac046	TP	address-poisoner	precision
+8/26/23	56	0x93431127922cd5b00e33a61935977e7f3a86af12	TP	address-poisoner	precision
+8/23/23	56	0x06b2b4a0c0552b71b630888e28bca5e47b66c7b1	Likely FP	fraudulent-nft-orders	precision
+8/26/23	56	0x771443d8014fe0860f59ad6af22978ff81e54b97	TP	native-ice-phishing-social-engineering	precision
+8/24/23	56	0x6046f65ed489498867594eca8bfcfebaea4964dc	TP	native-ice-phishing-social-engineering	precision
+8/24/23	56	0x73cd13a8f620499dd2936ace3283b871a258f721	TP	native-ice-phishing-social-engineering	precision
+8/24/23	56	0x1a24509b277b9fbe4535811054405d8b27cc2e66	TP	native-ice-phishing-social-engineering	precision
+8/22/23	56	0x982a49d7bba9095b7f4ddbd0c99f3abccca84adb	TP	native-ice-phishing-social-engineering	precision
+8/23/23	56	0xdf701a5ae2f452712f2c2b6806f6720ed514c3fd	TP	native-ice-phishing-social-engineering	precision
+8/24/23	56	0x573404d01216da08f52edc4a28af95c78e419022	TP	native-ice-phishing-social-engineering	precision
+8/27/23	56	0x1c861dbf434401a30fbb7f42bb9a2df970cb47d3	TP	native-ice-phishing-social-engineering	precision
+8/22/23	56	0x5630a5f13b00b66b73bece78f0c95bdaf9d0c20d	Likely FP	native-ice-phishing-social-engineering	precision
+8/27/23	56	0xd2de3f891bed66ee7db9ef4937cfa840d1138424	TP	native-ice-phishing-social-engineering	precision
+8/25/23	56	0x52a100e4d7d02e2c6c2348fdc20320bac91f4275	TP	native-ice-phishing-social-engineering	precision
+8/23/23	56	0xc6fda17632113e80e24e4fdd49114cc1ab97c6d0	Likely TP	native-ice-phishing-social-engineering	precision
+8/26/23	56	0x6421743b54dbf6e4cdbee2148a5abfd175158110	TP	native-ice-phishing-social-engineering	precision
+8/25/23	56	0xe1ab5419252ace49bfa6d88e96d8e6dfdff706f8	TP	native-ice-phishing-social-engineering	precision
+8/23/23	56	0x0d207d1c45be7ba5cce3e104580d9802b5ee0365	TP	native-ice-phishing-social-engineering	precision
+8/22/23	56	0x97e96a3a830414b720242fd250631cfdc8934b09	TP	native-ice-phishing-social-engineering	precision
+8/27/23	56	0x827b9964ac18b540ee0916c1bdc50de11043eec1	TP	native-ice-phishing-social-engineering	precision
+8/25/23	56	0x18dc3d17f14b89e287566da699a037b3a6ea4cd5	TP	native-ice-phishing-social-engineering	precision
+8/26/23	56	0xc7a96fa04c25c4d787382d82e2b90de9628acb97	TP	native-ice-phishing-social-engineering	precision
+8/27/23	56	0xcdf79e85a5e8ffd8d93def3d3c7580b8ab8870cd	TP	native-ice-phishing-social-engineering	precision
+8/27/23	56	0x0e8d7eb6d686cfcd7e2d714e0ab87b4b1a9b699c	TP	native-ice-phishing-social-engineering	precision
+8/24/23	56	0x09aacbf23e147a02918cb70a560a95924b1a32fe	TP	native-ice-phishing-social-engineering	precision
+8/24/23	56	0x49ec48ae990cfcd57316ece7cfeff9f79d32b669	TP	native-ice-phishing-social-engineering	precision
+8/25/23	56	0x3450286f8aa9d9755e24c964b95b559d2e8ee81d	TP	native-ice-phishing-social-engineering	precision
+8/25/23	56	0x46ddfbbd850bec5defced1b2b18c8bca4dcb8b0b	TP	native-ice-phishing-social-engineering	precision
+8/25/23	56	0xdd75709a68431a62f2d3c3285dd4ac1449d3197f	TP	native-ice-phishing-social-engineering	precision
+8/26/23	56	0xeb001429dd9d1e8a8051e08b12b59c5135e44a46	TP	ice-phishing	precision
+8/24/23	56	0x1db65ca97fae24b6f0d5cd3e11619d82c2d565c2	TP	ice-phishing	precision
+8/24/23	56	0x494fab60caa41aef437f4962a4d39227a62ba737	TP	ice-phishing	precision
+8/25/23	56	0x4afee275cef39a7b8a48157b8cba657657048598	TP	ice-phishing	precision
+8/22/23	56	0x3b4ffae8bc2769adb631876f270603d5d4391f56	TP	ice-phishing	precision
+8/25/23	56	0xca10ae1adfa6817332d9444bdd5c167373548afd	Likely FP	ice-phishing	precision
+8/22/23	56	0xfd1f21a19b49cca24318d73197b625cdb730eabc	TP	ice-phishing	precision
+8/23/23	56	0xf105d8147dbf8f4f5915ed344adf547059f236ae	TP	ice-phishing	precision
+8/24/23	56	0x4995948bb2369a904465e7290bef09175ffa9832	TP	ice-phishing	precision
+8/25/23	56	0x33a1c998f1c1ada9ac781e52aae7befa94ed90e9	TP	ice-phishing	precision
+8/27/23	56	0x8b88caa317b246dc2162c223cd1386794d146620	TP	ice-phishing	precision
+8/25/23	56	0x886885f23079deaac51b10324d1c1ed94bdf72a9	TP	ice-phishing	precision
+8/25/23	56	0xeac19bd6f6d3e231fd18371e02c195599a878a83	TP	ice-phishing	precision
+8/27/23	56	0x7e03253ab148e2b263186fe07ad7da7a7cd04ff1	TP	ice-phishing	precision
+8/22/23	56	0xbf160eb6ea47582962138b85e066428f7d3ae806	TP	ice-phishing	precision
+8/23/23	56	0x4c10a462cd1e639da8a062ae8a33a23401120ab1	TP	ice-phishing	precision
+8/25/23	56	0x54f40fe16375a34f74638c8924e78bec07d4c6a2	Likely FP	ice-phishing	precision
+8/24/23	56	0x87ad7cddb40e3f9203523653a52d8847a0d76b48	TP	ice-phishing	precision
+8/15/23	56	0x15d9fbe733e70efce6a772f5ced07cc8dca29e56	TP	address-poisoner	precision
+8/19/23	56	0xa29d8ec7aa027b1d627add60d240f59081a8ece0	Likely FP	fraudulent-nft-orders	precision
+8/18/23	56	0x1c861dbf434401a30fbb7f42bb9a2df970cb47d3	TP	native-ice-phishing-social-engineering	precision
+8/15/23	56	0x875141527f864f979ed2fc4e048a8dcfdddd3cc3	TP	native-ice-phishing-social-engineering	precision
+8/16/23	56	0x510ce07228631cf31475d764ad8d87eec0882fe0	TP	native-ice-phishing-social-engineering	precision
+8/15/23	56	0x62f16882929ca86264b9e0fa7e3969c64152a50f	TP	native-ice-phishing-social-engineering	precision
+8/16/23	56	0xad5d73aa1de4b059c90e40774134332121306203	TP	native-ice-phishing-social-engineering	precision
+8/18/23	56	0xbac49f01ae1a22cbb04babdf37e96ab312da7b50	TP	native-ice-phishing-social-engineering	precision
+8/19/23	56	0x9a603d82f04ce96ba2eaaaca81fdc4dc6673e037	TP	native-ice-phishing-social-engineering	precision
+8/15/23	56	0x982a49d7bba9095b7f4ddbd0c99f3abccca84adb	TP	native-ice-phishing-social-engineering	precision
+8/16/23	56	0xfab4dbef9f68aa7610fb0f7b790708d75635f5ec	TP	native-ice-phishing-social-engineering	precision
+8/15/23	56	0x11050de316a16f053b5b24adfb8cf0fc0615ba94	TP	native-ice-phishing-social-engineering	precision
+8/19/23	56	0xbc8c70b6c77a1677cc0a777bbe8e4420b2ab5802	TP	native-ice-phishing-social-engineering	precision
+8/18/23	56	0x484c402b0c8254bd555b68827239bace7f491023	TP	native-ice-phishing-social-engineering	precision
+8/19/23	56	0xa2c203d7ef78ed80810da8404090f926d67cd892	TP	native-ice-phishing-social-engineering	precision
+8/18/23	56	0x000057c563abe43d6f6b794043724804cd3c0000	TP	native-ice-phishing-social-engineering	precision
+8/16/23	56	0xdfd9750468280d48520949d9a9d75dd60d506bca	TP	native-ice-phishing-social-engineering	precision
+8/20/23	56	0x20b2a614440128dfda5aacf2ce3478bbdffced69	TP	native-ice-phishing-social-engineering	precision
+8/15/23	56	0x413ace4743881c1505c68c15461db11ea415fc0e	TP	native-ice-phishing-social-engineering	precision
+8/15/23	56	0xbfcd6fa9764c246dd9b47bc660e1b9a9933ca0fc	TP	native-ice-phishing-social-engineering	precision
+8/16/23	56	0x125c3ee23d1d33617e276f7bf778317ce363969a	TP	native-ice-phishing-social-engineering	precision
+8/16/23	56	0x000061e3f0f3b885e31eee676ded50fff2490000	TP	native-ice-phishing-social-engineering	precision
+8/15/23	56	0xa000ed743bcd488b9600904904080835d726afbe	TP	native-ice-phishing-social-engineering	precision
+8/17/23	56	0x156bef2cc82ea00844617cc3ae4bd51b95242e84	TP	native-ice-phishing-social-engineering	precision
+8/17/23	56	0x4c50c6390083de55bdcda9bf5ec542b4ba3be157	TP	native-ice-phishing-social-engineering	precision
+8/16/23	56	0x2feafe398289cf20a9dcab80b2de66b7c86f72a9	TP	native-ice-phishing-social-engineering	precision
+8/19/23	56	0xaf516750896062ce2aa596dc99110b051bcd7067	TP	hard-rug-pull	precision
+8/15/23	56	0x8f9fd659d9942d10e9ae13cc62e64ffe261cfaee	TP	hard-rug-pull	precision
+8/15/23	56	0x08aab008bb31c891a74f41caea4398a409eaa8af	TP	hard-rug-pull	precision
+8/20/23	56	0xa4a887698f4accf6d5f45d5250fad42f1899618c	TP	scammer-deployed-contract	precision
+8/20/23	56	0x508c7fcea9cdb4a4bcd8707f34564cfe036102a6	TP	sleep-minting	precision
+8/19/23	56	0xc5087553d9acae0e8cf79149e00a71c740fd06c5	TP	ice-phishing	precision
+8/19/23	56	0x029d74da4d2c44f4b3a8e8b84e9285d60dfd6525	TP	ice-phishing	precision
+8/20/23	56	0x941203ff6781bcb286c3f046cb534cd40da7235f	TP	ice-phishing	precision
+8/20/23	56	0x0c18252161e498b03049fed73afb2a97bf99c287	TP	ice-phishing	precision
+8/15/23	56	0x245f68cf710cbc3d22fb7735f6557bf0a534e6c3	TP	ice-phishing	precision
+8/20/23	56	0x66178e7328f47e3610bf1ce54da7efdf657e9765	TP	ice-phishing	precision
+8/16/23	56	0x0d6d316ee9a8b438255b66f819e0b75a244dfb0a	Likely FP	ice-phishing	precision
+8/19/23	56	0xd34ec39655b825076d6fc1dd19c26bd37974a9c4	Likely FP	ice-phishing	precision
+8/20/23	56	0x006fbb53988b6abfc75e62dc9cc322c058fd6224	TP	ice-phishing	precision
+8/20/23	56	0xf105d8147dbf8f4f5915ed344adf547059f236ae	TP	ice-phishing	precision
+8/20/23	56	0x080a4a89bcce8d574193557eee5cac4fdda1b331	TP	ice-phishing	precision
+8/19/23	56	0xef905c152525f026b2543dd3c6dc3d930655624d	TP	ice-phishing	precision
+8/20/23	56	0xa61cb0ed5698279b7948bb6e241cfd8517bfe36a	TP	ice-phishing	precision
+8/16/23	56	0xb0a5ce5f5b870e7907a78acad85350046d3010be	TP	ice-phishing	precision
+7/31/23	56	0x613C6F064A06C91B2f69459169B7ea739023193A	FN	hard-rug-pull	recall
+7/31/23	56	0x0003fd282af2c5f9555584f8714066d4b4f80f00	TP	ice-phishing	recall
+8/30/23	1	0x7c8820c78419d99ddc6f844529d9261b19628a58	Likely TP	soft-rug-pull	precision
+8/29/23	1	0x26dfeb6952f53c39b2dd78fb1efc06296f7746f6	TP	soft-rug-pull	precision
+8/31/23	1	0x0615d8023cd332b5334c6670e9a61aa2851a9312	TP	soft-rug-pull	precision
+8/29/23	1	0x06925c00204b4df373896d661280ed8603e9d737	Likely TP	soft-rug-pull	precision
+8/30/23	1	0xbd1c6e88f8c9fe4a548e608191b3fae6ffd344b8	TP	soft-rug-pull	precision
+8/29/23	1	0xad33379b3f8d3f596ea192eca83ed6e2ae8170cb	TP	soft-rug-pull	precision
+8/29/23	1	0xe3eec877748d909c1f625fbf06797d3ea9e206d9	Likely TP	soft-rug-pull	precision
+8/30/23	1	0xab24cd3edd371bec8cb40323aaa773056e6e3d6f	TP	soft-rug-pull	precision
+8/29/23	1	0x38501a139a31d0394f4eed90ac0c9860367017e3	TP	soft-rug-pull	precision
+8/31/23	1	0xd57c3c078ebc4d8718f641328a3d2ede58373fa3	TP	soft-rug-pull	precision
+8/31/23	1	0x50c85850f97941f84d7f283f587ae6fa7f6e6b84	LIKELY TP	soft-rug-pull	precision
+8/30/23	1	0xeaa08226e2c38c9ca5124222340191b6592b092e	Likely TP	soft-rug-pull	precision
+8/31/23	1	0x6fd4f127613934d8f548c1ed68bd30801697a333	TP	soft-rug-pull	precision
+8/30/23	1	0x0501fd42249cfcb443b2b5b4a6bc255dbaab84b0	TP	soft-rug-pull	precision
+8/29/23	1	0x690fa9282c212c8da06da792eae0153bd6eb9666	TP	soft-rug-pull	precision
+8/30/23	1	0xd4f25a705828544aa78055af31e7f896b76bae66	TP	soft-rug-pull	precision
+8/30/23	1	0x0b78053d4d376a6fca5e439b5f751c2a1bfa7c94	TP	address-poisoner	precision
+8/30/23	1	0x15199e20b666c7cbcc2d905fdb075afce0db829a	TP	address-poisoner	precision
+8/31/23	1	0x469c4b985d86bd749d3bf3597f2038bec7939d48	TP	address-poisoner	precision
+8/29/23	1	0x2ffbfee569ee68f81611a1e024aa817e29524a4c	TP	address-poisoner	precision
+8/31/23	1	0x1a43ddc861d72b07f65b5af92d34c641d0657f1d	TP	address-poisoner	precision
+8/30/23	1	0x13cb32c4c19d92f7f7924d8c90316d2454572830	TP	address-poisoner	precision
+8/30/23	1	0x01cea8d383bd577ab16fda82ee3955ec405526d3	TP	address-poisoner	precision
+8/30/23	1	0x1e744f2be3a45a8dddfa7a6716433d0e96f7a029	TP	address-poisoner	precision
+8/30/23	1	0x1212f81c6293ec57864a96d9b2d12d8c84bf191b	TP	address-poisoner	precision
+8/29/23	1	0x126fd0d58f95036ced1761ffc8ee95c850887592	TP	address-poisoner	precision
+8/30/23	1	0xd4d4459e737a75d753d1b4cab0d5743557cf441f	TP	pig-butchering	precision
+8/31/23	1	0x162a79f8bdfda1b01db05f5879e8fbdb4647aa26	TP	pig-butchering	precision
+8/30/23	1	0xdc7f62eb5e7c0d24314034725d3babe80639091e	TP	pig-butchering	precision
+8/31/23	1	0xfdd6a0ec7253b9819c2d4fa08e3be824e68cd893	TP	pig-butchering	precision
+8/29/23	1	0x801e2fb30c92818aaba7bde51da048ac26555ec6	TP	pig-butchering	precision
+8/29/23	1	0xa7c5795ec64565bf1d5f84ac2f66b05ca4cbb1ea	TP	pig-butchering	precision
+8/30/23	1	0xbf05b5de09d5bf82a0785ff7cf76a78dd80478d6	TP	pig-butchering	precision
+8/30/23	1	0x73632bf385ee89d435a2585c7003795a220a397a	TP	pig-butchering	precision
+8/30/23	1	0xcb29fed92460fc68714968c4b37352640f649d62	TP	pig-butchering	precision
+8/30/23	1	0x01c741005a210bde9d8cdbf9581f9f75e390b79a	TP	pig-butchering	precision
+8/30/23	1	0x7162def85d75e6e5225d09409ba1735f77d722be	TP	pig-butchering	precision
+8/29/23	1	0xb8d816a3a4e86967c061905bd80034dd7e43479d	TP	pig-butchering	precision
+8/30/23	1	0x30115745df4e42c71871cf2302fb717ddfec3e2c	TP	pig-butchering	precision
+8/31/23	1	0x7cf55608dde5b097b2366f86308cb73ffc720b90	TP	pig-butchering	precision
+8/30/23	1	0x3e7dac9bcdb9d839b0c55944f6d418bf1336545c	TP	pig-butchering	precision
+8/30/23	1	0x80b9bdb6af7040ed45485e4522515daf8c557af3	TP	pig-butchering	precision
+8/31/23	1	0x70521dc62e3b7f6b7f52277b93882dd661a84e7d	TP	pig-butchering	precision
+8/30/23	1	0xfa8063d5e2d194cf1163e7e70513e1d52d77e2ec	TP	pig-butchering	precision
+8/30/23	1	0x423a6ad20e8f5cc7e309312c0c9d48d134d72db4	TP	pig-butchering	precision
+8/31/23	1	0xc1f672ffcd7fd1f8d2684cac0f2f00a81d746a8c	TP	pig-butchering	precision
+8/31/23	1	0x47c0753a1c407badf43b75769f075ffe50e6befe	TP	pig-butchering	precision
+8/31/23	1	0x9ca3b90e201ff68c8cc12f165928c14c1f2d65a6	TP	pig-butchering	precision
+8/29/23	1	0x000047ed3b5f29bd52f33892c225bac38d3ef000	TP	fraudulent-nft-orders	precision
+8/31/23	1	0xb2877edf0a269001b96cd1131aed66d66c76bf15	Likely FP	native-ice-phishing	precision
+8/31/23	1	0x83aaba4768faabb699498c5ac174643b875c100b	Likely TP	native-ice-phishing-social-engineering	precision
+8/31/23	1	0x099c443b6fb0d8162b8cdde403d94b537589b4c2	TP	native-ice-phishing-social-engineering	precision
+8/31/23	1	0xc6fda17632113e80e24e4fdd49114cc1ab97c6d0	TP	native-ice-phishing-social-engineering	precision
+8/29/23	1	0x728a983e37cae1d6dbce83ed75b7c70f26c4c654	TP	wash-trading	precision
+8/29/23	1	0xe3d500011691a2f649abe1a98154b6652a30b635	TP	wash-trading	precision
+8/31/23	1	0x0e44dcbdd969d2b8f41290e1360dd6712ce627f3	TP	hard-rug-pull	precision
+8/30/23	1	0x715b7c0a495bb75760e0673f48419c1007b00959	TP	hard-rug-pull	precision
+8/30/23	1	0x0e0179b47f2ff054fe8177de0d434685b128847e	TP	hard-rug-pull	precision
+8/29/23	1	0xcc517b28aed736b254e0d2ad23bb20f1a0418df8	TP	hard-rug-pull	precision
+8/29/23	1	0x5cfc0bdf60faf063e2219ab48c52b78e9f8c75ce	TP	hard-rug-pull	precision
+8/31/23	1	0x3d4c0015b3750bb17cf99aec4924f51f3ad0d00b	TP	hard-rug-pull	precision
+8/30/23	1	0x61dc16587b0c9ebfc3f7ff6bcce4bc356f1c9a79	TP	hard-rug-pull	precision
+8/31/23	1	0x2cf23fdd7d1e56f77ec74e4adadbf567abbab0a4	TP	scammer-deployed-contract	precision
+8/29/23	1	0xc6aa2f0ff6b8563ea418ec2558890d6027413699	Likely TP	scammer-deployed-contract	precision
+8/29/23	1	0x93adb73b3a8525174ae8710f272c57e805491929	TP	scammer-deployed-contract	precision
+8/29/23	1	0xa72403c91065417d028ef7ccfd77a958c9605460	TP	scammer-deployed-contract	precision
+8/31/23	1	0xa1df1ed4e3f56dd4563c2f8eb790f0d1ee60c5f3	TP	scammer-deployed-contract	precision
+8/31/23	1	0xd8a80b9d5f2564b2ea362e0bf29d27b99bced92e	TP	scammer-deployed-contract	precision
+8/29/23	1	0x381dcd8094e4300e760dea22cab3f7b78d16cbd9	TP	scammer-deployed-contract	precision
+8/31/23	1	0xfde8bcc2e5b5ce7c6b8238cc7edef2db16eb2abf	TP	scammer-deployed-contract	precision
+8/31/23	1	0x5db531695170c3fcf336d450d6075473edbfdff9	TP	scammer-deployed-contract	precision
+8/30/23	1	0xcf9f39bacd11a885dc1c91df294319c21f6782e9	Likely TP	scammer-deployed-contract	precision
+8/31/23	1	0x3f29162130912a40095b4016f701bd38be0fa11d	TP	scammer-deployed-contract	precision
+8/31/23	1	0x5819a3e7d4f541a3a83eb745ee461c5d5fe473b8	TP	unknown	precision
+8/31/23	1	0x6ac452651d1ad0e63a1c61f53fa329f27717169d	TP	unknown	precision
+8/31/23	1	0x835a940b6a7328cdef1843f94c9db8941aef41ec	TP	unknown	precision
+8/30/23	1	0x17fc5b4a38604afddc6f50578bcbc5de0b94333f	Likely TP	unknown	precision
+8/30/23	1	0x8f7a31b18142defd073183abb94da27790f405a9	Likely TP	unknown	precision
+8/30/23	1	0x151f1ff778a4d64d4e924720ebc404aae74684a0	Likely FP	unknown	precision
+8/31/23	1	0x26b35b3d7bd697124c10de90a75b47a20635213a	TP	unknown	precision
+8/31/23	1	0x7bbafaabcde4cc769e6feb2b18ca3da122e0cac2	TP	unknown	precision
+8/31/23	1	0x151976b9d9e246215d0dde1be9c72b62506b3cf7	TP	unknown	precision
+8/29/23	1	0x24772215af0b4cffce83f0133d441e32f719ec8b	TP	unknown	precision
+8/30/23	1	0x0d2b6af3ae4b16bc565a0dedc0397db528d923bc	TP	unknown	precision
+8/31/23	1	0x1fc835772e4d96121450cd50c22b172b902ae46c	Likely FP	unknown	precision
+8/30/23	1	0x466f98db3aadae7ea60fe43065ee4d198f2e7b39	Likely FP	unknown	precision
+8/30/23	1	0x87384593d4c7d79263c5f6477123352c0bad0046	TP	unknown	precision
+8/30/23	1	0x7fe157744309024f8a8560f19ddd81e8b58538d1	TP	unknown	precision
+8/31/23	1	0x0b5a06fb59743b58900725750aba92a49b1e8a28	TP	unknown	precision
+8/31/23	1	0xf6728c9c78d3a794770960c37b4708e395fae079	TP	unknown	precision
+8/30/23	1	0xff7b61011aea183aec72f59d20fc5829a680f2b5	Likely TP	unknown	precision
+8/31/23	1	0xb75401874b2245068a0608c5872015b196b32e58	TP	unknown	precision
+8/30/23	1	0x4528e37eaf0f13ff51f35baa601a4053f4067043	TP	unknown	precision
+8/30/23	1	0xcb29fed92460fc68714968c4b37352640f649d62	TP	unknown	precision
+8/30/23	1	0x63eaecbcecda14805422d2e62045879920a86305	Likely FP	unknown	precision
+8/29/23	1	0x258b7ac97fb1377baf9bbeccf8f206d2f72d65ff	Likely FP	unknown	precision
+8/31/23	1	0x8d70c4ac93ea9ff224e834d8f85176448b30ac30	TP	unknown	precision
+8/30/23	1	0x084e7a7faf111946c37c4504a372a54730891632	TP	unknown	precision
+8/29/23	1	0xcc2015d66d95a3f58d8ab0c8d8bcb968212f9ebe	Likely FP	unknown	precision
+8/30/23	1	0xa3f78a8957503d86f518374fa1cf462f943b4045	TP	unknown	precision
+8/31/23	1	0xb7d22f85d18c1dc4f69de56cd069bcddf2ab1ed7	TP	unknown	precision
+8/30/23	1	0xd4b2461f9e56b4fe97429195ef3002ab959738bb	Likely TP	unknown	precision
+8/30/23	1	URL https://blockchains-circle.com likely	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://shibaswap.now-claim.xyz likely	Likely TP	ice-phishing	precision
+8/31/23	1	0x369adae40d4f864034f58ce34ffe8cbe8e8c5303	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://mail.kava-token.com likely inv	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://integratedchains.xyz likely in	Likely TP	ice-phishing	precision
+8/29/23	1	URL https://memeland-coins.claims likely i	Likely TP	ice-phishing	precision
+8/30/23	1	URL https://mysterynft.pro likely involved	Likely TP	ice-phishing	precision
+8/29/23	1	URL https://api28-collab-land.github.io li	Likely TP	ice-phishing	precision
+8/29/23	1	URL https://www.creditor-blockfi.com.atmho	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://theshiboshisbox.com likely inv	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://onchainsummerz.xyz likely invo	Likely TP	ice-phishing	precision
+8/29/23	1	URL https://www.pepecoin-claim.app likely	Likely TP	ice-phishing	precision
+8/29/23	1	URL https://creditor-blockfi.com.atmhostin	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://shibtokenswap.now-claim.xyz li	Likely TP	ice-phishing	precision
+8/31/23	1	0x56d9e4a0663ea4fa310887c1ee02a56824c4533b	Likely FP	ice-phishing	precision
+8/31/23	1	0x7645e7608b4be22bbacc018cc83fbd61e0475771	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://eigenlayer.us likely involved	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://www.claim-boredapenft.com like	Likely TP	ice-phishing	precision
+8/30/23	1	0x9f399f13058232da96628fe74ea482d9328f260c	Likely TP	ice-phishing	precision
+8/30/23	1	0xc4833e1392966df2e00d9e3db8949749aee6fb26	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://appparsec.com likely involved	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://claimbtc20.pages.dev likely in	Likely TP	ice-phishing	precision
+8/31/23	1	0xe15e7a2dda262e7b4f497f7e74e0aae5f8bd87f1	Likely TP	ice-phishing	precision
+8/30/23	1	URL https://www-rarible.com likely involve	Likely TP	ice-phishing	precision
+8/30/23	1	0xf2af909fdef7e5fbc4ba1ba5adfef87aa84e5b01	Likely TP	ice-phishing	precision
+8/31/23	1	0xab03016ffe5aad0105f4c6a72532bc4494b32ede	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://venomfoundation.live likely in	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://wallet-pegz.fun likely involve	Likely TP	ice-phishing	precision
+8/29/23	1	URL https://nakamigos.gifts likely involve	Likely TP	ice-phishing	precision
+8/30/23	1	URL https://launchs-lens.xyz likely involv	Likely TP	ice-phishing	precision
+8/29/23	1	0x582fbf495872873fa39087161b66ddfa11546b83	TP	ice-phishing	precision
+8/29/23	1	0xeb09c097efcec68fa0167a1dd3f5d05e911a81f3	Likely TP	ice-phishing	precision
+8/31/23	1	0xe6c6c77975a77078949f6a2e5d7f756d5fb173d5	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://authenticatewhop.com likely in	Likely TP	ice-phishing	precision
+8/30/23	1	URL https://connect.collab-land.io likely	Likely TP	ice-phishing	precision
+8/30/23	1	URL https://fegtoken.site likely involved	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://shibiee.xyz likely involved in	Likely TP	ice-phishing	precision
+8/30/23	1	URL https://doodles-crocs.app likely invol	Likely TP	ice-phishing	precision
+8/30/23	1	URL https://coinbase-validate.com likely i	Likely TP	ice-phishing	precision
+8/30/23	1	URL https://barclayscc.com likely involved	Likely TP	ice-phishing	precision
+8/30/23	1	URL https://withdraw.wallets-ftx.com likel	Likely TP	ice-phishing	precision
+8/30/23	1	URL https://garages-hv-mtl.com likely invo	Likely TP	ice-phishing	precision
+8/31/23	1	0xb779118ded73e1493a91d81b476d396b92c10c2a	TP	ice-phishing	precision
+8/29/23	1	URL https://aavehealth.info likely involve	Likely TP	ice-phishing	precision
+8/30/23	1	0xf5a9fb7b8bcd6be26a2e5b4ec42832c8a3bbe4d5	TP	ice-phishing	precision
+8/31/23	1	URL https://mail.shibarium.digital likely	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://purposefix.com likely involved	Likely TP	ice-phishing	precision
+8/31/23	1	URL https://pepe20-airdrop.org likely invo	Likely TP	ice-phishing	precision
+8/30/23	1	URL https://join-zksync.org likely involve	Likely TP	ice-phishing	precision
+8/25/23	1	0xb8496d83dbe736937fb76967068ede63f12ced54	TP	soft-rug-pull	precision
+8/22/23	1	0xd88095423f97cc6c9aec61a1c7205387a7c9e1d7	FP	soft-rug-pull	precision
+8/27/23	1	0xde72a2f0b334123746710e6fcfe1985c07daabac	TP	soft-rug-pull	precision
+8/26/23	1	0x1ad00d01d822e1a14753361b392e379e6d744b19	TP	soft-rug-pull	precision
+8/22/23	1	0x2d849143bdb6ba629e3a0fa46f9977a9884fa9f0	TP	soft-rug-pull	precision
+8/27/23	1	0x32755345a47ccede41b29ec680e89640ded41764	TP	soft-rug-pull	precision
+8/22/23	1	0x7b52a5f998f3f942771d57c2ba1c5290331cc0eb	TP	soft-rug-pull	precision
+8/26/23	1	0x42cf8cbb1d9c8289b84a924fbb7811f6c8d4b46b	TP	soft-rug-pull	precision
+8/25/23	1	0x59527642ab1692c6a297d9a87788046e6522015d	TP	soft-rug-pull	precision
+8/23/23	1	0x7cdaba2b069088107169448c65bf11f1cdb8c5b2	Likely TP	soft-rug-pull	precision
+8/25/23	1	0x63ec477ac9cf802eeb5273077d491c9c2df57f39	TP	soft-rug-pull	precision
+8/22/23	1	0x0122ffe7ad150f20231a6452483efbaeccb13a19	TP	soft-rug-pull	precision
+8/26/23	1	0x02feaae5984fb96d9c05206223ae9e33f426f340	Likely FP	soft-rug-pull	precision
+8/25/23	1	0x43ff40d64e9d48cd75ff225fd0d691da0a11196b	TP	soft-rug-pull	precision
+8/22/23	1	0x16974fcf44a531baa2705a56f780178b3f4c94a1	TP	soft-rug-pull	precision
+8/24/23	1	0xb6dfea929ea245169a60c102b19d1870c66f020e	TP	soft-rug-pull	precision
+8/23/23	1	0x64dc94e8cadc7c67a93e45279d0b973161cda2d3	TP	soft-rug-pull	precision
+8/23/23	1	0x709a1b01ee79dacf12570acfb96417c7de2958ba	TP	soft-rug-pull	precision
+8/26/23	1	0xc7989731fb4f82f06679df66dbad2d7fe1f3ac4e	TP	soft-rug-pull	precision
+8/23/23	1	0xcb105f25c590084aca4dabcb58fdeeacb70b5df5	TP	soft-rug-pull	precision
+8/23/23	1	0x8077427b227ab2e1799725c9f4ea86d2c3d1a833	TP	soft-rug-pull	precision
+8/26/23	1	0xea23ef4f2729492ed7545cb4abe7f43f7c73cd16	TP	soft-rug-pull	precision
+8/23/23	1	0xd8c914304911ee67a7dfe32455ef6e94b56404f0	TP	soft-rug-pull	precision
+8/26/23	1	0x59da061362a0b073fe238079c28c1db76b2bbdae	TP	soft-rug-pull	precision
+8/24/23	1	0x6fca614e191e01321665493ce13f6b6b85f12377	TP	soft-rug-pull	precision
+8/27/23	1	0x6ef36659fc56ae944ad3b7a509ca04e309186fc7	TP	soft-rug-pull	precision
+8/25/23	1	0x84542e2dfb1be9502e3ecf62e460bd8ff308d72a	TP	soft-rug-pull	precision
+8/27/23	1	0x8dc90f43c1822f1504240554939d1c485c393309	TP	soft-rug-pull	precision
+8/22/23	1	0xc6f5529f6590bfa53c47997edd72fdcd144fe2bd	Likely TP	soft-rug-pull	precision
+8/26/23	1	0xce0f12645fea6712a39f53532cf0a100af527688	TP	soft-rug-pull	precision
+8/22/23	1	0xcebd40d5711db1acd1d4b20fa704fcde7edb1908	TP	soft-rug-pull	precision
+8/24/23	1	0x99e57d978ddcecd64ea2a7492af83899354e9309	TP	soft-rug-pull	precision
+8/27/23	1	0x72f207cecd351766170c6dee0d149acae3ab96bb	TP	soft-rug-pull	precision
+8/27/23	1	0x0ac499464984579ecfe342930b8d249cb6ebafda	Likely TP	soft-rug-pull	precision
+8/26/23	1	0xfaece4330f6994277003ff1c392d13f1e7b216cc	TP	soft-rug-pull	precision
+8/27/23	1	0x8312b5197b4985669ea8308cbce8c3b27fcb4eec	TP	soft-rug-pull	precision
+8/24/23	1	0xf25509405fc253ef549c21f9dbfb5e14decce92a	Likely TP	soft-rug-pull	precision
+8/22/23	1	0xfede04f3ef932265828a8097d3dbeda5ee0cb3b0	TP	soft-rug-pull	precision
+8/25/23	1	0xaea6ed2bbcf5c3aae62afc254e45664a37ede857	TP	soft-rug-pull	precision
+8/26/23	1	0x58b987cf91c9ce6883fd96cf45accb3ba31da7cb	Likely TP	soft-rug-pull	precision
+8/22/23	1	0x98a758dc76fdb8f2b0d23f62b7ffd457191825d2	TP	address-poisoner	precision
+8/23/23	1	0x91fabcb5b59bb7071242e2d855a11705683a40f2	TP	address-poisoner	precision
+8/24/23	1	0x8c4cf3c0094f3ec26c78c19d870fb6a374f565b4	TP	address-poisoner	precision
+8/25/23	1	0xaff21abb3c000dfe5a7607840bae1869765003c5	TP	address-poisoner	precision
+8/22/23	1	0x99d39143bf595fe3dc65d8686cda73feff9d8597	TP	address-poisoner	precision
+8/26/23	1	0xa248c242477bcce38cea1e0163118abfea85749a	TP	address-poisoner	precision
+8/27/23	1	0x23bbfdf2ab8f9bb2ecfde6f1567186e86d80db76	TP	address-poisoner	precision
+8/22/23	1	0x94137e55e24fb844b55e3901ffae13ce913bbb90	TP	address-poisoner	precision
+8/23/23	1	0x74d03fb806f720cbd7fd69d1dea8838ca5eb6071	TP	address-poisoner	precision
+8/27/23	1	0xb1f6aa68e6f0207c67d803dc874d3e9d4bf6146a	TP	address-poisoner	precision
+8/22/23	1	0x993c770ecbee195bc1d50325f61830f3c5fcb27b	TP	address-poisoner	precision
+8/23/23	1	0x3733a21b8e22fd60b4256c7dd77d9c2950b5742e	TP	address-poisoner	precision
+8/25/23	1	0x5b39855e8406f35343f906a6d7858dd7737f4875	TP	address-poisoner	precision
+8/24/23	1	0x3068d3f71155b7371004f163f6df3e18837f545e	TP	address-poisoner	precision
+8/24/23	1	0x12e6543b22c31ef4b06040d1ccba45befe1b64a8	TP	address-poisoner	precision
+8/24/23	1	0xc581fb4ab3e78d69bd388ce892b2704632f1aa5b	TP	address-poisoner	precision
+8/27/23	1	0x5ad29adccba7381d2d8d09a39a54e911e9a39c1e	TP	address-poisoner	precision
+8/24/23	1	0x7fa25e1eedd2737d2eae523937c71748b2636606	TP	address-poisoner	precision
+8/23/23	1	0x9cc6a804f878d9c1eca4a5d6b9ff59e98d60679a	TP	address-poisoner	precision
+8/24/23	1	0x1f0f8cce95add74e307090f4a8e38c6b8c5f4e4d	TP	address-poisoner	precision
+8/25/23	1	0x2d79e25a4c10fc531e43565785b5053c4c184572	TP	address-poisoner	precision
+8/23/23	1	0xbf1869025dd0d825dd02db492cc64a3ba2760b43	TP	address-poisoner	precision
+8/23/23	1	0x608eee049e515f1ef8521c54416b120fa997c913	TP	address-poisoner	precision
+8/26/23	1	0x02087b10ba5eb187912dd7b73a4d1929fb83e912	TP	address-poisoner	precision
+8/27/23	1	0x27b82e3b6b23db47c73659cbe624596bee0df143	TP	address-poisoner	precision
+8/23/23	1	0x48bb65d94be3061adea6be16ecceebe5c62b03b8	TP	address-poisoner	precision
+8/24/23	1	0x2507d7f743fbe0182ceb2fe9ee0f7c545c412593	TP	address-poisoner	precision
+8/22/23	1	0x14c3f6cd848bd39001c1f8be687baa97c8982cc3	TP	pig-butchering	precision
+8/26/23	1	0xd4d4459e737a75d753d1b4cab0d5743557cf441f	TP	pig-butchering	precision
+8/23/23	1	0x7162def85d75e6e5225d09409ba1735f77d722be	TP	pig-butchering	precision
+8/22/23	1	0x3e7dac9bcdb9d839b0c55944f6d418bf1336545c	TP	pig-butchering	precision
+8/22/23	1	0x24772215af0b4cffce83f0133d441e32f719ec8b	TP	pig-butchering	precision
+8/26/23	1	0x258ba039915e9b66a2decda48d069a48935e5886	TP	pig-butchering	precision
+8/25/23	1	0xb8d816a3a4e86967c061905bd80034dd7e43479d	TP	pig-butchering	precision
+8/23/23	1	0xfb56de0ee8df9318b7b93755b2de44296c36adb0	TP	pig-butchering	precision
+8/22/23	1	0x06e5fb515996633d561062b2c6845ea0e6311ed6	TP	pig-butchering	precision
+8/23/23	1	0xf78a77945ea7485f93e61ca670de3766be27aac8	TP	pig-butchering	precision
+8/26/23	1	0xf298bbcda95719bcb2665c7576295315439f3d7e	TP	pig-butchering	precision
+8/24/23	1	0x0b5a06fb59743b58900725750aba92a49b1e8a28	TP	pig-butchering	precision
+8/23/23	1	0x7cf55608dde5b097b2366f86308cb73ffc720b90	TP	pig-butchering	precision
+8/22/23	1	0x9ca3b90e201ff68c8cc12f165928c14c1f2d65a6	TP	pig-butchering	precision
+8/27/23	1	0xbf05b5de09d5bf82a0785ff7cf76a78dd80478d6	TP	pig-butchering	precision
+8/27/23	1	0x519308b75a6a7a724a52035fd768f8b49d21dac2	TP	pig-butchering	precision
+8/26/23	1	0xa7c5795ec64565bf1d5f84ac2f66b05ca4cbb1ea	TP	pig-butchering	precision
+8/24/23	1	0x01c741005a210bde9d8cdbf9581f9f75e390b79a	TP	pig-butchering	precision
+8/22/23	1	0x857b65f298d2dbc253063a1ec19ef3a1e6b0dc02	TP	pig-butchering	precision
+8/22/23	1	0x9c6fdbb57ad7343ef697e6037d14748ac33dc4d5	TP	pig-butchering	precision
+8/25/23	1	0xa3d9f45a9de8d086f43a02920d0c7d429efbe33e	TP	pig-butchering	precision
+8/26/23	1	0x09640cd390fb38cf014a4bf57eb7fd066fb4b50e	TP	pig-butchering	precision
+8/23/23	1	0x801e2fb30c92818aaba7bde51da048ac26555ec6	TP	pig-butchering	precision
+8/24/23	1	0xda453ca63f802ee1267f1ba3f9c0120b327b3a7c	TP	pig-butchering	precision
+8/23/23	1	0xf02a207228e01ef82a5613ae1b4b1e03fccc25fc	TP	fraudulent-nft-orders	precision
+8/27/23	1	0x000047ed3b5f29bd52f33892c225bac38d3ef000	TP	fraudulent-nft-orders	precision
+8/22/23	1	0x000921e4af72cd72915db188e7f98fab67c21000	TP	fraudulent-nft-orders	precision
+8/23/23	1	0xb9684e01575e8a0e10993b52b4cb168bcbeb6cb8	TP	fraudulent-nft-orders	precision
+8/27/23	1	0x2f03b9f8289b4736988dcc6a4ed6c2c48d48dffb	TP	fraudulent-nft-orders	precision
+8/24/23	1	0x00000a2f6efb2defc786ef09710b60b29c220000	TP	fraudulent-nft-orders	precision
+8/23/23	1	0x0794ebc80b1b8ebd8dd8503c2d3fd752f4e9c080	TP	fraudulent-nft-orders	precision
+8/25/23	1	0x048e3f7ae895dafb027e665a4a874a13188d7872	TP	native-ice-phishing	precision
+8/27/23	1	0xf8c315959fe4682d4a43355a52d4e8c4d93525c7	TP	native-ice-phishing	precision
+8/25/23	1	0xf5aa2c4734d8aa9d3eb7c5ee4d79d5b87e3cf21a	TP	native-ice-phishing	precision
+8/24/23	1	0x0f6b938dfd585fc32100c37a154cdef4510b47ca	TP	native-ice-phishing	precision
+8/23/23	1	0xb12e59d121561fc07ac8beda51258b06077f349c	TP	native-ice-phishing	precision
+8/23/23	1	0x5d8e8c0b6c182d6aec42f44c7e15e588f62910f8	TP	native-ice-phishing	precision
+8/26/23	1	0x97d773d21cdbc296de82e8a93c8dc3b2ef68eff4	TP	native-ice-phishing	precision
+8/24/23	1	0xab2251f822d8a8711c153814e9feeafa07d677fc	TP	native-ice-phishing	precision
+8/22/23	1	0xb6dd7c9c508d3b63ea6f7f0f45baa5fd4993c920	TP	native-ice-phishing	precision
+8/23/23	1	0xb2877edf0a269001b96cd1131aed66d66c76bf15	TP	native-ice-phishing	precision
+8/26/23	1	0x00043cf25f18f56a3443ce479450bf6710d48000	Likely TP	native-ice-phishing-social-engineering	precision
+8/25/23	1	0x2747127b410ec2228711aab6d4ec5b10bb4194a8	TP	native-ice-phishing-social-engineering	precision
+8/27/23	1	0x659c329cf7139fcc28a069300a45ca82a800bd96	TP	native-ice-phishing-social-engineering	precision
+8/25/23	1	0xc6f4114ffa974ecb5e20ede5e43fdc2fc7dcaefc	Likely TP	native-ice-phishing-social-engineering	precision
+8/26/23	1	0x38b4d52fd0daf35d8cbc420d3dd20789929b2081	TP	native-ice-phishing-social-engineering	precision
+8/27/23	1	0x0a01d3e0330873c1c1d9ca3f8d0b1394247c7560	TP	native-ice-phishing-social-engineering	precision
+8/24/23	1	0xaf1782482d9321b369ee4896db4d3c26d802f7d5	TP	native-ice-phishing-social-engineering	precision
+8/24/23	1	0x345d069b9d376829c5a8d3e202ac51e65a138946	TP	native-ice-phishing-social-engineering	precision
+8/23/23	1	0x000b6a15b1a85f59cdc3a21d32e8a239ae27d000	TP	native-ice-phishing-social-engineering	precision
+8/24/23	1	0x64d0e647e8036a627f45e69a5f1949ab10921e1d	TP	native-ice-phishing-social-engineering	precision
+8/23/23	1	0x915a358abdde5afb1e7b0e174583b8a4103fc659	TP	native-ice-phishing-social-engineering	precision
+8/23/23	1	0x3a00790d2476edec4fbc5f1ffa0757ac0f46e192	TP	native-ice-phishing-social-engineering	precision
+8/25/23	1	0x5b8214ad47a25001046c3c62881bb39cf2618e72	TP	native-ice-phishing-social-engineering	precision
+8/27/23	1	0x1f3b92a297864756941aa70c1ca4a1d3094972c0	Likely FP	native-ice-phishing-social-engineering	precision
+8/24/23	1	0x4a6818408a35112d8e4400782542dd7a5ead995d	TP	native-ice-phishing-social-engineering	precision
+8/26/23	1	0xd19c346476f168a0fa97eed0e39180f204da5c15	TP	native-ice-phishing-social-engineering	precision
+8/23/23	1	0x1be76a2f0b0cc486b6abdabd3198aab32284dba9	TP	scammer-deployed-contract	precision
+8/26/23	1	0xc96be32e90d24610295494251ce3f62b14d04811	TP	scammer-deployed-contract	precision
+8/22/23	1	0xff8d8c9f2bbda23421288c8709a5fce30b3020ba	TP	scammer-deployed-contract	precision
+8/24/23	1	0x529c64c24640f652eaa7d5daad486fd38ea6b8eb	TP	scammer-deployed-contract	precision
+8/25/23	1	0x61b6f310bb49c3d53552579306dc43f034222c97	TP	scammer-deployed-contract	precision
+8/24/23	1	0x116a664a84e09dccbf9f3fef4a680105389c6a2a	TP	scammer-deployed-contract	precision
+8/25/23	1	0x184741a6c3e56718ac6097d793e03acceb6cc322	TP	scammer-deployed-contract	precision
+8/24/23	1	0xba5653aa0d58ba67c5b67db375ebe74a4d5a41bc	TP	scammer-deployed-contract	precision
+8/25/23	1	0x415c6e2c98fb6bd0e8dd2a92396cc28a8b8a5ee2	TP	scammer-deployed-contract	precision
+8/23/23	1	0xea754cb5cba1506e959b4f95882cf6ff814e90d2	TP	scammer-deployed-contract	precision
+8/26/23	1	0x8644d6f3acd1338645d2c3eb8185a9dfb1f828b3	TP	scammer-deployed-contract	precision
+8/25/23	1	0x3e668f8f621de339533c952f14dd603692192f30	TP	scammer-deployed-contract	precision
+8/27/23	1	0x6746e16fe87dca9dbe5ddc2d81bbe89c75bf2c58	TP	scammer-deployed-contract	precision
+8/26/23	1	0xce0f12645fea6712a39f53532cf0a100af527688	TP	scammer-deployed-contract	precision
+8/23/23	1	0x8f4b536c60421c1058caad54fc4eaad291b0bf7a	TP	scammer-deployed-contract	precision
+8/27/23	1	0xaf39d69b693fd5a6f1033c679f0a953cb6248982	TP	unknown	precision
+8/23/23	1	0xb45677c66166987e8853e03e0759a26421b23f20	TP	unknown	precision
+8/24/23	1	0x14af65a33b3c26c91efe6e427d7a8baa6f1b762b	Likely TP	unknown	precision
+8/27/23	1	0x0b5a06fb59743b58900725750aba92a49b1e8a28	TP	unknown	precision
+8/23/23	1	0xbbb33022aa38be6fcee834ccef0de1e212fff17c	TP	unknown	precision
+8/25/23	1	0x260ef37bfe5b89ff61a12c7b4440efb3f5a080ba	TP	unknown	precision
+8/24/23	1	0x7a14c4982b0825b437a0e88ce5eda91132f1631c	TP	unknown	precision
+8/26/23	1	0x1fc835772e4d96121450cd50c22b172b902ae46c	Likely FP	unknown	precision
+8/27/23	1	0x829709c3300d15e0bdb362769ad8528c0d769600	Likely FP	unknown	precision
+8/26/23	1	0x5819a3e7d4f541a3a83eb745ee461c5d5fe473b8	TP	unknown	precision
+8/25/23	1	0x0f0d79eea16115869766a60143a1173e0911b50c	TP	unknown	precision
+8/25/23	1	0x43ff40d64e9d48cd75ff225fd0d691da0a11196b	TP	unknown	precision
+8/25/23	1	0xc94a009afc65812f91f47068de4a90df782c5701	TP	unknown	precision
+8/26/23	1	0xcc2015d66d95a3f58d8ab0c8d8bcb968212f9ebe	Likely FP	unknown	precision
+8/25/23	1	0x01c741005a210bde9d8cdbf9581f9f75e390b79a	TP	unknown	precision
+8/27/23	1	0xa36e2d7cc27af0cb6c4182466798ec98c99b3d5d	TP	unknown	precision
+8/26/23	1	0x0432b95b3c2bbe2c905b6e3cc0d2d2b0ff171837	Likely FP	unknown	precision
+8/26/23	1	0x657d378e66b5e28143c88d85b116c053b8455509	TP	unknown	precision
+8/26/23	1	0xcde7a52cc0ae67a43c2cce70f4f723081a958d8e	TP	unknown	precision
+8/23/23	1	URL https://fastdrops.xyz likely involved	TP	ice-phishing	precision
+8/22/23	1	URL https://migration-chitcat.xyz likely i	TP	ice-phishing	precision
+8/23/23	1	URL https://archsway-claim.com likely invo	TP	ice-phishing	precision
+8/23/23	1	URL https://usdc-twitter.com likely involv	TP	ice-phishing	precision
+8/25/23	1	URL https://defi-animalfarm.top likely inv	TP	ice-phishing	precision
+8/23/23	1	URL https://marginiy.com likely involved i	TP	ice-phishing	precision
+8/23/23	1	URL https://nftmonk.info.nftgrumpy.info li	TP	ice-phishing	precision
+8/24/23	1	URL https://aeronaero.com likely involved	TP	ice-phishing	precision
+8/27/23	1	0x0038593ce30c2d5547fedd7a20f9f0dccc2d0000	TP	ice-phishing	precision
+8/23/23	1	URL https://prisma-finance.xyz likely invo	TP	ice-phishing	precision
+8/23/23	1	URL https://base-reswap.online likely invo	TP	ice-phishing	precision
+8/27/23	1	0x814ff7af010d3738cd3611ae43661f79ade138a7	TP	ice-phishing	precision
+8/25/23	1	0xfa22baedf7b6f5a359308c1bcc389e56f61e2859	TP	ice-phishing	precision
+8/23/23	1	URL https://pepe20-9gu.pages.dev likely in	TP	ice-phishing	precision
+8/22/23	1	URL https://lumicoin.pro likely involved i	TP	ice-phishing	precision
+8/26/23	1	0x4d196816585eab4b30118c49664b159889e8ce92	TP	ice-phishing	precision
+8/22/23	1	0x258ba039915e9b66a2decda48d069a48935e5886	TP	ice-phishing	precision
+8/24/23	1	URL https://hipptoken.xyz likely involved	TP	ice-phishing	precision
+8/22/23	1	0x3ee21f46c1fba3f5a2edf71f8a29b6091563bf3d	TP	ice-phishing	precision
+8/24/23	1	0xc5ab8b67cbc996740c4a42e9b32c3d27002774ed	TP	ice-phishing	precision
+8/25/23	1	URL https://friend-techs.com likely involv	TP	ice-phishing	precision
+8/25/23	1	0x0ee6b037ac4f526f9a47936c4cafc52037ad0fb4	TP	ice-phishing	precision
+8/25/23	1	URL https://povchain.com likely involved i	TP	ice-phishing	precision
+8/23/23	1	URL https://claims-optimism.net likely inv	TP	ice-phishing	precision
+8/23/23	1	URL https://rollbbit.info likely involved	TP	ice-phishing	precision
+8/27/23	1	0x115cfd7936e67300f2e983ca07d58d8f2b5de738	TP	ice-phishing	precision
+8/23/23	1	URL https://adrop.id likely involved in a	TP	ice-phishing	precision
+8/22/23	1	0xcb155403abcf3aac480d94e932cc245168e148e9	Likely FP	ice-phishing	precision
+8/26/23	1	0xe2ffad32052da21463598a7f74f565fb432bb9aa	Likely FP	ice-phishing	precision
+8/24/23	1	0x2b2f2a9302cdecdb7d4a2e7005336f7b345c1092	Likely FP	ice-phishing	precision
+8/23/23	1	0x6e86d9b7181c5d60680c53c141e18bfede6f63f1	TP	ice-phishing	precision
+8/24/23	1	0x906de6226cb140ff7de91770468d739d67208e8e	TP	ice-phishing	precision
+8/26/23	1	0x9b7fcfb1b19f0f8f196b6460881956badbb26f50	TP	ice-phishing	precision
+8/27/23	1	0xcdaba5b5b58a9c21023bee85a02054121ef54230	Likely FP	ice-phishing	precision
+8/23/23	1	URL https://connects-bankless.app likely i	TP	ice-phishing	precision
+8/26/23	1	0x000048d9159398861e9eac13bde2bebaa9370000	TP	ice-phishing	precision
+8/22/23	1	URL https://usdcwin.com likely involved in	TP	ice-phishing	precision
+8/24/23	1	0xdb2263464a83330c2724b9f757ff4db135125be7	TP	ice-phishing	precision
+8/25/23	1	0x9470020fd3252c9a8645826b94fece2ed29bfea9	TP	ice-phishing	precision
+8/25/23	1	0x86476adb1d4e7be94b9a212a3f4339b585aea56c	TP	ice-phishing	precision
+8/23/23	1	URL https://www.worldcoin-reward.com likel	TP	ice-phishing	precision
+8/23/23	1	URL https://lidofi.events likely involved	TP	ice-phishing	precision
+8/24/23	1	0x7bccd4a1ca683ad86d4f08ad6978337f3f1be588	TP	ice-phishing	precision
+8/24/23	1	0x021905cba57ced4e280ebfaace860a166627c0a7	Likely FP	ice-phishing	precision
+8/27/23	1	0x1a40cf9b7cc52f8767463e2890c630cb2f3aa475	TP	ice-phishing	precision
+8/23/23	1	0x1a8a19120cb6f63ce6de26c5f8af9e3a42ead723	TP	ice-phishing	precision
+8/25/23	1	0x1feb9c925c435fafec1354d6fee69ba732c79f78	Likely FP	ice-phishing	precision
+8/26/23	1	0x20791c192592d04599e8240d88b2445669b42662	TP	ice-phishing	precision
+8/23/23	1	URL https://get.pepe20vip.org likely invol	TP	ice-phishing	precision
+8/24/23	1	URL https://unibothold.com likely involved	TP	ice-phishing	precision
+8/25/23	1	URL https://gamestopnft.cc likely involved	TP	ice-phishing	precision
+8/23/23	1	URL https://airdrop-zksync.one likely invo	TP	ice-phishing	precision
+8/23/23	1	0x9440d078433d2dbf3bbc50de26c94da4f14e925f	TP	ice-phishing	precision
+8/23/23	1	URL https://paxosvip.com likely involved i	TP	ice-phishing	precision
+8/23/23	1	URL https://dashboard-0x0.com likely invol	TP	ice-phishing	precision
+8/24/23	1	0xfb149193265d9f3b39a95b3acb6417ff1b4a0542	TP	ice-phishing	precision
+8/25/23	1	URL https://air-shibarium.com likely invol	TP	ice-phishing	precision
+8/23/23	1	URL https://airdrops-venoms.one likely inv	TP	ice-phishing	precision
+8/23/23	1	URL https://mail.portal-binance.com likely	TP	ice-phishing	precision
+8/22/23	1	0x2750403e5a5b829bbb66a78a7f623e42a646ddef	Likely FP	ice-phishing	precision
+8/23/23	1	URL https://claim-go-hex.com likely involv	TP	ice-phishing	precision
+8/23/23	1	0xc7839557a4c80e2656ab49054006a9d91502dbd3	TP	ice-phishing	precision
+8/25/23	1	URL https://reflextokenserc.com likely inv	TP	ice-phishing	precision
+8/23/23	1	URL https://hilotoken.com likely involved	TP	ice-phishing	precision
+8/25/23	1	URL https://hodlhindsight.com likely invol	TP	ice-phishing	precision
+8/25/23	1	URL https://multiversefix.site likely invo	TP	ice-phishing	precision
+8/25/23	1	URL https://claim-pondcoin.com likely invo	TP	ice-phishing	precision
+8/24/23	1	URL https://adrops.gg likely involved in a	TP	ice-phishing	precision
+8/22/23	1	URL https://kas.claims likely involved in	TP	ice-phishing	precision
+8/23/23	1	0xc6e8108da56156dfc51a7cd43bcc749ed4d61244	Likely TP	ice-phishing	precision
+8/23/23	1	URL https://portal-binance.com likely invo	TP	ice-phishing	precision
+8/23/23	1	URL https://eth-randomwin.pages.dev likely	TP	ice-phishing	precision
+8/23/23	1	URL https://shibasagaerc.com likely involv	TP	ice-phishing	precision
+8/27/23	1	0x70521dc62e3b7f6b7f52277b93882dd661a84e7d	TP	ice-phishing	precision
+8/24/23	1	URL https://connect-bitgertbrise.com likel	TP	ice-phishing	precision
+8/23/23	1	URL https://rarible-drop.com likely involv	TP	ice-phishing	precision
+8/25/23	1	0x756754abfe564e84a83aff2baa71f3117e640671	TP	ice-phishing	precision
+8/25/23	1	0x647f225450d49e03cd0c1cd4491d0cd1e9f04cdc	TP	ice-phishing	precision
+8/19/23	1	0xe5b35515d2808d466cdd9c8ee4a57cd2cbf6a9f9	Likely FP	soft-rug-pull	precision
+8/18/23	1	0xe7f96f5b03c2037c241b30ff2cf15d835b9ef132	TP	soft-rug-pull	precision
+8/17/23	1	0x8124a4c134599562a13be18563319340a519f885	TP	soft-rug-pull	precision
+8/20/23	1	0x8c7a0955d45aa643fbd7616c22866323d4e86cd2	TP	soft-rug-pull	precision
+8/17/23	1	0x163aa00ff8eb466936db63b4c6f454befb8939a8	TP	soft-rug-pull	precision
+8/20/23	1	0xa15e51f564c2f2a5c413e9361776024c7f04dc9f	TP	soft-rug-pull	precision
+8/15/23	1	0x14c1f7e426fe8ae8cb0e2283889d6915711d126d	TP	soft-rug-pull	precision
+8/18/23	1	0x2ec6bf65bf9cf83bdd9295425b5b145daa3cb763	TP	soft-rug-pull	precision
+8/20/23	1	0x67ab568c53175d9c03fce4664a7e6af718186441	TP	soft-rug-pull	precision
+8/17/23	1	0x4d56b514f9847dca40fae098b4db783a41f62c3d	TP	soft-rug-pull	precision
+8/17/23	1	0x9fb3e0d214e0c39204818ab41183d5720c3c358c	TP	soft-rug-pull	precision
+8/18/23	1	0x6d3203d84615fd9362f7e9bd85d25aec125252c0	TP	soft-rug-pull	precision
+8/19/23	1	0xc5b9c494914c4546aee1339c8a80b0e68405925b	TP	soft-rug-pull	precision
+8/17/23	1	0x333bebfd1c429cff15630200f9f53a63ce6a4a3f	TP	soft-rug-pull	precision
+8/19/23	1	0x3be379b376383d54b04ba6fb7f2d0d348f9368ea	TP	soft-rug-pull	precision
+8/20/23	1	0xf705034780ac78bdae967ca2db114aef16d47272	TP	soft-rug-pull	precision
+8/16/23	1	0x6abbd0b0370311744d399d09a2f51857d5e5e223	TP	soft-rug-pull	precision
+8/18/23	1	0xe84b991e9fc4cf9ab1095b2020a3fbbecc239430	TP	soft-rug-pull	precision
+8/19/23	1	0x8824740d152a97f689d894204052ff4c496dd280	TP	soft-rug-pull	precision
+8/19/23	1	0xa055d1bb733b81045239bd72f38de3b6336a60ef	TP	soft-rug-pull	precision
+8/18/23	1	0xe4cacb6b19e0e972ff4ad469c74d7ddf132c9d09	TP	soft-rug-pull	precision
+8/20/23	1	0x75baeaa0c04c6e028fec4e7a113102a87745f302	TP	soft-rug-pull	precision
+8/15/23	1	0x069f1a405056385f36d9267bb47f89ddd6ffb2f0	TP	soft-rug-pull	precision
+8/20/23	1	0x0a4d105c26aae88ec49d40032de1df9355a80480	TP	soft-rug-pull	precision
+8/20/23	1	0x53c4fd55e492f0f40ed06d2e73179b965a67d028	TP	soft-rug-pull	precision
+8/16/23	1	0xf36f3a21fcfab1166346452012473f8d10653860	TP	soft-rug-pull	precision
+8/18/23	1	0xa018cc2a4ba8325642428dbd2c1fbcf6dc47da08	TP	soft-rug-pull	precision
+8/15/23	1	0x37103971b748217672a9e52ae0811aacd82e1d0b	TP	soft-rug-pull	precision
+8/18/23	1	0x405776a97d8e6590c09f5ac312b210ef5f67fa5f	TP	soft-rug-pull	precision
+8/16/23	1	0xf1ac0272c9c703004af5b6190565edeb896b98b7	TP	soft-rug-pull	precision
+8/17/23	1	0xf4b65dd732bcefed54cc46f98df8633e37c50a09	TP	soft-rug-pull	precision
+8/16/23	1	0xd6ce89a6c62de0b300ac8e50a1ba511b6dfa37fa	TP	soft-rug-pull	precision
+8/20/23	1	0xd0de7e157e34d19b2c99ad7ceef73389422f0d1d	TP	soft-rug-pull	precision
+8/19/23	1	0x888dc7e8745de40ee80414b1796a1d481774dc31	TP	soft-rug-pull	precision
+8/16/23	1	0xf5d886a7e0c416107ef82e14d77fb8306e10ae70	TP	soft-rug-pull	precision
+8/20/23	1	0x2ff25203135681e1960a3e78b3a45f7d698bbfde	TP	soft-rug-pull	precision
+8/19/23	1	0x8efc74dce19708958151fc3983103b71d74e8254	TP	soft-rug-pull	precision
+8/17/23	1	0x01542d2937f666dbd985ee0ece0ae143f26ac3cc	TP	soft-rug-pull	precision
+8/20/23	1	0x858bc0a1e7d42b3d1efd0780fc4ecf59fa827024	TP	soft-rug-pull	precision
+8/20/23	1	0xee631154a13437baea4f3e89e8f7a77f81a6f49d	TP	soft-rug-pull	precision
+8/16/23	1	0x74d03fb806f720cbd7fd69d1dea8838ca5eb6071	TP	address-poisoner	precision
+8/15/23	1	0x0e84502d959fea0ed679618ae00ca5558c53c5ee	TP	address-poisoner	precision
+8/15/23	1	0x21a82497844d412e5fe668ce354ddcd3d80fc760	TP	address-poisoner	precision
+8/15/23	1	0x81064186ad56acc275925b2a09c967c7a2d868cd	TP	address-poisoner	precision
+8/17/23	1	0x9ab3be6941cb730ad93f45fb2cf6696e36dcd471	TP	address-poisoner	precision
+8/15/23	1	0x1f0f8cce95add74e307090f4a8e38c6b8c5f4e4d	TP	address-poisoner	precision
+8/19/23	1	0x7fa25e1eedd2737d2eae523937c71748b2636606	TP	address-poisoner	precision
+8/16/23	1	0xaff21abb3c000dfe5a7607840bae1869765003c5	TP	address-poisoner	precision
+8/20/23	1	0x47cbe9f7e44f7d563883a7e0eb99b14dd6478982	TP	address-poisoner	precision
+8/19/23	1	0x5fbf3ed577c20249624f0e3acdd542e8f9ceecdb	TP	address-poisoner	precision
+8/20/23	1	0x21f3b2b05df667f86028d7a238fce31eccd8d96e	TP	address-poisoner	precision
+8/18/23	1	0xc370fc08bfdb6dba72f2ee97504f3f61aef8b632	TP	address-poisoner	precision
+8/15/23	1	0xb466e60e204b52439c235b9a5667d853fe6c9df3	TP	address-poisoner	precision
+8/19/23	1	0x0c69ed3232135d6378da153e591b118506af7b44	TP	address-poisoner	precision
+8/17/23	1	0xcbafa376aed26dc501de11364487db2d23775703	TP	address-poisoner	precision
+8/16/23	1	0x8c4cf3c0094f3ec26c78c19d870fb6a374f565b4	TP	address-poisoner	precision
+8/17/23	1	0xa856a18e2d3927cb2c5799d2458042fd86bbf19d	TP	address-poisoner	precision
+8/18/23	1	0x99a3c15df0490365c71d942e8e6aefac81724b4e	TP	address-poisoner	precision
+8/18/23	1	0x2745a0d162d4ffa988bded3ae775feccac3a797a	TP	address-poisoner	precision
+8/15/23	1	0x8ec89af9c9868898d029a46b920648e559f84796	TP	address-poisoner	precision
+8/19/23	1	0xa40d1064b3a1ab559bca815222e3883393f9697f	TP	address-poisoner	precision
+8/17/23	1	0xc7eb563a592d9186ad28997a44e9f642f282f7d9	TP	address-poisoner	precision
+8/15/23	1	0xe5f3cf54d9019f50f7eb008f308115abfff040e4	TP	address-poisoner	precision
+8/17/23	1	0xff9b6451793d03ef55d8d0e76c78d1739421ba4d	TP	address-poisoner	precision
+8/16/23	1	0xe466b36058406cc1c8e3671919cb773901cfce7a	TP	address-poisoner	precision
+8/20/23	1	0x97d135b08626be64dcd41ad391aea36fbab633ca	TP	address-poisoner	precision
+8/20/23	1	0x967d37c47814582b7605034a5b65ccdee97c5bb7	TP	address-poisoner	precision
+8/15/23	1	0x23299e9a2472d6f5144cd4a2d4f010dc7b95cc47	TP	address-poisoner	precision
+8/15/23	1	0x925f7eb64f0dad0fa0b2a06d5c4c442f31b7ad8a	TP	address-poisoner	precision
+8/19/23	1	0x1070d9fd0da920402b1546dcdcf61cb4e3f4b384	TP	address-poisoner	precision
+8/17/23	1	0xc581fb4ab3e78d69bd388ce892b2704632f1aa5b	TP	address-poisoner	precision
+8/20/23	1	0x986f5187545db0217bd531facc32e56839b77ccb	TP	address-poisoner	precision
+8/15/23	1	0x4ae5dd24b0f2f5569423838d42a71a5b8223869b	TP	address-poisoner	precision
+8/17/23	1	0x3be4ffad7bfb10ed83527ff0738127f2f9710ed0	TP	address-poisoner	precision
+8/20/23	1	0x3733a21b8e22fd60b4256c7dd77d9c2950b5742e	TP	address-poisoner	precision
+8/17/23	1	0xa76166f2ed09c58310dc30cc43b6947f29b15a73	TP	address-poisoner	precision
+8/15/23	1	0xf895c935032dc28982e6f3a008a347f2e92df692	TP	address-poisoner	precision
+8/20/23	1	0x8518800fe8f259b10e721ea42d16f69f04738104	TP	address-poisoner	precision
+8/16/23	1	0x48bb65d94be3061adea6be16ecceebe5c62b03b8	TP	address-poisoner	precision
+8/16/23	1	0xbf1869025dd0d825dd02db492cc64a3ba2760b43	TP	address-poisoner	precision
+8/15/23	1	0x8b4cec55b201643763ac8e23dd0f09c05b92fa8b	TP	address-poisoner	precision
+8/20/23	1	0x91fabcb5b59bb7071242e2d855a11705683a40f2	TP	address-poisoner	precision
+8/16/23	1	0x608eee049e515f1ef8521c54416b120fa997c913	TP	address-poisoner	precision
+8/19/23	1	0xfd7204f16ac105ccc4693a4bc96e37165e9b0598	TP	address-poisoner	precision
+8/20/23	1	0x93ed7e2ed9a611c3cda3dc02a3c1377e02df1d0a	TP	address-poisoner	precision
+8/19/23	1	0xac14e6ceca870b48d19727a59c63646f5ddfd4ac	TP	address-poisoner	precision
+8/20/23	1	0xef152e84b4aa590888ffe422ee4ead931c5e74af	Likely FP	scammer-association	precision
+8/20/23	1	0x2371e079d56b619662e4c96c28c3a8fa8a8bc3fe	TP	scammer-association	precision
+8/19/23	1	0xc36e6eb0a41a82cf358282f3cbd06807a0dc721e	Likely TP	scammer-association	precision
+8/19/23	1	0x05e60788414889538803d9e2c84d8453cc2f59c6	TP	scammer-association	precision
+8/19/23	1	0xd5e15f965090a2fde011c3935d04724a4b6b342d	Likely FP	scammer-association	precision
+8/20/23	1	0xa2d326890cc43bbb048ff60bb3cb09c119e7192b	TP	scammer-association	precision
+8/17/23	1	0xb8ee279248711e2e4f06dc25b04df2c089e0542d	TP	scammer-association	precision
+8/20/23	1	0x2e5bb4ccb8764c81e7fca3e975ae48ed7de3d95a	TP	scammer-association	precision
+8/20/23	1	0x47cd661a5926765277e5f39c49a4a59f0f2f2293	Likely FP	scammer-association	precision
+8/16/23	1	0xa1397bb0dac36c65c76e955382b6279cc3dc8ad1	TP	scammer-association	precision
+8/19/23	1	0x4175639f452e2996b905438fca0726020bc0bea7	Likely FP	scammer-association	precision
+8/19/23	1	0xe67069d42b3802fd45429c42131de35cc9b2bf23	Likely FP	scammer-association	precision
+8/20/23	1	0x732356bea934307c7b1ab184d90392211964c865	TP	scammer-association	precision
+8/20/23	1	0xb2596456d533a08d65f52d1069a6a3ea6674901f	Likely FP	scammer-association	precision
+8/20/23	1	0x8675e116bccf8b7364fbe3c98e7fafd02bdd9693	TP	scammer-association	precision
+8/19/23	1	0x0b81ac43a9ae817afdac684f2819918e9a162178	Likely FP	scammer-association	precision
+8/19/23	1	0xde8894f4376bae10d801608199e4fac6b0b6993c	Likely TP	scammer-association	precision
+8/19/23	1	0xb89a9a8ccdaefc553b326ddc2587841ed79f24de	Likely FP	scammer-association	precision
+8/20/23	1	0xc67b5771db2c6bea0d43cbfc3f4178ae17a87a95	TP	scammer-association	precision
+8/19/23	1	0x6ea6c48e30d41e4c08e9fb00bb98914d72a21c48	TP	scammer-association	precision
+8/20/23	1	0xd52c46651c3265cbbec5c4f99134f692a55b4aef	TP	pig-butchering	precision
+8/16/23	1	0x9c0d7a8b7a12c3efed3c6d874648d143d8a53bef	TP	pig-butchering	precision
+8/15/23	1	0x587aa5a5f40d37cdfa512dbc5b2b1c0f93525ebd	TP	pig-butchering	precision
+8/15/23	1	0x801e2fb30c92818aaba7bde51da048ac26555ec6	TP	pig-butchering	precision
+8/16/23	1	0x82be5a79db51e783040a177129b1b256cca52b63	TP	pig-butchering	precision
+8/19/23	1	0xd051ce1767b6c9b2b4a99e60db47323787686d81	TP	pig-butchering	precision
+8/20/23	1	0xfb56de0ee8df9318b7b93755b2de44296c36adb0	TP	pig-butchering	precision
+8/17/23	1	0xe170a796b161c25510ef5edbeed2b9b7a431cf43	TP	pig-butchering	precision
+8/20/23	1	0xb8d816a3a4e86967c061905bd80034dd7e43479d	TP	pig-butchering	precision
+8/19/23	1	0x01c741005a210bde9d8cdbf9581f9f75e390b79a	TP	pig-butchering	precision
+8/20/23	1	0xda453ca63f802ee1267f1ba3f9c0120b327b3a7c	TP	pig-butchering	precision
+8/19/23	1	0x06e5fb515996633d561062b2c6845ea0e6311ed6	TP	pig-butchering	precision
+8/17/23	1	0xa3d9f45a9de8d086f43a02920d0c7d429efbe33e	TP	pig-butchering	precision
+8/20/23	1	0x14c3f6cd848bd39001c1f8be687baa97c8982cc3	TP	pig-butchering	precision
+8/16/23	1	0x519308b75a6a7a724a52035fd768f8b49d21dac2	TP	pig-butchering	precision
+8/16/23	1	0x14bb7607bbce05a1a7f939243b56b6f5e14c3670	TP	pig-butchering	precision
+8/15/23	1	0x3750b4b6bc88b1c5f4d06d06549f08679e7fcb92	Likely TP	fraudulent-nft-orders	precision
+8/15/23	1	0x202764c5590b72985fdeddc9a4c8d5403bf07b17	Likely TP	fraudulent-nft-orders	precision
+8/18/23	1	0x0a3f582635b88c8c2fcfdd0a81dc10dff143b76f	Likely TP	fraudulent-nft-orders	precision
+8/15/23	1	0x38cedcbd23f55b7fbb207a3191518b2c84cc2ce1	Likely TP	fraudulent-nft-orders	precision
+8/16/23	1	0x00005d0c9ac39db0798f6ca947202e5f55a10000	TP	fraudulent-nft-orders	precision
+8/17/23	1	0x0000aa86477af0460cd990eff4767e55968c4000	TP	fraudulent-nft-orders	precision
+8/20/23	1	0x09176c9ee188cb4519c5215d4c022aa89859681c	TP	fraudulent-nft-orders	precision
+8/20/23	1	0x6e92c0c0dbfcb30b92676d4426aed2a587672751	TP	fraudulent-nft-orders	precision
+8/15/23	1	0x34c4f0432ab3c3a74f3f5c3ad9a298309e7c5a53	Likely FP	fraudulent-nft-orders	precision
+8/15/23	1	0xabaa21f3d22773e54b3e47fe3485820986420d32	TP	fraudulent-nft-orders	precision
+8/19/23	1	0x98d0a5b7a3fcb169c6df1c4878d7d1b15ec9bcde	TP	fraudulent-nft-orders	precision
+8/16/23	1	0x36557dd9ec844e32f0ab0c41eb1226f484a81e64	TP	fraudulent-nft-orders	precision
+8/15/23	1	0x9b88b94c037bebca19f98aed9c78075572ff59a4	Likely TP	native-ice-phishing	precision
+8/16/23	1	0xe48b70a3e7be8b5b68748b0cfef65d9bd0039c1c	Likely TP	native-ice-phishing	precision
+8/16/23	1	0xd09ea82806d5a432bfc021809d1ea26dd2a8e7ff	Likely TP	native-ice-phishing	precision
+8/16/23	1	0x31bd284e8ecfbaf5999c044dccc361837e01151d	Likely TP	native-ice-phishing	precision
+8/18/23	1	0x68ef4451ea9d86285530cce2c98383550c3716d0	Likely FP	native-ice-phishing	precision
+8/16/23	1	0xf7d77713d64fbda4db3328ea0db51e8383fd3940	Likely FP	native-ice-phishing	precision
+8/20/23	1	0xdf25ae4aebd853c2b2221532526b079d9098acd5	Likely TP	native-ice-phishing	precision
+8/19/23	1	0xb9106eb0e9e01fb0e8bcf497db94dfa2ce02ee50	Likely FP	native-ice-phishing	precision
+8/18/23	1	0x8cb79a5a83a8f687f2a6358f13bb4b6a55cde417	Likely TP	native-ice-phishing	precision
+8/19/23	1	0x85b4566010cccc7ab54dde0701f35f2ccaaa5185	Likely TP	native-ice-phishing	precision
+8/17/23	1	0x345d069b9d376829c5a8d3e202ac51e65a138946	TP	native-ice-phishing-social-engineering	precision
+8/17/23	1	0xf87e2e7c574843a65eb39b7b3f2e18f56e75450a	Likely FP	native-ice-phishing-social-engineering	precision
+8/17/23	1	0xeeee798c777fabac70d5aa70406fc808ce200000	Likely TP	native-ice-phishing-social-engineering	precision
+8/17/23	1	0x2b26a4c566a88977b609719e6795d1cf0be4989a	TP	native-ice-phishing-social-engineering	precision
+8/15/23	1	0x573404d01216da08f52edc4a28af95c78e419022	TP	native-ice-phishing-social-engineering	precision
+8/15/23	1	0x11ed2c7d36c37559b77f6bef2149340eda553a0f	TP	native-ice-phishing-social-engineering	precision
+8/18/23	1	0xee2107f8a4fa9f1634f3bd951e1b072a50369b78	TP	native-ice-phishing-social-engineering	precision
+8/15/23	1	0x382ad038c60ee4c109813ebc96c124f6ad4339fc	TP	native-ice-phishing-social-engineering	precision
+8/15/23	1	0x7341687cc3642a576dad8990b5edea8e14da9438	TP	native-ice-phishing-social-engineering	precision
+8/17/23	1	0xc6f4114ffa974ecb5e20ede5e43fdc2fc7dcaefc	TP	native-ice-phishing-social-engineering	precision
+8/20/23	1	0x5aea5775959fbc2557cc8789bc1bf90a239d9a91	TP	native-ice-phishing-social-engineering	precision
+8/19/23	1	0x5b8214ad47a25001046c3c62881bb39cf2618e72	TP	native-ice-phishing-social-engineering	precision
+8/16/23	1	0x04621845aae7280faafce657a2bc84d67925c748	TP	native-ice-phishing-social-engineering	precision
+8/17/23	1	0x9581e8f7ca55e2311c81f6e9feb947da6c8ebd16	TP	native-ice-phishing-social-engineering	precision
+8/16/23	1	0xf7890ac87237ae185e74d8321b3548e102299ce7	TP	native-ice-phishing-social-engineering	precision
+8/17/23	1	0x3a00790d2476edec4fbc5f1ffa0757ac0f46e192	TP	native-ice-phishing-social-engineering	precision
+8/17/23	1	0xd3e5471cef63613ccb179fb928b42299ef8f7d27	Likely FP	native-ice-phishing-social-engineering	precision
+8/17/23	1	0x00022cbef52bb7ae7f7bfe0cd1432897f939d000	TP	native-ice-phishing-social-engineering	precision
+8/16/23	1	0x6421743b54dbf6e4cdbee2148a5abfd175158110	TP	native-ice-phishing-social-engineering	precision
+8/16/23	1	0xb8244fd0c5be5072ff8c243e15cafdb4a97ef9fa	TP	native-ice-phishing-social-engineering	precision
+8/16/23	1	0xd6b8c482c1f06265223b8bd0ad6efbf1214a9287	TP	native-ice-phishing-social-engineering	precision
+8/16/23	1	0x771443d8014fe0860f59ad6af22978ff81e54b97	TP	native-ice-phishing-social-engineering	precision
+8/17/23	1	0x5088cefdfed469a35338d45e089244bdc2b877fb	TP	native-ice-phishing-social-engineering	precision
+8/15/23	1	0x1cbed1851f2b423f7aaac8b9656a43a4a6b610ab	TP	native-ice-phishing-social-engineering	precision
+8/19/23	1	0x305bec66bdb3a11df99dd3582fe38d0cbf8a4977	TP	native-ice-phishing-social-engineering	precision
+8/15/23	1	0x00009435f1870ad4144a77adaa22c61392464e00	TP	native-ice-phishing-social-engineering	precision
+8/19/23	1	0x0974720a1b5db182daa80ff3a9f8043236f48e95	TP	wash-trading	precision
+8/18/23	1	0x9dcca7eb2ae12aa4304a3eb994eaec636203a128	TP	wash-trading	precision
+8/18/23	1	0x7bf4bb6ddcf9700115a30295bf24cb8ad04095f3	TP	wash-trading	precision
+8/19/23	1	0x5306dc350809858a2b397c246994a362b2abf9e3	TP	wash-trading	precision
+8/18/23	1	0x5c16a1799791acb83919e578707bf736bdfafefc	TP	wash-trading	precision
+8/19/23	1	0x12eea04a8c4c6065e239a746d705c038b757c43e	TP	wash-trading	precision
+8/19/23	1	0x0e1becc07f30440ce02b1715359755acf0004c22	TP	wash-trading	precision
+8/17/23	1	0xd29158ac5596524934ec1c1a5066c42e4dcd60b3	TP	impersonating-token	precision
+8/16/23	1	0xd039612b7c1bb091b6bb15b10963e5ff64b02a3e	TP	impersonating-token	precision
+8/15/23	1	0xd930bb87855beecd5829f44d31ba4bd229522055	TP	impersonating-token	precision
+8/15/23	1	0x9c7d09dd0967147032d2450f74d0a837f9b819dc	TP	impersonating-token	precision
+8/20/23	1	0xca88bbf6ea6a9dc22a78a10bb474fcad71d071bd	TP	scammer-deployed-contract	precision
+8/20/23	1	0x559a9bec9e0a95b54662fdd6edc36325b2169a5e	TP	scammer-deployed-contract	precision
+8/19/23	1	0xe2c4db5e907e9bc949ae68e8b019b7ebafdd0a2e	TP	scammer-deployed-contract	precision
+8/20/23	1	0x7eb49cbb0f70ade1f2ed0468f7ba52ebec146c31	TP	scammer-deployed-contract	precision
+8/18/23	1	0x8a49b6d4a1034f574cf06eef1046fe559d7e62c6	TP	scammer-deployed-contract	precision
+8/20/23	1	0x47f6644c1c456b2612636ad886735a12d0b38618	likely TP	scammer-deployed-contract	precision
+8/19/23	1	0xae12a9e7f2070788ba90ed9a36e3ba489dc99b66	TP	scammer-deployed-contract	precision
+8/19/23	1	0xad909466bf9f014f60f409b82f1c699a68663832	TP	scammer-deployed-contract	precision
+8/20/23	1	0x93ed7e2ed9a611c3cda3dc02a3c1377e02df1d0a	TP	scammer-deployed-contract	precision
+8/20/23	1	0x9379963e83835f91bf58800bccb9922c594129a0	TP	scammer-deployed-contract	precision
+8/19/23	1	0xcf655c573f83d1b88a1d9ea87485fbeeceec5976	TP	scammer-deployed-contract	precision
+8/19/23	1	0x254bbb11726afd9118a2e5390faa23c18e341783	Likely TP	scammer-deployed-contract	precision
+8/20/23	1	0x373e517144820f26a0d5784de0f56e2a5086ea0e	TP	scammer-deployed-contract	precision
+8/19/23	1	0x28cbc1b122cd09e12949f9368bb4a7fd2caf6a3c	TP	scammer-deployed-contract	precision
+8/20/23	1	0xef1de30b5787743a0765f3269b483a43b4525793	TP	scammer-deployed-contract	precision
+8/20/23	1	0x86c9e879fde1069821842a01e65f8aa304b5189e	TP	scammer-deployed-contract	precision
+8/20/23	1	0x924eeb2a4425aebe64c299240e423093392ca177	TP	scammer-deployed-contract	precision
+8/19/23	1	0x0aef65d5c989aa98f5f290ca8b4c3ab4e7e23197	TP	scammer-deployed-contract	precision
+8/19/23	1	0x90530cd5fe84c1d594bc4b3082636cc60ef96e37	TP	scammer-deployed-contract	precision
+8/19/23	1	0x8cf6c64d28687387db5131e794b4b134b88c586e	TP	scammer-deployed-contract	precision
+8/20/23	1	0xdf87812bd3c51fd3316dae7ffe04e5a41e088257	TP	unknown	precision
+8/19/23	1	0x82b49600e3c009bd39522aa115c180e37d26deec	TP	unknown	precision
+8/17/23	1	0x0b5a06fb59743b58900725750aba92a49b1e8a28	TP	unknown	precision
+8/19/23	1	0x980e5dd186eb72c92565f93817cb858ae522633f	TP	unknown	precision
+8/17/23	1	0xcde7a52cc0ae67a43c2cce70f4f723081a958d8e	TP	unknown	precision
+8/16/23	1	0x52c05bd12a467bcccef029f6ba80687cf212aef3	TP	unknown	precision
+8/19/23	1	0x2d6a1d2af911f169568bd2a614de888adc331a49	TP	unknown	precision
+8/18/23	1	0xdec7e26c783ce0b0d693c765314945e824031bb8	TP	unknown	precision
+8/16/23	1	0x0109605bde6c2dd1ba1bfa88f4f391de37a44663	Likely FP	unknown	precision
+8/19/23	1	0x28cbc1b122cd09e12949f9368bb4a7fd2caf6a3c	TP	unknown	precision
+8/17/23	1	0x422dd086f0d06c6a94a8813010dca92707f20a45	Likely FP	unknown	precision
+8/19/23	1	0x5c8db169b7894742c98e19c04d645a05a739dc47	Likely FP	unknown	precision
+8/19/23	1	0xf2f36e9974144d2b74a7b31c842e008f3285625e	TP	unknown	precision
+8/17/23	1	0x547304fc610a7ef671ca6f5810615f5e4c2d533b	TP	unknown	precision
+8/18/23	1	0xf162bd324137bc7cd2342c141e0f8e94a4976b8f	TP	unknown	precision
+8/15/23	1	0x96c0876f573e27636612cf306c9db072d2b13de8	TP	unknown	precision
+8/15/23	1	0xf67a0e2aed3e1860e86f04ff835d9c5512079266	TP	unknown	precision
+8/16/23	1	0x0000010e3cb01bcdc1c70fb1e0e7a06a6d580000	TP	unknown	precision
+8/18/23	1	0x96496562a4bd799e5ff61a74338b91492f65f422	TP	unknown	precision
+8/16/23	1	0x9821acfbbae40318462245ab09edc0d17c161914	TP	unknown	precision
+8/19/23	1	0x7bccd4a1ca683ad86d4f08ad6978337f3f1be588	TP	unknown	precision
+8/15/23	1	0xde595a719afa5f892ed4a74ac737c9aa4bcccc1e	TP	unknown	precision
+8/15/23	1	0x89f76778fc420990be761dc754571f6e5a82c3d4	TP	unknown	precision
+8/19/23	1	0x00c4fb3a84312b63306075eff5b7e1c3a44c5596	TP	unknown	precision
+8/16/23	1	0x0169a0ab7443bb52f3d16cbd371a10eed335b3a5	TP	unknown	precision
+8/18/23	1	0xeabc8973e7c30c58c5ccacb1ab953a2fe6548653	TP	unknown	precision
+8/20/23	1	0x1b49ec2ff08f87a8108db86e32e26dd465db2db3	TP	unknown	precision
+8/17/23	1	0x4064caae48f71cf04872c63a5175c4f5b73a8ea7	TP	unknown	precision
+8/16/23	1	0xb201c932cc04e3c9587130380f9ce2525d44a7a8	TP	unknown	precision
+8/17/23	1	0x5c50412d2a9a3c13d40cb6e015cf444f46890ca4	TP	unknown	precision
+8/18/23	1	0x41a64c21b4aaac2e16d8f33f5d0bbb5c1adf79a3	TP	unknown	precision
+8/17/23	1	0x4ebf60cbc7974cab851919b715cd0fb3152ea5e1	TP	unknown	precision
+8/19/23	1	0xfbd3b545829135e492278a941b186ed3c558bbf7	TP	ice-phishing	precision
+8/16/23	1	URL https://base-member.xyz likely involve	TP	ice-phishing	precision
+8/18/23	1	URL https://scapesmania.co likely involved	TP	ice-phishing	precision
+8/18/23	1	0xe03b61cbb9888664505f759a22bada35f7b3fdd4	Likely FP	ice-phishing	precision
+8/20/23	1	0x6b5f80aa5c40d89e13554dbd791d5db7d08444dc	TP	ice-phishing	precision
+8/16/23	1	URL https://www.claim-friend.tech likely i	TP	ice-phishing	precision
+8/20/23	1	0x647f225450d49e03cd0c1cd4491d0cd1e9f04cdc	TP	ice-phishing	precision
+8/16/23	1	URL https://trade.dydx.wallets-connect.com	TP	ice-phishing	precision
+8/18/23	1	0x894054782f62d4faa782f9f8a776ec806eff9cf7	TP	ice-phishing	precision
+8/20/23	1	0x5e5dc6569d759a648231a6d9a1340e2b6e99ef15	TP	ice-phishing	precision
+8/16/23	1	URL https://seipass.io likely involved in	TP	ice-phishing	precision
+8/18/23	1	URL https://bridge-shibarium.com likely in	TP	ice-phishing	precision
+8/16/23	1	URL https://airdrop-tehbag.com likely invo	TP	ice-phishing	precision
+8/16/23	1	URL https://pepeerc20.com likely involved	TP	ice-phishing	precision
+8/16/23	1	URL https://syncwswap.com likely involved	TP	ice-phishing	precision
+8/18/23	1	URL https://xtokenerc20.com likely involve	TP	ice-phishing	precision
+8/15/23	1	0x000fd3e5100323d5b36c57b730e53c6b05eb0000	TP	ice-phishing	precision
+8/18/23	1	0x13a7b6695c300fb2e0ce11aa3db37f315e49dba7	Likely FP	ice-phishing	precision
+8/17/23	1	0x00035ff888618692dd7d2f33b59299a9e6cb7000	TP	ice-phishing	precision
+8/16/23	1	URL https://opepen.games likely involved i	TP	ice-phishing	precision
+8/16/23	1	0x865e002cd76e43e02343abceb7da80d3a44ec12d	TP	ice-phishing	precision
+8/17/23	1	URL https://amlfast.com likely involved in	TP	ice-phishing	precision
+8/16/23	1	0x3c4d4e7a3a0697a1f677d718546590dd45b00d98	TP	ice-phishing	precision
+8/17/23	1	URL https://worldcoin.re likely involved i	TP	ice-phishing	precision
+8/16/23	1	URL https://gitcoins.gift likely involved	TP	ice-phishing	precision
+8/19/23	1	0x24772215af0b4cffce83f0133d441e32f719ec8b	TP	ice-phishing	precision
+8/17/23	1	URL https://claim-manta.network likely inv	TP	ice-phishing	precision
+8/20/23	1	URL https://claimhive.wtf likely involved	TP	ice-phishing	precision
+8/18/23	1	URL https://qntportal.com likely involved	TP	ice-phishing	precision
+8/16/23	1	URL https://rolibit.com likely involved in	TP	ice-phishing	precision
+8/20/23	1	0x2f03b9f8289b4736988dcc6a4ed6c2c48d48dffb	TP	ice-phishing	precision
+8/20/23	1	0x0986b5d524dedec2d1a67dae088ad90d50315c84	TP	ice-phishing	precision
+8/19/23	1	0x062496eaba420cc7993c79961f34e38bc97d2fca	TP	ice-phishing	precision
+8/20/23	1	URL https://frogburn.xyz likely involved i	TP	ice-phishing	precision
+8/19/23	1	0xb9684e01575e8a0e10993b52b4cb168bcbeb6cb8	TP	ice-phishing	precision
+8/16/23	1	0x32f6e315809d38ad73ba9d863c4cdc2cd3116778	TP	ice-phishing	precision
+8/20/23	1	URL https://shibarium-bridge.xyz likely in	TP	ice-phishing	precision
+8/20/23	1	0x67e5ae3e1ad16d4c020db518f2a9943d4f73d6ef	TP	ice-phishing	precision
+8/17/23	1	0x73d335866d6437863f71a3f41f39460221e77560	TP	ice-phishing	precision
+8/19/23	1	0xa1133179cee64d715c4950a1a088a6302703593d	TP	ice-phishing	precision
+8/16/23	1	URL https://mail.mint-degods.com likely in	TP	ice-phishing	precision
+8/20/23	1	URL https://connect-web3.pages.dev likely	TP	ice-phishing	precision
+8/17/23	1	URL https://worldcoin-drop.com likely invo	TP	ice-phishing	precision
+8/19/23	1	0x00001c46f02ddf529a6621604e8fc47730580000	TP	ice-phishing	precision
+8/19/23	1	0x00000a2f6efb2defc786ef09710b60b29c220000	TP	ice-phishing	precision
+8/18/23	1	0x0000c780a030c8c1cc74e8ffd927f08d1c200000	TP	ice-phishing	precision
+8/16/23	1	URL https://www.rewards-cyber.com.claim-ai	TP	ice-phishing	precision
+8/17/23	1	URL https://leetswapfinance.xyz likely inv	TP	ice-phishing	precision
+8/18/23	1	URL https://shibarium.shop likely involved	TP	ice-phishing	precision
+8/16/23	1	URL https://tomi.eth2pool.net likely invol	TP	ice-phishing	precision
+8/17/23	1	URL https://daopepe.disabledpepe.com likel	TP	ice-phishing	precision
+8/16/23	1	URL https://blurpackageclaim.com likely in	TP	ice-phishing	precision
+8/18/23	1	URL https://sanoswap.com likely involved i	TP	ice-phishing	precision
+8/16/23	1	URL https://zksync-airdrop.pages.dev likel	TP	ice-phishing	precision
+8/16/23	1	URL https://py-usd-paypal.com likely invol	TP	ice-phishing	precision
+8/16/23	1	URL https://pepecoin-claims.org likely inv	TP	ice-phishing	precision
+8/16/23	1	0xe6a5cad00ea7b810f9b5ad3b9b7e15d9470620cb	Likely FP	ice-phishing	precision
+8/17/23	1	URL https://arbitrum.swapbridge.info likel	TP	ice-phishing	precision
+8/20/23	1	URL https://airdrop-finder.com likely invo	TP	ice-phishing	precision
+8/17/23	1	URL https://arkhamintelligence.com.aztecme	TP	ice-phishing	precision
+8/16/23	1	URL https://paalai-migration.com likely in	TP	ice-phishing	precision
+8/20/23	1	URL https://altwebinterface.live likely in	TP	ice-phishing	precision
+8/19/23	1	0x8d70c4ac93ea9ff224e834d8f85176448b30ac30	TP	ice-phishing	precision
+8/16/23	1	URL https://xcoinget.com likely involved i	TP	ice-phishing	precision
+8/16/23	1	URL https://exoworlds.site likely involved	TP	ice-phishing	precision
+8/20/23	1	0xca820a77b37dbfa376d7466490aa7679c508bec1	TP	ice-phishing	precision
+8/19/23	1	0xae24be3cf2cbb189d83ce05511ed988c60aa2357	TP	ice-phishing	precision
+8/16/23	1	URL https://www.divaclaim.live likely invo	TP	ice-phishing	precision
+8/20/23	1	0x631945492c2a5189ee8fdb6d4cd802c7fd8ae332	TP	ice-phishing	precision
+8/19/23	1	0x9fa7bb759641fcd37fe4ae41f725e0f653f2c726	TP	ice-phishing	precision
+8/16/23	1	URL https://bigeyes-rewards.com likely inv	TP	ice-phishing	precision
+8/16/23	1	URL https://basechain.cc likely involved i	TP	ice-phishing	precision
+8/17/23	1	URL https://rocketpool-dao.com likely invo	TP	ice-phishing	precision
+8/20/23	1	URL https://digitoads-reward.com likely in	TP	ice-phishing	precision
+8/19/23	1	0xc33d8f9b4859b7ce8267c5f6eb1526b16ecf0863	TP	ice-phishing	precision
+8/19/23	1	0xad19980d430b5b35f775d90ab339cec2e1cef593	TP	ice-phishing	precision
+8/16/23	1	URL https://graphprotocol.org likely invol	TP	ice-phishing	precision
+8/16/23	1	0x0d11520bd08f29f510839ce257391363a7a7718e	TP	ice-phishing	precision
+8/16/23	1	0xed3f9766c191657ef376abb5418e81550a73eb1f	TP	ice-phishing	precision
+8/17/23	1	URL https://www.claim-shibrewards.com like	TP	ice-phishing	precision
+8/20/23	1	URL https://trending.onchainsurnmers.xyz l	TP	ice-phishing	precision
+8/20/23	1	0x48464da5b52258ca5dc88ee247d1419836a634c9	Likely FP	ice-phishing	precision
+8/20/23	1	0xac83b833e6845004938d5545d3b44d3c5c29a63b	TP	ice-phishing	precision
+8/15/23	1	0x0000aa86477af0460cd990eff4767e55968c4000	TP	ice-phishing	precision
+8/20/23	1	0xdf270b01e5a34cef783e21e7e8af6b09a7a6eeca	TP	ice-phishing	precision
+7/31/23	1	0xf8b2207238bd56965db96f7520ac4365b7924bb7	FN	ice-phishing	recall
+7/31/23	1	0xdd7c4fb26a25774d1d6c94888053dc58e536919d	FN	ice-phishing	recall
+7/31/23	1	0x39720be11da41f0b0bf37a3cc918b5d89a949ce9	FN	ice-phishing	recall
+7/31/23	1	0x0be01f2508298771b13424d6fbd87a257c87663f	FN	ice-phishing	recall
+7/31/23	1	0x4FA82c476c73417a7c7752664ed9897a440EA352	TP	ice-phishing	recall
+7/31/23	1	0x0000553F880fFA3728b290e04E819053A3590000	TP	ice-phishing	recall
+7/31/23	1	0x000019ef40f8eaab40a233906a5d428418920000	TP	ice-phishing	recall
+7/31/23	1	0x6007D8d700004635340a40B990A4057a16531C2a	TP	hard-rug-pull	recall
+7/31/23	1	0x77E3e957082Ca648c1C5b0F3e6AEc00Ab1245186	TP	ice-phishing	recall
+7/31/23	1	0x0000553f880ffa3728b290e04e819053a3590000	TP	ice-phishing	recall
+7/31/23	1	0x00005d0c9ac39db0798f6ca947202e5f55a10000	TP	ice-phishing	recall
+7/31/23	1	0xc12ba780e5338cc010566150acf9554e0dd271ae	TP	ice-phishing	recall
+7/31/23	1	0x5c327005823406875fef11df769613cbcaa54f10	TP	ice-phishing	recall
+7/31/23	1	0x00006deacd9ad19db3d81f8410ea2b45ea570000	TP	ice-phishing	recall
+7/31/23	1	0x8b519b3f9bb099e0fe4ebfd27400daa439716473	TP	ice-phishing	recall
+7/31/23	1	0x4218e774634C1ED1761d3b169d89C2ba8B2D6C41	TP	ice-phishing	recall
+7/31/23	1	0x19b799fca779ed2cbf76c50282bc448ff2071eaf	TP	ice-phishing	recall
+7/31/23	1	0xf9408a711c21dcec148823c1e30364795622d942	TP	ice-phishing	recall
+7/31/23	1	0x4641236691A6F583b1B979c61D9d5496FEB33604	TP	ice-phishing	recall
+7/31/23	1	0x2fdc0d8ca6a7530e9963a5f22e33f1c6cc5273b6	TP	ice-phishing	recall
+7/31/23	1	0xce846169145904fc4e646f9ac89e37435b51a57f	TP	ice-phishing	recall
+7/31/23	1	0x8a2695241623923b885f3313ff85c2e5e077bb41	TP	ice-phishing	recall
+7/31/23	1	0x172c91eab73865c5f589effeffd06cbe75c2773f	TP	ice-phishing	recall
+7/31/23	1	0x000a6062c17fc59ff7ff5179e4873f09e6df0000	TP	ice-phishing	recall
+8/31/23	137	0x000068da4526a3b4699fd2e0fdf2491fa7900000	Likely TP	native-ice-phishing-social-engineering	precision
+8/31/23	137	0x09aacbf23e147a02918cb70a560a95924b1a32fe	Likely TP	native-ice-phishing-social-engineering	precision
+8/31/23	137	0x0ce9515dfc347153cb49cb7fd60eb6f697689150	Likely TP	ice-phishing	precision
+8/31/23	137	0x4edd65ee32bd7fcd15b4b41e682c7c05a6ca6284	Likely TP	ice-phishing	precision
+8/27/23	137	0x974ee4ab32df0b93c22b341c9a80688da27016cf	TP	address-poisoner	precision
+8/24/23	137	0xaa2f282cd68c6bb6e71dbffb962d295a0ae31a3e	Likely FP	native-ice-phishing-social-engineering	precision
+8/25/23	137	0x729fea170945e72b87969f809792b9e035341919	TP	native-ice-phishing-social-engineering	precision
+8/25/23	137	0xf3c948662cca02529f3708fedaacd527b7a273db	TP	native-ice-phishing-social-engineering	precision
+8/23/23	137	0x8f3cafc07a4f7d5cee0a7da76607f12840a28270	TP	native-ice-phishing-social-engineering	precision
+8/24/23	137	0x9581e8f7ca55e2311c81f6e9feb947da6c8ebd16	TP	native-ice-phishing-social-engineering	precision
+8/25/23	137	0x66c286a3d00a94761117428381ad318148040bae	Likely FP	native-ice-phishing-social-engineering	precision
+8/23/23	137	0xb043b321b5abc6ddbf71f944d145b85b2d3fbb70	TP	native-ice-phishing-social-engineering	precision
+8/25/23	137	0x00009480a4fd2fb069798d79a189af62b9870000	TP	native-ice-phishing-social-engineering	precision
+8/26/23	137	0x22d8b71599e14f20a49a397b88c1c878c86f5579	TP	native-ice-phishing-social-engineering	precision
+8/24/23	137	0x9a7aba76b3d71c0fb3a88e08332e117a43380f23	Likely FP	wash-trading	precision
+8/23/23	137	0x6cfaf79b78401293c69573192414323e4abe5b46	TP	wash-trading	precision
+8/23/23	137	0x64a7a280257756cee65ab01728af98fd959f3b40	TP	wash-trading	precision
+8/24/23	137	0x52e19d6212857809fce47d5b8342ed7747787d41	TP	wash-trading	precision
+8/23/23	137	0xcb0872579bd251f009448f1442ddcdc6c998d213	TP	wash-trading	precision
+8/26/23	137	0xad5c19df46ccf40c51b1da446b3317373e52201c	TP	wash-trading	precision
+8/24/23	137	0x30a9bd51d7d238c355c2f8ad2bd2c67fb4f6dda8	TP	wash-trading	precision
+8/24/23	137	0x8f6969b21d2a648cc04f271f8acf7fb2dbe80a74	TP	wash-trading	precision
+8/23/23	137	0xdb56220b0370be1818014055c71751ed2597190d	TP	wash-trading	precision
+8/24/23	137	0xf37ebddd8da76a4021d59b60da1fb229ac025a0c	TP	wash-trading	precision
+8/24/23	137	0xab4306694c418596dfe6d38f30fd7fb34e94461e	TP	wash-trading	precision
+8/24/23	137	0x225e0f3b581c712662699dfa9c140a269a01f13e	TP	wash-trading	precision
+8/24/23	137	0x3ee7e4d1680a610f5600ad3c71e8d20fa4f419a6	TP	wash-trading	precision
+8/23/23	137	0x9a84607b3e3b27679400554eb0fae93228b3d84d	TP	wash-trading	precision
+8/23/23	137	0x920a668b6c6b6780a2560d351fcc25fa6735e1a7	TP	wash-trading	precision
+8/26/23	137	0xd1f1a9ea83cbebe5cf36ee6031654db9899c8917	TP	wash-trading	precision
+8/24/23	137	0xf53e6fda8182f3108378d3c04ae61f0837a08765	TP	wash-trading	precision
+8/23/23	137	0x21713478439ad81bf5d14669a409b6929e7296c2	TP	wash-trading	precision
+8/24/23	137	0x51d3aeba1e68a9bd0cc6e0ff57af9d217d85a27d	TP	wash-trading	precision
+8/24/23	137	0x82e21dbfc0da0e7854c8599a9d4fb0dd0abc2eb5	TP	wash-trading	precision
+8/24/23	137	0x37ec7bd8c6b2303d378d882df461f3b2b6bf4b1f	TP	wash-trading	precision
+8/25/23	137	0x45f7f649c1eb6090f9dc0ebdaeb87b214866ab7f	TP	ice-phishing	precision
+8/24/23	137	0x660689e1f56710fa2f8262f72b25c3de12b85e67	TP	ice-phishing	precision
+8/24/23	137	0xc970382fc7b80e61167f80beab25b67d2ff4b67e	Likely FP	ice-phishing	precision
+8/19/23	137	0x50e7bcd8706bfa09ab5cb3311ff0bc8d3bbfcff6	TP	address-poisoner	precision
+8/20/23	137	0x00005ca8824899d3f6c10522d9cc1b04e05a0000	TP	native-ice-phishing-social-engineering	precision
+8/19/23	137	0x9dd9b2cfacdb273b1d552c6f59b059b099247734	TP	native-ice-phishing-social-engineering	precision
+8/18/23	137	0x96c690450574f3966cc09145960af0caf769b3e5	TP	native-ice-phishing-social-engineering	precision
+8/19/23	137	0x427f888f7e136442a2118bfd1f2dbc4dc6760554	TP	native-ice-phishing-social-engineering	precision
+8/19/23	137	0xe4faa27b5698f9008500f4f761fe47146dfe9a43	TP	native-ice-phishing-social-engineering	precision
+8/20/23	137	0x3bc22eac063d3f1542afcd0a75ddb4c7b7bd0852	TP	native-ice-phishing-social-engineering	precision
+8/16/23	137	0xfb3b9457aaa6eedcabc54dfa04bfd64fa534d14d	TP	native-ice-phishing-social-engineering	precision
+8/18/23	137	0xf9141e253fdc5f1058a4eba2af7b9a9c653c1618	Likely FP	native-ice-phishing-social-engineering	precision
+8/18/23	137	0xc413538578345f60db652cd386622bc80bdb929b	TP	native-ice-phishing-social-engineering	precision
+8/19/23	137	0xa45c1e921a42cacd78fb18116c52cd743a98d909	TP	native-ice-phishing-social-engineering	precision
+8/16/23	137	0x920992e6277be3dbcd67c06139a7bd4def358844	TP	wash-trading	precision
+8/15/23	137	0xeb4a06b2af7adb72fdf2ed471ed8580ae838e828	TP	wash-trading	precision
+8/15/23	137	0x5ba281eca592c47847ec3668d8cddbb18ecbef55	TP	wash-trading	precision
+8/17/23	137	0x5fe877bbe9ff81a3fbbdd6333a2caf4a14a7b931	TP	wash-trading	precision
+8/20/23	137	0x8dd6c201b0e7e4103d8c1e698291266a936f0d98	TP	wash-trading	precision
+8/17/23	137	0x12e949283bf6621b115ac64d1423bd0f59db99dc	TP	wash-trading	precision
+8/17/23	137	0xbb4d8e4799fd7c1d2a9ee7210edf67e19ae25a80	TP	wash-trading	precision
+8/16/23	137	0x25d4ec5eb59d4e99300c2262d8c2e4453a9f8f95	TP	wash-trading	precision
+8/17/23	137	0x9d2f146c2b7ff8a5d748211445f9bfb4ecd16086	TP	wash-trading	precision
+8/20/23	137	0x8b2c34871e2498fa7b83d24821d074baa4067619	TP	wash-trading	precision
+8/17/23	137	0xfb9aa7bb23df4712f70e6789df84bd7cf25ed6b0	TP	wash-trading	precision
+8/16/23	137	0xf8a7bef55cb3eb456cdb07cd67a4990efc44173b	TP	wash-trading	precision
+8/15/23	137	0xd53170921115135619de72caff2f4fd083b6bba6	TP	wash-trading	precision
+8/17/23	137	0xe0317125e4aa50ab747dd29e2433d1283d83b580	TP	wash-trading	precision
+8/18/23	137	0x2ffaf1bc98d8319ac503fc10a2ee3e158183b6bb	TP	wash-trading	precision
+8/18/23	137	0xfefd58d22b2a7eed06e147b23317863449d87eb0	TP	wash-trading	precision
+8/17/23	137	0xc372aba3b8401260cee39f3f8b89e2fec6930410	TP	wash-trading	precision
+8/16/23	137	0x8aca0269cd87830a1be2a3954399c45cb2d2b7c0	TP	wash-trading	precision
+8/17/23	137	0x6a3118c4aaffca665a5326b8569e0bbeb0a1fb0c	TP	wash-trading	precision
+8/17/23	137	0x17df378da667196c658032d202203b0e7d28e12a	TP	wash-trading	precision
+8/17/23	137	0x4052eed278e5e4ef2525da0ad0925b48bb254588	TP	wash-trading	precision
+8/15/23	137	0x918ccda7c1c97c72c9034cd0bd49866e739f7524	TP	wash-trading	precision
+8/15/23	137	0x10e4b29bfc323b34738327284b14e1cfadcd40c8	TP	wash-trading	precision
+8/15/23	137	0x276e6ad4e94949bb41f1f590839a94539b991f03	TP	wash-trading	precision
+8/15/23	137	0x60127a44c38cef41e8fd5755b2c5671f69ed1958	TP	wash-trading	precision
+8/15/23	137	0xb035f1300fb13492d24ae4b072f074fbba89d163	TP	wash-trading	precision
+8/17/23	137	0xf0dd43521b1af4a4b28e8e85b612fcbe89bd305f	TP	wash-trading	precision
+8/18/23	137	0xb69420cb7152a8aeabbcd7a9616f663df0d148b3	Likely FP	ice-phishing	precision
