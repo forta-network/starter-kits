@@ -89,7 +89,9 @@ class Utils:
                     if current_threat_category is not None:
                         precision =  current_threat_category.get('precision')
                         if precision is not None:
-                            return precision
+                            precision_value =  current_threat_category.get('value')
+                            if precision_value is not None:
+                                return precision_value
                 else:
                     return CONFIDENCE_MAPPINGS[threat_category]
         except BaseException as e:

@@ -99,6 +99,12 @@ class BaseBotParser:
                     description = alert_event.alert.description.lower()
                     loc = int(row["attacker_address_location_in_description"])
                     scammer_contract_addresses.add(description[loc:42+loc])
+                elif row['location'] == 'label':
+                    metadata_obj = alert_event.alert.metadata.copy()
+                    label_name = row['metadata_field']
+                    for label in alert_event.alert.labels:
+                        if label.label == label_name and label.entity_type == EntityType.Address:
+                            scammer_contract_addresses.add(label.entity)
                 elif row['location'] == 'metadata':
                     if row['metadata_field'] in alert_event.alert.metadata.keys():
                         metadata_obj = alert_event.alert.metadata.copy()
