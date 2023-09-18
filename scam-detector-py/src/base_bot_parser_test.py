@@ -172,3 +172,15 @@ class TestBaseBotParser:
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
         assert "0xdfb44e29fdf01adb886fbf9bc1521f79253b3176" in addresses, "this should be the attacker address"
         assert "0xe3e1147acd39687a25ca7716227c604500f5c31a".lower() in addresses["0xdfb44e29fdf01adb886fbf9bc1521f79253b3176"]["scammer-contracts"]
+        
+    def test_get_soc_eng_contract_creation_scammer_address(self):
+        metadata = {}
+        label1 = {"entity": "0x2ed12fb3146cd2eac390ea73acc83f80d6020b03","entityType": "ADDRESS","label": "attacker","metadata": {},"confidence": 1}
+        label2 = {"entity": "0x00000fb3146cd2eac390ea73acc83f80d6020000","entityType": "ADDRESS","label": "attacker_contract","metadata": {},"confidence": 1}
+        labels = [label1,label2]
+        alert_event = TestBaseBotParser.generate_alert("0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8", "SOCIAL-ENG-CONTRACT-CREATION", "description", metadata, labels)
+        addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
+        assert "0x2ed12fb3146cd2eac390ea73acc83f80d6020b03" in addresses, "this should be the scammer address"
+
+        contract_addresses = BaseBotParser.get_scammer_contract_addresses(w3,alert_event)
+        assert "0x00000fb3146cd2eac390ea73acc83f80d6020000" in contract_addresses, "this should be the contract address"

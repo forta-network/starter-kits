@@ -444,6 +444,7 @@ class TestScamDetector:
                 found_contract = True   
         assert found_contract, "should have found scammer contract"
 
+
     def test_detect_blocksec_phishing_unencrypted(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
@@ -468,6 +469,35 @@ class TestScamDetector:
         found_contract = False
         for label in finding.labels:
             if label.entity == '0x3eaabef289fdd9072c3ecae94d406c21de881247':
+                assert label.label == 'scammer'
+                found_contract = True   
+        assert found_contract, "should have found scammer contract"
+
+    def test_detect_social_eng_contract_creation(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8"
+        alert_id = "SOCIAL-ENG-CONTRACT-CREATION"
+        description = "0x7c6aef35d0b7730315124ce08ffbddbaaa7f2ff8 created contract 0x0000e30c782ee0a845038e2324592f8f9a2b0000 impersonating 0x0000daf60a1becf1bd617c584dea964455890000."
+        metadata = {"anomaly_score":"0.0006531678641410843","impersonated_contract":"0x0000daf60a1becf1bd617c584dea964455890000"}
+        label1 = {"entity": "0x7c6aef35d0b7730315124ce08ffbddbaaa7f2ff8","entityType": "ADDRESS","label": "attacker","metadata": {},"confidence": 1}
+        label2 = {"entity": "0x0000daf60a1becf1bd617c584dea964455890000","entityType": "ADDRESS","label": "attacker_contract","metadata": {},"confidence": 1}
+        labels = [ label1, label2 ]
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-UNKNOWN", "should be ice phishing finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
+        assert finding.labels[0].entity == '0x7c6aef35d0b7730315124ce08ffbddbaaa7f2ff8'
+        assert finding.labels[0].label == 'scammer'
+        found_contract = False
+        for label in finding.labels:
+            if label.entity == '0x0000e30c782ee0a845038e2324592f8f9a2b0000':
                 assert label.label == 'scammer'
                 found_contract = True   
         assert found_contract, "should have found scammer contract"
