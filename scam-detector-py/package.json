@@ -1,10 +1,10 @@
 {
-  "name": "scam-detector-feed",
-  "displayName": "Scam Detector Feed",
-  "version": "2.20.1",
+  "name": "scam-detector-feed-beta",
+  "displayName": "Scam Detector Feed (beta)",
+  "version": "2.20.2",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/scam-detector-py",
   "description": "Provides real-time intelligence on scammers engaged in over 10 unique scam types.",
-  "longDescription": "The Scam Detector is a premium feed that provides real-time intelligence on a wide range of scam attack vectors taking place on-chain. It is a culmination of a series of modular bots deployed on the Forta Network, each looking at different types of scams, such as rug pulls, ice phishing, and malicious smart contracts and associated scammer behavior. The Scam Detector is built by the Forta Foundation in partnership with the Forta community, Blocksec, and Nethermind. The Detector is battle tested, currently powering ZenGo and other's active transaction screening features. Interested in contributing to the improvement of the Scam Detector and the safety of Web3? Join the Threat Research Initiative (TRi) at https://forta.org/join-tri.",
+  "longDescription": "The Scam Detector data feed provides real-time intelligence about EOAs, contracts and URLs involved in a variety of Web3 scams. It is jointly maintained by the Forta Foundation, Nethermind, Blocksec and members of the Forta developer community. It features market leading scam type coverage on ice phishing, address poisoning, rake tokens, token impersonation, fraudulent NFT orders, pig butchering, gas minting, sleep minting, hard rug pulls, soft rug pulls, and wash trading. Used by Web3 wallets, exchanges, crypto compliance companies and other Web3 security teams and tools. Teams can use Scam Detector labels to warn end-users during the pre-signing transaction approval process, to identify and prevent money laundering through regulated platforms, and to supplement existing blacklists among other use cases. Learn more in the documentation below, and request a free trial today.",
   "licenseUrl": "https://github.com/forta-network/starter-kits/tree/main/scam-detector-py/LICENSE",
   "chainIds": [
     1,
