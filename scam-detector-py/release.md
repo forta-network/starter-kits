@@ -1,6 +1,6 @@
 # Scam Detector Bot Release Notes
 
-## v2.20.0 (September 15th - beta)
+## v2.20.0 (September 15th - beta, September 18th - prod (without metamask, private key compromise, phishing ML bot))
 - fix of confidence value calculations
 - incorporated social engineering contract base bot
 
