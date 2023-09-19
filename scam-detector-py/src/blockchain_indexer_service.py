@@ -18,8 +18,26 @@ from src.constants import CONTRACTS_TX_COUNT_FILTER_THRESHOLD
 
 class BlockChainIndexer:
 
-    FIRST_BLOCK_NUMBER = 1500000
     SECRETS_JSON = None
+
+    @staticmethod
+    def get_first_block_number(chain_id):
+        if chain_id == 1:
+            return 16000000
+        elif chain_id == 137:
+            return  37000000
+        elif chain_id == 56:
+            return  23000000
+        elif chain_id == 42161:
+            return 50000000
+        elif chain_id == 10:
+            return 35000000
+        elif chain_id == 250:
+            return 50000000
+        elif chain_id == 43114:
+            return 23000000
+
+        raise Exception("Chain ID not supported")
 
     @staticmethod
     def get_etherscan_url(chain_id):
@@ -99,17 +117,18 @@ class BlockChainIndexer:
         if not disable_etherscan:
             logging.info(f"get_contracts from etherscan for {address} on {chain_id}.")
             df_etherscan = pd.DataFrame(columns=['nonce', 'to', 'isError'])
-            transaction_for_address = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={address}&startblock={BlockChainIndexer.FIRST_BLOCK_NUMBER}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
+            transaction_for_address = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={address}&startblock={BlockChainIndexer.get_first_block_number(chain_id)}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
             
             success = False
             count = 0
             while not success:
                 data = requests.get(transaction_for_address)
                 if data.status_code == 200:
-                    json_data = json.loads(data.content)
                     success = True
-                    df_etherscan_temp = pd.DataFrame(data=json_data["result"])
-                    df_etherscan = pd.concat([df_etherscan, df_etherscan_temp], axis=0)
+                    json_data = json.loads(data.content)
+                    if "result" in json_data and len(json_data["result"])>0 and isinstance(json_data["result"], list):
+                        df_etherscan_temp = pd.DataFrame(data=json_data["result"])
+                        df_etherscan = pd.concat([df_etherscan, df_etherscan_temp], axis=0)
                 else:
                     logging.warning(f"Error getting contract on etherscan for {address}, {chain_id} {data.status_code} {data.content}")
                     count += 1
@@ -180,7 +199,7 @@ class BlockChainIndexer:
         logging.info(f"has_deployed_high_tx_count_contract for address {address} on {chain_id} called.")
 
         for contract in contracts:
-            transactions_for_contract = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={contract}&startblock={BlockChainIndexer.FIRST_BLOCK_NUMBER}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
+            transactions_for_contract = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={contract}&startblock={BlockChainIndexer.get_first_block_number(chain_id)}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
 
             success = False
             count = 0

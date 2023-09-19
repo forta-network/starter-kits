@@ -175,6 +175,13 @@
                     "lower_bound": 0.65,
                     "upper_bound": 0.90,
                     "confidence": 0.9
+                },
+                "weighted-recall": {
+                    "value": 0.99,
+                    "N": 30999,
+                    "lower_bound": 0.99,
+                    "upper_bound": 0.99,
+                    "confidence": 0.9
                 }
             }
         }
