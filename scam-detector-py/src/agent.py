@@ -655,9 +655,8 @@ def emit_eoa_association_finding(w3, alert_event: forta_agent.alert_event.AlertE
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} in FP.")
     return findings
 
-def emit_manual_finding(w3, test = False) -> list:
-    global ALERTED_ENTITIES_MANUAL
-    global ALERTED_ENTITIES_MANUAL_QUEUE_SIZE
+
+def emit_metamask_finding(w3, test = False) -> list:
     global ALERTED_ENTITIES_MANUAL_METAMASK
     global ALERTED_ENTITIES_MANUAL_METAMASK_QUEUE_SIZE
     global CHAIN_ID
@@ -667,7 +666,49 @@ def emit_manual_finding(w3, test = False) -> list:
     if CHAIN_ID == -1:
         logging.error("Chain ID not set")
         raise Exception("Chain ID not set")
+    
+    global ENABLE_METAMASK_CONSUMPTION
+    if ENABLE_METAMASK_CONSUMPTION and CHAIN_ID == 1: #given the metamask list doesnt have chain info, we will only emit from nodes that are associated with mainnet
+        try: 
+            alert_id = "SCAM-DETECTOR-MANUAL-METAMASK-PHISHING"
 
+            if INITIAL_METAMASK_LIST_CONSUMPTION:
+                for alert_ids_for_entity in ALERTED_ENTITIES_MANUAL_METAMASK.values():
+                    if any(logic_plus_alert_id.endswith(alert_id) for logic_plus_alert_id in alert_ids_for_entity):
+                        INITIAL_METAMASK_LIST_CONSUMPTION = False
+                        break
+
+            metamask_phishing_urls = Utils.get_metamask_phishing_list()
+            for url in metamask_phishing_urls:
+                url = url[:-1] if url.endswith(",") else url # remove trailing comma from URLs that have it
+                
+                if not already_alerted(url, alert_id, "manual_metamask"):
+                    logging.info(f"Manual finding: Emitting metamask finding for {url}")
+                    update_list(ALERTED_ENTITIES_MANUAL_METAMASK, ALERTED_ENTITIES_MANUAL_METAMASK_QUEUE_SIZE, url, alert_id, "manual_metamask")
+                    finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, "Url", url, "Metamask phishing", "Metamask (https://github.com/MetaMask/eth-phishing-detect/)", "", "", INITIAL_METAMASK_LIST_CONSUMPTION)
+                    if finding is not None:
+                        findings.append(finding)
+                    logging.info(f"Findings count {len(findings)}")
+                else:
+                    logging.info(f"Metamask finding: Already alerted on {url}")
+
+        except Exception as e:
+            logging.warning(f"Manual finding: Failed to process metamask finding: {e} : {traceback.format_exc()}")
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_metamask_finding", traceback.format_exc()))
+
+    return findings
+
+
+def emit_manual_finding(w3, test = False) -> list:
+    global ALERTED_ENTITIES_MANUAL
+    global ALERTED_ENTITIES_MANUAL_QUEUE_SIZE
+    global CHAIN_ID
+    findings = []
+
+    if CHAIN_ID == -1:
+        logging.error("Chain ID not set")
+        raise Exception("Chain ID not set")
+    
     try:
         df_manual_findings = Utils.get_manual_list()
         for index, row in df_manual_findings.iterrows():
@@ -684,9 +725,6 @@ def emit_manual_finding(w3, test = False) -> list:
                 Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding", traceback.format_exc()))
                 continue
 
-            if chain_id != CHAIN_ID:
-                logging.info("Manual finding: Manual entry doesnt match chain ID.")
-                continue
             if chain_id != CHAIN_ID:
                 logging.info("Manual finding: Manual entry doesnt match chain ID.")
                 continue
@@ -721,6 +759,7 @@ def emit_manual_finding(w3, test = False) -> list:
 
                     else:
                         logging.info(f"Manual finding: Already alerted on {scammer_address_lower}")
+
                 if entity_type == "Url":
                     url_lower = row['Entity'].lower().strip()
                     threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']
@@ -748,34 +787,7 @@ def emit_manual_finding(w3, test = False) -> list:
         logging.warning(f"Manual finding: Failed to process manual finding: {e} : {traceback.format_exc()}")
         Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding", traceback.format_exc()))
 
-    global ENABLE_METAMASK_CONSUMPTION
-    if ENABLE_METAMASK_CONSUMPTION:
-        try: 
-            alert_id = "SCAM-DETECTOR-MANUAL-METAMASK-PHISHING"
-
-
-            if INITIAL_METAMASK_LIST_CONSUMPTION:
-                for alert_ids_for_entity in ALERTED_ENTITIES_MANUAL_METAMASK.values():
-                        if any(logic_plus_alert_id.endswith(alert_id) for logic_plus_alert_id in alert_ids_for_entity):
-                            INITIAL_METAMASK_LIST_CONSUMPTION = False
-                            break
-            metamask_phishing_urls = Utils.get_metamask_phishing_list()
-            for url in metamask_phishing_urls:
-                url = url[:-1] if url.endswith(",") else url # remove trailing comma from URLs that have it
-                
-                if not already_alerted(url, alert_id, "manual_metamask"):
-                    logging.info(f"Manual finding: Emitting manual finding for {url}")
-                    update_list(ALERTED_ENTITIES_MANUAL_METAMASK, ALERTED_ENTITIES_MANUAL_METAMASK_QUEUE_SIZE, url, alert_id, "manual_metamask")
-                    finding = ScamDetectorFinding.scam_finding_manual(block_chain_indexer, forta_explorer, "Url", url, "Metamask phishing", "Metamask ", "", "", INITIAL_METAMASK_LIST_CONSUMPTION)
-                    if finding is not None:
-                        findings.append(finding)
-                    logging.info(f"Findings count {len(findings)}")
-                else:
-                    logging.info(f"Manual finding: Already alerted on {url}")
-
-        except Exception as e:
-            logging.warning(f"Manual finding: Failed to process manual finding: {e} : {traceback.format_exc()}")
-            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding.metamask", traceback.format_exc()))
+    
 
     return findings
 
@@ -1291,10 +1303,7 @@ def provide_handle_block(w3):
         Utils.ERROR_CACHE.clear()
         
         if dt.minute == 0:  # every hour
-            logging.info(f"{BOT_VERSION}: Handle block on the hour was called. Findings cache for blocks size: {len(FINDINGS_CACHE_BLOCK)}")
-            fp_findings = emit_new_fp_finding(w3)                        
-            logging.info(f"{BOT_VERSION}: Added {len(fp_findings)} fp findings.")
-            FINDINGS_CACHE_BLOCK.extend(fp_findings)
+            logging.info(f"{BOT_VERSION}: Handle block on the 00 minute was called. Findings cache for blocks size: {len(FINDINGS_CACHE_BLOCK)}")
             manual_findings = emit_manual_finding(w3)
             logging.info(f"{BOT_VERSION}: Added {len(manual_findings)} manual findings.")
             FINDINGS_CACHE_BLOCK.extend(manual_findings)
@@ -1312,6 +1321,27 @@ def provide_handle_block(w3):
             
             persist_state()
             logging.info(f"{BOT_VERSION}: Persisted state")
+
+        if dt.minute == 30:  # every hour
+            logging.info(f"{BOT_VERSION}: Handle block on the 30 minute was called. Findings cache for blocks size: {len(FINDINGS_CACHE_BLOCK)}")
+            fp_findings = emit_new_fp_finding(w3)                        
+            logging.info(f"{BOT_VERSION}: Added {len(fp_findings)} fp findings.")
+            FINDINGS_CACHE_BLOCK.extend(fp_findings)
+
+            persist_state()
+            logging.info(f"{BOT_VERSION}: Persisted state")
+
+        if dt.minute == 45:  # every hour
+            logging.info(f"{BOT_VERSION}: Handle block on the 45 minute was called. Findings cache for blocks size: {len(FINDINGS_CACHE_BLOCK)}")
+            metamask_findings = emit_metamask_finding(w3)
+            logging.info(f"{BOT_VERSION}: Added {len(metamask_findings)} metamask findings.")
+            FINDINGS_CACHE_BLOCK.extend(metamask_findings)
+
+            persist_state()
+            logging.info(f"{BOT_VERSION}: Persisted state")
+            
+            
+            
         
         for finding in FINDINGS_CACHE_BLOCK[0:25]:  # 25 findings per block due to size limitation
             if finding is not None:

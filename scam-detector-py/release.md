@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## v2.20.3 (September 20th - beta)
+- debugged MM feature
+- added new NIP-7 and NIP-8 alert ids for native ice phishing
+
 ## v2.20.2 (September 19th - beta (without metamask), September 19th - prod (without metamask, private key compromise, phishing ML bot))
 - corrected description
 
