@@ -220,6 +220,31 @@ class TestAlertCombiner:
         assert len(findings) == 1, "alert should have been raised"
         assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
 
+    def test_alert_with_ownership_transfer(self):
+        # three alerts in diff stages for a given EOA where ownership transfer happens
+        # no FP
+        # anomaly score < 10 E-8
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
+        agent.initialize()
+        agent.CHAIN_ID = 1
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x7704a975c97ed444c0329cade1f85af74566d30fb6a51550529b19153a0781cb", "NETHFORTA-4", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, ownership transfer; ad-scorer tx-count -> denominator 10000
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+
+        # 100/100000 * 200/10000 * 50/10000000 -> 1E-10
+
+        assert len(findings) == 1, "alert should have been raised"
+        assert abs(findings[0].metadata["anomaly_score"] - 1e-10) < 1e-20, 'incorrect anomaly score'
+
     def test_alert_simple_case_bloom_filter(self):
         # three alerts in diff stages for a given EOA
         # no FP
