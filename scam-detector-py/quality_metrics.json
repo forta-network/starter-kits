@@ -167,6 +167,73 @@
                 }
             }
         },
+        "2023-08": {
+            "overall": {
+                "weighted-precision": {
+                    "value": 0.9485
+                }
+            },
+            "address-poisoner": {
+                "weighted-precision": {
+                    "value": 1.00
+                }
+            },
+            "fraudulent-nft-order": {
+                "weighted-precision": {
+                    "value": 0.9737
+                }
+            },
+            "ice-phishing": {
+                "weighted-precision": {
+                    "value": 0.9701
+                }
+            },
+            "impersonating-token": {
+                "weighted-precision": {
+                    "value": 1.00
+                }
+            },
+            "native-ice-phishing": {
+                "weighted-precision": {
+                    "value": 0.9563
+                }
+            },
+            "native-ice-phishing-social-engineering": {
+                "weighted-precision": {
+                    "value": 0.8491
+                }
+            },
+            "pig-butchering": {
+                "weighted-precision": {
+                    "value": 1.00
+                }
+            },
+            "scammer-association": {
+                "weighted-precision": {
+                    "value": 0.8028
+                }
+            },
+            "scammer-deployed-contract": {
+                "weighted-precision": {
+                    "value": 1.00
+                }
+            },
+            "soft-rug-pull": {
+                "weighted-precision": {
+                    "value": 0.709
+                }
+            },
+            "unknown": {
+                "weighted-precision": {
+                    "value": 0.7720
+                }
+            },
+            "wash-trading": {
+                "weighted-precision": {
+                    "value": 1.0
+                }
+            }
+        },
         "2023-07": {
             "overall": {
                 "recall": {
