@@ -224,4 +224,5 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0xabc0bb6fe5e0d0b981dec4aa2337ce91676358c6e8bf1fec06cc558f58c3694e", "UNUSUAL-NATIVE-SWAPS", "MoneyLaundering"),  # unusual native swaps
              ("0x644b77e0d77d68d3841a55843dcdd61840ad3ca09f7e1ab2d2f5191c35f4a998", "ABNORMAL-FUNCTION-CALL-DETECTED-1", "Exploitation"),  # abnormal function call
              ("0x644b77e0d77d68d3841a55843dcdd61840ad3ca09f7e1ab2d2f5191c35f4a998", "ABNORMAL-EMITTED-EVENT-DETECTED-1", "Exploitation"),  # abnormal function call
+             ("0x7704a975c97ed444c0329cade1f85af74566d30fb6a51550529b19153a0781cb", "NETHFORTA-4", "Preparation"),  # ownership transfer
              ]
