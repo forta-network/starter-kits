@@ -113,7 +113,7 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x5ab3964d3cb90ad68b6f307a7d5d3219b97c89c74e6aca261633af356ff73b4a", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Celer Network Original Token Vault V2 - Ethereum
              ("0x80749e2072849dacecaea54ec4d4b06d8da4e8c48ebf4cfe8fe9aeb0436a5776", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Celer Network Original Token Vault 2 - Ethereum
              ("0xd40554c0cc8393cb94aa22f4e10d67672a76f64112577f2d700b13bb08405926", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Celer Network cBridge V2 Bridge - Ethereum
-             ("0x6639e223026aaec3c2c2e33c3a501f34e7a63e3c16d301f4f1ba0044135387e8", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol SNX Bridge - Ethereum 
+             ("0x6639e223026aaec3c2c2e33c3a501f34e7a63e3c16d301f4f1ba0044135387e8", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol SNX Bridge - Ethereum
              ("0x50679441079cf1f109311b5559c8141b30001cca0b0cee7e12067b1b4a5cf595", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol Matic Bridge - Ethereum
              ("0x2cb9c3b887edada37b9f198fdd84d12cfc5eeb81d4ea365e5e0097ba829ee2d9", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol ERC20 Bridge - Ethereum
              ("0xf8ca51a34b1d14819a01b731264d0b3356a186d7e42abb3b24eebd6848959823", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol DAI Bridge - Ethereum
@@ -167,7 +167,7 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x5ab3964d3cb90ad68b6f307a7d5d3219b97c89c74e6aca261633af356ff73b4a", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Celer Network Original Token Vault V2 - Ethereum
              ("0x80749e2072849dacecaea54ec4d4b06d8da4e8c48ebf4cfe8fe9aeb0436a5776", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Celer Network Original Token Vault 2 - Ethereum
              ("0xd40554c0cc8393cb94aa22f4e10d67672a76f64112577f2d700b13bb08405926", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Celer Network cBridge V2 Bridge - Ethereum
-             ("0x6639e223026aaec3c2c2e33c3a501f34e7a63e3c16d301f4f1ba0044135387e8", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol SNX Bridge - Ethereum 
+             ("0x6639e223026aaec3c2c2e33c3a501f34e7a63e3c16d301f4f1ba0044135387e8", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol SNX Bridge - Ethereum
              ("0x50679441079cf1f109311b5559c8141b30001cca0b0cee7e12067b1b4a5cf595", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol Matic Bridge - Ethereum
              ("0x2cb9c3b887edada37b9f198fdd84d12cfc5eeb81d4ea365e5e0097ba829ee2d9", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol ERC20 Bridge - Ethereum
              ("0xf8ca51a34b1d14819a01b731264d0b3356a186d7e42abb3b24eebd6848959823", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol DAI Bridge - Ethereum
@@ -224,4 +224,5 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0xabc0bb6fe5e0d0b981dec4aa2337ce91676358c6e8bf1fec06cc558f58c3694e", "UNUSUAL-NATIVE-SWAPS", "MoneyLaundering"),  # unusual native swaps
              ("0x644b77e0d77d68d3841a55843dcdd61840ad3ca09f7e1ab2d2f5191c35f4a998", "ABNORMAL-FUNCTION-CALL-DETECTED-1", "Exploitation"),  # abnormal function call
              ("0x644b77e0d77d68d3841a55843dcdd61840ad3ca09f7e1ab2d2f5191c35f4a998", "ABNORMAL-EMITTED-EVENT-DETECTED-1", "Exploitation"),  # abnormal function call
+             ("0x7704a975c97ed444c0329cade1f85af74566d30fb6a51550529b19153a0781cb", "NETHFORTA-4", "Preparation"),  # ownership transfer
              ]

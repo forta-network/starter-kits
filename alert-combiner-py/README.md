@@ -407,6 +407,7 @@ The following bots are considered by the Attack Detector bot and mapped to the s
 | 0xabc0bb6fe5e0d0b981dec4aa2337ce91676358c6e8bf1fec06cc558f58c3694e | unusual native swaps | UNUSUAL-NATIVE-SWAPS | MoneyLaundering |
 | 0x8b0976a3a59f09c6c4a0f66ffc8d8dcc028e6087b071ec2a82bb83ec5a99f181 | ABNORMAL-FUNCTION-CALL-DETECTED-1 | Exploitation |
 | 0x8b0976a3a59f09c6c4a0f66ffc8d8dcc028e6087b071ec2a82bb83ec5a99f181 | ABNORMAL-EMITTED-EVENT-DETECTED-1 | Exploitation |
+| 0x7704a975c97ed444c0329cade1f85af74566d30fb6a51550529b19153a0781cb | Ownership Transfer | NETHFORTA-4 | Preparation |
 
 The following bots are used to mitigate FPs:
 | BotID | Name | AlertId |
