@@ -247,7 +247,7 @@
                     "value": 1.0,
                     "N": 45,
                     "lower_bound": 0.9609,
-                    "upper_bound": 0.9824%,
+                    "upper_bound": 0.9824,
                     "confidence": 0.9
                 }
             },
