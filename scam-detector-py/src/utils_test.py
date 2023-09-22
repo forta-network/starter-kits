@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-from forta_agent import get_json_rpc_url, FindingSeverity
+from forta_agent import get_json_rpc_url, FindingSeverity, FindingType, Finding
 from web3 import Web3
 from utils import Utils
 from constants import CONFIDENCE_MAPPINGS
@@ -110,3 +110,34 @@ class TestUtils:
     def test_get_confidence_value_default(self):
         Utils.TEST_STATE = True
         assert CONFIDENCE_MAPPINGS['sleep-minting']==Utils.get_confidence_value('sleep-minting')
+
+    def test_single_finding_with_scammer_address(self):
+        FINDINGS_CACHE_ALERT = [
+            Finding({
+                'name': 'Scam finding',
+                'description': 'Description',
+                'alert_id': "alert_id",
+                'type': FindingType.Scam,
+                'severity': FindingSeverity.Critical,           
+                'labels': [],
+                'metadata': {
+                    'scammer_address': '0x5068aed87a97c063729329c2ebe84cfed3177f83' # random address (no labels)
+                }
+            }),
+            Finding({
+                'name': 'Non scam finding',
+                'description': 'Description',
+                'alert_id': "alert_id",
+                'type': FindingType.Scam,
+                'severity': FindingSeverity.Critical,           
+                'labels': [],
+                'metadata': {
+                    'scammer_address': '0x41653c7d61609d856f29355e404f310ec4142cfb' # UNI deployer
+                }
+            })
+        ]
+        
+        filtered_findings = Utils.filter_out_non_malicious_findings(FINDINGS_CACHE_ALERT)
+    
+        assert len(filtered_findings) == 1
+        assert filtered_findings[0].name == 'Scam finding'

@@ -1260,10 +1260,18 @@ def provide_handle_alert(w3):
             persist_state()
             logging.info(f"{BOT_VERSION}: Persisted state")
 
-        for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
-            if finding is not None:
-                findings.append(finding)
-        FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
+        if CHAIN_ID == 1:
+            if len(FINDINGS_CACHE_ALERT) >= 5:
+                FINDINGS_CACHE_ALERT = Utils.filter_out_non_malicious_findings(FINDINGS_CACHE_ALERT)
+                for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
+                    if finding is not None:
+                        findings.append(finding)
+                FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
+        else:
+            for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
+                if finding is not None:
+                    findings.append(finding)
+            FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
 
         logging.info(f"{BOT_VERSION}: Return {len(findings)} finding(s) to handleAlert.") 
 
