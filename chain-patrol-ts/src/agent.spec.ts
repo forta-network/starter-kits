@@ -1,11 +1,4 @@
-import {
-  FindingType,
-  FindingSeverity,
-  Finding,
-  HandleTransaction,
-  createTransactionEvent,
-  ethers,
-} from "forta-agent";
+import { FindingType, FindingSeverity, Finding, HandleTransaction, createTransactionEvent, ethers } from "forta-agent";
 /*
 import agent, {
   ERC20_TRANSFER_EVENT,
@@ -14,5 +7,4 @@ import agent, {
 } from "./agent";
 */
 
-describe("ChainPatrol Bot Test Suite", () => {
-});
+describe("ChainPatrol Bot Test Suite", () => {});
