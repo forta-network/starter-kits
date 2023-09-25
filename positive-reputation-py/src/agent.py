@@ -54,7 +54,7 @@ def initialize():
     except Exception as e:
         logging.error(f"Error getting chain id: {e}")
         raise e
-        
+
     global ADDRESS_CACHE
     ADDRESS_CACHE = set()
 
@@ -65,7 +65,7 @@ def initialize():
     CHAIN_ID = web3.eth.chain_id
 
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
-    
+
 
 def put_first_tx(address: str, first_tx_datetime: datetime):
     global CHAIN_ID
@@ -74,9 +74,9 @@ def put_first_tx(address: str, first_tx_datetime: datetime):
     logging.debug(f"itemId: {itemId}")
     sortId = f"{address}"
     logging.debug(f"sortId: {sortId}")
-    
+
     expiry_offset = CACHE_EXPIRY_IN_DAYS * 24 * 60 * 60
-    
+
     expiresAt = int(datetime.now().timestamp()) + int(expiry_offset)
     logging.debug(f"expiresAt: {expiresAt}")
     response = dynamo.put_item(Item={
@@ -124,9 +124,9 @@ def put_pos_rep_address(address: str):
     logging.debug(f"itemId: {itemId}")
     sortId = f"{address}"
     logging.debug(f"sortId: {sortId}")
-    
+
     expiry_offset = CACHE_EXPIRY_IN_DAYS * 24 * 60 * 60
-    
+
     expiresAt = int(datetime.now().timestamp()) + int(expiry_offset)
     logging.debug(f"expiresAt: {expiresAt}")
     response = dynamo.put_item(Item={
@@ -185,6 +185,20 @@ def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent
                 if not read_pos_rep(transaction_event.transaction.from_.lower()):
                     put_pos_rep_address(transaction_event.transaction.from_.lower())
                     findings.append(PositiveReputationFindings.positive_reputation(transaction_event.transaction.from_, CHAIN_ID))
+        else:
+            first_tx = read_first_tx(transaction_event.transaction.from_.lower())
+            if first_tx is None:
+                logging.info(f"Checking first tx of address with blockexplorer {transaction_event.transaction.from_}")
+                first_tx = blockexplorer.get_first_tx(transaction_event.transaction.from_)
+                put_first_tx(transaction_event.transaction.from_.lower(), first_tx)
+
+            if first_tx < datetime.now() - timedelta(days=MIN_AGE_IN_DAYS):
+
+                if not read_pos_rep(transaction_event.transaction.from_.lower()):
+
+                    put_pos_rep_address(transaction_event.transaction.from_.lower())
+                    findings.append(PositiveReputationFindings.positive_reputation_by_age(transaction_event.transaction.from_, CHAIN_ID))
+
 
     return findings
 
