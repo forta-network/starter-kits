@@ -23,7 +23,7 @@ from src.L2Cache import L2Cache
 from src.storage import s3_client, dynamo_table, get_secrets
 from src.blockchain_indexer_service import BlockChainIndexer
 from src.utils import Utils
-from src.dynamo_utils import DynamoUtils, PROD_TAG, TEST_TAG
+from src.dynamo_utils import DynamoUtils, PROD_TAG
 
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -559,7 +559,6 @@ def emit_manual_finding(w3, du, test = False) -> list:
         content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
 
     df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
-    print("TI NA LEME", df_manual_findings)
     for index, row in df_manual_findings.iterrows():
         chain_id = -1
         try:
@@ -585,15 +584,12 @@ def emit_manual_finding(w3, du, test = False) -> list:
                 logging.info(f"Manual finding: Address {cluster} is a contract")
                 continue
 
-            print("HEI", cluster, MANUALLY_ALERTED_ENTITIES)
             if cluster not in MANUALLY_ALERTED_ENTITIES:
                 logging.info(f"Manual finding: Emitting manual finding for {cluster}")
                 tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
                 account = "" if 'nan' in str(row["Account"]) else row['Account']
                 update_list(MANUALLY_ALERTED_ENTITIES, MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE, cluster)
-                print("BEFOREPRINTFIND", block_chain_indexer, cluster, account, tweet, chain_id)
                 finding = AlertCombinerFinding.attack_finding_manual(block_chain_indexer, cluster, account + " " + tweet, chain_id)
-                print("PRINTFIND", finding)
                 if finding is not None:
                     findings.append(finding)
                 logging.info(f"Findings count {len(findings)}")
@@ -603,7 +599,7 @@ def emit_manual_finding(w3, du, test = False) -> list:
         except Exception as e:
             logging.warning(f"Manual finding: Failed to process manual finding: {e} : {traceback.format_exc()}")
             continue
-    print("VROIII", findings)
+
     return findings
 
 def emit_new_fp_finding() -> list:
@@ -764,7 +760,7 @@ def provide_handle_alert(w3, du):
     return handle_alert
 
 #  Set the tag to PROD_TAG for production
-real_handle_alert = provide_handle_alert(web3, DynamoUtils(TEST_TAG, web3.eth.chain_id))
+real_handle_alert = provide_handle_alert(web3, DynamoUtils(PROD_TAG, web3.eth.chain_id))
 
 def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     logging.debug("handle_alert called")
@@ -807,4 +803,4 @@ def handle_block(block_event: forta_agent.BlockEvent):
     return real_handle_block(block_event)
 
 #  Set the tag to PROD_TAG for production
-real_handle_block = provide_handle_block(web3, DynamoUtils(TEST_TAG, web3.eth.chain_id))
+real_handle_block = provide_handle_block(web3, DynamoUtils(PROD_TAG, web3.eth.chain_id))
