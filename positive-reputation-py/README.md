@@ -2,7 +2,7 @@
 
 ## Description
 
-This bot identifies EOA associated with positive reputation in context of an attack (aka unlikely to be an attacker). The alert from this bot can be useful in context of FP mitigations. 
+This bot identifies EOA associated with positive reputation in context of an attack (aka unlikely to be an attacker). The alert from this bot can be useful in context of FP mitigations.
 
 The current implementation merely looks at the nonce and age
 
@@ -13,9 +13,14 @@ The current implementation merely looks at the nonce and age
 ## Alerts
 
 - POSITIVE-REPUTATION-1
-  - Fired when an EOA with positive reputation has been identified
-  - Severity is always set to "info" 
-  - Type is always set to "info" 
+  - Fired when an EOA with positive reputation has been identified by both nonce and age
+  - Severity is always set to "info"
+  - Type is always set to "info"
+
+- POSITIVE-REPUTATION-2
+  - Fired when an EOA with positive reputation has been identified by merely age
+  - Severity is always set to "info"
+  - Type is always set to "info"
 
 ## Test Data
 
