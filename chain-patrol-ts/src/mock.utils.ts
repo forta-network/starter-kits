@@ -1,10 +1,27 @@
 import { Finding, FindingSeverity, FindingType, Label, EntityType } from "forta-agent";
 import { utils } from "ethers";
-import { Asset, AssetDetails } from "./types";
 
-export function createFinding(asset: Asset, assetDetails: AssetDetails): Finding {
-  const { content, type, status, updatedAt }: Asset = asset;
-  const { reason, reportId, reportUrl }: AssetDetails = assetDetails;
+export type MockAsset = {
+  content: string;
+  type: string;
+  status: string;
+  updatedAt: string;
+};
+
+export type MockAssetList = {
+  assets: MockAsset[];
+};
+
+export type MockAssetDetails = {
+  status: string;
+  reason: string;
+  reportId: number;
+  reportUrl: string;
+};
+
+export function createMockFinding(asset: MockAsset, assetDetails: MockAssetDetails): Finding {
+  const { content, type, status, updatedAt }: MockAsset = asset;
+  const { reason, reportId, reportUrl }: MockAssetDetails = assetDetails;
 
   const resultString: string = content + reason + reportId + reportUrl + updatedAt;
   const uniqueKey: string = utils.keccak256(utils.toUtf8Bytes(resultString));

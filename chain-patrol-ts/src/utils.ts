@@ -43,11 +43,11 @@ export function createAssetDetailsApiOptions(apiKey: string, assetContent: strin
 }
 
 export function getCurrentDateInYyyyMmDD(): string {
-  const date = new Date();
-  const currentDay = String(date.getDate()).padStart(2, "0");
-  const currentMonth = String(date.getMonth() + 1).padStart(2, "0");
-  const currentYear = date.getFullYear();
-  const currentDate = `${currentYear}-${currentMonth}-${currentDay}`;
+  const currenDate = new Date();
+  const currentDay = String(currenDate.getDate()).padStart(2, "0");
+  const currentMonth = String(currenDate.getMonth() + 1).padStart(2, "0");
+  const currentYear = currenDate.getFullYear();
+  const currentDateInYyyyMmDD = `${currentYear}-${currentMonth}-${currentDay}`;
 
-  return currentDate;
+  return currentDateInYyyyMmDD;
 }
