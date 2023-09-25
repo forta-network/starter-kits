@@ -11,6 +11,7 @@ import io
 from forta_agent import EntityType
 from datetime import datetime, timedelta
 import requests
+from unittest.mock import Mock, patch
 
 from storage import dynamo_table, get_secrets
 from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS,
