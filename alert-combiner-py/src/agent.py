@@ -1,6 +1,6 @@
 import logging
 import sys
-from datetime import datetime 
+from datetime import datetime
 import requests
 import io
 import traceback
@@ -23,7 +23,7 @@ from src.L2Cache import L2Cache
 from src.storage import s3_client, dynamo_table, get_secrets
 from src.blockchain_indexer_service import BlockChainIndexer
 from src.utils import Utils
-from src.dynamo_utils import DynamoUtils, PROD_TAG
+from src.dynamo_utils import DynamoUtils, PROD_TAG, TEST_TAG
 
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -287,7 +287,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
     global ALERTED_CLUSTERS_STRICT
     global CHAIN_ID
     global HIGHLY_PRECISE_BOTS
-
+   
     findings = []
     try:
         start = time.time()
@@ -452,17 +452,27 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                     logging.info(f"alert {alert_event.alert_hash} - {cluster} is contract. Wont raise finding")
                                     continue
 
-                                etherscan_label = Utils.get_etherscan_label(cluster).lower()
-                                if not ('attack' in etherscan_label
-                                        or 'phish' in etherscan_label
-                                        or 'hack' in etherscan_label
-                                        or 'heist' in etherscan_label
-                                        or 'exploit' in etherscan_label
-                                        or 'scam' in etherscan_label
-                                        or 'fraud' in etherscan_label
-                                        or etherscan_label == ''):
-                                    logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
-                                    fp_mitigated = True
+                                if CHAIN_ID == 1:
+                                    etherscan_labels = block_chain_indexer.get_etherscan_labels(cluster)
+                                    if etherscan_labels and all(
+                                        label.lower() not in ['attack', 'phish', 'hack', 'heist', 'drainer', 'exploit', 'scam', 'fraud']
+                                        for label in etherscan_labels
+                                    ):
+                                        logging.info(f"alert {alert_event.alert_hash} - Non attacker etherscan FP mitigation labels for cluster {cluster}.")
+                                        fp_mitigated = True
+                                else:
+                                    etherscan_label = Utils.get_etherscan_label(cluster).lower()
+                                    if not ('attack' in etherscan_label
+                                            or 'phish' in etherscan_label
+                                            or 'hack' in etherscan_label
+                                            or 'heist' in etherscan_label
+                                            or 'drainer' in etherscan_label
+                                            or 'exploit' in etherscan_label
+                                            or 'scam' in etherscan_label
+                                            or 'fraud' in etherscan_label
+                                            or etherscan_label == ''):
+                                        logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
+                                        fp_mitigated = True
 
                                 if (CHAIN_ID == 137 and len(alert_data) > POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD) or is_polygon_validator(w3, cluster, alert_event.alert.source.transaction_hash):
                                     logging.info(f"alert {alert_event.alert_hash} - {cluster} is polygon validator. Wont raise finding")
@@ -549,6 +559,7 @@ def emit_manual_finding(w3, du, test = False) -> list:
         content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
 
     df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
+    print("TI NA LEME", df_manual_findings)
     for index, row in df_manual_findings.iterrows():
         chain_id = -1
         try:
@@ -574,12 +585,15 @@ def emit_manual_finding(w3, du, test = False) -> list:
                 logging.info(f"Manual finding: Address {cluster} is a contract")
                 continue
 
+            print("HEI", cluster, MANUALLY_ALERTED_ENTITIES)
             if cluster not in MANUALLY_ALERTED_ENTITIES:
                 logging.info(f"Manual finding: Emitting manual finding for {cluster}")
                 tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
                 account = "" if 'nan' in str(row["Account"]) else row['Account']
                 update_list(MANUALLY_ALERTED_ENTITIES, MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE, cluster)
+                print("BEFOREPRINTFIND", block_chain_indexer, cluster, account, tweet, chain_id)
                 finding = AlertCombinerFinding.attack_finding_manual(block_chain_indexer, cluster, account + " " + tweet, chain_id)
+                print("PRINTFIND", finding)
                 if finding is not None:
                     findings.append(finding)
                 logging.info(f"Findings count {len(findings)}")
@@ -589,7 +603,7 @@ def emit_manual_finding(w3, du, test = False) -> list:
         except Exception as e:
             logging.warning(f"Manual finding: Failed to process manual finding: {e} : {traceback.format_exc()}")
             continue
-
+    print("VROIII", findings)
     return findings
 
 def emit_new_fp_finding() -> list:
@@ -750,7 +764,7 @@ def provide_handle_alert(w3, du):
     return handle_alert
 
 #  Set the tag to PROD_TAG for production
-real_handle_alert = provide_handle_alert(web3, DynamoUtils(PROD_TAG, web3.eth.chain_id))
+real_handle_alert = provide_handle_alert(web3, DynamoUtils(TEST_TAG, web3.eth.chain_id))
 
 def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     logging.debug("handle_alert called")
@@ -793,4 +807,4 @@ def handle_block(block_event: forta_agent.BlockEvent):
     return real_handle_block(block_event)
 
 #  Set the tag to PROD_TAG for production
-real_handle_block = provide_handle_block(web3, DynamoUtils(PROD_TAG, web3.eth.chain_id))
+real_handle_block = provide_handle_block(web3, DynamoUtils(TEST_TAG, web3.eth.chain_id))

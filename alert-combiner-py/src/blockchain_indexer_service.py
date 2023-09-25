@@ -165,3 +165,26 @@ class BlockChainIndexer:
 
         logging.info(f"get_contracts for {address} on {chain_id}; returning {len(contracts)}.")
         return contracts
+    
+    @staticmethod
+    @RateLimiter(max_calls=1, period=1)
+    def get_etherscan_labels(address) -> set:
+        labels_url = f"https://api-metadata.etherscan.io/v1/api.ashx?module=nametag&action=getaddresstag&address={address}&tag=trusted&apikey={BlockChainIndexer.get_api_key(1)}"
+        labels = set()
+        success = False
+        count = 0
+        while not success:
+            data = requests.get(labels_url)
+            if data.status_code == 200:
+                json_data = json.loads(data.content)
+                success = True
+                if "result" in json_data and len(json_data["result"]) > 0:
+                    labels = json_data["result"][0]["labels"]                        
+                return labels
+            else:
+                logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")
+                count += 1
+                if count > 10:
+                    break
+                time.sleep(1)
+        return labels
