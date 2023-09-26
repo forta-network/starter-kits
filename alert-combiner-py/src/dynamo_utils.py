@@ -4,6 +4,7 @@ import time
 import pandas as pd
 
 from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
+from src.utils import Utils
 
 TEST_TAG = "attack-detector-test_v2"
 PROD_TAG = "attack-detector-prod"
@@ -30,6 +31,7 @@ class DynamoUtils:
         response = dynamo.put_item(Item=item)
         if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
             logging.error(f"Error putting item in dynamoDB: {response}")
+            Utils.ERROR_CACHE.add(Utils.alert_error(f'dynamo_utils._put_item HTTPStatusCode {response["ResponseMetadata"]["HTTPStatusCode"]}', "dynamo_utils._put_item", ""))
         else:
             logging.info(f"Successfully put item in dynamoDB: {response}")
 
@@ -231,6 +233,7 @@ class DynamoUtils:
 
         if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
             logging.error(f"Error deleting alert data for address {address} from DynamoDB: {response}")
+            Utils.ERROR_CACHE.add(Utils.alert_error(f'dynamo_utils.delete_alert_data HTTPStatusCode {response["ResponseMetadata"]["HTTPStatusCode"]}', "dynamo_utils.delete_alert_data", ""))
         else:
             logging.info(f"Successfully deleted alert data for address {address} from DynamoDB")
 

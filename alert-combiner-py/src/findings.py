@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import os
 import logging
+import traceback
 import forta_agent
 import hashlib
 
@@ -82,6 +83,7 @@ class AlertCombinerFinding:
                     }))
             except Exception as e:
                 logging.warning(f"Error getting contracts for {address} {e}")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "findings.create_finding", traceback.format_exc()))
 
         unique_key = hashlib.sha256(f'{addresses},{victim_clause},{alert_id}'.encode()).hexdigest()
         logging.info(f"Unique key of {addresses},{victim_clause},{alert_id}: {unique_key}")

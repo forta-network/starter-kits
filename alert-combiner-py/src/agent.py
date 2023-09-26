@@ -528,6 +528,8 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
 
             except Exception as e:
                 logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e} {traceback.format_exc()}")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.detect_attack.internal", traceback.format_exc()))
+
         else:
             logging.debug(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
             raise AssertionError(f"alert {alert_event.alert_hash} received for incorrect chain {alert_event.chain_id}. This bot is for chain {CHAIN_ID}.")
@@ -536,9 +538,11 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
         logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} {alert_event.chain_id} processing took {end - start} seconds")
     except Exception as e:
         logging.warning(f"alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e} {traceback.format_exc()}")
-        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV') and not Utils.is_beta():
             logging.info(f"alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
             raise e
+        else:
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.detect_attack", traceback.format_exc()))
 
     return findings
 
@@ -566,6 +570,7 @@ def emit_manual_finding(w3, du, test = False) -> list:
             chain_id = int(chain_id_float)
         except Exception as e:
             logging.warning("Manual finding: Failed to get chain ID from manual finding")
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding.internal", traceback.format_exc()))
             continue
 
         if chain_id != CHAIN_ID:
@@ -598,6 +603,7 @@ def emit_manual_finding(w3, du, test = False) -> list:
                 logging.info(f"Manual finding: Already alerted on {attacker_address_lower}")
         except Exception as e:
             logging.warning(f"Manual finding: Failed to process manual finding: {e} : {traceback.format_exc()}")
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding", traceback.format_exc()))
             continue
 
     return findings
@@ -634,9 +640,11 @@ def emit_new_fp_finding() -> list:
                         logging.info(f"Findings count {len(FINDINGS_CACHE_BLOCK)}")
     except BaseException as e:
         logging.warning(f"emit fp finding exception: {e} - {traceback.format_exc()}")
-        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV') and not Utils.is_beta():
             logging.info(f"emit fp finding exception:  - Raising exception to expose error to scannode")
             raise e
+        else:
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_new_fp_finding", traceback.format_exc()))
 
     return findings
 
@@ -773,6 +781,11 @@ def provide_handle_block(w3, du):
         logging.debug("handle_block inner called")
         global FINDINGS_CACHE_BLOCK
         findings = []
+
+        if Utils.is_beta():
+            logging.info(f"Handle block called. Adding {Utils.ERROR_CACHE.len()} error findings.")
+            findings.extend(Utils.ERROR_CACHE.get_all())
+        Utils.ERROR_CACHE.clear()
 
         dt = datetime.fromtimestamp(block_event.block.timestamp)
         logging.info(f"handle block called with block timestamp {dt}")
