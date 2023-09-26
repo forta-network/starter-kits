@@ -22,9 +22,9 @@ export type AssetList = {
 
 export type AssetDetails = {
   status: string;
-  reason: string;
-  reportId: number;
-  reportUrl: string;
+  reason?: string;
+  reportId?: number;
+  reportUrl?: string;
 };
 
 export type UnalertedAsset = {
@@ -32,7 +32,7 @@ export type UnalertedAsset = {
   type: string;
   status: string;
   updatedAt: string;
-  reason: string;
-  reportId: number;
-  reportUrl: string;
+  reason?: string;
+  reportId?: number;
+  reportUrl?: string;
 };

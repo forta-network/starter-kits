@@ -59,26 +59,25 @@ export function provideHandleBlock(getCurrentDateInYyyyMmDD: () => string): Hand
       await Promise.all(
         assetList!.map(async (asset: Asset) => {
           const assetDetails: AssetDetails | undefined = await assetFetcher.getAssetDetails(asset.content);
-          // TODO: Look into that some results from
-          // `assetDetails` could be status `UNKNOWN`
           unalertedAssets.push({
             type: asset.type,
             status: asset.status,
             content: asset.content,
             updatedAt: asset.updatedAt,
-            reason: assetDetails!.reason,
-            reportId: assetDetails!.reportId,
-            reportUrl: assetDetails!.reportUrl,
+            reason: assetDetails?.reason,
+            reportId: assetDetails?.reportId,
+            reportUrl: assetDetails?.reportUrl,
           });
         })
       );
-
-      const assetsToBeAlerted: UnalertedAsset[] = unalertedAssets.splice(
-        0,
-        Math.min(unalertedAssets.length, MAX_ASSET_ALERTS_PER_BLOCK)
-      );
-      findings.push(...assetsToBeAlerted.map(createBlockedAssetFinding));
     }
+
+    const assetsToBeAlerted: UnalertedAsset[] = unalertedAssets.splice(
+      0,
+      Math.min(unalertedAssets.length, MAX_ASSET_ALERTS_PER_BLOCK)
+    );
+
+    findings.push(...assetsToBeAlerted.map(createBlockedAssetFinding));
 
     return findings;
   };

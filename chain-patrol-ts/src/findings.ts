@@ -5,7 +5,7 @@ import { UnalertedAsset } from "./types";
 export function createBlockedAssetFinding(asset: UnalertedAsset): Finding {
   const { content, type, status, updatedAt, reason, reportId, reportUrl }: UnalertedAsset = asset;
 
-  const resultString: string = content + reason + reportId + reportUrl + updatedAt;
+  const resultString: string = content + updatedAt;
   const uniqueKey: string = utils.keccak256(utils.toUtf8Bytes(resultString));
 
   return Finding.fromObject({
@@ -19,9 +19,9 @@ export function createBlockedAssetFinding(asset: UnalertedAsset): Finding {
       type,
       status,
       updatedAt,
-      reason,
-      reportId: reportId.toString(),
-      reportUrl,
+      reason: reason ? reason : "",
+      reportId: reportId ? reportId.toString() : "",
+      reportUrl: reportUrl ? reportUrl : "",
     },
     labels: [
       Label.fromObject({
@@ -34,9 +34,9 @@ export function createBlockedAssetFinding(asset: UnalertedAsset): Finding {
           type,
           status,
           updatedAt,
-          reason,
-          reportId: reportId.toString(),
-          reportUrl,
+          reason: reason ? reason : "",
+          reportId: reportId ? reportId.toString() : "",
+          reportUrl: reportUrl ? reportUrl : "",
         },
       }),
     ],

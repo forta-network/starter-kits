@@ -1,10 +1,11 @@
-import { FindingType, FindingSeverity, Finding, HandleBlock, ethers, Initialize } from "forta-agent";
+import { Initialize, HandleBlock } from "forta-agent";
 import { TestBlockEvent } from "forta-agent-tools/lib/test";
 import { when } from "jest-when";
+import { MockAsset, MockAssetDetails } from "./mocks/mock.types";
 import { provideInitialize, provideHandleBlock } from "./agent";
+import { createMockAssetListBatch, createMockAssetDetailsBatch } from "./mocks/mock.utils";
+import { createMockBlockedAssetFinding, createMockBlockedAssetFindingBatch } from "./mocks/mock.findings";
 import AssetFetcher from "./fetcher";
-import { MockAsset, MockAssetList, MockAssetDetails, createMockFinding } from "./mock.utils";
-
 
 const mockEthereumBlocksInADay = 7200;
 const mockInitApiQueryDate = "2022-09-15";
@@ -64,28 +65,88 @@ describe("ChainPatrol Bot Test Suite", () => {
     handleBlock = provideHandleBlock(mockCurrentDateFetcher as any);
   });
 
-  it.only("creates alerts when the API sends data", async () => {
-    const mockCurrentDate = "2023-09-25";
+  it("creates alerts when the API sends data", async () => {
+    const mockCurrentDate = "2023-09-15";
     when(mockCurrentDateFetcher).calledWith().mockReturnValue(mockCurrentDate);
     when(mockAssetFetcher.getAssetlist)
       .calledWith(mockAssetBlockedStatus, mockCurrentDate, mockInitApiQueryDate)
       .mockReturnValue(mockAssetList);
-    when(mockAssetFetcher.getAssetDetails)
-      .calledWith(mockAssetList[0].content)
-      .mockReturnValue(mockAssetDetails);
+    when(mockAssetFetcher.getAssetDetails).calledWith(mockAssetList[0].content).mockReturnValue(mockAssetDetails);
 
     let findings = await handleBlock(mockBlockEvent);
-    expect(findings).toStrictEqual([createMockFinding(mockAssetList[0], mockAssetDetails)]);
+    expect(findings).toStrictEqual([createMockBlockedAssetFinding(mockAssetList[0], mockAssetDetails)]);
   });
 
-  it("creates no alerts if getAssetList returns empty array", async () => {
+  it("creates no alerts if getAssetList returns empty array of Assets", async () => {
+    const mockCurrentDate = "2023-09-16";
+    const mockAssetList: MockAsset[] = [];
+
+    when(mockCurrentDateFetcher).calledWith().mockReturnValue(mockCurrentDate);
+    when(mockAssetFetcher.getAssetlist)
+      .calledWith(mockAssetBlockedStatus, mockCurrentDate, mockInitApiQueryDate)
+      .mockReturnValue(mockAssetList);
+
+    let findings = await handleBlock(mockBlockEvent);
+    expect(findings).toStrictEqual([]);
   });
 
-  it("creates no alerts if getAssetDetails returns empty array", async () => {});
+  it("creates an alert despite getAssetDetails returning 'UNKNOWN'", async () => {
+    const mockCurrentDate = "2023-09-17";
+    const mockAssetDetails: MockAssetDetails = {
+      status: "mockUNKNOWN",
+    };
 
-  it("creates numerous alerts if the API query returns numerous results", async () => {});
+    when(mockCurrentDateFetcher).calledWith().mockReturnValue(mockCurrentDate);
+    when(mockAssetFetcher.getAssetlist)
+      .calledWith(mockAssetBlockedStatus, mockCurrentDate, mockInitApiQueryDate)
+      .mockReturnValue(mockAssetList);
+    when(mockAssetFetcher.getAssetDetails).calledWith(mockAssetList[0].content).mockReturnValue(mockAssetDetails);
 
-  it("creates alerts up until the limit and creates alerts for the rest in subsequent blocks", async () => {});
+    let findings = await handleBlock(mockBlockEvent);
+    expect(findings).toStrictEqual([createMockBlockedAssetFinding(mockAssetList[0], mockAssetDetails)]);
+  });
 
-  it("creates alerts up to the 50 alert limit then creates the rest in the subsequent block", async () => {});
+  it("creates multiple alerts if the API query returns multiple results", async () => {
+    const mockCurrentDate = "2023-09-18";
+    const batchOfFive = 5;
+    const mockAssetListOfFive = createMockAssetListBatch(batchOfFive);
+    const mockAssetDetailsOfFive = createMockAssetDetailsBatch(batchOfFive);
+    const mockFindings = createMockBlockedAssetFindingBatch(mockAssetListOfFive, mockAssetDetailsOfFive);
+
+    when(mockCurrentDateFetcher).calledWith().mockReturnValue(mockCurrentDate);
+    when(mockAssetFetcher.getAssetlist)
+      .calledWith(mockAssetBlockedStatus, mockCurrentDate, mockInitApiQueryDate)
+      .mockReturnValue(mockAssetListOfFive);
+    mockAssetListOfFive.map((mockAsset: MockAsset, i: number) => {
+      when(mockAssetFetcher.getAssetDetails).calledWith(mockAsset.content).mockReturnValue(mockAssetDetailsOfFive[i]);
+    });
+
+    let findings = await handleBlock(mockBlockEvent);
+    expect(findings).toStrictEqual(mockFindings);
+  });
+
+  it("creates alerts up to the 50 alert limit then creates the rest in the subsequent block", async () => {
+    const mockCurrentDate = "2023-09-19";
+    const batchOfSixtyFive = 65;
+    const mockAssetListOfSixtyFive = createMockAssetListBatch(batchOfSixtyFive);
+    const mockAssetDetailsOfSixtyFive = createMockAssetDetailsBatch(batchOfSixtyFive);
+    const mockFindings = createMockBlockedAssetFindingBatch(mockAssetListOfSixtyFive, mockAssetDetailsOfSixtyFive);
+
+    when(mockCurrentDateFetcher).calledWith().mockReturnValue(mockCurrentDate);
+    when(mockAssetFetcher.getAssetlist)
+      .calledWith(mockAssetBlockedStatus, mockCurrentDate, mockInitApiQueryDate)
+      .mockReturnValue(mockAssetListOfSixtyFive);
+    mockAssetListOfSixtyFive.map((mockAsset: MockAsset, i: number) => {
+      when(mockAssetFetcher.getAssetDetails)
+        .calledWith(mockAsset.content)
+        .mockReturnValue(mockAssetDetailsOfSixtyFive[i]);
+    });
+
+    let findings = await handleBlock(mockBlockEvent);
+    expect(findings).toStrictEqual(mockFindings.slice(0, 50));
+
+    mockBlockEvent.setNumber(mockEthereumBlocksInADay + 1);
+    findings = await handleBlock(mockBlockEvent);
+    expect(findings).toStrictEqual(mockFindings.slice(50));
+  });
 });
