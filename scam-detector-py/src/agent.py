@@ -1227,7 +1227,7 @@ def provide_handle_alert(w3):
                 raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception")
             else:
                 logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Return empty findings.")
-                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.handle_alert", traceback.format_exc()))
+                Utils.ERROR_CACHE.add(Utils.alert_error("Not initialized", "agent.handle_alert", traceback.format_exc()))
                 return []
 
 
