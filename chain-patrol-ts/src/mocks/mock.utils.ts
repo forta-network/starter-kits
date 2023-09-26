@@ -20,7 +20,7 @@ export function createMockAssetListBatch(amountInBatch: number): MockAsset[] {
   return mockAssetListBatch;
 }
 
-function createMockAssetDetailsInstance(instanceIndex: number): MockAssetDetails {
+export function createMockAssetDetailsInstance(instanceIndex: number): MockAssetDetails {
   return {
     status: `mockStatus${instanceIndex}`,
     reason: `mockReason${instanceIndex}`,
