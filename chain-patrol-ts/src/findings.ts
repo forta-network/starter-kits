@@ -1,10 +1,9 @@
 import { Finding, FindingSeverity, FindingType, Label, EntityType } from "forta-agent";
 import { utils } from "ethers";
-import { Asset, AssetDetails } from "./types";
+import { UnalertedAsset } from "./types";
 
-export function createFinding(asset: Asset, assetDetails: AssetDetails): Finding {
-  const { content, type, status, updatedAt }: Asset = asset;
-  const { reason, reportId, reportUrl }: AssetDetails = assetDetails;
+export function createBlockedAssetFinding(asset: UnalertedAsset): Finding {
+  const { content, type, status, updatedAt, reason, reportId, reportUrl }: UnalertedAsset = asset;
 
   const resultString: string = content + reason + reportId + reportUrl + updatedAt;
   const uniqueKey: string = utils.keccak256(utils.toUtf8Bytes(resultString));

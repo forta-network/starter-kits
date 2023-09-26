@@ -26,3 +26,13 @@ export type AssetDetails = {
   reportId: number;
   reportUrl: string;
 };
+
+export type UnalertedAsset = {
+  content: string;
+  type: string;
+  status: string;
+  updatedAt: string;
+  reason: string;
+  reportId: number;
+  reportUrl: string;
+};
