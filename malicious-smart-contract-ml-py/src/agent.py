@@ -39,7 +39,7 @@ def initialize():
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
-    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
 
 
 def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
@@ -91,7 +91,7 @@ def detect_malicious_contract_tx(
                     creation_bytecode,
                     error=error,
                 ):
-                    if finding.alert_id == "SUSPICIOUS-TOKEN-CONTRACT-CREATION":
+                    if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
                         malicious_findings.append(finding)
                     else:
                         safe_findings.append(finding)
@@ -109,7 +109,7 @@ def detect_malicious_contract_tx(
                 created_contract_address,
                 creation_bytecode,
             ):
-                if finding.alert_id == "SUSPICIOUS-TOKEN-CONTRACT-CREATION":
+                if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
                     malicious_findings.append(finding)
                 else:
                     safe_findings.append(finding)
