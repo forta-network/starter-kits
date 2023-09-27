@@ -15,3 +15,14 @@ export type MockAssetDetails = {
   reportId?: number;
   reportUrl?: string;
 };
+
+type MockHeaders = {
+  "X-API-KEY": string;
+  "Content-Type": string;
+};
+
+export type MockApiOptions = {
+  method: string;
+  headers: MockHeaders;
+  body: string;
+};

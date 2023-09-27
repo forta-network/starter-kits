@@ -6,16 +6,18 @@ import { ASSET_TYPES } from "./constants";
 export default class AssetFetcher {
   assetListUrl: string;
   assetDetailsUrl: string;
+  assetStatus: string;
   private apiKey: string;
   private readonly MAX_TRIES: number;
   private assetListCache: LRUCache<string, Asset[]>;
   private assetDetailsCache: LRUCache<string, AssetDetails>;
 
-  constructor(apiKey: string, assetListUrl: string, assetDetailsUrl: string) {
+  constructor(apiKey: string, assetListUrl: string, assetDetailsUrl: string, assetStatus: string) {
     this.MAX_TRIES = 3;
     this.apiKey = apiKey;
     this.assetListUrl = assetListUrl;
     this.assetDetailsUrl = assetDetailsUrl;
+    this.assetStatus = assetStatus;
     this.assetListCache = new LRUCache<string, Asset[]>({
       max: 1000,
     });
@@ -24,8 +26,8 @@ export default class AssetFetcher {
     });
   }
 
-  getAssetlist = async (status: string, endDate: string, startDate: string): Promise<Asset[] | undefined> => {
-    const key = `${status}-${endDate}-${startDate}`;
+  getAssetlist = async (endDate: string, startDate: string): Promise<Asset[] | undefined> => {
+    const key = `${endDate}-${startDate}`;
     if (this.assetListCache.has(key)) {
       return this.assetListCache.get(key);
     }
@@ -37,15 +39,18 @@ export default class AssetFetcher {
         // with one `type` at a time
         const apiOptions: ApiOptions[] = [];
         ASSET_TYPES.map((type: string) => {
-          apiOptions.push(createAssetListApiOptions(this.apiKey, type, status, endDate, startDate));
+          apiOptions.push(createAssetListApiOptions(this.apiKey, type, this.assetStatus, endDate, startDate));
         });
 
-        let assetList: Asset[] = [];
-        apiOptions.map(async (options: ApiOptions) => {
-          const fetchedAssetList = (await (await fetch(this.assetListUrl, options)).json()) as AssetList;
-          assetList.push(...fetchedAssetList.assets);
-        });
-        return assetList;
+        let fetchedAssets: Asset[] = [];
+        await Promise.all(
+          apiOptions.map(async (options: ApiOptions) => {
+            const fetchedAssetList = (await (await fetch(this.assetListUrl, options)).json()) as AssetList;
+            fetchedAssets.push(...fetchedAssetList.assets);
+          })
+        );
+        this.assetListCache.set(key, fetchedAssets);
+        return fetchedAssets;
       } catch (e) {
         tries++;
         console.log(`Error in fetching Asset List (attempt ${tries}): `, e);
@@ -69,6 +74,7 @@ export default class AssetFetcher {
       try {
         const options = createAssetDetailsApiOptions(this.apiKey, assetContent);
         const assetDetails = (await (await fetch(this.assetDetailsUrl, options)).json()) as AssetDetails;
+        this.assetDetailsCache.set(assetContent, assetDetails);
         return assetDetails;
       } catch (e) {
         tries++;

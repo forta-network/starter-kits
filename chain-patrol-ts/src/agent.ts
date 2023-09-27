@@ -23,21 +23,28 @@ const unalertedAssets: UnalertedAsset[] = [];
 async function createAssetFetcher(
   apiKey: string,
   assetListUrl: string,
-  assetDetailsUrl: string
+  assetDetailsUrl: string,
+  assetStatus: string
 ): Promise<AssetFetcher> {
-  return new AssetFetcher(apiKey, assetListUrl, assetDetailsUrl);
+  return new AssetFetcher(apiKey, assetListUrl, assetDetailsUrl, assetStatus);
 }
 
 export function provideInitialize(
   fetchApiInfo: () => Promise<string>,
   assetListUrl: string,
   assetDetailsUrl: string,
-  createAssetFetcher: (apiKey: string, assetListUrl: string, assetDetailsUrl: string) => Promise<AssetFetcher>,
+  assetStatus: string,
+  createAssetFetcher: (
+    apiKey: string,
+    assetListUrl: string,
+    assetDetailsUrl: string,
+    assetStatus: string
+  ) => Promise<AssetFetcher>,
   initApiQueryDate: string
 ): Initialize {
   return async () => {
     const apiKey = await fetchApiInfo();
-    assetFetcher = await createAssetFetcher(apiKey, assetListUrl, assetDetailsUrl);
+    assetFetcher = await createAssetFetcher(apiKey, assetListUrl, assetDetailsUrl, assetStatus);
     apiQueryStartDate = initApiQueryDate;
   };
 }
@@ -50,11 +57,7 @@ export function provideHandleBlock(getCurrentDateInYyyyMmDD: () => string): Hand
     // and the day is the only way to distinguish one call from another
     if (blockEvent.blockNumber % ETHEREUM_BLOCKS_IN_ONE_DAY === 0) {
       const currentDate = getCurrentDateInYyyyMmDD();
-      const assetList: Asset[] | undefined = await assetFetcher.getAssetlist(
-        ASSET_BLOCKED_STATUS,
-        currentDate,
-        apiQueryStartDate
-      );
+      const assetList: Asset[] | undefined = await assetFetcher.getAssetlist(currentDate, apiQueryStartDate);
 
       await Promise.all(
         assetList!.map(async (asset: Asset) => {
@@ -88,6 +91,7 @@ export default {
     fetchApiInfo,
     ASSET_LIST_URL,
     ASSET_DETAILS_URL,
+    ASSET_BLOCKED_STATUS,
     createAssetFetcher,
     INIT_API_QUERY_DATE
   ),

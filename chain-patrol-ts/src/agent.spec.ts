@@ -3,11 +3,7 @@ import { TestBlockEvent } from "forta-agent-tools/lib/test";
 import { when } from "jest-when";
 import { MockAsset, MockAssetDetails } from "./mocks/mock.types";
 import { provideInitialize, provideHandleBlock } from "./agent";
-import {
-  createMockAssetListBatch,
-  createMockAssetDetailsInstance,
-  createMockAssetDetailsBatch,
-} from "./mocks/mock.utils";
+import { createMockAssetBatch, createMockAssetDetailsInstance, createMockAssetDetailsBatch } from "./mocks/mock.utils";
 import { createMockBlockedAssetFinding, createMockBlockedAssetFindingBatch } from "./mocks/mock.findings";
 import AssetFetcher from "./fetcher";
 
@@ -18,8 +14,9 @@ const mockApiKey = "mockKey";
 const mockAssetListUrl = "MockAssetListUrl";
 const mockAssetDetailsUrl = "mockAssetDetailsUrl";
 const mockAssetBlockedStatus = "BLOCKED";
-const mockAssetList = createMockAssetListBatch(1);
-const mockAssetDetails = createMockAssetDetailsInstance(1);
+const batchOfOne = 1;
+const mockAssetList = createMockAssetBatch(batchOfOne);
+const mockAssetDetails = createMockAssetDetailsInstance(batchOfOne);
 
 describe("ChainPatrol Bot Test Suite", () => {
   const mockBlockEvent = new TestBlockEvent().setNumber(mockEthereumBlocksInADay);
@@ -38,7 +35,8 @@ describe("ChainPatrol Bot Test Suite", () => {
   async function mockAssetFetcherCreator(
     apiKey: string,
     assetListUrl: string,
-    assetDetailsUrl: string
+    assetDetailsUrl: string,
+    assetStatus: string
   ): Promise<AssetFetcher> {
     return mockAssetFetcher as any;
   }
@@ -50,6 +48,7 @@ describe("ChainPatrol Bot Test Suite", () => {
       mockApiFetcher,
       mockAssetListUrl,
       mockAssetDetailsUrl,
+      mockAssetBlockedStatus,
       mockAssetFetcherCreator,
       mockInitApiQueryDate
     );
@@ -62,7 +61,7 @@ describe("ChainPatrol Bot Test Suite", () => {
 
   it("creates alerts when the API sends data", async () => {
     when(mockAssetFetcher.getAssetlist)
-      .calledWith(mockAssetBlockedStatus, mockCurrentDate, mockInitApiQueryDate)
+      .calledWith(mockCurrentDate, mockInitApiQueryDate)
       .mockReturnValue(mockAssetList);
     when(mockAssetFetcher.getAssetDetails).calledWith(mockAssetList[0].content).mockReturnValue(mockAssetDetails);
 
@@ -74,7 +73,7 @@ describe("ChainPatrol Bot Test Suite", () => {
     const mockAssetList: MockAsset[] = [];
 
     when(mockAssetFetcher.getAssetlist)
-      .calledWith(mockAssetBlockedStatus, mockCurrentDate, mockInitApiQueryDate)
+      .calledWith(mockCurrentDate, mockInitApiQueryDate)
       .mockReturnValue(mockAssetList);
 
     let findings = await handleBlock(mockBlockEvent);
@@ -87,7 +86,7 @@ describe("ChainPatrol Bot Test Suite", () => {
     };
 
     when(mockAssetFetcher.getAssetlist)
-      .calledWith(mockAssetBlockedStatus, mockCurrentDate, mockInitApiQueryDate)
+      .calledWith(mockCurrentDate, mockInitApiQueryDate)
       .mockReturnValue(mockAssetList);
     when(mockAssetFetcher.getAssetDetails).calledWith(mockAssetList[0].content).mockReturnValue(mockAssetDetails);
 
@@ -97,12 +96,12 @@ describe("ChainPatrol Bot Test Suite", () => {
 
   it("creates multiple alerts if the API query returns multiple results", async () => {
     const batchOfFive = 5;
-    const mockAssetListOfFive = createMockAssetListBatch(batchOfFive);
+    const mockAssetListOfFive = createMockAssetBatch(batchOfFive);
     const mockAssetDetailsOfFive = createMockAssetDetailsBatch(batchOfFive);
     const mockFindings = createMockBlockedAssetFindingBatch(mockAssetListOfFive, mockAssetDetailsOfFive);
 
     when(mockAssetFetcher.getAssetlist)
-      .calledWith(mockAssetBlockedStatus, mockCurrentDate, mockInitApiQueryDate)
+      .calledWith(mockCurrentDate, mockInitApiQueryDate)
       .mockReturnValue(mockAssetListOfFive);
     mockAssetListOfFive.map((mockAsset: MockAsset, i: number) => {
       when(mockAssetFetcher.getAssetDetails).calledWith(mockAsset.content).mockReturnValue(mockAssetDetailsOfFive[i]);
@@ -114,7 +113,7 @@ describe("ChainPatrol Bot Test Suite", () => {
 
   it("correctly handles receiving some 'UNKNOWN' statuses mixed with getAssetDetails payload", async () => {
     const batchOfSeven = 7;
-    const mockAssetListOfSeven = createMockAssetListBatch(batchOfSeven);
+    const mockAssetListOfSeven = createMockAssetBatch(batchOfSeven);
     const mockAssetDetailsOfSeven = createMockAssetDetailsBatch(batchOfSeven);
 
     const mockAssetDetails: MockAssetDetails = {
@@ -122,7 +121,7 @@ describe("ChainPatrol Bot Test Suite", () => {
     };
 
     when(mockAssetFetcher.getAssetlist)
-      .calledWith(mockAssetBlockedStatus, mockCurrentDate, mockInitApiQueryDate)
+      .calledWith(mockCurrentDate, mockInitApiQueryDate)
       .mockReturnValue(mockAssetListOfSeven);
     mockAssetListOfSeven.map((mockAsset: MockAsset, i: number) => {
       if (i === 3 || i === 4) {
@@ -143,12 +142,12 @@ describe("ChainPatrol Bot Test Suite", () => {
 
   it("creates alerts up to the 50 alert limit then creates the rest in the subsequent block", async () => {
     const batchOfSixtyFive = 65;
-    const mockAssetListOfSixtyFive = createMockAssetListBatch(batchOfSixtyFive);
+    const mockAssetListOfSixtyFive = createMockAssetBatch(batchOfSixtyFive);
     const mockAssetDetailsOfSixtyFive = createMockAssetDetailsBatch(batchOfSixtyFive);
     const mockFindings = createMockBlockedAssetFindingBatch(mockAssetListOfSixtyFive, mockAssetDetailsOfSixtyFive);
 
     when(mockAssetFetcher.getAssetlist)
-      .calledWith(mockAssetBlockedStatus, mockCurrentDate, mockInitApiQueryDate)
+      .calledWith(mockCurrentDate, mockInitApiQueryDate)
       .mockReturnValue(mockAssetListOfSixtyFive);
     mockAssetListOfSixtyFive.map((mockAsset: MockAsset, i: number) => {
       when(mockAssetFetcher.getAssetDetails)
@@ -157,6 +156,7 @@ describe("ChainPatrol Bot Test Suite", () => {
     });
 
     let findings = await handleBlock(mockBlockEvent);
+    // console.log(`findings: ${JSON.stringify(findings)}`);
     expect(findings).toStrictEqual(mockFindings.slice(0, 50));
 
     // Create alerts in the very next block
