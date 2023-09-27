@@ -38,8 +38,8 @@
                     "lower_bound": 0.97,
                     "upper_bound": 1.00,
                     "confidence": 0.9
-                },
-                "weighted-precision": {
+                }
+                "weighted_precision": {
                     "value": 1.00
                     }                    
             },
