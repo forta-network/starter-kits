@@ -60,7 +60,7 @@
                     "upper_bound": 0.94,
                     "confidence": 0.9
                 }
-                "weighted-precision": {
+                "weighted_precision": {
                     "value": 0.9737
                     }
             },
@@ -81,7 +81,7 @@
                     "upper_bound": 0.95,
                     "confidence": 0.9
                 }
-                "weighted-precision": {
+                "weighted_precision": {
                     "value": 0.9701
                     }              
             },
@@ -185,7 +185,7 @@
                     "upper_bound": 0.90,
                     "confidence": 0.9
                 },
-                "weighted-recall": {
+                "weighted_recall": {
                     "value": 0.99,
                     "N": 30999,
                     "lower_bound": 0.99,
