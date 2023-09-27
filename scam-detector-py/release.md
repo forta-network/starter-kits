@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## v2.20.4 
+- turned ADDRESS-POISONING-ZERO-VALUE to a passthrough alert (precision of this alert is 100%)
+
 ## v2.20.3 (September 20th - beta)
 - debugged MM feature
 - added new NIP-7 and NIP-8 alert ids for native ice phishing
