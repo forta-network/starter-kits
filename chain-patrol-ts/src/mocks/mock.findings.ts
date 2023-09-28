@@ -10,12 +10,13 @@ export function createMockBlockedAssetFinding(asset: MockAsset, assetDetails: Mo
   const uniqueKey: string = utils.keccak256(utils.toUtf8Bytes(resultString));
 
   return Finding.fromObject({
-    name: `ChainPatrol Blocklist item detected: ${content}`,
-    description: "An item from ChainPatrol's Blocklist has been detected",
-    alertId: "CHAINPATROL-BLOCKED-ASSET",
+    name: `ChainPatrol detected scam: ${content}`,
+    description: "A scam has been detected by ChainPatrol",
+    alertId: "CHAINPATROL-SCAM-ASSET",
     severity: FindingSeverity.Critical,
     type: FindingType.Scam,
     uniqueKey,
+    protocol: "N/A",
     metadata: {
       type,
       status,
@@ -29,7 +30,7 @@ export function createMockBlockedAssetFinding(asset: MockAsset, assetDetails: Mo
         entity: content,
         entityType: EntityType.Url,
         label: `Blocked ${type}`,
-        confidence: 0.99, // TODO: Figure out the appropriate value to use
+        confidence: 0.99,
         remove: false,
         metadata: {
           type,

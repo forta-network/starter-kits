@@ -1,8 +1,8 @@
-# ChainPatrol Blocked Assets Detector
+# ChainPatrol Scam Detector
 
 ## ℹ️ Description
 
-This bot supports the same scam detection (i.e. blocked assets) functionality as the [ChainPatrol API](https://chainpatrol.io/docs/external-api/overview). It queries the `getAssetList` and `getAssetDetails` methods of the API, once per day, to detect new assets that have been declared a scam and subsequently blocked. The bot then emits an alert containing information about said blocked assets.
+This bot supports the same scam detection functionality as the [ChainPatrol API](https://chainpatrol.io/docs/external-api/overview). It queries the `getAssetList` and `getAssetDetails` methods of the API, once per day, to detect new assets that have been declared a scam and subsequently given a status of `BLOCKED`. The bot then emits an alert containing information about said blocked assets.
 
 ## 🌐 Supported Chains
 
@@ -11,9 +11,9 @@ This bot supports the same scam detection (i.e. blocked assets) functionality as
 
 ## 🚨 Alerts
 
-### CHAINPATROL-BLOCKED-ASSET
+### CHAINPATROL-SCAM-ASSET
 
-- **Description**: Fired when an asset has been blocked by the ChainPatrol API.
+- **Description**: Fired when an asset has been deemed a scam by ChainPatrol.
 - **Severity**: Critical
 - **Type**: Scam
 
@@ -21,7 +21,7 @@ This bot supports the same scam detection (i.e. blocked assets) functionality as
 
 - `type`: Type of asset. Either `URL`, `PAGE`, or `TWITTER`.
 - `status`: Status of asset. Always set to `BLOCKED`.
-- `updatedAt`: When asset was last updated. Format is ISO 8601.
+- `updatedAt`: When asset was last updated, in ISO 8601 format.
 - `reason`: Reason for result. Will either be "reported" if it was reported on ChainPatrol or "eth-phishing-detect" if it was reported on the eth-phishing-detect list.
 - `reportId`: ID of report that caused latest asset status update.
 - `reportUrl`: Link to report that caused latest asset status update.
