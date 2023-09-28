@@ -9,7 +9,7 @@ export const ASSET_BLOCKED_STATUS = "BLOCKED";
 
 // TODO: Determine when should be the first date
 // to use when querying the API
-export const INIT_API_QUERY_DATE = "2023-06-25";
+export const INIT_API_QUERY_DATE = "2023-09-27"; // `YYYY-MM-DD` Format
 const ONE_DAY = 60 * 60 * 24;
 export const ETHEREUM_BLOCKS_IN_ONE_DAY = ONE_DAY / 12;
 

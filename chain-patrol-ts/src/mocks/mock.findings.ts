@@ -12,7 +12,7 @@ export function createMockBlockedAssetFinding(asset: MockAsset, assetDetails: Mo
   return Finding.fromObject({
     name: `ChainPatrol Blocklist item detected: ${content}`,
     description: "An item from ChainPatrol's Blocklist has been detected",
-    alertId: "BLOCKED-CHAINPATROL-ASSET",
+    alertId: "CHAINPATROL-BLOCKED-ASSET",
     severity: FindingSeverity.Critical,
     type: FindingType.Scam,
     uniqueKey,

@@ -1,12 +1,12 @@
 {
-  "name": "forta-agent-starter",
-  "displayName": "Forta Agent Starter",
+  "name": "chainpatrol-blocked-assets-detector",
+  "displayName": "ChainPatrol Blocked Assets Detector",
   "version": "0.0.1",
-  "description": "Forta Agent Typescript starter project",
+  "description": "Detects URLs, web pages, and X/Twitter accounts that are scams",
   "longDescription": "Welcome to the Forta Agent JavaScript starter project!\n\nForta Network presents this starter project as an entry point for bot developers who want to integrate with the Forta Network ecosystem. As part of our commitment to empowering developers, this project provides a foundation for building powerful and secure bots that can interact with the Forta platform and take advantage of its cutting-edge capabilities.\n\nThe Forta Agent SDK and CLI tool offer a seamless experience for developers who wish to leverage the decentralized and trustless environment provided by the Forta Network. Whether you're interested in creating DeFi bots, monitoring smart contract transactions, or generating real-time alerts, this starter project sets you on the right path to achieve your goals.\n\nJoin the Forta Network community and learn more about our mission to revolutionize decentralized finance and blockchain analytics: https://forta.org/",
-  "repository": "https://github.com/forta-network/forta-bot-sdk/tree/master/starter-project",
-  "licenseUrl": "https://github.com/forta-network/forta-bot-sdk/blob/master/starter-project/LICENSE.md",
-  "promoUrl": "https://forta.org",
+  "repository": "https://github.com/forta-network/starter-kits/tree/main/chain-patrol-ts",
+  "licenseUrl": "https://github.com/forta-network/starter-kits/tree/main/chain-patrol-ts/LICENSE.md",
+  "promoUrl": "https://chainpatrol.io/",
   "chainIds": [
     1
   ],
@@ -33,6 +33,7 @@
     "format": "prettier --write \"src/**/*.ts\""
   },
   "dependencies": {
+    "dotenv": "^16.3.1",
     "forta-agent": "^0.1.41",
     "forta-agent-tools": "^3.2.10",
     "lru-cache": "^10.0.1"

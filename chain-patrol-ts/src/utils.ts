@@ -1,22 +1,32 @@
 import { fetchJwt } from "forta-agent";
+import { readFileSync } from "fs";
 import { DATABASE_URL } from "./constants";
-import { ApiOptions } from "./types";
+import { ApiInfo, ApiOptions } from "./types";
+import * as dotenv from "dotenv";
+dotenv.config();
 
-export async function fetchApiInfo(): Promise<string> {
-  const token = await fetchJwt({});
-  const headers = { Authorization: `Bearer ${token}` };
-  try {
-    const response = await fetch(`${DATABASE_URL}`, { headers });
+const hasLocalNode = process.env.hasOwnProperty("LOCAL_NODE");
 
-    if (response.ok) {
-      const apiKey: string = await response.json();
-      return apiKey;
-    } else {
-      return "";
+export async function fetchApiInfo(): Promise<ApiInfo> {
+  if (hasLocalNode) {
+    const data = readFileSync("secrets.json", "utf8");
+    return JSON.parse(data);
+  } else {
+    const token = await fetchJwt({});
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const response = await fetch(`${DATABASE_URL}`, { headers });
+
+      if (response.ok) {
+        const apiKey: ApiInfo = await response.json();
+        return apiKey;
+      } else {
+        return { API_KEY: "" };
+      }
+    } catch (e) {
+      console.log("Error in fetching data.");
+      throw e;
     }
-  } catch (e) {
-    console.log("Error in fetching data.");
-    throw e;
   }
 }
 
@@ -30,7 +40,7 @@ export function createAssetListApiOptions(
   return {
     method: "POST",
     headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
-    body: `{"type":${type},"status":${status},"endDate":${endDate},"startDate":${startDate}}`,
+    body: `{"type":"${type}","status":"${status}","endDate":"${endDate}","startDate":"${startDate}"}`,
   };
 }
 
@@ -38,7 +48,7 @@ export function createAssetDetailsApiOptions(apiKey: string, assetContent: strin
   return {
     method: "POST",
     headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
-    body: `{"content":${assetContent}}`,
+    body: `{"content":"${assetContent}"}`,
   };
 }
 

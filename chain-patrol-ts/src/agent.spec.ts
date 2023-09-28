@@ -1,7 +1,7 @@
 import { Initialize, HandleBlock } from "forta-agent";
 import { TestBlockEvent } from "forta-agent-tools/lib/test";
 import { when } from "jest-when";
-import { MockAsset, MockAssetDetails } from "./mocks/mock.types";
+import { MockApiInfo, MockAsset, MockAssetDetails } from "./mocks/mock.types";
 import { provideInitialize, provideHandleBlock } from "./agent";
 import { createMockAssetBatch, createMockAssetDetailsInstance, createMockAssetDetailsBatch } from "./mocks/mock.utils";
 import { createMockBlockedAssetFinding, createMockBlockedAssetFindingBatch } from "./mocks/mock.findings";
@@ -23,8 +23,8 @@ describe("ChainPatrol Bot Test Suite", () => {
 
   const mockCurrentDateFetcher = jest.fn();
 
-  async function mockApiFetcher(): Promise<string> {
-    return mockApiKey;
+  async function mockApiFetcher(): Promise<MockApiInfo> {
+    return { API_KEY: mockApiKey };
   }
 
   const mockAssetFetcher = {

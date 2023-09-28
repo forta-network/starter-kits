@@ -68,7 +68,7 @@ export function createMockAssetListApiOptions(
   return {
     method: "POST",
     headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
-    body: `{"type":${type},"status":${status},"endDate":${endDate},"startDate":${startDate}}`,
+    body: `{"type":"${type}","status":"${status}","endDate":"${endDate}","startDate":"${startDate}"}`,
   };
 }
 
@@ -76,7 +76,7 @@ export function createMockAssetDetailsApiOptions(apiKey: string, assetContent: s
   return {
     method: "POST",
     headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
-    body: `{"content":${assetContent}}`,
+    body: `{"content":"${assetContent}"}`,
   };
 }
 

@@ -43,6 +43,7 @@ export default class AssetFetcher {
         });
 
         let fetchedAssets: Asset[] = [];
+
         await Promise.all(
           apiOptions.map(async (options: ApiOptions) => {
             const fetchedAssetList = (await (await fetch(this.assetListUrl, options)).json()) as AssetList;

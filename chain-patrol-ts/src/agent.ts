@@ -1,6 +1,6 @@
 import { BlockEvent, Finding, Initialize, HandleBlock } from "forta-agent";
 import { fetchApiInfo, getCurrentDateInYyyyMmDD } from "./utils";
-import { Asset, AssetDetails, UnalertedAsset } from "./types";
+import { ApiInfo, Asset, AssetDetails, UnalertedAsset } from "./types";
 import { createBlockedAssetFinding } from "./findings";
 import AssetFetcher from "./fetcher";
 import {
@@ -30,7 +30,7 @@ async function createAssetFetcher(
 }
 
 export function provideInitialize(
-  fetchApiInfo: () => Promise<string>,
+  fetchApiInfo: () => Promise<ApiInfo>,
   assetListUrl: string,
   assetDetailsUrl: string,
   assetStatus: string,
@@ -43,7 +43,7 @@ export function provideInitialize(
   initApiQueryDate: string
 ): Initialize {
   return async () => {
-    const apiKey = await fetchApiInfo();
+    const { API_KEY: apiKey } = await fetchApiInfo();
     assetFetcher = await createAssetFetcher(apiKey, assetListUrl, assetDetailsUrl, assetStatus);
     apiQueryStartDate = initApiQueryDate;
   };
@@ -55,7 +55,7 @@ export function provideHandleBlock(getCurrentDateInYyyyMmDD: () => string): Hand
 
     // Querying API once per day since the argument is `YYYY-MM-DD`,
     // and the day is the only way to distinguish one call from another
-    if (blockEvent.blockNumber % ETHEREUM_BLOCKS_IN_ONE_DAY === 0) {
+    if (blockEvent.blockNumber % 2 === 0 /*ETHEREUM_BLOCKS_IN_ONE_DAY === 0*/) {
       const currentDate = getCurrentDateInYyyyMmDD();
       const assetList: Asset[] | undefined = await assetFetcher.getAssetlist(currentDate, apiQueryStartDate);
 

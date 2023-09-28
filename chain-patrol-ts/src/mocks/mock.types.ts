@@ -1,3 +1,7 @@
+export type MockApiInfo = {
+  API_KEY: string;
+};
+
 export type MockAsset = {
   content: string;
   type: string;

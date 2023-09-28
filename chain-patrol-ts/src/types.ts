@@ -1,3 +1,7 @@
+export type ApiInfo = {
+  API_KEY: string;
+};
+
 type Headers = {
   "X-API-KEY": string;
   "Content-Type": string;
