@@ -5,3 +5,4 @@ __pycache__
 .pytest_cache
 .env
 secrets.json
+src/fp_mitigation/models

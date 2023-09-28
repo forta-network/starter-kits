@@ -16,9 +16,10 @@ import traceback
 from web3 import Web3
 from forta_agent import get_json_rpc_url
 
-from src.constants import TX_COUNT_FILTER_THRESHOLD, CONFIDENCE_MAPPINGS
+from src.constants import TX_COUNT_FILTER_THRESHOLD, CONFIDENCE_MAPPINGS, FP_THRESHOLD
 from src.error_cache import ErrorCache
 from src.storage import get_secrets
+from src.fp_mitigation.fp_mitigator import FPMitigator
 
 class Utils:
     ERROR_CACHE = ErrorCache
@@ -249,7 +250,7 @@ class Utils:
         })
 
     @staticmethod
-    def is_fp(w3, cluster: str, chain_id, is_address: bool = True) -> bool:
+    def is_fp(w3, cluster: str, chain_id, scammer_address_lower, alert_id, is_address: bool = True, fp_mitigator: FPMitigator = None) -> (bool, float):  
         global ERROR_CACHE
 
         if is_address: # if it's not a URL
@@ -265,7 +266,7 @@ class Utils:
                     or '.eth' in etherscan_label
                     or etherscan_label == ''):
                 logging.info(f"Cluster {cluster} etherscan label: {etherscan_label}")
-                return True
+                return True, None
 
             tx_count = 0
             try:
@@ -277,14 +278,14 @@ class Utils:
 
             if tx_count > TX_COUNT_FILTER_THRESHOLD:
                 logging.info(f"Cluster {cluster} transacton count: {tx_count}")
-                return True
+                return True, None
             
             try:
                 from src.blockchain_indexer_service import BlockChainIndexer
                 block_chain_indexer = BlockChainIndexer()
                 if block_chain_indexer.has_deployed_high_tx_count_contract(cluster, chain_id):
                     logging.info(f"Cluster {cluster} has deployed a high tx count contract")
-                    return True
+                    return True, None
                 else:
                     logging.info(f"Cluster {cluster} has not deployed a high tx count contract")
 
@@ -292,13 +293,18 @@ class Utils:
                 error_finding = Utils.alert_error(str(e), "Utils.block_chain_indexer.has_deployed_high_tx_count_contract", f"{traceback.format_exc()}")
                 Utils.ERROR_CACHE.add(error_finding)
                 logging.error(f"Exception in assessing has_deployed_high_tx_count_contract for cluster {cluster}: {e}")
-                return False
+                return False, None
+
+            if FPMitigator is not None:
+                predicted_value_fp = fp_mitigator.mitigate_fp(scammer_address_lower, alert_id)
+                if predicted_value_fp is not None and predicted_value_fp > FP_THRESHOLD:
+                    return True, predicted_value_fp                
 
         if Utils.is_in_fp_mitigation_list(cluster):
             logging.info(f"Cluster {cluster} is in fp mitigation list")
-            return True
+            return True, None
 
-        return False
+        return False, None
 
     @staticmethod
     def is_in_fp_mitigation_list(cluster: str) -> bool:

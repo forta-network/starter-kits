@@ -31,6 +31,7 @@ from src.forta_explorer import FortaExplorer
 from src.base_bot_parser import BaseBotParser
 from src.l2_cache import L2Cache
 from src.utils import Utils
+from src.fp_mitigation.fp_mitigator import FPMitigator
 
 web3 = Utils.get_rpc_endpoint()
 block_chain_indexer = BlockChainIndexer()
@@ -133,6 +134,9 @@ def initialize(test = False):
 
         global MODEL
         MODEL = joblib.load(MODEL_NAME)
+
+        global fp_mitigator
+        fp_mitigator = FPMitigator(secrets, CHAIN_ID)
 
         # subscribe to the base bots, FP mitigation and entity clustering bot
         global BASE_BOTS
@@ -460,6 +464,7 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
     global BASE_BOTS
     global CHAIN_ID
     global BOT_VERSION
+    global fp_mitigator
 
     start_time = time.time()
 
@@ -497,8 +502,20 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
         logging.info(f"{BOT_VERSION}: model threshold {model_threshold}.")
         if score>model_threshold:
             #since this is a expensive function, will only check if we are about to raise an alert
-            if Utils.is_fp(w3, cluster, CHAIN_ID):
+            is_fp, fp_pred = Utils.is_fp(w3, cluster, CHAIN_ID, scammer_address_lower=scammer_address_lower, alert_id=alert_event.alert.alert_id, fp_mitigator=fp_mitigator)
+            if is_fp:
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} identified as FP; skipping")
+                if fp_pred is not None and Utils.is_beta():
+                    finding_dict = {
+                        "name": 'fp-mitigation',
+                        "description": f'FP mitigation for {scammer_address_lower} for alert {alert_event.alert.alert_id}',
+                        "alert_id": f'{alert_event.alert.alert_id}-FP-MITIGATED',
+                        "type": FindingType.Scam,
+                        "severity": FindingSeverity.High,
+                        "metadata": {'address': scammer_address_lower, 'fp_predictions': fp_pred},
+                    }
+                    fp_mitigator_finding = Finding(finding_dict)
+                    findings.append(fp_mitigator_finding)
                 continue
 
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters. Processing took {time.time() - start_time} seconds.")
@@ -525,6 +542,7 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
     global ALERTED_ENTITIES_PASSTHROUGH_QUEUE_SIZE
     global BASE_BOTS
     global CHAIN_ID
+    global fp_mitigator
 
     scammer_addresses_dict = BaseBotParser.get_scammer_addresses(w3, alert_event)
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got base bot alert (passthrough); extracted {len(scammer_addresses_dict.keys())} scammer addresses.")
@@ -548,8 +566,20 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
             continue
 
-        if Utils.is_fp(w3, cluster, CHAIN_ID):
-            logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} identified as FP; skipping")
+        is_fp, fp_pred = Utils.is_fp(w3, cluster, CHAIN_ID, scammer_address_lower=scammer_address_lower, alert_id=alert_event.alert.alert_id, fp_mitigator=fp_mitigator)
+        if is_fp:
+            logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_id} - cluster {cluster} identified as FP; skipping")
+            if fp_pred is not None and Utils.is_beta():
+                finding_dict = {
+                    "name": 'fp-mitigation',
+                    "description": f'FP mitigation for {scammer_address_lower} for alert {alert_event.alert.alert_id}',
+                    "alert_id": f'{alert_event.alert.alert_id}-FP-MITIGATED',
+                    "type": FindingType.Scam,
+                    "severity": FindingSeverity.High,
+                    "metadata": {'address': scammer_address_lower, 'fp_predictions': fp_pred},
+                }
+                fp_mitigator_finding = Finding(finding_dict)
+                findings.append(fp_mitigator_finding)
             continue
 
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} not in FP mitigation clusters")
@@ -569,8 +599,9 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
             if already_alerted(scammer_url, alert_id, "passthrough"):
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - url {scammer_url} already alerted on for {alert_id}; skipping")
                 continue
-
-            if Utils.is_fp(w3, scammer_url, CHAIN_ID, False):
+            is_fp, fp_pred = Utils.is_fp(w3, scammer_url, CHAIN_ID, scammer_address_lower=scammer_address, alert_id=alert_event.alert.alert_id, 
+                                         is_address=False, fp_mitigator=fp_mitigator)
+            if is_fp:
                 logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - url {scammer_url} identified as FP; skipping")
                 continue
 
@@ -591,6 +622,7 @@ def emit_contract_similarity_finding(w3, alert_event: forta_agent.alert_event.Al
     global ALERTED_ENTITIES_SIMILAR_CONTRACT_QUEUE_SIZE
     global CONTRACT_SIMILARITY_BOT_THRESHOLDS
     global CHAIN_ID
+    global fp_mitigator
 
     findings = []
     scammer_addresses_lower = BaseBotParser.get_scammer_addresses(w3, alert_event)
@@ -602,7 +634,9 @@ def emit_contract_similarity_finding(w3, alert_event: forta_agent.alert_event.Al
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - {scammer_address_lower} similarity score {similarity_score}")
         if similarity_score > CONTRACT_SIMILARITY_BOT_THRESHOLDS[0]:
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - similarity score {similarity_score} is above threshold {CONTRACT_SIMILARITY_BOT_THRESHOLDS[0]}")
-            if not Utils.is_fp(w3, scammer_address_lower, CHAIN_ID):
+            is_fp, fp_pred = Utils.is_fp(w3, scammer_address_lower, CHAIN_ID, scammer_address_lower=scammer_address_lower, alert_id=alert_event.alert.alert_id,
+                                  fp_mitigator=fp_mitigator)
+            if not is_fp:
                 
                 if not already_alerted(scammer_address_lower, "SCAM-DETECTOR-SIMILAR-CONTRACT", "similar_contract"):
                     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower}; emitting finding")
@@ -616,6 +650,17 @@ def emit_contract_similarity_finding(w3, alert_event: forta_agent.alert_event.Al
                     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} already alerted")
             else:
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} in FP.")
+                if fp_pred is not None and Utils.is_beta():
+                    finding_dict = {
+                        "name": 'fp-mitigation',
+                        "description": f'FP mitigation for {scammer_address_lower} for alert {alert_event.alert.alert_id}',
+                        "alert_id": f'{alert_event.alert.alert_id}-FP-MITIGATED',
+                        "type": FindingType.Scam,
+                        "severity": FindingSeverity.High,
+                        "metadata": {'address': scammer_address_lower, 'fp_predictions': fp_pred},
+                    }
+                    fp_mitigator_finding = Finding(finding_dict)
+                    findings.append(fp_mitigator_finding)
     return findings
 
 
@@ -624,6 +669,7 @@ def emit_eoa_association_finding(w3, alert_event: forta_agent.alert_event.AlertE
     global ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE
     global EOA_ASSOCIATION_BOT_THRESHOLDS
     global CHAIN_ID
+    global fp_mitigator
 
     findings = []
     scammer_addresses_lower = BaseBotParser.get_scammer_addresses(w3, alert_event)
@@ -635,7 +681,9 @@ def emit_eoa_association_finding(w3, alert_event: forta_agent.alert_event.AlertE
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - {scammer_address_lower} model confidence {model_confidence}")
         if model_confidence > EOA_ASSOCIATION_BOT_THRESHOLDS[0]:
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - model confidence {model_confidence} is above threshold {EOA_ASSOCIATION_BOT_THRESHOLDS[0]}")
-            if not Utils.is_fp(w3, scammer_address_lower, CHAIN_ID):
+            is_fp, fp_pred = Utils.is_fp(w3, scammer_address_lower, CHAIN_ID, scammer_address_lower=scammer_address_lower, alert_id=alert_event.alert.alert_id,
+                                  fp_mitigator=fp_mitigator)
+            if not is_fp:
                 if not already_alerted(scammer_address_lower, "SCAM-DETECTOR-SCAMMER-ASSOCIATION", "scammer_association"):
                     update_list(ALERTED_ENTITIES_SCAMMER_ASSOCIATION, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE, scammer_address_lower, "SCAM-DETECTOR-SCAMMER-ASSOCIATION", "scammer_association")
                     #"central_node":"0x13549e22de184a881fe3d164612ef15f99f6d4b3",
@@ -653,6 +701,17 @@ def emit_eoa_association_finding(w3, alert_event: forta_agent.alert_event.AlertE
                     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} already alerted")
             else:
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} in FP.")
+                if fp_pred is not None and Utils.is_beta():
+                    finding_dict = {
+                        "name": 'fp-mitigation',
+                        "description": f'FP mitigation for {scammer_address_lower} for alert {alert_event.alert.alert_id}',
+                        "alert_id": f'{alert_event.alert.alert_id}-FP-MITIGATED',
+                        "type": FindingType.Scam,
+                        "severity": FindingSeverity.High,
+                        "metadata": {'address': scammer_address_lower, 'fp_predictions': fp_pred},
+                    }
+                    fp_mitigator_finding = Finding(finding_dict)
+                    findings.append(fp_mitigator_finding)
     return findings
 
 def emit_manual_finding(w3, test = False) -> list:

@@ -316,3 +316,15 @@ POOLCREATED_EVENT_ABI = '{"anonymous":false,"inputs":[{"indexed":true,"internalT
 #            ("0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732", "NFT-WASH-TRADE", "Preparation"),  # wash trading bot
              
 #         ]
+
+# FP mitigation
+# Zettablock FP mitigation url
+ZETTABLOCK_FP_MITIGATION_URL = "https://api.zettablock.com/api/v1/dataset/sq_863f76be7c034d73bf8b70c94e42dab2/graphql"
+# AutoEncoder model path
+AE_MODEL_PATH = "src/fp_mitigation/models/ae_state_dict.pt"
+# FP mitigation model paths
+FP_MODELS_PATH = ['src/fp_mitigation/models/fp_xgb.pkl', 'src/fp_mitigation/models/fp_lgbm.pkl']
+# One hot encoder path
+OHE_PATH = 'src/fp_mitigation/models/ohe.pkl'
+# FP mitigation threshold
+FP_THRESHOLD = 0.3
