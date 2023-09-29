@@ -50,13 +50,16 @@ class TestUtils:
         assert Utils.is_in_fp_mitigation_list("0x8cc6b83d52b67f629fb3c5978cda3a6c2a456edc"), "it should be in list for chain 1"
 
     def test_fp_etherscan_label(self):
-        assert Utils.is_fp(w3, "0xffc0022959f58aa166ce58e6a38f711c95062b99", 1), "this should be a false positive"
+        fp, _ = Utils.is_fp(w3, "0xffc0022959f58aa166ce58e6a38f711c95062b99", 1)
+        assert fp, "this should be a false positive"
 
     def test_fp_max_tx_count(self):
-        assert Utils.is_fp(w3, EOA_ADDRESS_LARGE_TX, 1), "this should be a false positive"
+        fp, _ = Utils.is_fp(w3, EOA_ADDRESS_LARGE_TX, 1)
+        assert fp, "this should be a false positive"
 
     def test_fp_mitigation_addresses(self):
-        assert Utils.is_fp(w3, "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0", 1), "this should be a false positive"
+        fp, _ = Utils.is_fp(w3, "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0", 1)
+        assert fp, "this should be a false positive"
 
     def test_get_total_shards(self):
         assert Utils.get_total_shards(w3) == 8, "this should be 8"
@@ -72,7 +75,8 @@ class TestUtils:
         assert Utils.is_beta() is not None
 
     def test_is_fp_investigation1(self):
-        assert not Utils.is_fp(real_w3, "0x61fF13F129a96d2d229D37A0531979852945433a".lower(), 1), "this should not be a false positive"
+        fp, _ = Utils.is_fp(real_w3, "0x61fF13F129a96d2d229D37A0531979852945433a".lower(), 1)
+        assert not fp, "this should not be a false positive"
 
     def test_calc_contract_address(self):
         contract_address = Utils.calc_contract_address(w3, EOA_ADDRESS_SMALL_TX, 9)

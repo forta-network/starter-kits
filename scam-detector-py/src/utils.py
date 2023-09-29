@@ -250,7 +250,7 @@ class Utils:
         })
 
     @staticmethod
-    def is_fp(w3, cluster: str, chain_id, scammer_address_lower, alert_id, is_address: bool = True, fp_mitigator: FPMitigator = None) -> (bool, float):  
+    def is_fp(w3, cluster: str, chain_id, scammer_address_lower=None, alert_id=None, is_address: bool = True, fp_mitigator: FPMitigator = None) -> (bool, float):  
         global ERROR_CACHE
 
         if is_address: # if it's not a URL
@@ -295,7 +295,7 @@ class Utils:
                 logging.error(f"Exception in assessing has_deployed_high_tx_count_contract for cluster {cluster}: {e}")
                 return False, None
 
-            if FPMitigator is not None:
+            if FPMitigator is not None and scammer_address_lower is not None and alert_id is not None:
                 predicted_value_fp = fp_mitigator.mitigate_fp(scammer_address_lower, alert_id)
                 if predicted_value_fp is not None and predicted_value_fp > FP_THRESHOLD:
                     return True, predicted_value_fp                

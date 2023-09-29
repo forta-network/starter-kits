@@ -8,7 +8,7 @@ class TestErrorCache:
     def test_utils_is_fp_error(self):
         Utils.ERROR_CACHE.clear()
         assert Utils.ERROR_CACHE.len() == 0, "ERROR_CACHE should be empty"
-        is_fp = Utils.is_fp(w3, "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4", 1)
+        is_fp, _ = Utils.is_fp(w3, "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4", 1)
         assert is_fp == False
         assert Utils.ERROR_CACHE.len() == 1, "ERROR_CACHE should have 1 error"
         error_findings = Utils.ERROR_CACHE.get_all()
