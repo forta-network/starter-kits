@@ -1,5 +1,7 @@
-export type ApiInfo = {
-  API_KEY: string;
+export type ApiKeys = {
+  apiKeys: {
+    CHAINPATROL: string;
+  };
 };
 
 type Headers = {

@@ -1,19 +1,17 @@
 import { LRUCache } from "lru-cache";
 import { createAssetListApiOptions, createAssetDetailsApiOptions } from "./utils";
 import { ApiOptions, AssetList, Asset, AssetDetails } from "./types";
-import { ASSET_TYPES } from "./constants";
+import { ASSET_TYPES, MAX_FETCH_ATTEMPTS } from "./constants";
 
 export default class AssetFetcher {
   assetListUrl: string;
   assetDetailsUrl: string;
   assetStatus: string;
   private apiKey: string;
-  private readonly MAX_TRIES: number;
   private assetListCache: LRUCache<string, Asset[]>;
   private assetDetailsCache: LRUCache<string, AssetDetails>;
 
   constructor(apiKey: string, assetListUrl: string, assetDetailsUrl: string, assetStatus: string) {
-    this.MAX_TRIES = 3;
     this.apiKey = apiKey;
     this.assetListUrl = assetListUrl;
     this.assetDetailsUrl = assetDetailsUrl;
@@ -26,36 +24,15 @@ export default class AssetFetcher {
     });
   }
 
-  getAssetlist = async (endDate: string, startDate: string): Promise<Asset[] | undefined> => {
-    const key = `${endDate}-${startDate}`;
-    if (this.assetListCache.has(key)) {
-      return this.assetListCache.get(key);
-    }
-
+  private async fetchWithRetries(apiUrl: string, apiOptions: ApiOptions): Promise<any> {
     let tries = 0;
-    while (tries < this.MAX_TRIES) {
+    while (tries < MAX_FETCH_ATTEMPTS) {
       try {
-        // Since we can only query the API
-        // with one `type` at a time
-        const apiOptions: ApiOptions[] = [];
-        ASSET_TYPES.map((type: string) => {
-          apiOptions.push(createAssetListApiOptions(this.apiKey, type, this.assetStatus, endDate, startDate));
-        });
-
-        let fetchedAssets: Asset[] = [];
-
-        await Promise.all(
-          apiOptions.map(async (options: ApiOptions) => {
-            const fetchedAssetList = (await (await fetch(this.assetListUrl, options)).json()) as AssetList;
-            fetchedAssets.push(...fetchedAssetList.assets);
-          })
-        );
-        this.assetListCache.set(key, fetchedAssets);
-        return fetchedAssets;
+        return await fetch(apiUrl, apiOptions).then((response) => response.json());
       } catch (e) {
         tries++;
-        console.log(`Error in fetching Asset List (attempt ${tries}): `, e);
-        if (tries === this.MAX_TRIES) {
+        console.log(`Error in fetching API data (attempt ${tries}): `, e);
+        if (tries === MAX_FETCH_ATTEMPTS) {
           throw e;
         }
       }
@@ -63,6 +40,30 @@ export default class AssetFetcher {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
     return undefined;
+  }
+
+  getAssetlist = async (endDate: string, startDate: string): Promise<Asset[] | undefined> => {
+    const key = `${endDate}-${startDate}`;
+    if (this.assetListCache.has(key)) {
+      return this.assetListCache.get(key);
+    }
+
+    // Since we can only query the API
+    // with one `type` at a time
+    const apiOptionsList: ApiOptions[] = ASSET_TYPES.map((type: string) =>
+      createAssetListApiOptions(this.apiKey, type, this.assetStatus, endDate, startDate)
+    );
+
+    const fetchedAssets: Asset[] = [];
+    await Promise.all(
+      apiOptionsList.map(async (options: ApiOptions) => {
+        const fetchedAssetList = await this.fetchWithRetries(this.assetListUrl, options);
+        fetchedAssets.push(...fetchedAssetList.assets);
+      })
+    );
+
+    this.assetListCache.set(key, fetchedAssets);
+    return fetchedAssets;
   };
 
   getAssetDetails = async (assetContent: string): Promise<AssetDetails | undefined> => {
@@ -70,23 +71,10 @@ export default class AssetFetcher {
       return this.assetDetailsCache.get(assetContent);
     }
 
-    let tries = 0;
-    while (tries < this.MAX_TRIES) {
-      try {
-        const options = createAssetDetailsApiOptions(this.apiKey, assetContent);
-        const assetDetails = (await (await fetch(this.assetDetailsUrl, options)).json()) as AssetDetails;
-        this.assetDetailsCache.set(assetContent, assetDetails);
-        return assetDetails;
-      } catch (e) {
-        tries++;
-        console.log(`Error in fetching Asset Details (attempt ${tries}): `, e);
-        if (tries === this.MAX_TRIES) {
-          throw e;
-        }
-      }
-      // Wait for 1 second before retrying
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-    return undefined;
+    const options = createAssetDetailsApiOptions(this.apiKey, assetContent);
+    const assetDetails = await this.fetchWithRetries(this.assetDetailsUrl, options);
+
+    this.assetDetailsCache.set(assetContent, assetDetails);
+    return assetDetails;
   };
 }

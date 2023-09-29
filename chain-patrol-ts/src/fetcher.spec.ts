@@ -51,6 +51,8 @@ describe("AssetFetcher Test Suite", () => {
     });
 
     const assetList = await fetcher.getAssetlist(mockEndDate, mockStartDate);
+    console.log(`assetList: ${JSON.stringify(assetList)}`);
+    console.log(`mockAssetsFromMockAssetListOfThree: ${JSON.stringify(mockAssetsFromMockAssetListOfThree)}`);
     expect(assetList).toStrictEqual(mockAssetsFromMockAssetListOfThree);
     // 6 calls: 3 different calls, with each failing once before succeding.
     expect(global.fetch).toHaveBeenCalledTimes(6);

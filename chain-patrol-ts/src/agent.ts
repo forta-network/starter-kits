@@ -1,6 +1,6 @@
 import { BlockEvent, Finding, Initialize, HandleBlock } from "forta-agent";
-import { fetchApiInfo, getCurrentDateInYyyyMmDD } from "./utils";
-import { ApiInfo, Asset, AssetDetails, UnalertedAsset } from "./types";
+import { fetchApiKey, getCurrentDateInYyyyMmDD } from "./utils";
+import { ApiKeys, Asset, AssetDetails, UnalertedAsset } from "./types";
 import { createBlockedAssetFinding } from "./findings";
 import AssetFetcher from "./fetcher";
 import {
@@ -30,7 +30,7 @@ async function createAssetFetcher(
 }
 
 export function provideInitialize(
-  fetchApiInfo: () => Promise<ApiInfo>,
+  fetchApiKey: () => Promise<string>,
   assetListUrl: string,
   assetDetailsUrl: string,
   assetStatus: string,
@@ -43,7 +43,7 @@ export function provideInitialize(
   initApiQueryDate: string
 ): Initialize {
   return async () => {
-    const { API_KEY: apiKey } = await fetchApiInfo();
+    const apiKey = await fetchApiKey();
     assetFetcher = await createAssetFetcher(apiKey, assetListUrl, assetDetailsUrl, assetStatus);
     apiQueryStartDate = initApiQueryDate;
   };
@@ -73,6 +73,8 @@ export function provideHandleBlock(getCurrentDateInYyyyMmDD: () => string): Hand
           });
         })
       );
+
+      apiQueryStartDate = currentDate;
     }
 
     const assetsToBeAlerted: UnalertedAsset[] = unalertedAssets.splice(
@@ -88,7 +90,7 @@ export function provideHandleBlock(getCurrentDateInYyyyMmDD: () => string): Hand
 
 export default {
   initialize: provideInitialize(
-    fetchApiInfo,
+    fetchApiKey,
     ASSET_LIST_URL,
     ASSET_DETAILS_URL,
     ASSET_BLOCKED_STATUS,

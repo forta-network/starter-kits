@@ -46,7 +46,9 @@ To verify the bot's behavior, you'll need to meet the following prerequisites.
 
 ```json
 {
-  "API_KEY": "Your-ChainPatrol-API-Key"
+  "apiKeys": {
+    "CHAINPATROL": "Your-ChainPatrol-API-Key"
+  }
 }
 ```
 

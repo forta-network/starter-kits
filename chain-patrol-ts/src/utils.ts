@@ -1,13 +1,13 @@
 import { fetchJwt } from "forta-agent";
 import { readFileSync } from "fs";
 import { DATABASE_URL } from "./constants";
-import { ApiInfo, ApiOptions } from "./types";
+import { ApiKeys, ApiOptions } from "./types";
 import * as dotenv from "dotenv";
 dotenv.config();
 
 const hasLocalNode = process.env.hasOwnProperty("LOCAL_NODE");
 
-export async function fetchApiInfo(): Promise<ApiInfo> {
+export async function fetchApiKey(): Promise<string> {
   if (hasLocalNode) {
     const data = readFileSync("secrets.json", "utf8");
     return JSON.parse(data);
@@ -18,13 +18,13 @@ export async function fetchApiInfo(): Promise<ApiInfo> {
       const response = await fetch(`${DATABASE_URL}`, { headers });
 
       if (response.ok) {
-        const apiKey: ApiInfo = await response.json();
-        return apiKey;
+        const apiKey: ApiKeys = await response.json();
+        return apiKey.apiKeys.CHAINPATROL;
       } else {
-        return { API_KEY: "" };
+        return "";
       }
     } catch (e) {
-      console.log("Error in fetching data.");
+      console.log("Error in fetching API key.");
       throw e;
     }
   }
