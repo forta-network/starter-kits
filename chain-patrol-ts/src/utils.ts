@@ -7,7 +7,7 @@ dotenv.config();
 
 const hasLocalNode = process.env.hasOwnProperty("LOCAL_NODE");
 
-export async function fetchApiKey(): Promise<string> {
+export async function fetchApiKey(): Promise<ApiKeys> {
   if (hasLocalNode) {
     const data = readFileSync("secrets.json", "utf8");
     return JSON.parse(data);
@@ -19,9 +19,9 @@ export async function fetchApiKey(): Promise<string> {
 
       if (response.ok) {
         const apiKey: ApiKeys = await response.json();
-        return apiKey.apiKeys.CHAINPATROL;
+        return apiKey;
       } else {
-        return "";
+        return { apiKeys: { CHAINPATROL: "" } };
       }
     } catch (e) {
       console.log("Error in fetching API key.");
@@ -33,14 +33,13 @@ export async function fetchApiKey(): Promise<string> {
 export function createAssetListApiOptions(
   apiKey: string,
   type: string,
-  status: string,
   endDate: string,
   startDate: string
 ): ApiOptions {
   return {
     method: "POST",
     headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
-    body: `{"type":"${type}","status":"${status}","endDate":"${endDate}","startDate":"${startDate}"}`,
+    body: `{"type":"${type}","status":"BLOCKED","endDate":"${endDate}","startDate":"${startDate}"}`,
   };
 }
 

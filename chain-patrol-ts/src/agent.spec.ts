@@ -1,7 +1,7 @@
 import { Initialize, HandleBlock } from "forta-agent";
 import { TestBlockEvent } from "forta-agent-tools/lib/test";
 import { when } from "jest-when";
-import { MockAsset, MockAssetDetails } from "./mocks/mock.types";
+import { MockApiKeys, MockAsset, MockAssetDetails } from "./mocks/mock.types";
 import { provideInitialize, provideHandleBlock } from "./agent";
 import { createMockAssetBatch, createMockAssetDetailsInstance, createMockAssetDetailsBatch } from "./mocks/mock.utils";
 import { createMockBlockedAssetFinding, createMockBlockedAssetFindingBatch } from "./mocks/mock.findings";
@@ -13,7 +13,6 @@ const mockCurrentDate = "2023-09-15";
 const mockApiKey = "mockKey";
 const mockAssetListUrl = "MockAssetListUrl";
 const mockAssetDetailsUrl = "mockAssetDetailsUrl";
-const mockAssetBlockedStatus = "BLOCKED";
 const batchOfOne = 1;
 const mockAssetList = createMockAssetBatch(batchOfOne);
 const mockAssetDetails = createMockAssetDetailsInstance(batchOfOne);
@@ -23,8 +22,8 @@ describe("ChainPatrol Bot Test Suite", () => {
 
   const mockCurrentDateFetcher = jest.fn();
 
-  async function mockApiFetcher(): Promise<string> {
-    return mockApiKey;
+  async function mockApiFetcher(): Promise<MockApiKeys> {
+    return { apiKeys: { CHAINPATROL: mockApiKey } };
   }
 
   const mockAssetFetcher = {
@@ -35,8 +34,7 @@ describe("ChainPatrol Bot Test Suite", () => {
   async function mockAssetFetcherCreator(
     apiKey: string,
     assetListUrl: string,
-    assetDetailsUrl: string,
-    assetStatus: string
+    assetDetailsUrl: string
   ): Promise<AssetFetcher> {
     return mockAssetFetcher as any;
   }
@@ -48,9 +46,8 @@ describe("ChainPatrol Bot Test Suite", () => {
       mockApiFetcher,
       mockAssetListUrl,
       mockAssetDetailsUrl,
-      mockAssetBlockedStatus,
-      mockAssetFetcherCreator,
-      mockInitApiQueryDate
+      mockInitApiQueryDate,
+      mockAssetFetcherCreator
     );
     await initialize();
 
@@ -156,7 +153,6 @@ describe("ChainPatrol Bot Test Suite", () => {
     });
 
     let findings = await handleBlock(mockBlockEvent);
-    // console.log(`findings: ${JSON.stringify(findings)}`);
     expect(findings).toStrictEqual(mockFindings.slice(0, 50));
 
     // Create alerts in the very next block

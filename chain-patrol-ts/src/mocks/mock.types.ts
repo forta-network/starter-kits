@@ -1,3 +1,9 @@
+export type MockApiKeys = {
+  apiKeys: {
+    CHAINPATROL: string;
+  };
+};
+
 export type MockAsset = {
   content: string;
   type: string;

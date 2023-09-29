@@ -6,14 +6,13 @@ import AssetFetcher from "./fetcher";
 import {
   ETHEREUM_BLOCKS_IN_ONE_DAY,
   MAX_ASSET_ALERTS_PER_BLOCK,
-  ASSET_BLOCKED_STATUS,
-  INIT_API_QUERY_DATE,
+  INIT_ASSET_LIST_START_DATE,
   ASSET_DETAILS_URL,
   ASSET_LIST_URL,
 } from "./constants";
 
 let assetFetcher: AssetFetcher;
-let apiQueryStartDate: string;
+let assetListStartDate: string;
 
 // Bots are allocated 1GB of memory, so storing
 // `UnalertedAsset`s won't be an issue. Especially
@@ -23,29 +22,22 @@ const unalertedAssets: UnalertedAsset[] = [];
 async function createAssetFetcher(
   apiKey: string,
   assetListUrl: string,
-  assetDetailsUrl: string,
-  assetStatus: string
+  assetDetailsUrl: string
 ): Promise<AssetFetcher> {
-  return new AssetFetcher(apiKey, assetListUrl, assetDetailsUrl, assetStatus);
+  return new AssetFetcher(apiKey, assetListUrl, assetDetailsUrl);
 }
 
 export function provideInitialize(
-  fetchApiKey: () => Promise<string>,
+  fetchApiKey: () => Promise<ApiKeys>,
   assetListUrl: string,
   assetDetailsUrl: string,
-  assetStatus: string,
-  createAssetFetcher: (
-    apiKey: string,
-    assetListUrl: string,
-    assetDetailsUrl: string,
-    assetStatus: string
-  ) => Promise<AssetFetcher>,
-  initApiQueryDate: string
+  initAssetListStartDate: string,
+  createAssetFetcher: (apiKey: string, assetListUrl: string, assetDetailsUrl: string) => Promise<AssetFetcher>
 ): Initialize {
   return async () => {
-    const apiKey = await fetchApiKey();
-    assetFetcher = await createAssetFetcher(apiKey, assetListUrl, assetDetailsUrl, assetStatus);
-    apiQueryStartDate = initApiQueryDate;
+    const { apiKeys: { CHAINPATROL: apiKey } } = await fetchApiKey();
+    assetFetcher = await createAssetFetcher(apiKey, assetListUrl, assetDetailsUrl);
+    assetListStartDate = initAssetListStartDate;
   };
 }
 
@@ -53,11 +45,11 @@ export function provideHandleBlock(getCurrentDateInYyyyMmDD: () => string): Hand
   return async (blockEvent: BlockEvent): Promise<Finding[]> => {
     const findings: Finding[] = [];
 
-    // Querying API once per day since the argument is `YYYY-MM-DD`,
-    // and the day is the only way to distinguish one call from another
-    if (blockEvent.blockNumber % 2 === 0 /*ETHEREUM_BLOCKS_IN_ONE_DAY === 0*/) {
+    // Querying ChainPatrol API once per day;
+    // Argument format is `YYYY-MM-DD`
+    if (blockEvent.blockNumber % ETHEREUM_BLOCKS_IN_ONE_DAY === 0) {
       const currentDate = getCurrentDateInYyyyMmDD();
-      const assetList: Asset[] | undefined = await assetFetcher.getAssetlist(currentDate, apiQueryStartDate);
+      const assetList: Asset[] | undefined = await assetFetcher.getAssetlist(currentDate, assetListStartDate);
 
       await Promise.all(
         assetList!.map(async (asset: Asset) => {
@@ -74,7 +66,10 @@ export function provideHandleBlock(getCurrentDateInYyyyMmDD: () => string): Hand
         })
       );
 
-      apiQueryStartDate = currentDate;
+      // `currentDate` will be used as `startDate`
+      // for the next call to `getAssetList` in
+      // the following day
+      assetListStartDate = currentDate;
     }
 
     const assetsToBeAlerted: UnalertedAsset[] = unalertedAssets.splice(
@@ -93,9 +88,8 @@ export default {
     fetchApiKey,
     ASSET_LIST_URL,
     ASSET_DETAILS_URL,
-    ASSET_BLOCKED_STATUS,
-    createAssetFetcher,
-    INIT_API_QUERY_DATE
+    INIT_ASSET_LIST_START_DATE,
+    createAssetFetcher
   ),
   handleBlock: provideHandleBlock(getCurrentDateInYyyyMmDD),
 };

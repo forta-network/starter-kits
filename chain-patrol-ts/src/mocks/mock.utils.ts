@@ -61,14 +61,13 @@ export function createMockAssetDetailsBatch(amountInBatch: number): MockAssetDet
 export function createMockAssetListApiOptions(
   apiKey: string,
   type: string,
-  status: string,
   endDate: string,
   startDate: string
 ): MockApiOptions {
   return {
     method: "POST",
     headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
-    body: `{"type":"${type}","status":"${status}","endDate":"${endDate}","startDate":"${startDate}"}`,
+    body: `{"type":"${type}","status":"BLOCKED","endDate":"${endDate}","startDate":"${startDate}"}`,
   };
 }
 

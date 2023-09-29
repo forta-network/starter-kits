@@ -14,14 +14,13 @@ describe("AssetFetcher Test Suite", () => {
   const mockApiKey = "mockKey";
   const mockAssetListUrl = "MockAssetListUrl";
   const mockAssetDetailsUrl = "mockAssetDetailsUrl";
-  const mockAssetBlockedStatus = "BLOCKED";
   const mockStartDate = "2022-09-15";
   const mockEndDate = "2023-09-15";
   const mockAssetTypes = ["URL", "PAGE", "TWITTER"];
   let fetcher: AssetFetcher;
 
   beforeAll(() => {
-    fetcher = new AssetFetcher(mockApiKey, mockAssetListUrl, mockAssetDetailsUrl, mockAssetBlockedStatus);
+    fetcher = new AssetFetcher(mockApiKey, mockAssetListUrl, mockAssetDetailsUrl);
   });
 
   it("should fetch AssetList with retries", async () => {
@@ -34,9 +33,7 @@ describe("AssetFetcher Test Suite", () => {
 
     const mockApiOptions: MockApiOptions[] = [];
     mockAssetTypes.map((type: string) => {
-      mockApiOptions.push(
-        createMockAssetListApiOptions(mockApiKey, type, mockAssetBlockedStatus, mockEndDate, mockStartDate)
-      );
+      mockApiOptions.push(createMockAssetListApiOptions(mockApiKey, type, mockEndDate, mockStartDate));
     });
 
     mockApiOptions.map((mockOptions: MockApiOptions, i: number) => {
@@ -51,8 +48,6 @@ describe("AssetFetcher Test Suite", () => {
     });
 
     const assetList = await fetcher.getAssetlist(mockEndDate, mockStartDate);
-    console.log(`assetList: ${JSON.stringify(assetList)}`);
-    console.log(`mockAssetsFromMockAssetListOfThree: ${JSON.stringify(mockAssetsFromMockAssetListOfThree)}`);
     expect(assetList).toStrictEqual(mockAssetsFromMockAssetListOfThree);
     // 6 calls: 3 different calls, with each failing once before succeding.
     expect(global.fetch).toHaveBeenCalledTimes(6);

@@ -6,16 +6,14 @@ import { ASSET_TYPES, MAX_FETCH_ATTEMPTS } from "./constants";
 export default class AssetFetcher {
   assetListUrl: string;
   assetDetailsUrl: string;
-  assetStatus: string;
   private apiKey: string;
   private assetListCache: LRUCache<string, Asset[]>;
   private assetDetailsCache: LRUCache<string, AssetDetails>;
 
-  constructor(apiKey: string, assetListUrl: string, assetDetailsUrl: string, assetStatus: string) {
+  constructor(apiKey: string, assetListUrl: string, assetDetailsUrl: string) {
     this.apiKey = apiKey;
     this.assetListUrl = assetListUrl;
     this.assetDetailsUrl = assetDetailsUrl;
-    this.assetStatus = assetStatus;
     this.assetListCache = new LRUCache<string, Asset[]>({
       max: 1000,
     });
@@ -24,14 +22,23 @@ export default class AssetFetcher {
     });
   }
 
-  private async fetchWithRetries(apiUrl: string, apiOptions: ApiOptions): Promise<any> {
+  private async fetchWithRetries(
+    apiUrl: string,
+    apiOptions: ApiOptions
+  ): Promise<AssetDetails | AssetList | undefined> {
     let tries = 0;
     while (tries < MAX_FETCH_ATTEMPTS) {
       try {
         return await fetch(apiUrl, apiOptions).then((response) => response.json());
       } catch (e) {
         tries++;
-        console.log(`Error in fetching API data (attempt ${tries}): `, e);
+
+        if (apiUrl === this.assetListUrl) {
+          console.log(`Error in fetching AssetList. Attempt: ${tries} | Error: ${e}`);
+        } else {
+          console.log(`Error in fetching AssetDetails. Attempt: ${tries} | Error: ${e}`);
+        }
+
         if (tries === MAX_FETCH_ATTEMPTS) {
           throw e;
         }
@@ -51,13 +58,13 @@ export default class AssetFetcher {
     // Since we can only query the API
     // with one `type` at a time
     const apiOptionsList: ApiOptions[] = ASSET_TYPES.map((type: string) =>
-      createAssetListApiOptions(this.apiKey, type, this.assetStatus, endDate, startDate)
+      createAssetListApiOptions(this.apiKey, type, endDate, startDate)
     );
 
     const fetchedAssets: Asset[] = [];
     await Promise.all(
       apiOptionsList.map(async (options: ApiOptions) => {
-        const fetchedAssetList = await this.fetchWithRetries(this.assetListUrl, options);
+        const fetchedAssetList = (await this.fetchWithRetries(this.assetListUrl, options)) as AssetList;
         fetchedAssets.push(...fetchedAssetList.assets);
       })
     );
@@ -72,7 +79,7 @@ export default class AssetFetcher {
     }
 
     const options = createAssetDetailsApiOptions(this.apiKey, assetContent);
-    const assetDetails = await this.fetchWithRetries(this.assetDetailsUrl, options);
+    const assetDetails = (await this.fetchWithRetries(this.assetDetailsUrl, options)) as AssetDetails;
 
     this.assetDetailsCache.set(assetContent, assetDetails);
     return assetDetails;
