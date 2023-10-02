@@ -49,6 +49,7 @@ ALERTED_ENTITIES_SCAMMER_ASSOCIATION = dict()  # cluster -> alert_id
 ALERTED_ENTITIES_SIMILAR_CONTRACT = dict()  # cluster -> alert_id
 ALERTED_ENTITIES_MANUAL = dict()  # cluster -> alert_id
 ALERTED_ENTITIES_MANUAL_METAMASK = dict()  # cluster -> alert_id
+ALERTED_ENTITIES_MANUAL_METAMASK_LIST = [] # Used to reduce size of persisted item
 ALERTED_FP_CLUSTERS = dict()  # clusters -> alert_id (dummy val) which are considered FPs that have been alerted on
 FINDINGS_CACHE_BLOCK = []
 FINDINGS_CACHE_ALERT = []
@@ -107,9 +108,12 @@ def initialize(test = False):
         alerted_entities_manual = load(CHAIN_ID, ALERTED_ENTITIES_MANUAL_KEY)
         ALERTED_ENTITIES_MANUAL = dict() if alerted_entities_manual is None else dict(alerted_entities_manual)
 
-        global ALERTED_ENTITIES_MANUAL_METAMASK
-        alerted_entities_manual_metamask = load(CHAIN_ID, ALERTED_ENTITIES_MANUAL_METAMASK_KEY)
-        ALERTED_ENTITIES_MANUAL_METAMASK = dict() if alerted_entities_manual_metamask is None else dict(alerted_entities_manual_metamask)
+        if CHAIN_ID == 1:
+            global ALERTED_ENTITIES_MANUAL_METAMASK
+            global ALERTED_ENTITIES_MANUAL_METAMASK_LIST
+            alerted_entities_manual_metamask = load(CHAIN_ID, ALERTED_ENTITIES_MANUAL_METAMASK_KEY)
+            ALERTED_ENTITIES_MANUAL_METAMASK_LIST = [] if alerted_entities_manual_metamask is None else list(alerted_entities_manual_metamask)
+            ALERTED_ENTITIES_MANUAL_METAMASK = {item: 'manual_metamaskSCAM-DETECTOR-MANUAL-METAMASK-PHISHING' for item in ALERTED_ENTITIES_MANUAL_METAMASK_LIST}
 
         global ALERTED_FP_CLUSTERS
         alerted_fp_addresses = load(CHAIN_ID, ALERTED_FP_CLUSTERS_KEY)
@@ -749,7 +753,7 @@ def emit_manual_finding(w3, test = False) -> list:
         Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.emit_manual_finding", traceback.format_exc()))
 
     global ENABLE_METAMASK_CONSUMPTION
-    if ENABLE_METAMASK_CONSUMPTION:
+    if ENABLE_METAMASK_CONSUMPTION and CHAIN_ID == 1:
         try: 
             alert_id = "SCAM-DETECTOR-MANUAL-METAMASK-PHISHING"
 
@@ -1145,6 +1149,7 @@ def persist_state():
     global ALERTED_ENTITIES_MANUAL_KEY
 
     global ALERTED_ENTITIES_MANUAL_METAMASK
+    global ALERTED_ENTITIES_MANUAL_METAMASK_LIST
     global ALERTED_ENTITIES_MANUAL_METAMASK_KEY
 
     global ALERTED_FP_CLUSTERS
@@ -1167,11 +1172,14 @@ def persist_state():
     persist(ALERTED_ENTITIES_SCAMMER_ASSOCIATION, CHAIN_ID, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY)
     persist(ALERTED_ENTITIES_SIMILAR_CONTRACT, CHAIN_ID, ALERTED_ENTITIES_SIMILAR_CONTRACT_KEY)
     persist(ALERTED_ENTITIES_MANUAL, CHAIN_ID, ALERTED_ENTITIES_MANUAL_KEY)
-    persist(ALERTED_ENTITIES_MANUAL_METAMASK, CHAIN_ID, ALERTED_ENTITIES_MANUAL_METAMASK_KEY)
     persist(ALERTED_FP_CLUSTERS, CHAIN_ID, ALERTED_FP_CLUSTERS_KEY)
     persist(FINDINGS_CACHE_BLOCK, CHAIN_ID, FINDINGS_CACHE_BLOCK_KEY)
     persist(FINDINGS_CACHE_ALERT, CHAIN_ID, FINDINGS_CACHE_ALERT_KEY)
     persist(FINDINGS_CACHE_TRANSACTION, CHAIN_ID, FINDINGS_CACHE_TRANSACTION_KEY)
+
+    if CHAIN_ID == 1 and len(ALERTED_ENTITIES_MANUAL_METAMASK.keys()) > 0:
+        ALERTED_ENTITIES_MANUAL_METAMASK_LIST = list(ALERTED_ENTITIES_MANUAL_METAMASK.keys())
+        persist(ALERTED_ENTITIES_MANUAL_METAMASK_LIST, CHAIN_ID, ALERTED_ENTITIES_MANUAL_METAMASK_KEY)
 
     end = time.time()
     logging.info(f"Persisted bot state. took {end - start} seconds")
