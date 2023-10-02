@@ -25,10 +25,12 @@ class L2Cache:
 
                 headers = {"Authorization": f"Bearer {token}"}
                 res = requests.post(f"{DATABASE}{key}_{chain_id}", data=bytes, headers=headers)
+                if res.status_code != 200:
+                    Utils.ERROR_CACHE.add(Utils.alert_error(f'Error {res.status_code} while persisting to DB.', "l2_cache.write.internal", ""))
                 logging.info(f"Persisting {key}_{chain_id} to database. Response: {res}")
             except Exception as e:
                 logging.warn(f"Exception in persist {e}")
-                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "l2_cache.persist", traceback.format_exc()))
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "l2_cache.write", traceback.format_exc()))
 
         else:
             logging.info(f"Persisting {key}_{chain_id} locally")
