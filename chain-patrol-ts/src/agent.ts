@@ -3,12 +3,7 @@ import { fetchApiKey, getDateFourWeeksAgoInYyyyMmDD, getCurrentDateInYyyyMmDD } 
 import { ApiKeys, Asset, AssetDetails, UnalertedAsset } from "./types";
 import { createBlockedAssetFinding } from "./findings";
 import AssetFetcher from "./fetcher";
-import {
-  ETHEREUM_BLOCKS_IN_ONE_DAY,
-  MAX_ASSET_ALERTS_PER_BLOCK,
-  ASSET_DETAILS_URL,
-  ASSET_LIST_URL,
-} from "./constants";
+import { ETHEREUM_BLOCKS_IN_ONE_DAY, MAX_ASSET_ALERTS_PER_BLOCK, ASSET_DETAILS_URL, ASSET_LIST_URL } from "./constants";
 
 let assetFetcher: AssetFetcher;
 let assetListStartDate: string;

@@ -38,8 +38,12 @@
     "forta-agent-tools": "^3.2.10",
     "lru-cache": "^10.0.1"
   },
+  "overrides": {
+    "semver": "^7.5.3"
+  },
   "devDependencies": {
     "@types/jest": "^27.0.1",
+    "@types/jest-when": "^3.5.3",
     "@types/nodemon": "^1.19.0",
     "jest": "^27.0.6",
     "nodemon": "^2.0.8",
