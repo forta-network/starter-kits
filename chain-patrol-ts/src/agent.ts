@@ -1,12 +1,11 @@
 import { BlockEvent, Finding, Initialize, HandleBlock } from "forta-agent";
-import { fetchApiKey, getCurrentDateInYyyyMmDD } from "./utils";
+import { fetchApiKey, getDateFourWeeksAgoInYyyyMmDD, getCurrentDateInYyyyMmDD } from "./utils";
 import { ApiKeys, Asset, AssetDetails, UnalertedAsset } from "./types";
 import { createBlockedAssetFinding } from "./findings";
 import AssetFetcher from "./fetcher";
 import {
   ETHEREUM_BLOCKS_IN_ONE_DAY,
   MAX_ASSET_ALERTS_PER_BLOCK,
-  INIT_ASSET_LIST_START_DATE,
   ASSET_DETAILS_URL,
   ASSET_LIST_URL,
 } from "./constants";
@@ -31,21 +30,23 @@ export function provideInitialize(
   fetchApiKey: () => Promise<ApiKeys>,
   assetListUrl: string,
   assetDetailsUrl: string,
-  initAssetListStartDate: string,
   createAssetFetcher: (apiKey: string, assetListUrl: string, assetDetailsUrl: string) => Promise<AssetFetcher>
 ): Initialize {
   return async () => {
-    const { apiKeys: { CHAINPATROL: apiKey } } = await fetchApiKey();
+    const {
+      apiKeys: { CHAINPATROL: apiKey },
+    } = await fetchApiKey();
     assetFetcher = await createAssetFetcher(apiKey, assetListUrl, assetDetailsUrl);
-    assetListStartDate = initAssetListStartDate;
+    assetListStartDate = getDateFourWeeksAgoInYyyyMmDD();
   };
 }
 
-export function provideHandleBlock(getCurrentDateInYyyyMmDD: () => string): HandleBlock {
+export function provideHandleBlock(): HandleBlock {
   return async (blockEvent: BlockEvent): Promise<Finding[]> => {
     const findings: Finding[] = [];
 
-    // Querying ChainPatrol API once per day;
+    // Querying ChainPatrol API once per day,
+    // otherwise API query returns zero results.
     // Argument format is `YYYY-MM-DD`
     if (blockEvent.blockNumber % ETHEREUM_BLOCKS_IN_ONE_DAY === 0) {
       const currentDate = getCurrentDateInYyyyMmDD();
@@ -84,12 +85,6 @@ export function provideHandleBlock(getCurrentDateInYyyyMmDD: () => string): Hand
 }
 
 export default {
-  initialize: provideInitialize(
-    fetchApiKey,
-    ASSET_LIST_URL,
-    ASSET_DETAILS_URL,
-    INIT_ASSET_LIST_START_DATE,
-    createAssetFetcher
-  ),
-  handleBlock: provideHandleBlock(getCurrentDateInYyyyMmDD),
+  initialize: provideInitialize(fetchApiKey, ASSET_LIST_URL, ASSET_DETAILS_URL, createAssetFetcher),
+  handleBlock: provideHandleBlock(),
 };

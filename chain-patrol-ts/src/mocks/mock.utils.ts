@@ -1,5 +1,28 @@
 import { MockAsset, MockAssetList, MockAssetDetails, MockApiOptions } from "./mock.types";
 
+function getMockDateInYyyyMmDd(date: Date): string {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${year}-${month}-${day}`;
+}
+
+export function getMockCurrentDateInYyyyMmDD(): string {
+  const currentDate = new Date();
+
+  return getMockDateInYyyyMmDd(currentDate);
+}
+
+export function getMockDateFourWeeksAgoInYyyyMmDD(): string {
+  const ONE_DAY = 60 * 60 * 24;
+  const THIRTY_DAYS_IN_MS = ONE_DAY * 30 * 1000;
+
+  const currentDateInMs = Date.now();
+  const dateThirtyDaysAgo = new Date(currentDateInMs - THIRTY_DAYS_IN_MS);
+
+  return getMockDateInYyyyMmDd(dateThirtyDaysAgo);
+}
+
 function createMockAssetInstance(instanceIndex: number): MockAsset {
   return {
     content: `mockContent${instanceIndex}`,

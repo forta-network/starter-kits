@@ -1,15 +1,21 @@
 import { Initialize, HandleBlock } from "forta-agent";
 import { TestBlockEvent } from "forta-agent-tools/lib/test";
 import { when } from "jest-when";
+import { createMockBlockedAssetFinding, createMockBlockedAssetFindingBatch } from "./mocks/mock.findings";
 import { MockApiKeys, MockAsset, MockAssetDetails } from "./mocks/mock.types";
 import { provideInitialize, provideHandleBlock } from "./agent";
-import { createMockAssetBatch, createMockAssetDetailsInstance, createMockAssetDetailsBatch } from "./mocks/mock.utils";
-import { createMockBlockedAssetFinding, createMockBlockedAssetFindingBatch } from "./mocks/mock.findings";
+import {
+  getMockDateFourWeeksAgoInYyyyMmDD,
+  createMockAssetDetailsInstance,
+  getMockCurrentDateInYyyyMmDD,
+  createMockAssetDetailsBatch,
+  createMockAssetBatch,
+} from "./mocks/mock.utils";
 import AssetFetcher from "./fetcher";
 
 const mockEthereumBlocksInADay = 7200;
-const mockInitApiQueryDate = "2022-09-15";
-const mockCurrentDate = "2023-09-15";
+const mockInitApiQueryDate = getMockDateFourWeeksAgoInYyyyMmDD();
+const mockCurrentDate = getMockCurrentDateInYyyyMmDD();
 const mockApiKey = "mockKey";
 const mockAssetListUrl = "MockAssetListUrl";
 const mockAssetDetailsUrl = "mockAssetDetailsUrl";
@@ -19,8 +25,6 @@ const mockAssetDetails = createMockAssetDetailsInstance(batchOfOne);
 
 describe("ChainPatrol Bot Test Suite", () => {
   const mockBlockEvent = new TestBlockEvent().setNumber(mockEthereumBlocksInADay);
-
-  const mockCurrentDateFetcher = jest.fn();
 
   async function mockApiFetcher(): Promise<MockApiKeys> {
     return { apiKeys: { CHAINPATROL: mockApiKey } };
@@ -46,14 +50,11 @@ describe("ChainPatrol Bot Test Suite", () => {
       mockApiFetcher,
       mockAssetListUrl,
       mockAssetDetailsUrl,
-      mockInitApiQueryDate,
       mockAssetFetcherCreator
     );
     await initialize();
 
-    handleBlock = provideHandleBlock(mockCurrentDateFetcher as any);
-
-    when(mockCurrentDateFetcher).calledWith().mockReturnValue(mockCurrentDate);
+    handleBlock = provideHandleBlock();
   });
 
   it("creates alerts when the API sends data", async () => {

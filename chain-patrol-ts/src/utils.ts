@@ -1,6 +1,6 @@
 import { fetchJwt } from "forta-agent";
 import { readFileSync } from "fs";
-import { DATABASE_URL } from "./constants";
+import { DATABASE_URL, THIRTY_DAYS_IN_MS } from "./constants";
 import { ApiKeys, ApiOptions } from "./types";
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -51,12 +51,22 @@ export function createAssetDetailsApiOptions(apiKey: string, assetContent: strin
   };
 }
 
-export function getCurrentDateInYyyyMmDD(): string {
-  const currenDate = new Date();
-  const currentDay = String(currenDate.getDate()).padStart(2, "0");
-  const currentMonth = String(currenDate.getMonth() + 1).padStart(2, "0");
-  const currentYear = currenDate.getFullYear();
-  const currentDateInYyyyMmDD = `${currentYear}-${currentMonth}-${currentDay}`;
+function getDateInYyyyMmDd(date: Date): string {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${year}-${month}-${day}`;
+}
 
-  return currentDateInYyyyMmDD;
+export function getCurrentDateInYyyyMmDD(): string {
+  const currentDate = new Date();
+
+  return getDateInYyyyMmDd(currentDate);
+}
+
+export function getDateFourWeeksAgoInYyyyMmDD(): string {
+  const currentDateInMs = Date.now();
+  const dateThirtyDaysAgo = new Date(currentDateInMs - THIRTY_DAYS_IN_MS);
+
+  return getDateInYyyyMmDd(dateThirtyDaysAgo);
 }
