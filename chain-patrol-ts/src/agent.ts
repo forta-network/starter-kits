@@ -5,6 +5,7 @@ import { createBlockedAssetFinding } from "./findings";
 import AssetFetcher from "./fetcher";
 import { ETHEREUM_BLOCKS_IN_ONE_DAY, MAX_ASSET_ALERTS_PER_BLOCK, ASSET_DETAILS_URL, ASSET_LIST_URL } from "./constants";
 
+let hasCreatedAlertsUponDeployment: boolean;
 let assetFetcher: AssetFetcher;
 let assetListStartDate: string;
 
@@ -33,6 +34,7 @@ export function provideInitialize(
     } = await fetchApiKey();
     assetFetcher = await createAssetFetcher(apiKey, assetListUrl, assetDetailsUrl);
     assetListStartDate = getDateFourWeeksAgoInYyyyMmDD();
+    hasCreatedAlertsUponDeployment = false;
   };
 }
 
@@ -43,7 +45,7 @@ export function provideHandleBlock(): HandleBlock {
     // Querying ChainPatrol API once per day,
     // otherwise API query returns zero results.
     // Argument format is `YYYY-MM-DD`
-    if (blockEvent.blockNumber % ETHEREUM_BLOCKS_IN_ONE_DAY === 0) {
+    if (blockEvent.blockNumber % ETHEREUM_BLOCKS_IN_ONE_DAY === 0 || !hasCreatedAlertsUponDeployment) {
       const currentDate = getCurrentDateInYyyyMmDD();
       const assetList: Asset[] | undefined = await assetFetcher.getAssetlist(currentDate, assetListStartDate);
 
@@ -66,6 +68,10 @@ export function provideHandleBlock(): HandleBlock {
       // for the next call to `getAssetList` in
       // the following day
       assetListStartDate = currentDate;
+
+      if (!hasCreatedAlertsUponDeployment) {
+        hasCreatedAlertsUponDeployment = true;
+      }
     }
 
     const assetsToBeAlerted: UnalertedAsset[] = unalertedAssets.splice(

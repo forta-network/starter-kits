@@ -1,6 +1,6 @@
 import { Initialize, HandleBlock } from "forta-agent";
 import { TestBlockEvent } from "forta-agent-tools/lib/test";
-import { when } from "jest-when";
+import { when, resetAllWhenMocks } from "jest-when";
 import { createMockBlockedAssetFinding, createMockBlockedAssetFindingBatch } from "./mocks/mock.findings";
 import { MockApiKeys, MockAsset, MockAssetDetails } from "./mocks/mock.types";
 import { provideInitialize, provideHandleBlock } from "./agent";
@@ -46,6 +46,8 @@ describe("ChainPatrol Bot Test Suite", () => {
   let handleBlock: HandleBlock;
 
   beforeEach(async () => {
+    resetAllWhenMocks();
+
     const initialize: Initialize = provideInitialize(
       mockApiFetcher,
       mockAssetListUrl,
@@ -160,5 +162,38 @@ describe("ChainPatrol Bot Test Suite", () => {
     mockBlockEvent.setNumber(mockEthereumBlocksInADay + 1);
     findings = await handleBlock(mockBlockEvent);
     expect(findings).toStrictEqual(mockFindings.slice(50));
+  });
+
+  it("creates alerts when bot is freshly deployed even if block number does not mark a day in Ethereum block time, but not in subsequent block", async () => {
+    const batchOfThree = 3;
+    const mockAssetListOfThree = createMockAssetBatch(batchOfThree);
+    const mockAssetDetailsOfThree = createMockAssetDetailsBatch(batchOfThree);
+    const mockFindings = createMockBlockedAssetFindingBatch(mockAssetListOfThree, mockAssetDetailsOfThree);
+
+    when(mockAssetFetcher.getAssetlist)
+      .calledWith(mockCurrentDate, mockInitApiQueryDate)
+      .mockReturnValue(mockAssetListOfThree);
+    mockAssetListOfThree.map((mockAsset: MockAsset, i: number) => {
+      when(mockAssetFetcher.getAssetDetails).calledWith(mockAsset.content).mockReturnValue(mockAssetDetailsOfThree[i]);
+    });
+
+    const nonDayInEthereumBlockNumber = 10;
+    mockBlockEvent.setNumber(nonDayInEthereumBlockNumber);
+
+    let findings = await handleBlock(mockBlockEvent);
+    expect(findings).toStrictEqual(mockFindings);
+
+    // Using `mockCurrentDate` as argument twice since it would
+    // be updated in the bots logic. Setting this `when` to confirm
+    // _something_ would return, and the bot will still not create alerts
+    // because it would not be a block number that is divisible by
+    // `ETHEREUM_BLOCKS_IN_ONE_DAY` and `hasCreatedAlertsUponDeployment`
+    // would now be set to `true`.
+    when(mockAssetFetcher.getAssetlist).calledWith(mockCurrentDate, mockCurrentDate).mockReturnValue(mockAssetList);
+    when(mockAssetFetcher.getAssetDetails).calledWith(mockAssetList[0].content).mockReturnValue(mockAssetDetails);
+
+    mockBlockEvent.setNumber(nonDayInEthereumBlockNumber + 1);
+    findings = await handleBlock(mockBlockEvent);
+    expect(findings).toStrictEqual([]);
   });
 });
