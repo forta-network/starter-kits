@@ -1102,7 +1102,7 @@ class TestScamDetector:
 
         similar_contract_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
         scammer_association_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
-        scammer_association_labels = scammer_association_labels.append({'from_entity': EOA_ADDRESS_LARGE_TX.lower(), 'to_entity': EOA_ADDRESS_SMALL_TX.lower()}, ignore_index=True)
+        scammer_association_labels.loc[0] = [EOA_ADDRESS_LARGE_TX.lower(), EOA_ADDRESS_SMALL_TX.lower()]
 
         fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_LARGE_TX, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, 1)
         sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
@@ -1124,8 +1124,8 @@ class TestScamDetector:
         agent.clear_state()
         agent.initialize()
 
-        similar_contract_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
-        similar_contract_labels = similar_contract_labels.append({'from_entity': CONTRACT.lower(), 'from_entity_deployer': EOA_ADDRESS_LARGE_TX.lower(), 'to_entity_deployer': EOA_ADDRESS_SMALL_TX.lower(), 'to_entity': CONTRACT2.lower()}, ignore_index=True)
+        similar_contract_labels = pd.DataFrame(columns=['from_entity', 'from_entity_deployer', 'to_entity_deployer', 'to_entity'])
+        similar_contract_labels.loc[0] = [CONTRACT.lower(), EOA_ADDRESS_LARGE_TX.lower(),  EOA_ADDRESS_SMALL_TX.lower(), CONTRACT2.lower()]
         scammer_association_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
         
         fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_LARGE_TX, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, 1)

@@ -1,6 +1,6 @@
 # Scam Detector Bot Release Notes
 
-## v2.21.0
+## v2.21.0 (FP Mitigation Embedding Branch)
 - Incorporated FP Mitigation layer using account embeddings
 
 ## v2.20.0 (September 15th - beta, September 18th - prod (without metamask, private key compromise, phishing ML bot))
