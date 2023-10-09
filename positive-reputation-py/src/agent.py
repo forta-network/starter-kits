@@ -1,6 +1,7 @@
 import logging
 import sys
 from os import environ
+from functools import lru_cache
 
 import forta_agent
 from forta_agent import get_json_rpc_url
@@ -93,7 +94,7 @@ def put_first_tx(address: str, first_tx_datetime: datetime):
         logging.info(f"Successfully put first tx in dynamoDB: {response}")
         return
 
-
+@lru_cache(maxsize=12800)
 def read_first_tx(address: str):
     global CHAIN_ID
 
@@ -142,7 +143,7 @@ def put_pos_rep_address(address: str):
         logging.info(f"Successfully put pos rep address in dynamoDB: {response}")
         return
 
-
+@lru_cache(maxsize=12800)
 def read_pos_rep(address: str) -> bool:
     global CHAIN_ID
 
@@ -166,9 +167,9 @@ def read_pos_rep(address: str) -> bool:
 
 
 def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
-    logging.info(f"Analyzing transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}")
-
     global CHAIN_ID
+    logging.info(f"Analyzing transaction {transaction_event.transaction.hash} on chain {CHAIN_ID}")
+
     findings = []
 
     # get the nonce of the sender
