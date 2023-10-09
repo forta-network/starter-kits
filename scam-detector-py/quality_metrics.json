@@ -48,7 +48,7 @@
                 },
                 "weighted_precision": {
                     "value": 1.00
-                    }                    
+                }
             },
             "attack-stages": {
                 "precision": {
@@ -69,7 +69,7 @@
                 },
                 "weighted_precision": {
                     "value": 0.9737
-                    }
+                }
             },
             "hard-rug-pull": {
                 "precision": {
@@ -90,7 +90,7 @@
                 },
                 "weighted_precision": {
                     "value": 0.9701
-                    }              
+                }
             },
             "impersonating-token": {
                 "precision": {
@@ -201,200 +201,201 @@
                 }
             }
         },
-         "weekly": {},
-    "monthly": {
-        "2023-07-28": {
-            "rake-token": {
-                "precision": {
-                    "value": 1.0,
-                    "N": 14,
-                    "lower_bound": 0.9189,
-                    "upper_bound": 0.9191,
-                    "confidence": 0.9
+        "weekly": {},
+        "monthly": {
+            "2023-07-28": {
+                "rake-token": {
+                    "precision": {
+                        "value": 1.0,
+                        "N": 14,
+                        "lower_bound": 0.9189,
+                        "upper_bound": 0.9191,
+                        "confidence": 0.9
+                    }
+                },
+                "ice-phishing": {
+                    "precision": {
+                        "value": 0.88,
+                        "N": 75,
+                        "lower_bound": 0.8543,
+                        "upper_bound": 0.8792,
+                        "confidence": 0.9
+                    }
+                },
+                "native-ice-phishing": {
+                    "precision": {
+                        "value": 0.8889,
+                        "N": 9,
+                        "lower_bound": 0.7717,
+                        "upper_bound": 0.8263,
+                        "confidence": 0.9
+                    }
+                },
+                "address-poisoner": {
+                    "precision": {
+                        "value": 0.7273,
+                        "N": 55,
+                        "lower_bound": 0.6196,
+                        "upper_bound": 0.8136,
+                        "confidence": 0.9
+                    }
+                },
+                "soft-rug-pull": {
+                    "precision": {
+                        "value": 0.9836,
+                        "N": 61,
+                        "lower_bound": 0.9609,
+                        "upper_bound": 0.9652,
+                        "confidence": 0.9
+                    }
+                },
+                "fraudulent-nft-order": {
+                    "precision": {
+                        "value": 0.7273,
+                        "N": 11,
+                        "lower_bound": 0.5814,
+                        "upper_bound": 0.7834,
+                        "confidence": 0.9
+                    }
+                },
+                "impersonating-token": {
+                    "precision": {
+                        "value": 1.0,
+                        "N": 45,
+                        "lower_bound": 0.9609,
+                        "upper_bound": 0.9824,
+                        "confidence": 0.9
+                    }
+                },
+                "social-eng-native-ice-phishing": {
+                    "precision": {
+                        "value": 1.0,
+                        "N": 7,
+                        "lower_bound": 0.8532,
+                        "upper_bound": 0.8680,
+                        "confidence": 0.9
+                    }
+                },
+                "wash-trade": {
+                    "precision": {
+                        "value": 0.7,
+                        "N": 10,
+                        "lower_bound": 0.5659,
+                        "upper_bound": 0.7490,
+                        "confidence": 0.9
+                    }
+                },
+                "scammer-association": {
+                    "precision": {
+                        "value": 0.1,
+                        "N": 10,
+                        "lower_bound": 0.1763,
+                        "upper_bound": 0.1941,
+                        "confidence": 0.9
+                    }
+                },
+                "similar-contract": {
+                    "precision": {
+                        "value": 0.9242,
+                        "N": 31,
+                        "lower_bound": 0.9242,
+                        "upper_bound": 0.9362,
+                        "confidence": 0.9
+                    }
                 }
             },
-              "ice-phishing": {
-                "precision": {
-                    "value": 0.88,
-                    "N": 75,
-                    "lower_bound": 0.8543,
-                    "upper_bound": 0.8792,
-                    "confidence": 0.9
-                }
-            },
-              "native-ice-phishing": {
-                "precision": {
-                    "value": 0.8889,
-                    "N": 9,
-                    "lower_bound": 0.7717,
-                    "upper_bound": 0.8263,
-                    "confidence": 0.9
-                }
-            },
-              "address-poisoner": {
-                "precision": {
-                    "value": 0.7273,
-                    "N": 55,
-                    "lower_bound": 0.6196,
-                    "upper_bound": 0.8136,
-                    "confidence": 0.9
-                }
-            },
-              "soft-rug-pull": {
-                "precision": {
-                    "value": 0.9836,
-                    "N": 61,
-                    "lower_bound": 0.9609,
-                    "upper_bound": 0.9652,
-                    "confidence": 0.9
-                }
-            },
-              "fraudulent-nft-order": {
-                "precision": {
-                    "value": 0.7273,
-                    "N": 11,
-                    "lower_bound": 0.5814,
-                    "upper_bound": 0.7834,
-                    "confidence": 0.9
-                }
-            },
-              "impersonating-token": {
-                "precision": {
-                    "value": 1.0,
-                    "N": 45,
-                    "lower_bound": 0.9609,
-                    "upper_bound": 0.9824,
-                    "confidence": 0.9
-                }
-            },
-              "social-eng-native-ice-phishing": {
-                "precision": {
-                    "value": 1.0,
-                    "N": 7,
-                    "lower_bound": 0.8532,
-                    "upper_bound": 0.8680,
-                    "confidence": 0.9
-                }
-            },
-              "wash-trade": {
-                "precision": {
-                    "value": 0.7,
-                    "N": 10,
-                    "lower_bound": 0.5659,
-                    "upper_bound": 0.7490,
-                    "confidence": 0.9
-                }
-            },
-              "scammer-association": {
-                "precision": {
-                    "value": 0.1,
-                    "N": 10,
-                    "lower_bound": 0.1763,
-                    "upper_bound": 0.1941,
-                    "confidence": 0.9
-                }
-            },
-              "similar-contract": {
-                "precision": {
-                    "value": 0.9242,
-                    "N": 31,
-                    "lower_bound": 0.9242,
-                    "upper_bound": 0.9362,
-                    "confidence": 0.9
-                }
-            }
-        },
-         "weekly": {},
-    "monthly": {
-        "2023-07-27": {
-            "rake-token": {
-                "precision": {
-                    "value": 0.9,
-                    "N": 30,
-                    "lower_bound": 0.859,
-                    "upper_bound": 0.874,
-                    "confidence": 0.9
-                }
-            },
-              "ice-phishing": {
-                "precision": {
-                    "value": 0.4133,
-                    "N": 75,
-                    "lower_bound": 0.3942,
-                    "upper_bound": 0.4385,
-                    "confidence": 0.9
-                }
-            },
-              "native-ice-phishing": {
-                "precision": {
-                    "value": 0.8182,
-                    "N": 33,
-                    "lower_bound": 0.7489,
-                    "upper_bound": 0.8392,
-                    "confidence": 0.9
-                }
-            },
-              "address-poisoner": {
-                "precision": {
-                    "value": 0.8250,
-                    "N": 40,
-                    "lower_bound": 0.7066,
-                    "upper_bound": 0.9022,
-                    "confidence": 0.9
-                }
-            },
-              "soft-rug-pull": {
-                "precision": {
-                    "value": 0.9605,
-                    "N": 76,
-                    "lower_bound": 0.9391,
-                    "upper_bound": 0.9503,
-                    "confidence": 0.9
-                }
-            },
-              "fraudulent-nft-order": {
-                "precision": {
-                    "value": 0.8824,
-                    "N": 17,
-                    "lower_bound": 0.7519,
-                    "upper_bound": 0.9078,
-                    "confidence": 0.9
-                }
-            },
-              "impersonating-token": {
-                "precision": {
-                    "value": 1.0,
-                    "N": 8,
-                    "lower_bound": 0.7472,
-                    "upper_bound": 1.0,
-                    "confidence": 0.9
-                }
-            },
-              "social-eng-native-ice-phishing": {
-                "precision": {
-                    "value": 0.8519,
-                    "N": 27,
-                    "lower_bound": 0.7399,
-                    "upper_bound": 0.8997,
-                    "confidence": 0.9
-                }
-            },
-              "wash-trade": {
-                "precision": {
-                    "value": 0.3846,
-                    "N": 13,
-                    "lower_bound": 0.2615,
-                    "upper_bound": 0.5475,
-                    "confidence": 0.9
-                }
-            },
-              "similar-contract": {
-                "precision": {
-                    "value": 0.9655,
-                    "N": 29,
-                    "lower_bound": 0.9145,
-                    "upper_bound": 0.9371,
-                    "confidence": 0.9
+            "weekly": {},
+            "monthly": {
+                "2023-07-27": {
+                    "rake-token": {
+                        "precision": {
+                            "value": 0.9,
+                            "N": 30,
+                            "lower_bound": 0.859,
+                            "upper_bound": 0.874,
+                            "confidence": 0.9
+                        }
+                    },
+                    "ice-phishing": {
+                        "precision": {
+                            "value": 0.4133,
+                            "N": 75,
+                            "lower_bound": 0.3942,
+                            "upper_bound": 0.4385,
+                            "confidence": 0.9
+                        }
+                    },
+                    "native-ice-phishing": {
+                        "precision": {
+                            "value": 0.8182,
+                            "N": 33,
+                            "lower_bound": 0.7489,
+                            "upper_bound": 0.8392,
+                            "confidence": 0.9
+                        }
+                    },
+                    "address-poisoner": {
+                        "precision": {
+                            "value": 0.8250,
+                            "N": 40,
+                            "lower_bound": 0.7066,
+                            "upper_bound": 0.9022,
+                            "confidence": 0.9
+                        }
+                    },
+                    "soft-rug-pull": {
+                        "precision": {
+                            "value": 0.9605,
+                            "N": 76,
+                            "lower_bound": 0.9391,
+                            "upper_bound": 0.9503,
+                            "confidence": 0.9
+                        }
+                    },
+                    "fraudulent-nft-order": {
+                        "precision": {
+                            "value": 0.8824,
+                            "N": 17,
+                            "lower_bound": 0.7519,
+                            "upper_bound": 0.9078,
+                            "confidence": 0.9
+                        }
+                    },
+                    "impersonating-token": {
+                        "precision": {
+                            "value": 1.0,
+                            "N": 8,
+                            "lower_bound": 0.7472,
+                            "upper_bound": 1.0,
+                            "confidence": 0.9
+                        }
+                    },
+                    "social-eng-native-ice-phishing": {
+                        "precision": {
+                            "value": 0.8519,
+                            "N": 27,
+                            "lower_bound": 0.7399,
+                            "upper_bound": 0.8997,
+                            "confidence": 0.9
+                        }
+                    },
+                    "wash-trade": {
+                        "precision": {
+                            "value": 0.3846,
+                            "N": 13,
+                            "lower_bound": 0.2615,
+                            "upper_bound": 0.5475,
+                            "confidence": 0.9
+                        }
+                    },
+                    "similar-contract": {
+                        "precision": {
+                            "value": 0.9655,
+                            "N": 29,
+                            "lower_bound": 0.9145,
+                            "upper_bound": 0.9371,
+                            "confidence": 0.9
+                        }
                     }
                 }
             }
