@@ -167,7 +167,7 @@ def cache_contract_creation(
     global MUTEX
 
     logging.info(
-        f"Scanning transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}"
+        f"Scanning transaction {transaction_event.transaction.hash} on chain {CHAIN_ID}"
     )
     while MUTEX:
         logging.info(f"Sleeping...")
