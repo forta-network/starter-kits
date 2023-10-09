@@ -1,6 +1,6 @@
 {
   "name": "unverified-contract-creation",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Forta agent raising alerts on unverified contract creations.",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/unverified-contract-py",
   "chainIds": [
