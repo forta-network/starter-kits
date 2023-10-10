@@ -32,8 +32,6 @@ s3 = None
 dynamo = None
 item_id_prefix = ""
 
-ADDRESS_CACHE = set()
-FIRST_TXS = {}
 CHAIN_ID = -1
 
 
@@ -55,12 +53,6 @@ def initialize():
     except Exception as e:
         logging.error(f"Error getting chain id: {e}")
         raise e
-
-    global ADDRESS_CACHE
-    ADDRESS_CACHE = set()
-
-    global FIRST_TXS
-    FIRST_TXS = {}
 
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
@@ -143,7 +135,7 @@ def put_pos_rep_address(address: str):
         logging.info(f"Successfully put pos rep address in dynamoDB: {response}")
         return
 
-@lru_cache(maxsize=12800)
+
 def read_pos_rep(address: str) -> bool:
     global CHAIN_ID
 
@@ -173,49 +165,32 @@ def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent
     findings = []
 
     # get the nonce of the sender
-    global ADDRESS_CACHE
-    if not transaction_event.transaction.from_.lower() in ADDRESS_CACHE:
-        if transaction_event.transaction.nonce >= MIN_NONCE:
-            first_tx = read_first_tx(transaction_event.transaction.from_.lower())
-            if first_tx is None:
-                logging.info(f"Checking first tx of address with blockexplorer {transaction_event.transaction.from_}")
-                first_tx = blockexplorer.get_first_tx(transaction_event.transaction.from_)
-                put_first_tx(transaction_event.transaction.from_.lower(), first_tx)
+    if transaction_event.transaction.nonce >= MIN_NONCE:
+        first_tx = read_first_tx(transaction_event.transaction.from_.lower())
+        if first_tx is None:
+            logging.info(f"Checking first tx of address with blockexplorer {transaction_event.transaction.from_}")
+            first_tx = blockexplorer.get_first_tx(transaction_event.transaction.from_)
+            put_first_tx(transaction_event.transaction.from_.lower(), first_tx)
 
-            if first_tx < datetime.now() - timedelta(days=MIN_AGE_IN_DAYS):
-                if not read_pos_rep(transaction_event.transaction.from_.lower()):
-                    put_pos_rep_address(transaction_event.transaction.from_.lower())
-                    findings.append(PositiveReputationFindings.positive_reputation(transaction_event.transaction.from_, CHAIN_ID))
-        else:
-            first_tx = read_first_tx(transaction_event.transaction.from_.lower())
-            if first_tx is None:
-                logging.info(f"Checking first tx of address with blockexplorer {transaction_event.transaction.from_}")
-                first_tx = blockexplorer.get_first_tx(transaction_event.transaction.from_)
-                put_first_tx(transaction_event.transaction.from_.lower(), first_tx)
+        if first_tx < datetime.now() - timedelta(days=MIN_AGE_IN_DAYS):
+            if not read_pos_rep(transaction_event.transaction.from_.lower()):
+                put_pos_rep_address(transaction_event.transaction.from_.lower())
+                findings.append(PositiveReputationFindings.positive_reputation(transaction_event.transaction.from_, CHAIN_ID))
+    else:
+        first_tx = read_first_tx(transaction_event.transaction.from_.lower())
+        if first_tx is None:
+            logging.info(f"Checking first tx of address with blockexplorer {transaction_event.transaction.from_}")
+            first_tx = blockexplorer.get_first_tx(transaction_event.transaction.from_)
+            put_first_tx(transaction_event.transaction.from_.lower(), first_tx)
 
-            if first_tx < datetime.now() - timedelta(days=MIN_AGE_IN_DAYS):
-
-                if not read_pos_rep(transaction_event.transaction.from_.lower()):
-
-                    put_pos_rep_address(transaction_event.transaction.from_.lower())
-                    findings.append(PositiveReputationFindings.positive_reputation_by_age(transaction_event.transaction.from_, CHAIN_ID))
+        if first_tx < datetime.now() - timedelta(days=MIN_AGE_IN_DAYS):
+            if not read_pos_rep(transaction_event.transaction.from_.lower()):
+                put_pos_rep_address(transaction_event.transaction.from_.lower())
+                findings.append(PositiveReputationFindings.positive_reputation_by_age(transaction_event.transaction.from_, CHAIN_ID))
 
 
     return findings
 
-
-def update_first_tx_cache(address: str, first_tx: datetime):
-    global FIRST_TXS
-    if len(FIRST_TXS) >= FIRST_TXS_CACHE_SIZE:
-        FIRST_TXS.pop(0)
-    FIRST_TXS[address.lower()] = first_tx
-
-
-def update_address_cache(address: str):
-    global ADDRESS_CACHE
-    if len(ADDRESS_CACHE) >= ADDRESS_CACHE_SIZE:
-        ADDRESS_CACHE.pop(0)
-    ADDRESS_CACHE.add(address)
 
 
 def provide_handle_transaction(w3):
