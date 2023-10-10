@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## v2.20.5
+- MM fix
+- update scam detector sample to Sept data
+
 ## v2.20.4 
 - turned ADDRESS-POISONING-ZERO-VALUE to a passthrough alert (precision of this alert is 100%)
 
