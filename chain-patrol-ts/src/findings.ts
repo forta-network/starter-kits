@@ -23,6 +23,7 @@ export function createBlockedAssetFinding(asset: UnalertedAsset): Finding {
       reason: reason ? reason : "",
       reportId: reportId ? reportId.toString() : "",
       reportUrl: reportUrl ? reportUrl : "",
+      Url: content,
     },
     labels: [
       Label.fromObject({

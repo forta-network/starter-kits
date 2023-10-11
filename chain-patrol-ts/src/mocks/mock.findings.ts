@@ -24,6 +24,7 @@ export function createMockBlockedAssetFinding(asset: MockAsset, assetDetails: Mo
       reason: reason ? reason : "",
       reportId: reportId ? reportId.toString() : "",
       reportUrl: reportUrl ? reportUrl : "",
+      Url: content,
     },
     labels: [
       Label.fromObject({
