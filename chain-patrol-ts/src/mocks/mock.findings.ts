@@ -10,8 +10,8 @@ export function createMockBlockedAssetFinding(asset: MockAsset, assetDetails: Mo
   const uniqueKey: string = utils.keccak256(utils.toUtf8Bytes(resultString));
 
   return Finding.fromObject({
-    name: `ChainPatrol detected scam: ${content}`,
-    description: "A scam has been detected by ChainPatrol",
+    name: "A scam has been detected by ChainPatrol",
+    description: `ChainPatrol detected scam: ${content}`,
     alertId: "CHAINPATROL-SCAM-ASSET",
     severity: FindingSeverity.Critical,
     type: FindingType.Scam,
