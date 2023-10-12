@@ -1262,7 +1262,7 @@ def provide_handle_alert(w3):
 
         if CHAIN_ID == 1:
             if len(FINDINGS_CACHE_ALERT) >= 5:
-                FINDINGS_CACHE_ALERT = Utils.filter_out_non_malicious_findings(FINDINGS_CACHE_ALERT)
+                FINDINGS_CACHE_ALERT = Utils.filter_out_likely_fps(FINDINGS_CACHE_ALERT)
                 for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
                     if finding is not None:
                         findings.append(finding)

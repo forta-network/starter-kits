@@ -137,7 +137,7 @@ class TestUtils:
             })
         ]
         
-        filtered_findings = Utils.filter_out_non_malicious_findings(FINDINGS_CACHE_ALERT)
+        filtered_findings = Utils.filter_out_likely_fps(FINDINGS_CACHE_ALERT)
     
         assert len(filtered_findings) == 1
         assert filtered_findings[0].name == 'Scam finding'

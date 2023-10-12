@@ -301,7 +301,7 @@ class Utils:
         return False
 
     @staticmethod
-    def filter_out_non_malicious_findings(FINDINGS_CACHE_ALERT):
+    def filter_out_likely_fps(FINDINGS_CACHE_ALERT):
         # Create a dictionary to map addresses to a list of findings
         address_to_findings = dict()
 
