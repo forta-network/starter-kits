@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## 2.20.6
+- Chainpatrol Bot Integration
+- Fix https://github.com/forta-network/starter-kits/issues/321
+
 ## v2.20.5
 - MM fix
 - update scam detector sample to Sept data

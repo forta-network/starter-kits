@@ -2,9 +2,10 @@ from datetime import datetime
 import json
 from forta_agent import get_json_rpc_url, FindingSeverity
 from web3 import Web3
-from utils import Utils
-from constants import CONFIDENCE_MAPPINGS
-from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX
+
+from src.utils import Utils
+from src.constants import CONFIDENCE_MAPPINGS
+from src.web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX
 
 w3 = Web3Mock()
 real_w3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -98,6 +99,16 @@ class TestUtils:
         assert finding.name == "Scam detector encountered a recoverable error."
         assert finding.metadata['error_source'] == "source"
         assert finding.metadata['error_stacktrace'] == "stacktrace"
+
+    def test_debug_error(self):
+        finding = Utils.alert_error("description&apiKey=foobar&test", "source", "stacktrace")
+        assert finding.description == "Error: description&apiKey=XXXXXX&test"
+        assert finding.alert_id == "DEBUG-ERROR"
+        assert finding.severity == FindingSeverity.Info
+        assert finding.name == "Scam detector encountered a recoverable error."
+        assert finding.metadata['error_source'] == "source"
+        assert finding.metadata['error_stacktrace'] == "stacktrace"
+
 
     def test_get_confidence_value_latest(self):
         Utils.TEST_STATE = True

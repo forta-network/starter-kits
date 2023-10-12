@@ -13,12 +13,14 @@ import requests
 import agent
 from unittest.mock import patch
 
-from constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES
-from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX, CONTRACT2
-from web3_errormock import Web3ErrorMock
-from forta_explorer_mock import FortaExplorerMock
-from blockchain_indexer_mock import BlockChainIndexerMock
-from utils import Utils
+from src.constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES
+from src.web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX, CONTRACT2
+from src.web3_errormock import Web3ErrorMock
+from src.forta_explorer_mock import FortaExplorerMock
+from src.blockchain_indexer_mock import BlockChainIndexerMock
+from src.utils import Utils
+
+
 
 w3 = Web3Mock()
 w3error = Web3ErrorMock()
@@ -322,7 +324,8 @@ class TestScamDetector:
         assert finding.labels[0].entity_type == EntityType.Url, "should be URL label"
         assert finding.labels[0].entity == "withdraw-llido.com"
         assert finding.labels[0].metadata['chain_id'] == -1, "should be chain agnostic given we only have the URL and no scammer or tx"
-
+        
+        assert finding.labels[0].metadata['source_url_scan_url'] == 'https://urlscan.io/result/1870a15b-2b37-4980-9968-ac8a01e083f9/'
 
 
     def test_detect_hard_rug_pull(self):
@@ -443,6 +446,31 @@ class TestScamDetector:
                 assert label.label == 'scammer'
                 found_contract = True   
         assert found_contract, "should have found scammer contract"
+
+
+    def test_detect_chainpatrol_phishing_url(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x42dbb60aa8059dd395df9f66230f63852856f7fdd0d6d3fc55b708f8f84a3f47"
+        alert_id = "CHAINPATROL-SCAM-ASSET"
+        description = "ChainPatrol detected scam: free-mantle.foundation-claim.com"
+        metadata = {"reason":"reported","reportId":"7655","reportUrl":"https://app.chainpatrol.io/reports/7655","status":"BLOCKED","type":"URL","updatedAt":"2023-10-09T00:53:48.625Z","URL":"free-mantle.foundation-claim.com"}
+        labels = []
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
+        assert finding.labels[0].entity_type == EntityType.Url, "should be URL label"
+        assert finding.labels[0].entity == 'free-mantle.foundation-claim.com'
+        assert finding.labels[0].label == 'scammer'
+        assert finding.labels[0].metadata['chain_id'] == -1, "should be chain agnostic given we only have the URL and no scammer or tx"
+        assert finding.labels[0].metadata['source_url_scan_url'] == 'https://app.chainpatrol.io/reports/7655'
 
 
     def test_detect_blocksec_phishing_unencrypted(self):

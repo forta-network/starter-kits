@@ -231,19 +231,31 @@ class Utils:
             Utils.FP_MITIGATION_ADDRESSES.add(cluster)
 
     @staticmethod
+    def sanitize(msg: str) -> str:
+        # replace any key value pairs where key contains 'key' with 'X'ex for the value
+        # e.g. description&apiKey=foobar&test=foo to description&apiKey=XXXXXX&test=foo
+
+        msg_arr = msg.split('&')
+        for i in range(len(msg_arr)):
+            if 'key' in msg_arr[i].lower() and '=' in msg_arr[i]:
+                msg_arr[i] = msg_arr[i].split('=')[0] + '=XXXXXX'
+        msg_sanatized = '&'.join(msg_arr)
+        return msg_sanatized
+
+    @staticmethod
     def alert_error(error_description: str, error_source: str, error_stacktrace: str) -> Finding:
 
         labels = []
-        
+
         return Finding({
             'name': 'Scam detector encountered a recoverable error.',
-            'description': f'Error: {error_description}',
+            'description': f'Error: {Utils.sanitize(error_description)}',
             'alert_id': 'DEBUG-ERROR',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'metadata': {
-                'error_source': error_source,
-                'error_stacktrace': error_stacktrace
+                'error_source': Utils.sanitize(error_source),
+                'error_stacktrace': Utils.sanitize(error_stacktrace)
             },
             'labels': labels
         })

@@ -249,7 +249,7 @@ class ScamDetectorFinding:
         logging.info(f"Model name: {MODEL_NAME}")
         
         url = ScamDetectorFinding.get_url(metadata)
-        url_scan_url = metadata['detail'] if ('detail' in metadata.keys() and 'URL' in metadata.keys()) else ""
+        url_scan_url = metadata['detail'] if ('detail' in metadata.keys() and 'URL' in metadata.keys()) else metadata['reportUrl'] if ('reportUrl' in metadata.keys() and ('type' in metadata.keys() and metadata['type']=='URL')) else ""
 
         involved_addresses = list(involved_addresses)[0:10] if involved_addresses is not None else []
         involved_alert_hashes = sorted(list(involved_alert_hashes)[0:10])
