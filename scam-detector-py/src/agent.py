@@ -1260,6 +1260,8 @@ def provide_handle_alert(w3):
             persist_state()
             logging.info(f"{BOT_VERSION}: Persisted state")
 
+        # To prevent exceeding call rate limits, Etherscan labels are checked for likely false positives only on the Ethereum chain.
+        # The FP mitigation process occurs here, batching Etherscan API calls, rather than during finding creation.            
         if CHAIN_ID == 1:
             if len(FINDINGS_CACHE_ALERT) >= 5:
                 FINDINGS_CACHE_ALERT = Utils.filter_out_likely_fps(FINDINGS_CACHE_ALERT)
