@@ -78,6 +78,9 @@ def initialize(test = False):
     this function initializes the state variables that are tracked across tx and blocks
     it is called from test to reset state between tests
     """
+    if test:
+        Utils.TEST_STATE = True
+    
     global INITIALIZED_CALLED
     INITIALIZED_CALLED = True
 
