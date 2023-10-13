@@ -426,9 +426,29 @@ class ScamDetectorFinding:
             'labels': labels
         })
 
-
-    
-
+    @staticmethod
+    def alert_etherscan_likely_FP(address: str) -> Finding:
+       
+        labels = [
+            Label({
+                'entityType': EntityType.Address,
+                'label': 'benign',
+                'entity': address,
+                'confidence': 0.99,
+                })
+            ]
+        
+        return Finding({
+            'name': 'Scam detector identified an address that would likely be incorrectly alerted on. Emitting informative alert.',
+            'description': f'{address} likely not involved in a scam (SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION, manual)',
+            'alert_id': 'SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION',
+            'type': FindingType.Info,
+            'severity': FindingSeverity.Info,
+            'metadata': {
+                'benign_address': address
+            },
+            'labels': labels
+        })
 
     @staticmethod
     def scam_finding_manual(block_chain_indexer, forta_explorer, entity_type: str, entities: str, threat_category: str, reported_by: str, chain_id: int, comment:str = '', initial_metamask_list_consumption: bool = False) -> Finding:

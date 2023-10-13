@@ -338,16 +338,18 @@ class Utils:
         addresses_to_remove = []
 
         # Iterate through the addresses and check if they should be removed
-        for address, findings in address_to_findings.items():        
+        for address in address_to_findings.keys():        
             if address in labels:
                 address_labels = labels[address]
                 if not any(label.lower() in ["phish", "hack", "heist", "scam", "drainer", "exploit", "fraud", ".eth"] for label in address_labels):
-                    addresses_to_remove.append(address)
+                    # Emit a likely false positive alert for each address in the beta version of Scam Detector
+                    if Utils.is_beta():
+                        from src.findings import ScamDetectorFinding
+                        likely_fp_finding = ScamDetectorFinding.alert_etherscan_likely_FP(address)
+                        FINDINGS_CACHE_ALERT.append(likely_fp_finding)
 
-            # Remove all findings associated with this address if it should be removed
-            if address in addresses_to_remove:
-                for finding in findings:
-                    FINDINGS_CACHE_ALERT.remove(finding)
+                    for finding in address_to_findings[address]:
+                        FINDINGS_CACHE_ALERT.remove(finding)            
 
         return FINDINGS_CACHE_ALERT
 

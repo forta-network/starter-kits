@@ -111,7 +111,7 @@ class TestUtils:
         Utils.TEST_STATE = True
         assert CONFIDENCE_MAPPINGS['sleep-minting']==Utils.get_confidence_value('sleep-minting')
 
-    def test_single_finding_with_scammer_address(self):
+    def test_filter_out_likely_fps(self):
         FINDINGS_CACHE_ALERT = [
             Finding({
                 'name': 'Scam finding',
@@ -138,6 +138,10 @@ class TestUtils:
         ]
         
         filtered_findings = Utils.filter_out_likely_fps(FINDINGS_CACHE_ALERT)
-    
-        assert len(filtered_findings) == 1
-        assert filtered_findings[0].name == 'Scam finding'
+
+        if Utils.is_beta():
+            assert len(filtered_findings) == 2
+            assert filtered_findings[1].alert_id == 'SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION'
+        else: 
+            assert len(filtered_findings) == 1
+            assert filtered_findings[0].name == 'Scam finding'
