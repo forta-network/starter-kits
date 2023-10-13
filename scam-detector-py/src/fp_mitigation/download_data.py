@@ -258,7 +258,8 @@ class DownloadData:
                 temp = data_central_node[data_central_node[key].isin(unique_addresses)]
                 temp.loc[:, ~temp.columns.isin(addresses_columns)] = temp.loc[:, ~temp.columns.isin(addresses_columns)].apply(pd.to_numeric)
 
-                temp_aggregation = {column: 'nunique' for column in addresses_columns if column != key} | column_aggregations
+                temp_aggregation = {**{column: 'nunique' for column in addresses_columns if column != key}, **column_aggregations}
+                # temp_aggregation = {column: 'nunique' for column in addresses_columns if column != key} | column_aggregations
                 temp = temp.groupby(key).agg(temp_aggregation)
                 temp.columns = [f'{item}_{col[0]}_{col[1]}' for col in temp.columns]
                 temp.index.name = 'address'
@@ -267,17 +268,20 @@ class DownloadData:
 
             # Get the transactions
             temp = data_central_node.copy().drop_duplicates()
-            temp_aggregation = {'from_address': 'nunique', 'to_address': 'nunique'} | column_aggregations
+            temp_aggregation = {**{'from_address': 'nunique', 'to_address': 'nunique'}, **column_aggregations}
+            # temp_aggregation = {'from_address': 'nunique', 'to_address': 'nunique'} | column_aggregations
             transactions_info = temp.groupby(['from_address', 'to_address']).agg(temp_aggregation)
             transactions_info.columns = [f'{col[0]}_{col[1]}' for col in transactions_info.columns]
 
             # txfrom 
-            temp_aggregation = {'from_address': 'nunique', 'to_address': 'nunique', 'tx_from': 'nunique'} | column_aggregations
+            temp_aggregation = {**{'from_address': 'nunique', 'to_address': 'nunique', 'tx_from': 'nunique'}, **column_aggregations}
+            # temp_aggregation = {'from_address': 'nunique', 'to_address': 'nunique', 'tx_from': 'nunique'} | column_aggregations
             txfrom_info = temp.groupby(['from_address', 'to_address', 'tx_from']).agg(temp_aggregation)
             txfrom_info.columns = [f'{col[0]}_{col[1]}' for col in txfrom_info.columns]
 
             # txto
-            temp_aggregation = {'from_address': 'nunique', 'to_address': 'nunique', 'tx_to': 'nunique'} | column_aggregations
+            temp_aggregation = {**{'from_address': 'nunique', 'to_address': 'nunique', 'tx_to': 'nunique'}, **column_aggregations}
+            # temp_aggregation = {'from_address': 'nunique', 'to_address': 'nunique', 'tx_to': 'nunique'} | column_aggregations
             txto_info = temp.groupby(['from_address', 'to_address', 'tx_to']).agg(temp_aggregation)
             txto_info.columns = [f'{col[0]}_{col[1]}' for col in txto_info.columns]
 
@@ -339,8 +343,8 @@ class DownloadData:
             }
             return graph
         except RuntimeWarning as rtw:
-            logging.debug(rtw)
+            logging.info(f'fp-error-{rtw}')
             return None
         except Exception as e:
-            logging.debug(e)
+            logging.info(f'fp-error-{e}')
             return None
