@@ -137,6 +137,7 @@ def initialize(test = False):
 
         global fp_mitigator
         fp_mitigator = FPMitigator(secrets, CHAIN_ID)
+        logging.info(f"{BOT_VERSION}: Initialized FP mitigator successfully.")
 
         # subscribe to the base bots, FP mitigation and entity clustering bot
         global BASE_BOTS
@@ -509,10 +510,11 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
                     finding_dict = {
                         "name": 'fp-mitigation',
                         "description": f'FP mitigation for {scammer_address_lower} for alert {alert_event.alert.alert_id}',
-                        "alert_id": f'{alert_event.alert.alert_id}-FP-MITIGATED',
+                        "alert_id": f'FP-MITIGATED-{alert_event.alert.alert_id}',
                         "type": FindingType.Scam,
                         "severity": FindingSeverity.High,
                         "metadata": {'address': scammer_address_lower, 'fp_predictions': fp_pred},
+                        "addresses": [scammer_address_lower],
                     }
                     fp_mitigator_finding = Finding(finding_dict)
                     findings.append(fp_mitigator_finding)
@@ -573,10 +575,11 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
                 finding_dict = {
                     "name": 'fp-mitigation',
                     "description": f'FP mitigation for {scammer_address_lower} for alert {alert_event.alert.alert_id}',
-                    "alert_id": f'{alert_event.alert.alert_id}-FP-MITIGATED',
+                    "alert_id": f'FP-MITIGATED-{alert_event.alert.alert_id}',
                     "type": FindingType.Scam,
                     "severity": FindingSeverity.High,
                     "metadata": {'address': scammer_address_lower, 'fp_predictions': fp_pred},
+                    "addresses": [scammer_address_lower],
                 }
                 fp_mitigator_finding = Finding(finding_dict)
                 findings.append(fp_mitigator_finding)
@@ -654,10 +657,11 @@ def emit_contract_similarity_finding(w3, alert_event: forta_agent.alert_event.Al
                     finding_dict = {
                         "name": 'fp-mitigation',
                         "description": f'FP mitigation for {scammer_address_lower} for alert {alert_event.alert.alert_id}',
-                        "alert_id": f'{alert_event.alert.alert_id}-FP-MITIGATED',
+                        "alert_id": f'FP-MITIGATED-{alert_event.alert.alert_id}',
                         "type": FindingType.Scam,
                         "severity": FindingSeverity.High,
                         "metadata": {'address': scammer_address_lower, 'fp_predictions': fp_pred},
+                        "addresses": [scammer_address_lower],
                     }
                     fp_mitigator_finding = Finding(finding_dict)
                     findings.append(fp_mitigator_finding)
@@ -705,10 +709,11 @@ def emit_eoa_association_finding(w3, alert_event: forta_agent.alert_event.AlertE
                     finding_dict = {
                         "name": 'fp-mitigation',
                         "description": f'FP mitigation for {scammer_address_lower} for alert {alert_event.alert.alert_id}',
-                        "alert_id": f'{alert_event.alert.alert_id}-FP-MITIGATED',
+                        "alert_id": f'FP-MITIGATED-{alert_event.alert.alert_id}',
                         "type": FindingType.Scam,
                         "severity": FindingSeverity.High,
                         "metadata": {'address': scammer_address_lower, 'fp_predictions': fp_pred},
+                        "addresses": [scammer_address_lower],
                     }
                     fp_mitigator_finding = Finding(finding_dict)
                     findings.append(fp_mitigator_finding)
