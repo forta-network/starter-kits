@@ -313,6 +313,59 @@ class Utils:
         return False
 
     @staticmethod
+    def filter_out_likely_fps(FINDINGS_CACHE_ALERT):
+        # Create a dictionary to map addresses to a list of findings
+        address_to_findings = dict()
+
+        for finding in FINDINGS_CACHE_ALERT:
+            if finding is not None:
+                if 'scammer_addresses' in finding.metadata:
+                    addresses = finding.metadata['scammer_addresses']
+                    if ',' in addresses:
+                        addresses_list = addresses.split(',')
+                    else:
+                        addresses_list = [addresses]
+
+                    # Store the finding(s) for each address in the dictionary
+                    for address in addresses_list:
+                        if address not in address_to_findings:
+                            address_to_findings[address] = []
+                        address_to_findings[address].append(finding)
+                elif 'scammer_address' in finding.metadata:
+                    address = finding.metadata['scammer_address']
+
+                    # Store the finding for the single address in the dictionary
+                    if address not in address_to_findings:
+                        address_to_findings[address] = [finding]
+                    else:
+                        address_to_findings[address].append(finding)
+
+        # Get Etherscan labels for all unique addresses
+        unique_addresses = list(address_to_findings.keys())
+
+        from src.blockchain_indexer_service import BlockChainIndexer
+        block_chain_indexer = BlockChainIndexer()
+        labels = block_chain_indexer.get_etherscan_labels(unique_addresses)
+
+        addresses_to_remove = []
+
+        # Iterate through the addresses and check if they should be removed
+        for address in address_to_findings.keys():        
+            if address in labels:
+                address_labels = labels[address]
+                if not any(label.lower() in ["phish", "hack", "heist", "scam", "drainer", "exploit", "fraud", ".eth"] for label in address_labels):
+                    # Emit a likely false positive alert for each address in the beta version of Scam Detector
+                    if Utils.is_beta():
+                        from src.findings import ScamDetectorFinding
+                        likely_fp_finding = ScamDetectorFinding.alert_etherscan_likely_FP(address)
+                        FINDINGS_CACHE_ALERT.append(likely_fp_finding)
+
+                    for finding in address_to_findings[address]:
+                        FINDINGS_CACHE_ALERT.remove(finding)            
+
+        return FINDINGS_CACHE_ALERT
+
+    @staticmethod
     def is_in_fp_mitigation_list(cluster: str) -> bool:
         if cluster in Utils.FP_MITIGATION_ADDRESSES:
             logging.info(f"Cluster {cluster} in FP mitigation list")
@@ -442,3 +495,5 @@ class Utils:
                 alert_event.alert.labels = finding.labels
         
         return alert_event
+    
+    

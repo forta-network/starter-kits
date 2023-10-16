@@ -1058,9 +1058,8 @@ class TestScamDetector:
 
 
     def test_fp_mitigation_proper_chain_id(self):
-        Utils.TEST_STATE = True
         agent.clear_state()
-        agent.initialize()
+        agent.initialize(True)
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         findings = agent.emit_new_fp_finding(w3)
@@ -1130,7 +1129,7 @@ class TestScamDetector:
 
         similar_contract_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
         scammer_association_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
-        scammer_association_labels = scammer_association_labels.append({'from_entity': EOA_ADDRESS_LARGE_TX.lower(), 'to_entity': EOA_ADDRESS_SMALL_TX.lower()}, ignore_index=True)
+        scammer_association_labels = pd.concat([scammer_association_labels, pd.DataFrame({'from_entity': [EOA_ADDRESS_LARGE_TX.lower()], 'to_entity': [EOA_ADDRESS_SMALL_TX.lower()]})], ignore_index=True)
 
         fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_LARGE_TX, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, 1)
         sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
@@ -1153,7 +1152,8 @@ class TestScamDetector:
         agent.initialize()
 
         similar_contract_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
-        similar_contract_labels = similar_contract_labels.append({'from_entity': CONTRACT.lower(), 'from_entity_deployer': EOA_ADDRESS_LARGE_TX.lower(), 'to_entity_deployer': EOA_ADDRESS_SMALL_TX.lower(), 'to_entity': CONTRACT2.lower()}, ignore_index=True)
+        new_labels = pd.DataFrame({'from_entity': [CONTRACT.lower()], 'from_entity_deployer': [EOA_ADDRESS_LARGE_TX.lower()], 'to_entity_deployer': [EOA_ADDRESS_SMALL_TX.lower()], 'to_entity': [CONTRACT2.lower()]})
+        similar_contract_labels = pd.concat([similar_contract_labels, new_labels], ignore_index=True)
         scammer_association_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
         
         fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_LARGE_TX, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, 1)
@@ -1218,9 +1218,8 @@ class TestScamDetector:
 
 
     def test_emit_new_manual_finding(self):
-        Utils.TEST_STATE = True
         agent.clear_state()
-        agent.initialize()
+        agent.initialize(True)
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
         findings = agent.emit_manual_finding(w3, True)
@@ -1269,3 +1268,51 @@ class TestScamDetector:
                 found_contract = True
         assert found_contract
 
+    def test_etherscan_fp_mitigation(self):
+        # Requires bot version to be 'beta' to pass
+        agent.clear_state()
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        # Populating the FINDINGS_CACHE_ALERT with 4 "valid" findings + 1, afterwards, that's gonna be mitigated by the Etherscan Metadata API. (Cache size needs to be at least of size 5 in order for alerts to be triggered)
+        mock_scammer_addresses = [
+            '0x3b31724aff894849b90c48024bab38f25a5ee302',
+            '0x3b31724aff894849b90c48024bab38f25a5ee303',
+            '0x3b31724aff894849b90c48024bab38f25a5ee304',
+            '0x3b31724aff894849b90c48024bab38f25a5ee305'
+        ]
+        for address in mock_scammer_addresses:
+            agent.FINDINGS_CACHE_ALERT.append(Finding({
+                'name': 'Mock alert',
+                'description': 'Mock Alert description',
+                'alert_id': 'SCAM-DETECTOR-MOCK-ALERT',
+                'type': FindingType.Info,
+                'severity': FindingSeverity.Info,
+                'metadata': {'scammer_address': address},
+                'labels': {}
+            }))
+
+        findings = []
+
+        # "0xF45347C7E0F840F020F06a09665a0bcC4E092A38" is a non-malicious address (Fee Recipient: 0xF4...A38 label)
+        # Note: The label should not be fetched by Utils.get_etherscan_label(), that uses Forta API, as it would have been mitigated earlier in the execution 
+        bot_id = "0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127"
+        alert_id = "IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR"
+        description = "0xF45347C7E0F840F020F06a09665a0bcC4E092A38 deployed an impersonating token contract at 0xb4d91be6d0894de00a3e57c24f7abb0233814c86. It impersonates token USDC (USDC) at 0x115110423f4ad68a3092b298df7dc2549781108e"
+        metadata = {"anomalyScore":"0.09375","newTokenContract":"0xb4d91be6d0894de00a3e57c24f7abb0233814c86","newTokenDeployer":"0xF45347C7E0F840F020F06a09665a0bcC4E092A38","newTokenName":"Cross Chain Token","newTokenSymbol":"USDC","oldTokenContract":"0x115110423f4ad68a3092b298df7dc2549781108e","oldTokenDeployer":"0x80ec4276d31b1573d53f5db75841762607bc2166","oldTokenName":"Cross Chain Token","oldTokenSymbol":"USDC"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+        findings.extend(agent.handle_alert(alert_event))
+       
+        if Utils.is_beta():
+            assert len(findings) == 5, "length should have been 5, alert for the Etherscan FP mitigation should have been triggered"
+            last_finding = findings[4]
+            assert last_finding.alert_id == "SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION", "should be etherscan fp mitigation finding"
+            assert last_finding.metadata is not None, "metadata should not be empty"
+            assert len(last_finding.labels) > 0, "labels should not be empty"
+            assert last_finding.labels[0].label == 'benign', "should be a benign label"
+        else:
+            assert len(findings) == 4, "length should have been 4, alert mitigated by Etherscan should have been removed"
+            last_finding = findings[3]
+            assert last_finding.alert_id == "SCAM-DETECTOR-MOCK-ALERT", "should be a mock alert"
+        

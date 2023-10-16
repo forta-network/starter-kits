@@ -218,3 +218,32 @@ class BlockChainIndexer:
                         break
                     time.sleep(1)
         return False
+    
+    @staticmethod
+    @RateLimiter(max_calls=1, period=1)
+    def get_etherscan_labels(addresses):
+        address_labels = dict()
+        addresses_str = ','.join(addresses)
+        labels_url = f"https://api-metadata.etherscan.io/v1/api.ashx?module=nametag&action=getaddresstag&address={addresses_str}&tag=trusted&apikey={BlockChainIndexer.get_api_key(1)}"
+
+        success = False
+        count = 0
+        while not success:
+            data = requests.get(labels_url)
+            if data.status_code == 200:
+                json_data = json.loads(data.content)
+                success = True
+                for result in json_data["result"]:
+                    if len(result["labels"]):
+                        address_labels[result["address"]] = result["labels"] 
+                for address, labels in address_labels.items():
+                    logging.info(f"Labels for address {address}: {', '.join(labels)}")   
+                return address_labels
+            else:
+                logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")
+                count += 1
+                if count > 10:
+                    Utils.ERROR_CACHE.add(Utils.alert_error(f'request etherscan {data.status_code}', "blockchain_indexer_service.get_etherscan_labels", ""))
+                    break
+                time.sleep(1)
+        return address_labels

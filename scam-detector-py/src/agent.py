@@ -79,6 +79,9 @@ def initialize(test = False):
     this function initializes the state variables that are tracked across tx and blocks
     it is called from test to reset state between tests
     """
+    if test:
+        Utils.TEST_STATE = True
+    
     global INITIALIZED_CALLED
     INITIALIZED_CALLED = True
 
@@ -1235,7 +1238,7 @@ def provide_handle_alert(w3):
                 raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception")
             else:
                 logging.error(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle alert {INITIALIZED}. Time elapsed: {time_elapsed}. Return empty findings.")
-                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.handle_alert", traceback.format_exc()))
+                Utils.ERROR_CACHE.add(Utils.alert_error("Not initialized", "agent.handle_alert", traceback.format_exc()))
                 return []
 
 
@@ -1268,10 +1271,20 @@ def provide_handle_alert(w3):
             persist_state()
             logging.info(f"{BOT_VERSION}: Persisted state")
 
-        for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
-            if finding is not None:
-                findings.append(finding)
-        FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
+        # To prevent exceeding call rate limits, Etherscan labels are checked for likely false positives only on the Ethereum chain.
+        # The FP mitigation process occurs here, batching Etherscan API calls, rather than during finding creation.            
+        if CHAIN_ID == 1:
+            if len(FINDINGS_CACHE_ALERT) >= 5:
+                FINDINGS_CACHE_ALERT = Utils.filter_out_likely_fps(FINDINGS_CACHE_ALERT)
+                for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
+                    if finding is not None:
+                        findings.append(finding)
+                FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
+        else:
+            for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
+                if finding is not None:
+                    findings.append(finding)
+            FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
 
         logging.info(f"{BOT_VERSION}: Return {len(findings)} finding(s) to handleAlert.") 
 
