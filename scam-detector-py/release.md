@@ -1,6 +1,8 @@
 # Scam Detector Bot Release Notes
 
-## 2.20.6
+## 2.20.7
+- added one pager and updated documentation
+- etherscan FP label mitigation
 - Chainpatrol Bot Integration
 - Fix https://github.com/forta-network/starter-kits/issues/321
 
