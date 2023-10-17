@@ -1,5 +1,8 @@
 # Attack Detector Bot Release Notes
 
+## v3.51.0 (Oct 17 2023: beta)
+- Added FP mitigation for chain 1
+
 ## v3.50.3 (Seot 12 2023: beta)
 - update to sdk 0.1.40/0.1.21
 - updated long description
