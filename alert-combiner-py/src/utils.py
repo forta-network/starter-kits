@@ -4,6 +4,8 @@ import requests
 import re
 import logging
 import json
+from fp_mitigation.fp_mitigator import FPMitigator
+from constants import FP_THRESHOLD
 
 etherscan_label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
 
@@ -88,3 +90,10 @@ class Utils:
             Utils.IS_BETA = 'beta' in package["name"]
         return Utils.IS_BETA
          
+    @staticmethod
+    def is_fp(w3, scammer_address_lower=None, fp_mitigator: FPMitigator = None) -> (bool, float):
+        if FPMitigator is not None and scammer_address_lower is not None :
+            predicted_value_fp = fp_mitigator.mitigate_fp(scammer_address_lower)
+            if predicted_value_fp is not None and predicted_value_fp > FP_THRESHOLD:
+                return True, predicted_value_fp 
+        return False, None

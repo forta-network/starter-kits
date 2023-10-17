@@ -12,7 +12,7 @@ import json
 from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from web3 import Web3
-from forta_agent import FindingSeverity, get_labels, get_alerts
+from forta_agent import FindingSeverity, get_labels, get_alerts, FindingType, Finding
 
 from src.findings import AlertCombinerFinding
 from src.constants import (BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_FP_CLUSTERS_QUEUE_SIZE, MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE, ATTACK_DETECTOR_BOT_ID, ATTACK_DETECTOR_BETA_BOT_ID,
@@ -24,6 +24,7 @@ from src.storage import s3_client, dynamo_table, get_secrets
 from src.blockchain_indexer_service import BlockChainIndexer
 from src.utils import Utils
 from src.dynamo_utils import DynamoUtils, PROD_TAG
+from fp_mitigation.fp_mitigator import FPMitigator
 
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -93,6 +94,10 @@ def initialize():
 
     global CONTRACT_CACHE
     CONTRACT_CACHE = {}
+
+    global fp_mitigator
+    fp_mitigator = FPMitigator(get_secrets(), CHAIN_ID)
+    logging.info(f"Initialized FP mitigator successfully.")
 
     subscription_json = []
     for bot, alertId, stage in BASE_BOTS:
@@ -287,6 +292,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
     global ALERTED_CLUSTERS_STRICT
     global CHAIN_ID
     global HIGHLY_PRECISE_BOTS
+    global fp_mitigator
 
     findings = []
     try:
@@ -476,6 +482,25 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                     logging.info(
                                         f"alert {alert_event.alert_hash} - End user attack identified for {cluster}. Downgrade finding")
                                     end_user_attack = True
+                                
+                                logging.info('fpfp')
+                                is_fp, fp_pred = Utils.is_fp(w3, address_lower, fp_mitigator)
+                                if is_fp and Utils.is_beta():
+                                    fp_mitigated = is_fp
+                                    if fp_pred is not None and Utils.is_beta():
+                                        finding_dict = {
+                                            "name": 'attack-fp-mitigation',
+                                            "description": f'FP mitigation for {address_lower} for attack',
+                                            "alert_id": f'FP-MITIGATED-ATTACK',
+                                            "type": FindingType.Scam,
+                                            "severity": FindingSeverity.High,
+                                            "metadata": {'address': address_lower, 'fp_predictions': fp_pred,
+                                                         'original_alert_hash': alert_event.alert_hash},
+                                            "addresses": [address_lower],
+                                        }
+                                        fp_mitigator_finding = Finding(finding_dict)
+                                        findings.append(fp_mitigator_finding)
+
 
                                 if not end_user_attack and not fp_mitigated and (len(anomaly_scores) == 4) and cluster not in ALERTED_CLUSTERS_STRICT:
                                     logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")

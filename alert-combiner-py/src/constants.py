@@ -225,3 +225,13 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x644b77e0d77d68d3841a55843dcdd61840ad3ca09f7e1ab2d2f5191c35f4a998", "ABNORMAL-FUNCTION-CALL-DETECTED-1", "Exploitation"),  # abnormal function call
              ("0x644b77e0d77d68d3841a55843dcdd61840ad3ca09f7e1ab2d2f5191c35f4a998", "ABNORMAL-EMITTED-EVENT-DETECTED-1", "Exploitation"),  # abnormal function call
              ]
+
+# FP mitigation
+# Zettablock FP mitigation url
+ZETTABLOCK_FP_MITIGATION_URL = "https://api.zettablock.com/api/v1/dataset/sq_863f76be7c034d73bf8b70c94e42dab2/graphql"
+# AutoEncoder model path
+AE_MODEL_PATH = "src/fp_mitigation/models/ae_state_dict.pt"
+# FP mitigation model paths
+FP_MODELS_PATH = ['src/fp_mitigation/models/attack_lgbm.pkl']
+# FP mitigation threshold
+FP_THRESHOLD = 0.3

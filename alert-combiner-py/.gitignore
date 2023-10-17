@@ -7,3 +7,4 @@ __pycache__
 *.txt
 V2-*
 secrets.json
+src/fp_mitigation/models
