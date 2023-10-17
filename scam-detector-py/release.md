@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## 2.20.8
+- fixed address poisoning zero value bug
+- added unique key to reduce dupe alerts
+
 ## 2.20.7
 - added one pager and updated documentation
 - etherscan FP label mitigation
