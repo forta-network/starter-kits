@@ -1,9 +1,9 @@
 import logging
 import numpy as np
 
-from fp_mitigation.autoencoder import AE
-from fp_mitigation.download_data import DownloadData
-from fp_mitigation.tabular import Tabular
+from src.fp_mitigation.autoencoder import AE
+from src.fp_mitigation.download_data import DownloadData
+from src.fp_mitigation.tabular import Tabular
 
 
 class FPMitigator:

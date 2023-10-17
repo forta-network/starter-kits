@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from torch_geometric.nn import HeteroConv, TransformerConv
 
-from constants import AE_MODEL_PATH
+from src.constants import AE_MODEL_PATH
 
 
 class HeteroAutoencoderMultiheadMean(torch.nn.Module):

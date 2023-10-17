@@ -4,8 +4,8 @@ import requests
 import re
 import logging
 import json
-from fp_mitigation.fp_mitigator import FPMitigator
-from constants import FP_THRESHOLD
+from src.fp_mitigation.fp_mitigator import FPMitigator
+from src.constants import FP_THRESHOLD
 
 etherscan_label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
 

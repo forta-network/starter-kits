@@ -24,7 +24,7 @@ from src.storage import s3_client, dynamo_table, get_secrets
 from src.blockchain_indexer_service import BlockChainIndexer
 from src.utils import Utils
 from src.dynamo_utils import DynamoUtils, PROD_TAG
-from fp_mitigation.fp_mitigator import FPMitigator
+from src.fp_mitigation.fp_mitigator import FPMitigator
 
 
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))

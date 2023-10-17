@@ -7,7 +7,7 @@ import torch
 from sklearn.preprocessing import StandardScaler
 from torch_geometric.data import HeteroData
 
-from constants import ZETTABLOCK_FP_MITIGATION_URL
+from src.constants import ZETTABLOCK_FP_MITIGATION_URL
 
 
 class DownloadData:

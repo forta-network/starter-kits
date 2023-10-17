@@ -1,6 +1,6 @@
 import pickle
 
-from constants import FP_MODELS_PATH
+from src.constants import FP_MODELS_PATH
 
 
 class Tabular:
