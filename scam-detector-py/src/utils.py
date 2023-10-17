@@ -347,8 +347,6 @@ class Utils:
         block_chain_indexer = BlockChainIndexer()
         labels = block_chain_indexer.get_etherscan_labels(unique_addresses)
 
-        addresses_to_remove = []
-
         # Iterate through the addresses and check if they should be removed
         for address in address_to_findings.keys():        
             if address in labels:

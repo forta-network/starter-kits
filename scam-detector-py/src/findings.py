@@ -7,6 +7,7 @@ import requests
 import logging
 import re
 import traceback
+import hashlib
 
 from src.utils import Utils
 from src.constants import MODEL_NAME
@@ -383,7 +384,9 @@ class ScamDetectorFinding:
         if scammer_addresses == "" and url != "":
             name = 'Scam detector identified an URL with past alerts mapping to scam behavior'
             description = f'URL {url} likely involved in a scam ({alert_id}, {logic})'
-            
+
+        unique_key = hashlib.sha256(f'{scammer_addresses},{alert_id},{logic}'.encode()).hexdigest()
+        logging.info(f'Unique key of {scammer_addresses},{alert_id},{logic}: {unique_key}')
 
         return Finding({
             'name': name,
@@ -392,6 +395,7 @@ class ScamDetectorFinding:
             'type': FindingType.Scam,
             'severity': FindingSeverity.Critical,
             'metadata': findings_metadata,
+            'unique_key': unique_key,
             'labels': labels
         })
 
