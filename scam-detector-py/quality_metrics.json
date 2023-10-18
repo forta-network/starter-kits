@@ -67,7 +67,7 @@
                 },
                 "hard-rug-pull": {
                     "precision": {
-                        "value": ,
+                        "value": 1,
                         "N": 11,
                         "lower_bound": 0.8026,
                         "upper_bound": 1.0,
@@ -170,7 +170,7 @@
                 },
                 "hard-rug-pull": {
                     "precision": {
-                        "value": ,
+                        "value": 1,
                         "N": 11,
                         "lower_bound": 0.8026,
                         "upper_bound": 1.0,
@@ -579,10 +579,12 @@
                             "lower_bound": 0.9145,
                             "upper_bound": 0.9371,
                             "confidence": 0.9
-                        }
+                            }
+                        } 
                     }
                 }
             }
         }
     }
 }
+    
