@@ -1,6 +1,10 @@
 # Scam Detector Bot Release Notes
 
-## 2.20.8
+## 2.20.10 (beta - 10/18/2023) 
+- fixed chain patrol bug
+- changed one pager promoUrl
+
+## 2.20.9
 - fixed address poisoning zero value bug
 - added unique key to reduce dupe alerts
 

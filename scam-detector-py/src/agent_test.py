@@ -455,7 +455,7 @@ class TestScamDetector:
         bot_id = "0x42dbb60aa8059dd395df9f66230f63852856f7fdd0d6d3fc55b708f8f84a3f47"
         alert_id = "CHAINPATROL-SCAM-ASSET"
         description = "ChainPatrol detected scam: free-mantle.foundation-claim.com"
-        metadata = {"reason":"reported","reportId":"7655","reportUrl":"https://app.chainpatrol.io/reports/7655","status":"BLOCKED","type":"URL","updatedAt":"2023-10-09T00:53:48.625Z","URL":"free-mantle.foundation-claim.com"}
+        metadata = {"reason":"reported","reportId":"7655","report_url":"https://app.chainpatrol.io/reports/7655","status":"BLOCKED","type":"URL","updatedAt":"2023-10-09T00:53:48.625Z","Url":"free-mantle.foundation-claim.com"}
         labels = []
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
 

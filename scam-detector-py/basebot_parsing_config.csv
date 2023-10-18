@@ -157,6 +157,7 @@ bot_id,alert_id,type,location,attacker_address_location_in_description,metadata_
 0x715c40c11a3e24f3f21c3e2db1c109bba358ccfcbceada84ee1e0f4dba4410e7,GAS-ANOMALOUS-LARGE-CONSUMPTION,eoa,metadata,,deployer,
 0x42dbb60aa8059dd395df9f66230f63852856f7fdd0d6d3fc55b708f8f84a3f47,CHAINPATROL-SCAM-ASSET,url,metadata,,URL,
 0x42dbb60aa8059dd395df9f66230f63852856f7fdd0d6d3fc55b708f8f84a3f47,CHAINPATROL-SCAM-ASSET,url,metadata,,url,
+0x42dbb60aa8059dd395df9f66230f63852856f7fdd0d6d3fc55b708f8f84a3f47,CHAINPATROL-SCAM-ASSET,url,metadata,,Url,
 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534,Ice-phishing-web,url,metadata,,URL,
 0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534,Ice-phishing-web,url,metadata,,url,
 0xd45f7183783f5893f4b8e187746eaf7294f73a3bb966500d237bd0d5978673fa,PHISHING-TOKEN-NEW,url,metadata,,urls,
