@@ -1,4 +1,148 @@
 { 
+        "2023-09": {
+            "overall": {
+                "precision": {
+                    "value": 0.8844,
+                    "N": 1067,
+                    "lower_bound": 0.867,
+                    "upper_bound": 0.901,
+                    "confidence": 0.9
+                },
+                "recall": {
+                    "value": 0.5789,
+                    "N": 38,
+                    "lower_bound": 0.5,
+                    "upper_bound": 0.7,
+                    "confidence": 0.9
+                }
+            },
+            "address-poisoner": {
+                "precision": {
+                    "value": 0.6574,
+                    "N": 108,
+                    "lower_bound": 0.5793,
+                    "upper_bound": 0.7279,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 1.00
+                }
+            },
+            "fraudulent-nft-order": {
+                "precision": {
+                    "value": 0.3585,
+                    "N": 53,
+                    "lower_bound": 0.2594,
+                    "upper_bound": 0.4713,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 0.9737
+                }
+            },
+            "hard-rug-pull": {
+                "precision": {
+                    "value": 0.9091,
+                    "N": 66,
+                    "lower_bound": 0.8337,
+                    "upper_bound": 0.9523,
+                    "confidence": 0.9
+                }
+            },
+            "ice-phishing": {
+                "precision": {
+                    "value": 0.9754,
+                    "N": 325,
+                    "lower_bound": 0.9568,
+                    "upper_bound": 0.9861,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 0.9701
+                }
+            },
+            "native-ice-phishing": {
+                "precision": {
+                    "value": 0.9444,
+                    "N": 36,
+                    "lower_bound": 0.8453,
+                    "upper_bound": 0.9814,
+                    "confidence": 0.9
+                }
+            },
+            "native-ice-phishing-social-engineering": {
+                "precision": {
+                    "value": 0.9720,
+                    "N": 107,
+                    "lower_bound": 0.9319,
+                    "upper_bound": 0.9887,
+                    "confidence": 0.9
+                }
+            },
+            "pig-butchering": {
+                "precision": {
+                    "value": 1.00,
+                    "N": 69,
+                    "lower_bound": 0.9623,
+                    "upper_bound": 1.00,
+                    "confidence": 0.9
+                }
+            },
+            "scammer-association": {
+                "precision": {
+                    "value": 0.80,
+                    "N": 10,
+                    "lower_bound": 0.5408,
+                    "upper_bound": 0.9314,
+                    "confidence": 0.9
+                }
+            },
+            "scammer-deployed-contract": {
+                "precision": {
+                    "value": 0.9516,
+                    "N": 62,
+                    "lower_bound": 0.8850,
+                    "upper_bound": 0.9805,
+                    "confidence": 0.9
+                }
+            },
+            "soft-rug-pull": {
+                "precision": {
+                    "value": 0.94,
+                    "N": 100,
+                    "lower_bound": 0.8882,
+                    "upper_bound": 0.9687,
+                    "confidence": 0.9
+                }
+            },
+            "unknown": {
+                "precision": {
+                    "value": 0.7349,
+                    "N": 83,
+                    "lower_bound": 0.6487,
+                    "upper_bound": 0.8063,
+                    "confidence": 0.9
+                }
+            },
+            "wash-trading": {
+                "precision": {
+                    "value": 1,
+                    "N": 48,
+                    "lower_bound": 0.9466,
+                    "upper_bound": 1.00,
+                    "confidence": 0.9
+                }
+            },       
+            "gas-minting": {
+                "precision": {
+                    "value": 0.8333,
+                    "N": 6,
+                    "lower_bound": 0.4976,
+                    "upper_bound": 0.9619,
+                    "confidence": 0.9
+                }
+            }
+        },
      "weekly": {},
     "monthly": {
         "2023-38-09": {
