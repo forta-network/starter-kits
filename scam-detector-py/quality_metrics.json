@@ -1,6 +1,5 @@
 { 
-        "weekly": {},
-            "monthly": {
+        "weekly": {
                 "2023-40": {
                 "ice-phishing": {
                     "precision": {
@@ -129,8 +128,6 @@
                 }
             }
         },
-     "weekly": {},
-    "monthly": {
         "2023-38": {
                 "ice-phishing": {
                     "precision": {
@@ -250,8 +247,6 @@
                 }
             }
         },
-    "weekly": {},
-    "monthly": {
         "2023-37": {
                 "ice-phishing": {
                     "precision": {
@@ -353,8 +348,6 @@
                 }
             }
         },
-    "weekly": {},
-    "monthly": {
         "2023-36": {
                 "ice-phishing": {
                     "precision": {
@@ -456,8 +449,6 @@
                 }
             }
         },
-    "weekly": {},
-    "monthly": {
         "2023-35": {
                 "ice-phishing": {
                     "precision": {
@@ -559,8 +550,6 @@
                 }
             }
         },
-        "weekly": {},
-        "monthly": {
             "2023-28": {
                 "rake-token": {
                     "precision": {
@@ -662,8 +651,6 @@
                     }
                 }
             },
-            "weekly": {},
-            "monthly": {
                 "2023-27": {
                     "rake-token": {
                         "precision": {
@@ -755,7 +742,9 @@
                             "confidence": 0.9
                     }
                 }
-            },                              
+            }
+        },
+      "monthly": {  
         "2023-09": {
             "overall": {
                 "precision": {
@@ -935,7 +924,8 @@
                     "confidence": 0.9
                 },
                   "weighted_precision": {
-                    "value": 1                  
+                    "value": 1 
+                }
             }
         },
         "2023-08": {
@@ -1114,15 +1104,8 @@
                     "N": 30999,
                     "lower_bound": 0.99,
                     "upper_bound": 0.99,
-                    "confidence": 0.9
-                                                
-                                                }
-                                            }
-                                        }                                         
-                                }
-                            }
-                        } 
-                    }
+                    "confidence": 0.9                                   
+                                             
                 }
             }
         }
