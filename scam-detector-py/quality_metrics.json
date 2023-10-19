@@ -1,4 +1,107 @@
-{
+{ 
+    "weekly": {},
+    "monthly": {
+        "2023-37-09": {
+                "ice-phishing": {
+                    "precision": {
+                        "value": 0.9506,
+                        "N": 81,
+                        "lower_bound": 0.8945,
+                        "upper_bound": 0.9776,
+                        "confidence": 0.9
+                    }
+                },
+                "native-ice-phishing": {
+                    "precision": {
+                        "value": 1,
+                        "N": 11,
+                        "lower_bound": 0.8026,
+                        "upper_bound": 1,
+                        "confidence": 0.9
+                    }
+                },
+                "address-poisoner": {
+                    "precision": {
+                        "value": 1,
+                        "N": 17,
+                        "lower_bound": 0.8627,
+                        "upper_bound": 1,
+                        "confidence": 0.9
+                    }
+                },
+                "soft-rug-pull": {
+                    "precision": {
+                        "value": 1,
+                        "N": 19,
+                        "lower_bound": 0.8753,
+                        "upper_bound": 1,
+                        "confidence": 0.9
+                    }
+                },
+                "fraudulent-nft-order": {
+                    "precision": {
+                        "value": 0.3333,
+                        "N": 15,
+                        "lower_bound": 0.1728,
+                        "upper_bound": 0.5448,
+                        "confidence": 0.9
+                    }
+                },
+                "social-eng-native-ice-phishing": {
+                    "precision": {
+                        "value": 1,
+                        "N": 18,
+                        "lower_bound": 0.8693,
+                        "upper_bound": 1,
+                        "confidence": 0.9
+                    }
+                },
+                "wash-trade": {
+                    "precision": {
+                        "value": 1,
+                        "N": 21,
+                        "lower_bound": 0.8859,
+                        "upper_bound": 1,
+                        "confidence": 0.9
+                    }
+                },
+                "hard-rug-pull": {
+                    "precision": {
+                        "value": 1,
+                        "N": 13,
+                        "lower_bound": 0.8277,
+                        "upper_bound": 1,
+                        "confidence": 0.9
+                    }
+                },
+                "scammer-deployed-contract": {
+                    "precision": {
+                        "value": 1,
+                        "N": 11,
+                        "lower_bound": 0.8026,
+                        "upper_bound": 1,
+                        "confidence": 0.9  
+                    }
+                },
+                "unknown": {
+                    "precision": {
+                        "value": 0.2,
+                        "N": 15,
+                        "lower_bound": 0.0829,
+                        "upper_bound": 0.4088,
+                        "confidence": 0.9
+                    }
+                },
+                "pig-butchering": {
+                    "precision": {
+                        "value": 1,
+                        "N": 11,
+                        "lower_bound": 0.8026,
+                        "upper_bound": 1,
+                        "confidence": 0.9                         
+                }
+            }
+        },
     "weekly": {},
     "monthly": {
         "2023-36-09": {
