@@ -1,7 +1,7 @@
 {
     "weekly": {},
     "monthly": {
-        "2023-37-09": {
+        "2023-36-09": {
                 "ice-phishing": {
                     "precision": {
                         "value": 0.9865,
@@ -78,25 +78,25 @@
                     "precision": {
                         "value": 0.9333,
                         "N": 15,
-                        "lower_bound": 0.8040,
-                        "upper_bound": 0.9888,
+                        "lower_bound": 0.7492,
+                        "upper_bound": 0.9850,
                         "confidence": 0.9  
                     }
                 },
                 "unknown": {
                     "precision": {
-                        "value": 0.8049,
-                        "N": 41,
-                        "lower_bound": 0.6856,
-                        "upper_bound": 0.8864,
+                        "value": 0.8,
+                        "N": 10,
+                        "lower_bound": 0.5408,
+                        "upper_bound": 0.9314,
                         "confidence": 0.9
                     }
                 },
                 "pig-butchering": {
                     "precision": {
                         "value": 1,
-                        "N": 28,
-                        "lower_bound": 0.9119,
+                        "N": 18,
+                        "lower_bound": 0.8693,
                         "upper_bound": 1,
                         "confidence": 0.9                         
                 }
@@ -104,7 +104,7 @@
         },
     "weekly": {},
     "monthly": {
-        "2023-36-09": {
+        "2023-35-09": {
                 "ice-phishing": {
                     "precision": {
                         "value": 0.9778,
