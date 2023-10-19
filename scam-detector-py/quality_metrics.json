@@ -1,4 +1,116 @@
 { 
+     "weekly": {},
+    "monthly": {
+        "2023-38-09": {
+                "ice-phishing": {
+                    "precision": {
+                        "value": 0.9875,
+                        "N": 80,
+                        "lower_bound": 0.9459,
+                        "upper_bound": 0.9972,
+                        "confidence": 0.9
+                    }
+                },
+                "address-poisoner": {
+                    "precision": {
+                        "value": 0.1395,
+                        "N": 43,
+                        "lower_bound": 0.0739,
+                        "upper_bound": 0.2478,
+                        "confidence": 0.9
+                    }
+                },
+                "scammer-association": {
+                    "precision": {
+                        "value": 0.8,
+                        "N": 10,
+                        "lower_bound": 0.5408,
+                        "upper_bound": 0.9314,
+                        "confidence": 0.9
+                    }
+                },            
+                "soft-rug-pull": {
+                    "precision": {
+                        "value": 0.9143,
+                        "N": 35,
+                        "lower_bound": 0.8039,
+                        "upper_bound": 0.9652,
+                        "confidence": 0.9
+                    }
+                },
+                "fraudulent-nft-order": {
+                    "precision": {
+                        "value": 0.4167,
+                        "N": 12,
+                        "lower_bound": 0.22,
+                        "upper_bound": 0.6440,
+                        "confidence": 0.9
+                    }
+                },
+                "social-eng-native-ice-phishing": {
+                    "precision": {
+                        "value": 0.9706,
+                        "N": 34,
+                        "lower_bound": 0.8784,
+                        "upper_bound": 0.9934,
+                        "confidence": 0.9
+                    }
+                },
+                "wash-trade": {
+                    "precision": {
+                        "value": 1,
+                        "N": 15,
+                        "lower_bound": 0.8472,
+                        "upper_bound": 1,
+                        "confidence": 0.9
+                    }
+                },
+                "hard-rug-pull": {
+                    "precision": {
+                        "value": 0.8750,
+                        "N": 32,
+                        "lower_bound": 0.7489,
+                        "upper_bound": 0.9426,
+                        "confidence": 0.9
+                    }
+                },
+                "scammer-deployed-contract": {
+                    "precision": {
+                        "value": 0.9375,
+                        "N": 16,
+                        "lower_bound": 0.7625,
+                        "upper_bound": 0.9859,
+                        "confidence": 0.9  
+                    }
+                },
+                "unknown": {
+                    "precision": {
+                        "value": 1,
+                        "N": 17,
+                        "lower_bound": 0.8627,
+                        "upper_bound": 1,
+                        "confidence": 0.9
+                    }
+                },
+                "pig-butchering": {
+                    "precision": {
+                        "value": 1,
+                        "N": 12,
+                        "lower_bound": 0.8160,
+                        "upper_bound": 1,
+                        "confidence": 0.9   
+                      }
+                },
+                "gas-minting": {
+                    "precision": {
+                        "value": 0.8333,
+                        "N": 6,
+                        "lower_bound": 0.4976,
+                        "upper_bound": 0.9619,
+                        "confidence": 0.9                        
+                }
+            }
+        },
     "weekly": {},
     "monthly": {
         "2023-37-09": {
@@ -682,6 +794,7 @@
                             "lower_bound": 0.9145,
                             "upper_bound": 0.9371,
                             "confidence": 0.9
+                                    }
                                 }
                             }
                         } 
