@@ -78,7 +78,7 @@ def run_all_extended(central_node, alert_event, web3):
     else:
         logger.info(f"{central_node}:\tToo many attackers found: {attackers_df.shape[0]}. Not adding any findings")
     if alert_event.alert.alert_id in ['SCAM-DETECTOR-NATIVE-ICE-PHISHING', "SCAM-DETECTOR-ICE-PHISHING"]:
-        logger.info(f"{central_node}:\tAlert {alert_event.alert.alert_id} is a {alert_event.alert.alert_id} alert. Not running global model")
+        logger.info(f"{central_node}:\tAlert {alert_event.alert.alert_id}. Not running global model")
         return all_findings_list
     # Prepare the dataset for the global model
     finding_dict_global = finding_dict.copy()
