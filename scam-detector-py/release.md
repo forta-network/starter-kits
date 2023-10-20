@@ -1,6 +1,6 @@
 # Scam Detector Bot Release Notes
 
-## 2.20.10 (beta - 10/18/2023) 
+## 2.20.11 (beta - 10/19/2023) 
 - fixed chain patrol bug
 - changed one pager promoUrl
 
