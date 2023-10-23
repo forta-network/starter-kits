@@ -122,7 +122,7 @@ class AlertCombinerFinding:
         })
     
     @staticmethod
-    def attack_finding_manual(block_chain_indexer, attacker_cluster: str, reported_by: str, chain_id: int) -> Finding:
+    def attack_finding_manual(block_chain_indexer, attacker_cluster: str, reported_by: str, chain_id: int, test_flag = False) -> Finding:
         label_doesnt_exist = False
         labels = []
 
@@ -137,7 +137,7 @@ class AlertCombinerFinding:
             
             logging.info(f"Querying for existing label: {label_query_options_dict}")
             labels_response = get_labels(label_query_options_dict)
-            if not labels_response.labels:
+            if test_flag or not labels_response.labels:
                 logging.info(f"Label doesn't exist for {attacker_address}")
                 label_doesnt_exist = True
             else:

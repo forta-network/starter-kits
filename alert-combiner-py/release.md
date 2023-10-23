@@ -1,5 +1,10 @@
 # Attack Detector Bot Release Notes
 
+## v3.50.4 (Sept 25 2023: beta)
+- integrated ownership transfer bot
+- added POSITIVE-REPUTATION-2 FP mitigation
+- update to sdk 0.1.41
+
 ## v3.50.3 (Seot 12 2023: beta, Sept 19 2023: prod)
 - update to sdk 0.1.40/0.1.21
 - updated long description
