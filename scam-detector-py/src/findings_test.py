@@ -5,8 +5,8 @@ from blockchain_indexer_mock import BlockChainIndexerMock
 from forta_explorer_mock import FortaExplorerMock
 import pandas as pd
 
-from findings import ScamDetectorFinding
-from utils import Utils
+from src.findings import ScamDetectorFinding
+from src.utils import Utils
 
 
 forta_explorer = FortaExplorerMock()

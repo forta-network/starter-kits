@@ -7,6 +7,7 @@ import requests
 import logging
 import re
 import traceback
+import hashlib
 
 from src.utils import Utils
 from src.constants import MODEL_NAME
@@ -225,7 +226,7 @@ class ScamDetectorFinding:
         
     @staticmethod
     def get_url(metadata:dict) -> str:
-        url = metadata['URL'] if 'URL' in metadata.keys() else ""
+        url = metadata['URL'] if 'URL' in metadata.keys() else metadata['url'] if 'url' in metadata.keys() else metadata['Url'] if 'Url' in metadata.keys() else ""
         if url == "":
             urls = metadata['urls'] if 'urls' in metadata.keys() else ""
             if urls != "":
@@ -249,7 +250,7 @@ class ScamDetectorFinding:
         logging.info(f"Model name: {MODEL_NAME}")
         
         url = ScamDetectorFinding.get_url(metadata)
-        url_scan_url = metadata['detail'] if ('detail' in metadata.keys() and 'URL' in metadata.keys()) else ""
+        url_scan_url = metadata['detail'] if ('detail' in metadata.keys() and 'URL' in metadata.keys()) else metadata['reportUrl'] if ('reportUrl' in metadata.keys() and ('type' in metadata.keys() and metadata['type'].upper()=='URL')) else metadata['report_url'] if ('report_url' in metadata.keys() and ('type' in metadata.keys() and metadata['type'].upper()=='URL')) else ""
 
         involved_addresses = list(involved_addresses)[0:10] if involved_addresses is not None else []
         involved_alert_hashes = sorted(list(involved_alert_hashes)[0:10])
@@ -383,7 +384,9 @@ class ScamDetectorFinding:
         if scammer_addresses == "" and url != "":
             name = 'Scam detector identified an URL with past alerts mapping to scam behavior'
             description = f'URL {url} likely involved in a scam ({alert_id}, {logic})'
-            
+
+        unique_key = hashlib.sha256(f'{scammer_addresses},{url},{alert_id},{logic}'.encode()).hexdigest()
+        logging.info(f'Unique key of {scammer_addresses},{url},{alert_id},{logic}: {unique_key}')
 
         return Finding({
             'name': name,
@@ -392,6 +395,7 @@ class ScamDetectorFinding:
             'type': FindingType.Scam,
             'severity': FindingSeverity.Critical,
             'metadata': findings_metadata,
+            'unique_key': unique_key,
             'labels': labels
         })
 
@@ -426,9 +430,29 @@ class ScamDetectorFinding:
             'labels': labels
         })
 
-
-    
-
+    @staticmethod
+    def alert_etherscan_likely_FP(address: str) -> Finding:
+       
+        labels = [
+            Label({
+                'entityType': EntityType.Address,
+                'label': 'benign',
+                'entity': address,
+                'confidence': 0.99,
+                })
+            ]
+        
+        return Finding({
+            'name': 'Scam detector identified an address that would likely be incorrectly alerted on. Emitting informative alert.',
+            'description': f'{address} likely not involved in a scam (SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION, manual)',
+            'alert_id': 'SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION',
+            'type': FindingType.Info,
+            'severity': FindingSeverity.Info,
+            'metadata': {
+                'benign_address': address
+            },
+            'labels': labels
+        })
 
     @staticmethod
     def scam_finding_manual(block_chain_indexer, forta_explorer, entity_type: str, entities: str, threat_category: str, reported_by: str, chain_id: int, comment:str = '', initial_metamask_list_consumption: bool = False) -> Finding:

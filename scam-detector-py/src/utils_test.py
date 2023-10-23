@@ -1,10 +1,11 @@
 from datetime import datetime
 import json
-from forta_agent import get_json_rpc_url, FindingSeverity
+from forta_agent import get_json_rpc_url, FindingSeverity, FindingType, Finding
 from web3 import Web3
-from utils import Utils
-from constants import CONFIDENCE_MAPPINGS
-from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX
+
+from src.utils import Utils
+from src.constants import CONFIDENCE_MAPPINGS
+from src.web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX
 
 w3 = Web3Mock()
 real_w3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -99,6 +100,16 @@ class TestUtils:
         assert finding.metadata['error_source'] == "source"
         assert finding.metadata['error_stacktrace'] == "stacktrace"
 
+    def test_debug_error(self):
+        finding = Utils.alert_error("description&apiKey=foobar&test", "source", "stacktrace")
+        assert finding.description == "Error: description&apiKey=XXXXXX&test"
+        assert finding.alert_id == "DEBUG-ERROR"
+        assert finding.severity == FindingSeverity.Info
+        assert finding.name == "Scam detector encountered a recoverable error."
+        assert finding.metadata['error_source'] == "source"
+        assert finding.metadata['error_stacktrace'] == "stacktrace"
+
+
     def test_get_confidence_value_latest(self):
         Utils.TEST_STATE = True
         assert 0.91==Utils.get_confidence_value('ice-phishing')
@@ -110,3 +121,38 @@ class TestUtils:
     def test_get_confidence_value_default(self):
         Utils.TEST_STATE = True
         assert CONFIDENCE_MAPPINGS['sleep-minting']==Utils.get_confidence_value('sleep-minting')
+
+    def test_filter_out_likely_fps(self):
+        FINDINGS_CACHE_ALERT = [
+            Finding({
+                'name': 'Scam finding',
+                'description': 'Description',
+                'alert_id': "alert_id",
+                'type': FindingType.Scam,
+                'severity': FindingSeverity.Critical,           
+                'labels': [],
+                'metadata': {
+                    'scammer_address': '0x5068aed87a97c063729329c2ebe84cfed3177f83' # random address (no labels)
+                }
+            }),
+            Finding({
+                'name': 'Non scam finding',
+                'description': 'Description',
+                'alert_id': "alert_id",
+                'type': FindingType.Scam,
+                'severity': FindingSeverity.Critical,           
+                'labels': [],
+                'metadata': {
+                    'scammer_address': '0x41653c7d61609d856f29355e404f310ec4142cfb' # UNI deployer
+                }
+            })
+        ]
+        
+        filtered_findings = Utils.filter_out_likely_fps(FINDINGS_CACHE_ALERT)
+
+        if Utils.is_beta():
+            assert len(filtered_findings) == 2
+            assert filtered_findings[1].alert_id == 'SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION'
+        else: 
+            assert len(filtered_findings) == 1
+            assert filtered_findings[0].name == 'Scam finding'
