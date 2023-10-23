@@ -44,7 +44,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.40"
+    "forta-agent": "^0.1.43"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"
