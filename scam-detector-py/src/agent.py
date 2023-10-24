@@ -10,13 +10,14 @@ import io
 import re
 import json
 import math
+import pytz
 import traceback
 import joblib
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 
 import forta_agent
-from forta_agent import Finding, FindingType, FindingSeverity
+from forta_agent import Finding, FindingType, FindingSeverity, get_alerts, get_labels
 from web3 import Web3
 
 from src.constants import (BASE_BOTS, ALERTED_ENTITIES_ML_KEY, ALERTED_ENTITIES_ML_QUEUE_SIZE, ALERTED_ENTITIES_PASSTHROUGH_KEY, ALERTED_ENTITIES_PASSTHROUGH_QUEUE_SIZE, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE, ALERTED_ENTITIES_SIMILAR_CONTRACT_KEY, ALERTED_ENTITIES_SIMILAR_CONTRACT_QUEUE_SIZE, ALERTED_ENTITIES_MANUAL_KEY, ALERTED_ENTITIES_MANUAL_QUEUE_SIZE, ALERTED_ENTITIES_MANUAL_METAMASK_KEY, ALERTED_ENTITIES_MANUAL_METAMASK_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
@@ -54,6 +55,7 @@ ALERTED_FP_CLUSTERS = dict()  # clusters -> alert_id (dummy val) which are consi
 FINDINGS_CACHE_BLOCK = []
 FINDINGS_CACHE_ALERT = []
 FINDINGS_CACHE_TRANSACTION = []
+REACTIVE_LIKELY_FPS = dict() # address -> label metadata (addresses that are yet to be checked)
 DF_CONTRACT_SIGNATURES = None
 
 MODEL = None
@@ -936,6 +938,110 @@ def emit_new_fp_finding(w3) -> list:
 
     return findings
 
+
+# This function is called once per hour to update the REACTIVE_LIKELY_FPS dictionary. 
+# It fetches scammer addresses from Scam Detector alerts generated 89 days ago (at that specific hour) and then retrieves 
+# scammer labels for those addresses. The retrieved data is used to update the dictionary.
+def update_reactive_likely_fps(current_date) -> list:
+    logging.info(f"{BOT_VERSION}: update reactive likely fps called")
+
+    global REACTIVE_LIKELY_FPS
+
+    source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
+    response = None
+    page_size = 2000
+    starting_cursor = None
+    should_retry_from_error = False
+   
+    # Calculate the time 89 days ago (Querying alerts from 90 days ago results in an error)
+    eighty_nine_days_ago = current_date - timedelta(days=89)
+
+    # Calculate the start and end timestamps for the desired hour as milliseconds ago
+    milliseconds_ago = (current_date - eighty_nine_days_ago).total_seconds() * 1000  # Convert to milliseconds
+    start_milliseconds_ago = int(milliseconds_ago)
+    end_milliseconds_ago = int(milliseconds_ago - 3600 * 1000)  # 3600 seconds in an hour, converted to milliseconds
+   
+    alerts = []
+    while True:
+        if response and response.page_info and response.page_info.has_next_page:
+            starting_cursor = {
+                'alertId': response.page_info.end_cursor.alert_id,
+                'blockNumber': response.page_info.end_cursor.block_number
+            }
+            should_retry_from_error = False
+        try:
+            query = {
+                "bot_ids": [source_id],
+                "created_since": start_milliseconds_ago,
+                "created_before": end_milliseconds_ago,
+                "starting_cursor": starting_cursor,
+                "chain_id": CHAIN_ID,
+                "first": page_size
+            }
+            response = get_alerts(query)
+            alerts.extend(response.alerts)
+        except Exception as e:
+            if  ((isinstance(e, AttributeError) and 'NoneType' in str(e)) or (isinstance(e, Exception) and "Internal server error" in str(e))):
+                # Reduce the page size in order to reduce the response size and try again
+                page_size = math.floor(page_size / 2)
+                should_retry_from_error = page_size > 1
+            else:               
+                logging.warning(f"{BOT_VERSION}: update reactive likely fps (get_alerts error): {e} - {traceback.format_exc()}")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.update_reactive_likely_fps.internal1", traceback.format_exc()))
+        if (not should_retry_from_error and response.page_info.end_cursor.alert_id == ""):
+            break
+        
+    logging.info(f"{BOT_VERSION}: update reactive likely fps (alerts count): {len(alerts)}")
+    
+    unique_scammers_list = Utils.process_past_alerts(alerts, REACTIVE_LIKELY_FPS, BOT_VERSION)
+    labels = []
+    page_size = 1000
+    batch_size = 200
+    for i in range(0, len(unique_scammers_list), batch_size):
+        batch = unique_scammers_list[i:i+batch_size]
+        
+        labels_response = None
+        starting_cursor = None
+        should_retry_from_error = False
+
+        while True:
+            if labels_response and labels_response.page_info and labels_response.page_info.has_next_page:
+                starting_cursor = labels_response.page_info.end_cursor      
+                should_retry_from_error = False
+            try:
+                query = {
+                    "entities": batch,
+                    "source_ids": [source_id],
+                    "labels": ["scammer"],
+                    "created_since": start_milliseconds_ago,
+                    "first": page_size,
+                    "starting_cursor": starting_cursor
+                }
+
+                labels_response = get_labels(query)
+                labels.extend(labels_response.labels)
+            except Exception as e:
+                if (
+                    (isinstance(e, AttributeError) and 'NoneType' in str(e)) or
+                    (isinstance(e, Exception) and "Internal server error" in str(e))
+                ):
+                    # Reduce the page size in order to reduce the response size and try again
+                    page_size = math.floor(page_size / 2)
+                    should_retry_from_error = page_size > 1
+                else:               
+                    logging.warning(f"{BOT_VERSION}: update reactive likely fps (get_labels error): {e} - {traceback.format_exc()}")
+                    Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.update_reactive_likely_fps.internal3", traceback.format_exc()))
+                    raise e
+                
+            if not should_retry_from_error and not labels_response.page_info.has_next_page:
+                break
+
+    logging.info(f"{BOT_VERSION}: update reactive likely fps (labels count): {len(labels)}")
+
+    for label in labels:
+        if not label.remove and label.entity not in REACTIVE_LIKELY_FPS:
+            REACTIVE_LIKELY_FPS[label.entity] = label.metadata
+
 def get_value(items: dict, key: str):
     v = ''
     if key in items:
@@ -1313,9 +1419,13 @@ def provide_handle_block(w3):
                 Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.handle_block", traceback.format_exc()))
                 return []
 
+        global REACTIVE_LIKELY_FPS
         global FINDINGS_CACHE_BLOCK
         findings = []
-        dt = datetime.fromtimestamp(block_event.block.timestamp)
+
+        timestamp = block_event.block.timestamp
+        utc_timezone = pytz.UTC
+        dt = datetime.fromtimestamp(timestamp, tz=utc_timezone)    
         logging.info(f"{BOT_VERSION}: handle block called with block timestamp {dt}")
         
         if Utils.is_beta():
@@ -1328,6 +1438,9 @@ def provide_handle_block(w3):
             manual_findings = emit_manual_finding(w3)
             logging.info(f"{BOT_VERSION}: Added {len(manual_findings)} manual findings.")
             FINDINGS_CACHE_BLOCK.extend(manual_findings)
+
+            update_reactive_likely_fps(dt) 
+            logging.info(f"{BOT_VERSION}: {len(REACTIVE_LIKELY_FPS)} reactive likely fps in total")
 
             global DF_CONTRACT_SIGNATURES
             try:
@@ -1361,9 +1474,20 @@ def provide_handle_block(w3):
             persist_state()
             logging.info(f"{BOT_VERSION}: Persisted state")
             
-            
-            
-        
+        # Create reactive FP findings
+        if REACTIVE_LIKELY_FPS:
+            # Check 5 addresses per block
+            addresses_to_check = list(REACTIVE_LIKELY_FPS.keys())[:5]
+            for address in addresses_to_check:
+                if Utils.is_fp(w3, address, CHAIN_ID):
+                    logging.info(f"{BOT_VERSION}: {address} is an FP. Emitting FP finding.")
+                    findings.append(ScamDetectorFinding.alert_FP(w3, address, "scammer", REACTIVE_LIKELY_FPS[address]))
+                else:
+                    logging.info(f"{BOT_VERSION}: {address} is not an FP. Removing from reactive likely fps list.")   
+                
+                del REACTIVE_LIKELY_FPS[address]
+
+
         for finding in FINDINGS_CACHE_BLOCK[0:25]:  # 25 findings per block due to size limitation
             if finding is not None:
                 findings.append(finding)

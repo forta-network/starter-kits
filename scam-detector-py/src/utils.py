@@ -493,5 +493,20 @@ class Utils:
                 alert_event.alert.labels = finding.labels
         
         return alert_event
-    
-    
+
+    @staticmethod
+    def process_past_alerts(alerts, reactive_likely_fps: dict, bot_version: str):
+        unique_scammers = set()
+        try:
+            for alert in alerts:
+                if alert.alert_id not in ["SCAM-DETECTOR-FALSE-POSITIVE", "SCAM-DETECTOR-MANUAL-METAMASK-PHISHING", "DEBUG-ERROR"]:
+                    scammer_address = alert.metadata.get('scammerAddress')
+                    scammer_addresses = alert.metadata.get('scammerAddresses')
+                    if scammer_address is not None and scammer_address not in reactive_likely_fps:
+                        unique_scammers.add(scammer_address)
+                    elif scammer_addresses is not None and scammer_addresses not in reactive_likely_fps:
+                        unique_scammers.add(scammer_addresses)
+        except Exception as e:
+            logging.warning(f"{bot_version}: process_past_alerts (scammer address missing): {e} - {traceback.format_exc()}")
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.process_past_alerts", traceback.format_exc()))
+        return list(unique_scammers)

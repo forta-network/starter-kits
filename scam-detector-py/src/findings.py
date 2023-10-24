@@ -2,6 +2,7 @@ from operator import inv
 from time import strftime
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType, get_labels
 from datetime import datetime
+from typing import Union
 import pandas as pd
 import requests
 import logging
@@ -400,14 +401,18 @@ class ScamDetectorFinding:
         })
 
     @staticmethod
-    def alert_FP(w3, address: str, label: str, metadata: tuple) -> Finding:
+    def alert_FP(w3, address: str, label: str, metadata: Union[tuple, dict]) -> Finding:
 
-        #metadata is a tuple and needs to convert to dict
-        metadata_dict = {}
-        for pair in metadata:
-            key = pair.split("=")[0]
-            value = pair.split("=")[1]
-            metadata_dict[key] = value
+        if (isinstance(metadata, tuple)):
+            #metadata is a tuple and needs to convert to dict
+            metadata_dict = {}
+            for pair in metadata:
+                key = pair.split("=")[0]
+                value = pair.split("=")[1]
+                metadata_dict[key] = value
+        else:
+            # Reactive FP mitigation case
+            metadata_dict = metadata
 
         labels = []
         labels.append(Label({
@@ -419,6 +424,9 @@ class ScamDetectorFinding:
                 'metadata': metadata_dict
 
             }))
+        
+        unique_key = hashlib.sha256(f'{address},{str(metadata)}'.encode()).hexdigest()
+        logging.info(f'Unique key of {address},{str(metadata)}: {unique_key}')
 
         return Finding({
             'name': 'Scam detector identified an address that was incorrectly alerted on. Emitting false positive alert.',
@@ -427,7 +435,8 @@ class ScamDetectorFinding:
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'metadata': {},
-            'labels': labels
+            'unique_key': unique_key,
+            'labels': labels,
         })
 
     @staticmethod
