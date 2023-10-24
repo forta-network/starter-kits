@@ -88,9 +88,14 @@ class AlertCombinerFinding:
         unique_key = hashlib.sha256(f'{addresses},{victim_clause},{alert_id}'.encode()).hexdigest()
         logging.info(f"Unique key of {addresses},{victim_clause},{alert_id}: {unique_key}")
 
+        if alert_id == "ATTACK-DETECTOR-PREPARTION":
+            description = f'{addresses} likely involved in an attack preparation ({alert_event.alert_hash}){victim_clause}. Anomaly score: {anomaly_score}'
+        else:
+            description = f'{addresses} likely involved in an attack ({alert_event.alert_hash}){victim_clause}. Anomaly score: {anomaly_score}'
+
         return Finding({
                        'name': 'Attack detector identified an EOA with behavior consistent with an attack',
-                       'description': f'{addresses} likely involved in an attack ({alert_event.alert_hash}){victim_clause}. Anomaly score: {anomaly_score}',
+                       'description': description,
                        'alert_id': alert_id,
                        'type': FindingType.Exploit,
                        'severity': severity,
