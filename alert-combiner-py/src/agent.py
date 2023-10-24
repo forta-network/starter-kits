@@ -566,7 +566,7 @@ def emit_manual_finding(w3, du, test = False) -> list:
         reinitialize()
         if CHAIN_ID == -1:
             raise Exception("CHAIN_ID not set")
-    print("SKROU SKROU")
+
     content = open('manual_alert_list_test.tsv', 'r').read() if test else open('manual_alert_list.tsv', 'r').read()
     if not test:
         res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/alert-combiner-py/manual_alert_list_test.tsv')
@@ -595,7 +595,7 @@ def emit_manual_finding(w3, du, test = False) -> list:
             entity_clusters = du.read_entity_clusters(dynamo, attacker_address_lower)
             if attacker_address_lower in entity_clusters.keys():
                 cluster = entity_clusters[attacker_address_lower]
-            print("SKROU??")
+
             if Utils.is_contract(w3, cluster):
                 logging.info(f"Manual finding: Address {cluster} is a contract")
                 continue
@@ -604,11 +604,8 @@ def emit_manual_finding(w3, du, test = False) -> list:
                 logging.info(f"Manual finding: Emitting manual finding for {cluster}")
                 tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
                 account = "" if 'nan' in str(row["Account"]) else row['Account']
-                print("WUT WUT WUT")
                 update_list(MANUALLY_ALERTED_ENTITIES, MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE, cluster)
-                print("HOHOHOH")
                 finding = AlertCombinerFinding.attack_finding_manual(block_chain_indexer, cluster, account + " " + tweet, chain_id)
-                print("????")
                 if finding is not None:
                     findings.append(finding)
                 logging.info(f"Findings count {len(findings)}")
@@ -782,7 +779,7 @@ def provide_handle_alert(w3, du):
     return handle_alert
 
 #  Set the tag to PROD_TAG for production
-real_handle_alert = provide_handle_alert(web3, DynamoUtils(TEST_TAG, web3.eth.chain_id))
+real_handle_alert = provide_handle_alert(web3, DynamoUtils(PROD_TAG, web3.eth.chain_id))
 
 def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     logging.debug("handle_alert called")
@@ -830,4 +827,4 @@ def handle_block(block_event: forta_agent.BlockEvent):
     return real_handle_block(block_event)
 
 #  Set the tag to PROD_TAG for production
-real_handle_block = provide_handle_block(web3, DynamoUtils(TEST_TAG, web3.eth.chain_id))
+real_handle_block = provide_handle_block(web3, DynamoUtils(PROD_TAG, web3.eth.chain_id))
