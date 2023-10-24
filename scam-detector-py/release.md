@@ -3,6 +3,7 @@
 ## 2.22.0
 - upgrade to sdk 0.1.43/0.1.23
 
+
 ## 2.20.12 (beta - 10/21/2023, 10/23/2023 - prod (without private key compromise, phishing ML bot))
 - fixed chain patrol bug
 - changed one pager promoUrl

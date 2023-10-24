@@ -560,6 +560,32 @@ class TestScamDetector:
                 found_contract = True   
         assert found_contract, "should have found scammer contract"
 
+
+    def test_detect_blocksec_phishing_drainer_encrypted(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534"
+        alert_id = "Phishing-drainer"
+        description = "Drainer report."
+        metadata = {'scammer': 'Inferno Drainer Affiliate Account', 'transaction': '0xaf300549d642b31bc2a1d6cf1dbf31213be7634f5bfb5d5ada45b1e6d7bb1f48'}
+        label = {"entity": "0xfaee4d9ce515c83cdca2e4a7365e7ecbbe74d29d","entityType": "ADDRESS","label": "affiliate","metadata": {},"confidence": 1}
+        labels = [ label ]
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
+
+        encrypted_alert_event = TestScamDetector.encrypt_alert_event(alert_event)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, encrypted_alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding for the affiliate EOA"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
+        assert finding.labels[0].entity == '0xfaee4d9ce515c83cdca2e4a7365e7ecbbe74d29d'
+        assert finding.labels[0].label == 'scammer'
+      
+
     def test_detect_soft_rug_pull(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
