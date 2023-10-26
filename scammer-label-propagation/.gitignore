@@ -11,3 +11,4 @@ secrets.json
 data*
 train_model
 model.pth
+*.ipynb

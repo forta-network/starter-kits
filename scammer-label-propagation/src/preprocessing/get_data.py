@@ -283,7 +283,7 @@ def download_labels_agent(all_nodes_dict, central_node) -> pd.DataFrame:
             next_page_exists = response.page_info.has_next_page
             if next_page_exists:
                 query_variables['starting_cursor'] = {
-                    "pageToken": response.page_info.end_cursor.page_token,
+                    "page_token": response.page_info.end_cursor.page_token,
                 }
             all_labels += response.labels
         query_variables.pop('starting_cursor', None)
@@ -296,7 +296,7 @@ def download_labels_agent(all_nodes_dict, central_node) -> pd.DataFrame:
             next_page_exists = response.page_info.has_next_page
             if next_page_exists:
                 query_variables['starting_cursor'] = {
-                    "pageToken": response.page_info.end_cursor.page_token,
+                    "page_token": response.page_info.end_cursor.page_token,
                 }
             all_labels += response.labels
     all_labels_df = pd.DataFrame({'entity': [response.entity for response in all_labels],
