@@ -8,6 +8,7 @@ import io
 import rlp
 import base64
 import gnupg
+import time
 import pandas as pd
 import json
 import os
@@ -280,8 +281,10 @@ class Utils:
                 return True
 
             tx_count = 0
+            has_zero_nonce = False
             try:
                 tx_count = Utils.get_max_tx_count(w3, cluster)
+                has_zero_nonce = tx_count == 0
             except BaseException as e:
                 error_finding = Utils.alert_error(str(e), "Utils.get_max_tx_count", f"{traceback.format_exc()}")
                 Utils.ERROR_CACHE.add(error_finding)
@@ -291,20 +294,21 @@ class Utils:
                 logging.info(f"Cluster {cluster} transacton count: {tx_count}")
                 return True
             
-            try:
-                from src.blockchain_indexer_service import BlockChainIndexer
-                block_chain_indexer = BlockChainIndexer()
-                if block_chain_indexer.has_deployed_high_tx_count_contract(cluster, chain_id):
-                    logging.info(f"Cluster {cluster} has deployed a high tx count contract")
-                    return True
-                else:
-                    logging.info(f"Cluster {cluster} has not deployed a high tx count contract")
+            if not has_zero_nonce:
+                try:
+                    from src.blockchain_indexer_service import BlockChainIndexer
+                    block_chain_indexer = BlockChainIndexer()
+                    if block_chain_indexer.has_deployed_high_tx_count_contract(cluster, chain_id):
+                        logging.info(f"Cluster {cluster} has deployed a high tx count contract")
+                        return True
+                    else:
+                        logging.info(f"Cluster {cluster} has not deployed a high tx count contract")
 
-            except BaseException as e:
-                error_finding = Utils.alert_error(str(e), "Utils.block_chain_indexer.has_deployed_high_tx_count_contract", f"{traceback.format_exc()}")
-                Utils.ERROR_CACHE.add(error_finding)
-                logging.error(f"Exception in assessing has_deployed_high_tx_count_contract for cluster {cluster}: {e}")
-                return False
+                except BaseException as e:
+                    error_finding = Utils.alert_error(str(e), "Utils.block_chain_indexer.has_deployed_high_tx_count_contract", f"{traceback.format_exc()}")
+                    Utils.ERROR_CACHE.add(error_finding)
+                    logging.error(f"Exception in assessing has_deployed_high_tx_count_contract for cluster {cluster}: {e}")
+                    return False
 
         if Utils.is_in_fp_mitigation_list(cluster):
             logging.info(f"Cluster {cluster} is in fp mitigation list")
@@ -499,7 +503,7 @@ class Utils:
         unique_scammers = set()
         try:
             for alert in alerts:
-                if alert.alert_id not in ["SCAM-DETECTOR-FALSE-POSITIVE", "SCAM-DETECTOR-MANUAL-METAMASK-PHISHING", "DEBUG-ERROR"]:
+                if alert.alert_id not in ["SCAM-DETECTOR-FALSE-POSITIVE", "SCAM-DETECTOR-MANUAL-METAMASK-PHISHING", "DEBUG-ERROR", "SCAM-DETECTOR-ADDRESS-POISONING"]:
                     scammer_address = alert.metadata.get('scammerAddress')
                     scammer_addresses = alert.metadata.get('scammerAddresses')
                     if scammer_address is not None and scammer_address not in reactive_likely_fps:
