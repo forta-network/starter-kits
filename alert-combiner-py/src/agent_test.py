@@ -597,7 +597,7 @@ class TestAlertCombiner:
         agent.initialize()
         dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
-        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x5bb675492f3accba1d35e7f59f584b6fae11df919f13223f3056a69dc5686b4b", "MEV-BOT-IDENTIFIED")  # positive reputation alert
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x5bb675492f3accba1d35e7f59f584b6fae11df919f13223f3056a69dc5686b4b", "MEV-SANDWICH-BOT-IDENTIFIED")  # positive reputation alert
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
