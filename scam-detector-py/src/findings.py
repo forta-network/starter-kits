@@ -2,6 +2,7 @@ from operator import inv
 from time import strftime
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType, get_labels
 from datetime import datetime
+from typing import Optional
 import pandas as pd
 import requests
 import logging
@@ -98,7 +99,7 @@ class ScamDetectorFinding:
             return ""
 
     @staticmethod
-    def alert_similar_contract(block_chain_indexer, forta_explorer, base_bot_alert_id: str, base_bot_alert_hash: str, metadata: dict, chain_id:int) -> Finding:
+    def alert_similar_contract(block_chain_indexer, forta_explorer, base_bot_alert_id: str, base_bot_alert_hash: str, metadata: dict, chain_id:int) -> Optional[Finding]:
 
         # {"alert_hash":"0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016",
         #  "new_scammer_contract_address":"0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2",
@@ -152,6 +153,37 @@ class ScamDetectorFinding:
                     'label_version': ScamDetectorFinding.LABEL_VERSION,
                     'logic': 'propagation'
                 }
+            }))
+
+            common_scammer_contract_label_properties = {
+                'entityType': EntityType.Address,
+                'entity': scammer_contract_address,
+                'confidence': confidence,
+                'metadata': {
+                    'address_type': 'contract',
+                    'chain_id': chain_id,
+                    'base_bot_alert_ids': base_bot_alert_id,  # base bot alert id: contract similarity alert id
+                    'base_bot_alert_hashes': base_bot_alert_hash,
+                    'associated_scammer_contract': existing_scammer_contract_address,
+                    'associated_scammer_threat_categories': ','.join(original_threat_categories),
+                    'associated_scammer_alert_hashes': alert_hash,
+                    'deployer_info': f"Deployer {scammer_address} deployed a contract {scammer_contract_address} that is similar to a contract {existing_scammer_contract_address} deployed by a known scammer {existing_scammer_address} involved in {','.join(original_threat_categories)} scam (alert hash: {alert_hash}); this contract may or may not be related to this particular scam, but was created by the scammer.",
+                    'threat_category': threat_category,
+                    'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
+                    'bot_version': Utils.get_bot_version(),
+                    'label_version': ScamDetectorFinding.LABEL_VERSION,
+                    'logic': 'propagation'
+                }
+            }
+
+            labels.append(Label({
+                'label': 'scammer',
+                **common_scammer_contract_label_properties
+            }))
+
+            labels.append(Label({
+                'label': 'similar-contract',
+                **common_scammer_contract_label_properties
             }))
 
             labels.append(Label({
@@ -223,6 +255,9 @@ class ScamDetectorFinding:
                 'metadata': metadata,
                 'labels': labels
             })
+        
+        else:
+            return None
         
     @staticmethod
     def get_url(metadata:dict) -> str:
@@ -572,9 +607,8 @@ class ScamDetectorFinding:
 
         labels = []
         confidence = Utils.get_confidence_value(original_threat_category)
-        labels.append(Label({
+        common_eoa_label_properties = {
             'entityType': EntityType.Address,
-            'label': 'scammer',
             'entity': new_scammer_eoa,
             'confidence': confidence * model_confidence,
             'metadata': {
@@ -591,16 +625,22 @@ class ScamDetectorFinding:
                 'label_version': ScamDetectorFinding.LABEL_VERSION,
                 'logic': 'propagation'
             }
+        }
+        labels.append(Label({
+            'label': 'scammer',
+            **common_eoa_label_properties
+        }))
+
+        labels.append(Label({
+            'label': 'scammer-association',
+            **common_eoa_label_properties
         }))
 
         # get all deployed contracts by EOA and add label for those using etherscan or allium
         try:
             contracts = block_chain_indexer.get_contracts(new_scammer_eoa, chain_id)
-            for contract in contracts:
-                labels.append(Label({
+            common_contract_label_properties = {
                     'entityType': EntityType.Address,
-                    'label': 'scammer',
-                    'entity': contract,
                     'confidence': confidence * model_confidence * 0.8,
                     'metadata': {
                         'address_type': 'contract',
@@ -617,6 +657,17 @@ class ScamDetectorFinding:
                         'label_version': ScamDetectorFinding.LABEL_VERSION,
                         'logic': 'propagation'
                     }
+                }
+            for contract in contracts:
+                labels.append(Label({                    
+                    'label': 'scammer',
+                    'entity': contract,
+                    **common_contract_label_properties
+                }))
+                labels.append(Label({                    
+                    'label': 'scammer-association',
+                    'entity': contract,
+                    **common_contract_label_properties
                 }))
         except Exception as e:
             logging.warning(f"Error getting contracts for scammer address {new_scammer_eoa}: {e}")
