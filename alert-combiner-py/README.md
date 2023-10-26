@@ -121,6 +121,12 @@ The Attack Detector bot emits the following alerts:
   - Type is always set to "exploit"
   - Note: the detection bot will only alert once per cluster observed
 
+- ATTACK-DETECTOR-7
+  - Fired when a passthrough alert has been observed (e.g. blocksec bot)
+  - Severity is always set to "critical"
+  - Type is always set to "exploit"
+  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
+  - Note: the detection bot will only alert once per cluster observed; FP mitigations are not applied to this alert ID
 
 The metadata for each alert will contain:
  - anomaly_score - the overall anomaly score, which the bot thresholds on
