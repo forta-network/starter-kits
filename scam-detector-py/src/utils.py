@@ -1,7 +1,7 @@
 
 from web3 import Web3
 from hexbytes import HexBytes
-from forta_agent import get_labels, Label, Finding, FindingSeverity, FindingType, AlertEvent
+from forta_agent import get_labels, get_alerts, Label, Finding, FindingSeverity, FindingType, AlertEvent
 import requests
 import logging
 import io
@@ -12,6 +12,7 @@ import time
 import pandas as pd
 import json
 import os
+import math
 from datetime import datetime, timedelta
 import traceback
 from web3 import Web3
@@ -514,3 +515,87 @@ class Utils:
             logging.warning(f"{bot_version}: process_past_alerts (scammer address missing): {e} - {traceback.format_exc()}")
             Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.process_past_alerts", traceback.format_exc()))
         return list(unique_scammers)
+    
+    @staticmethod
+    def fetch_labels(unique_scammers_list, source_id, get_labels_created_since_timestamp_ms, BOT_VERSION):
+        labels = []
+        starting_cursor = None
+        should_retry_from_error = False
+        labels_response = None
+        batch_size = 200
+        page_size = 1000
+
+        for i in range(0, len(unique_scammers_list), batch_size):
+            batch = unique_scammers_list[i:i + batch_size]
+
+            while True:
+                if labels_response and labels_response.page_info and labels_response.page_info.has_next_page:
+                    starting_cursor = labels_response.page_info.end_cursor
+                    should_retry_from_error = False
+
+                try:
+                    query = {
+                        "entities": batch,
+                        "source_ids": [source_id],
+                        "labels": ["scammer"],
+                        "created_since": get_labels_created_since_timestamp_ms,
+                        "state": True,
+                        "first": page_size,
+                        "starting_cursor": starting_cursor
+                    }
+
+                    labels_response = get_labels(query)
+                    labels.extend(labels_response.labels)
+                except Exception as e:
+                    if (isinstance(e, AttributeError) and 'NoneType' in str(e)) or (isinstance(e, Exception) and "Internal server error" in str(e)):
+                        # Reduce the page size in order to reduce the response size and try again
+                        page_size = math.floor(page_size / 2)
+                        should_retry_from_error = page_size > 1
+                    else:
+                        logging.warning(f"{BOT_VERSION}: update reactive likely fps (get_labels error): {e} - {traceback.format_exc()}")
+                        Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.update_reactive_likely_fps.internal3", traceback.format_exc()))
+                        raise e
+
+                if not should_retry_from_error and not labels_response.page_info.has_next_page:
+                    break
+
+        return labels
+    
+    @staticmethod
+    def fetch_alerts(source_id, start_milliseconds_ago, end_milliseconds_ago, BOT_VERSION, CHAIN_ID):
+        response = None
+        starting_cursor = None
+        should_retry_from_error = False
+        page_size = 1200
+        alerts = []
+
+        while True:
+                if response and response.page_info and response.page_info.has_next_page:
+                    starting_cursor = {
+                        'alertId': response.page_info.end_cursor.alert_id,
+                        'blockNumber': response.page_info.end_cursor.block_number
+                    }
+                    should_retry_from_error = False
+                try:
+                    query = {
+                        "bot_ids": [source_id],
+                        "created_since": start_milliseconds_ago,
+                        "created_before": end_milliseconds_ago,
+                        "starting_cursor": starting_cursor,
+                        "chain_id": CHAIN_ID,
+                        "first": page_size
+                    }
+                    response = get_alerts(query)
+                    alerts.extend(response.alerts)
+                except Exception as e:
+                    if  (isinstance(e, AttributeError) and 'NoneType' in str(e)) or (isinstance(e, Exception) and "Internal server error" in str(e)):
+                        # Reduce the page size in order to reduce the response size and try again
+                        page_size = math.floor(page_size / 2)
+                        should_retry_from_error = page_size > 1
+                    else:
+                        logging.warning(f"{BOT_VERSION}: fetch_alerts (get_alerts error): {e} - {traceback.format_exc()}")
+                        Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.fetch_alerts", traceback.format_exc()))
+                if (not should_retry_from_error and response.page_info.end_cursor.alert_id == ""):
+                    break
+
+        return alerts
