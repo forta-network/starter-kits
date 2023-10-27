@@ -431,7 +431,7 @@ class ScamDetectorFinding:
         })
 
     @staticmethod
-    def alert_etherscan_likely_FP(address: str) -> Finding:
+    def alert_etherscan_likely_FP(address: str, etherscan_label: str) -> Finding:
        
         labels = [
             Label({
@@ -449,7 +449,8 @@ class ScamDetectorFinding:
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'metadata': {
-                'benign_address': address
+                'benign_address': address,
+                'etherscan_label': etherscan_label
             },
             'labels': labels
         })
