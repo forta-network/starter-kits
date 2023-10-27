@@ -250,7 +250,7 @@ def get_end_user_attack_addresses(alert_event: forta_agent.alert_event.AlertEven
         if alert_event.alert.metadata.get('attacker_deployer_address') is not None:
             addresses.add(alert_event.alert.metadata['attacker_deployer_address'].lower())
         if alert_event.alert.metadata.get('attackerDeployerAddress') is not None:
-            addresses.add(alert_event.alert.metadata['attacker_deployer_address'].lower())
+            addresses.add(alert_event.alert.metadata['attackerDeployerAddress'].lower())
     elif alert_event.bot_id == '0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4':  # soft rug pull
         if alert_event.alert.metadata.get('deployer') is not None:
             addresses.add(alert_event.alert.metadata['deployer'].lower().replace('"', ''))
