@@ -1334,7 +1334,8 @@ class TestScamDetector:
             assert len(findings) == 5, "length should have been 5, alert for the Etherscan FP mitigation should have been triggered"
             last_finding = findings[4]
             assert last_finding.alert_id == "SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION", "should be etherscan fp mitigation finding"
-            assert last_finding.metadata['etherscan_label'] == "Proposer Fee Recipient"
+            assert last_finding.metadata['etherscan_labels'] == "Proposer Fee Recipient"
+            assert last_finding.metadata['etherscan_nametag'] == "Fee Recipient: 0xF4...A38"
             assert len(last_finding.labels) > 0, "labels should not be empty"
             assert last_finding.labels[0].label == 'benign', "should be a benign label"
         else:

@@ -164,7 +164,8 @@ class TestUtils:
         if Utils.is_beta():
             assert len(filtered_findings) == 3
             assert filtered_findings[2].alert_id == 'SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION'
-            assert filtered_findings[2].metadata['etherscan_label'] == 'Contract Deployer'
+            assert filtered_findings[2].metadata['etherscan_labels'] == 'Contract Deployer'
+            assert filtered_findings[2].metadata['etherscan_nametag'] == ''
         else: 
             assert len(filtered_findings) == 2
             assert filtered_findings[0].name == 'Scam finding'

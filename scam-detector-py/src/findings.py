@@ -2,6 +2,7 @@ from operator import inv
 from time import strftime
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType, get_labels
 from datetime import datetime
+from typing import List
 import pandas as pd
 import requests
 import logging
@@ -431,7 +432,7 @@ class ScamDetectorFinding:
         })
 
     @staticmethod
-    def alert_etherscan_likely_FP(address: str, etherscan_label: str) -> Finding:
+    def alert_etherscan_likely_FP(address: str, etherscan_labels: List[str], etherscan_nametag: str) -> Finding:
        
         labels = [
             Label({
@@ -450,7 +451,8 @@ class ScamDetectorFinding:
             'severity': FindingSeverity.Info,
             'metadata': {
                 'benign_address': address,
-                'etherscan_label': etherscan_label
+                'etherscan_labels': ', '.join(etherscan_labels),
+                'etherscan_nametag': etherscan_nametag
             },
             'labels': labels
         })

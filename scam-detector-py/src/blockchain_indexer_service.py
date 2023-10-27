@@ -237,9 +237,14 @@ class BlockChainIndexer:
                     success = True
                     for result in json_data["result"]:
                         if len(result["labels"]):
-                            address_labels[result["address"]] = result["labels"] 
-                    for address, labels in address_labels.items():
-                        logging.info(f"Labels for address {address}: {', '.join(labels)}")   
+                            address_labels[result["address"]] = {
+                                "labels": result["labels"],
+                                "nametag": result.get("nametag", "")  # Include nametag if it exists, otherwise an empty string
+                            }
+                    for address, data in address_labels.items():
+                        labels = data["labels"]
+                        nametag = data["nametag"]
+                        logging.info(f"Labels for address {address}: {', '.join(labels)}, Nametag: {nametag}")
                     return address_labels
                 else:
                     logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")

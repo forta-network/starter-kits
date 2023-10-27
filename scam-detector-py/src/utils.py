@@ -348,19 +348,26 @@ class Utils:
         labels = block_chain_indexer.get_etherscan_labels(unique_addresses)
 
         # Iterate through the addresses and check if they should be removed
-        for address in address_to_findings.keys():    
+        for address in address_to_findings.keys():
             if address in labels:
-                address_labels = labels[address]
-                for label in address_labels:
-                    if not any(word in label.lower() for word in ["phish", "hack", "heist", "scam", "drainer", "exploit", "fraud", ".eth"]):
-                        # Emit a likely false positive alert for each address in the beta version of Scam Detector
-                        if Utils.is_beta():
-                            from src.findings import ScamDetectorFinding
-                            likely_fp_finding = ScamDetectorFinding.alert_etherscan_likely_FP(address, label)
-                            FINDINGS_CACHE_ALERT.append(likely_fp_finding)
+                address_data = labels[address]
+                labels_list = address_data.get("labels")
+                nametag = address_data.get("nametag", "")
 
-                        for finding in address_to_findings[address]:
-                            FINDINGS_CACHE_ALERT.remove(finding)            
+                # Combine labels and nametag for keyword checking
+                keywords_to_check = labels_list + [nametag]
+                
+                has_keyword = any(any(word in keyword.lower() for word in ["phish", "hack", "heist", "scam", "drainer", "exploit", "fraud", ".eth"]) for keyword in keywords_to_check)
+        
+                if not has_keyword:
+                    # Emit a likely false positive alert for each address in the beta version of Scam Detector
+                    if Utils.is_beta():
+                        from src.findings import ScamDetectorFinding
+                        likely_fp_finding = ScamDetectorFinding.alert_etherscan_likely_FP(address, labels_list, nametag)
+                        FINDINGS_CACHE_ALERT.append(likely_fp_finding)
+
+                    for finding in address_to_findings[address]:
+                        FINDINGS_CACHE_ALERT.remove(finding)        
 
         return FINDINGS_CACHE_ALERT
 
