@@ -1,5 +1,124 @@
-{ 
+{   
         "weekly": {
+                "2023-42": {
+                "ice-phishing": {
+                    "precision": {
+                        "value": 0.9659,
+                        "N": 88,
+                        "lower_bound": 0.9177,
+                        "upper_bound": 0.9863,
+                        "confidence": 0.9
+                    }
+                },
+                "address-poisoner": {
+                    "precision": {
+                        "value": 0.6889,
+                        "N": 45,
+                        "lower_bound": 0.5674,
+                        "upper_bound": 0.7890,
+                        "confidence": 0.9
+                    }
+                },
+                "scammer-association": {
+                    "precision": {
+                        "value": 0.8750,
+                        "N": 8,
+                        "lower_bound": 0.5888,
+                        "upper_bound": 0.9716,
+                        "confidence": 0.9
+                    }
+                },            
+                "soft-rug-pull": {
+                    "precision": {
+                        "value": 1,
+                        "N": 22,
+                        "lower_bound": 0.8905,
+                        "upper_bound": 1,
+                        "confidence": 0.9
+                    }
+                },
+                "fraudulent-nft-order": {
+                    "precision": {
+                        "value": 1,
+                        "N": 7,
+                        "lower_bound": 0.7212,
+                        "upper_bound": 1.0,
+                        "confidence": 0.9
+                    }
+                },
+                "social-eng-native-ice-phishing": {
+                    "precision": {
+                        "value": 1,
+                        "N": 26,
+                        "lower_bound": 0.9057,
+                        "upper_bound": 1,
+                        "confidence": 0.9
+                    }
+                },
+                "wash-trade": {
+                    "precision": {
+                        "value": 1,
+                        "N": 4,
+                        "lower_bound": 0.5965,
+                        "upper_bound": 1.0,
+                        "confidence": 0.9
+                    }
+                },
+                "hard-rug-pull": {
+                    "precision": {
+                        "value": 0.9091,
+                        "N": 11,
+                        "lower_bound": 0.6772,
+                        "upper_bound": 0.9795,
+                        "confidence": 0.9
+                    }
+                },
+                "scammer-deployed-contract": {
+                    "precision": {
+                        "value": 1,
+                        "N": 19,
+                        "lower_bound": 0.8753,
+                        "upper_bound": 1,
+                        "confidence": 0.9  
+                    }
+                },
+                "unknown": {
+                    "precision": {
+                        "value": 0.9524,
+                        "N": 21,
+                        "lower_bound": 0.8122,
+                        "upper_bound": 0.9893,
+                        "confidence": 0.9
+                    }
+                },
+                "pig-butchering": {
+                    "precision": {
+                        "value": 1,
+                        "N": 18,
+                        "lower_bound": 0.8693,
+                        "upper_bound": 1,
+                        "confidence": 0.9   
+                      }
+                },
+                "rake-token": {
+                    "precision": {
+                        "value": 0.9,
+                        "N": 10,
+                        "lower_bound": 0.6523,
+                        "upper_bound": 0.9774,
+                        "confidence": 0.9
+                        }
+                },
+                "native-ice-phishing": {
+                    "precision": {
+                        "value": 1,
+                        "N": 11,
+                        "lower_bound": 0.8026,
+                        "upper_bound": 1,
+                        "confidence": 0.9                          
+                }
+            }
+        },                
                 "2023-41": {
                 "ice-phishing": {
                     "precision": {
