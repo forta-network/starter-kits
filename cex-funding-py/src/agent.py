@@ -1,5 +1,6 @@
 from os import environ
 import forta_agent
+from functools import lru_cache
 from hexbytes import HexBytes
 from forta_agent import get_json_rpc_url
 from src.constants import CEXES
@@ -16,7 +17,7 @@ web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 def initialize():
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
-
+@lru_cache(maxsize=1_000_000)
 def is_contract(w3, address) -> bool:
     """
     this function determines whether address is a contract
@@ -38,12 +39,13 @@ def detect_cex_funding(
     if w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number,) == 0 and not is_contract(w3, transaction_event.transaction.to):
         for chainId, address, name, threshold in CEXES:
             if chainId == w3.eth.chainId:
-                if address == transaction_event.transaction.from_ and value < threshold:
+                if address.lower() == transaction_event.transaction.from_ and value < threshold:
                     findings.append(
                         CEXFundingFinding(
                             name, transaction_event.transaction.to, value, chainId
                         ).emit_finding()
                     )
+                    break
 
     return findings
 
