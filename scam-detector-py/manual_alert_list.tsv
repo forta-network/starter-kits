@@ -3641,3 +3641,25 @@ Date	EntityType	Entity	Account	Tweet	Chain ID	Threat category	Comment
 10/11/2023	Address	0x281b8cb2AE64cd14501fc7Bcd2545be2836B173D	@BeosinAlert	https://twitter.com/BeosinAlert/status/1711930957107007642	1	Unknown	Twitter Bot
 10/11/2023	Address	0xabe6bc5ca4ae76251f0cb647f9817e3566ec3d0b	@CertiKAlert	https://twitter.com/CertiKAlert/status/1712077070363218024	1	Unknown	Twitter Bot
 10/11/2023	Address	0xFDbfcEEa1de360364084a6F37C9cdb7AaeA63464	@BeosinAlert	https://twitter.com/BeosinAlert/status/1712139760813375973	1	Unknown	Twitter Bot
+10/24/23	Address	0x00006deacd9ad19db3d81f8410ea2b45ea570000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1716897067719889306	137	Ice phishing	someone lost $169K worth of USDC to crypto phishing on Polygon 
+10/24/23	Address	0x8C4bC23f4dc943bdEC7E0358D7554390f5f895d7	@realScamSniffer	https://twitter.com/realScamSniffer/status/1717471879433507174	1	Ice phishing	someone lost $109K worth of DAI to crypto phishing about 20 mins ago.
+10/26/2023	Address	0x0000D56b6E33cb711256fF3483ace599F17f0000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1717471879433507174	1	Ice phishing	someone lost $109K worth of DAI to crypto phishing about 20 mins ago.
+10/26/2023	Address	0xF56D4380594624c6Bdd9Ee58D6060F4310733285	@realScamSniffer	https://twitter.com/realScamSniffer/status/1717471879433507174	1	Ice phishing	someone lost $109K worth of DAI to crypto phishing about 20 mins ago.
+10/26/2023	Address	0x53d0E4dAb3E125dd25EcfB24Ca610075Fa9bC8e1	@realScamSniffer	https://twitter.com/realScamSniffer/status/1717471879433507174	1	Ice phishing	someone lost $109K worth of DAI to crypto phishing about 20 mins ago.
+10/26/2023	Address	0x5Ac6737bD66d870cf52e51d95976E59C9b6DAC99	@CertiKAlert	https://twitter.com/CertiKAlert/status/1717223534206894169	1	Hard rug pull	exit scam on a fake Linea token
+10/25/23	Address	0x00003c8316F49FEa0E88Bbe0AB4fa95c9c50f500	@realScamSniffer	https://twitter.com/realScamSniffer/status/1716665480843501595	1	Ice phishing	
+10/25/23	Address	0x00003917fea3627e32156de0549b0b5b03074300	@realScamSniffer	https://twitter.com/realScamSniffer/status/1717471879433507174	1	Ice phishing	
+10/23/23	Address	0x67c8423a7709aDB8ED31c04DcbB0C161637b807F	@zachxbt	https://twitter.com/zachxbt/status/1716559951907152255	1	Hard rug pull	safereum
+10/23/23	Address	0xFcCe0c3Bb275e06557a99dDF1c312a6BDB8FD2d4	@AegisWeb3	https://twitter.com/AegisWeb3/status/1716343022852731384	10	Hard rug pull	
+10/23/23	Address	0x3f04768Eaf45f1F5961857c0216E36A49Cc704ED	@AegisWeb3	https://twitter.com/AegisWeb3/status/1716343022852731384	10	Hard rug pull	
+10/21/23	Address	0x0000b49564ce8568015E3B70Ec667Fc324260000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1715804827962446196	1	Ice phishing	
+10/21/23	Address	0x53d0e4dab3e125dd25ecfb24ca610075fa9bc8e1	@realScamSniffer	https://twitter.com/realScamSniffer/status/1715804827962446196	1	Ice phishing	
+10/21/23	Address	0xc6c9132ba0de861976e703b162034f0bbed35331	@realScamSniffer	https://twitter.com/realScamSniffer/status/1715804827962446196	1	Ice phishing	
+10/20/23	Address	0x7010Ed3c9Bfb7FA55F610A4a30d4Ad9E395f94AE	@realScamSniffer	https://twitter.com/realScamSniffer/status/1715378489879408933	1	Ice phishing	
+10/20/23	Address	0x000037bB05B2CeF17c6469f4BcDb198826Ce0000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1715378489879408933	1	Ice phishing	
+10/19/23	Address	0x00001F3f7E5D9A1659A37e2C90B55D39B7DD0000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1714943705436832249	1	Ice phishing	someone lost $367k worth of USDC and DAI to Crypto Phishing about 4 hours ago.
+10/19/23	Address	0x0000db5c8B030ae20308ac975898E09741e70000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1714943705436832249	1	Ice phishing	someone lost $367k worth of USDC and DAI to Crypto Phishing about 4 hours ago.
+10/19/23	Address	0x53d0e4dab3e125dd25ecfb24ca610075fa9bc8e1	@realScamSniffer	https://twitter.com/realScamSniffer/status/1714943705436832249	1	Ice phishing	someone lost $367k worth of USDC and DAI to Crypto Phishing about 4 hours ago.
+10/19/23	Address	0x836e7abe73d871f4d7a065246ece179da74108ec	@realScamSniffer	https://twitter.com/realScamSniffer/status/1714943705436832249	1	Ice phishing	someone lost $367k worth of USDC and DAI to Crypto Phishing about 4 hours ago.
+10/17/23	Address	0x000025142701bc51d60b02ac69d5beafc77a0000	@realScamSniffer	https://twitter.com/realScamSniffer/status/1714303104559226916	1	Ice phishing	someone lost 93.24 ETH ($145k) to Crypto Phishing about 1 hour ago.
+10/17/23	Address	0x3ebacaf15d46724cf9d0e44ba1b3cc65c8d2385d	@realScamSniffer	https://twitter.com/realScamSniffer/status/1714303104559226916	1	Ice phishing	someone lost 93.24 ETH ($145k) to Crypto Phishing about 1 hour ago.
