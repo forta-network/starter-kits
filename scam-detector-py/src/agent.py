@@ -956,7 +956,7 @@ def update_reactive_likely_fps(w3, current_date) -> list:
 
     current_time = int(current_date.timestamp())
 
-    if current_date.minute == 38 and current_time - LAST_PROCESSED_TIME > 3500:
+    if current_date.minute == 0 and current_time - LAST_PROCESSED_TIME > 3500:
         logging.info(f"{BOT_VERSION}: update reactive likely fps called on the 00 minute. Querying past labels.")
         LAST_PROCESSED_TIME = current_time
 
