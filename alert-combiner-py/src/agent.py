@@ -458,14 +458,16 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                     continue
 
                                 if CHAIN_ID == 1:
+                                    # Etherscan API
                                     etherscan_labels = block_chain_indexer.get_etherscan_labels(cluster)
                                     if etherscan_labels and all(
-                                        label.lower() not in ['attack', 'phish', 'hack', 'heist', 'drainer', 'exploit', 'scam', 'fraud']
+                                        not any(word in label.lower() for word in ['attack', 'phish', 'hack', 'heist', 'drainer', 'exploit', 'scam', 'fraud', '.eth'])
                                         for label in etherscan_labels
-                                    ):
+                                    ):                 
                                         logging.info(f"alert {alert_event.alert_hash} - Non attacker etherscan FP mitigation labels for cluster {cluster}.")
                                         fp_mitigated = True
                                 else:
+                                    # Forta API
                                     etherscan_label = Utils.get_etherscan_label(cluster).lower()
                                     if not ('attack' in etherscan_label
                                             or 'phish' in etherscan_label
@@ -475,6 +477,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                             or 'exploit' in etherscan_label
                                             or 'scam' in etherscan_label
                                             or 'fraud' in etherscan_label
+                                            or '.eth' in etherscan_label
                                             or etherscan_label == ''):
                                         logging.info(f"alert {alert_event.alert_hash} -  Non attacker etherscan FP mitigation label {etherscan_label} for cluster {cluster}.")
                                         fp_mitigated = True

@@ -184,7 +184,7 @@ class BlockChainIndexer:
                 json_data = json.loads(data.content)
                 success = True
                 if "result" in json_data and len(json_data["result"]) > 0:
-                    labels = json_data["result"][0]["labels"]                        
+                    labels = json_data["result"][0]["labels"] + [json_data["result"][0]["nametag"]]                      
                 return labels
             else:
                 logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")
