@@ -334,9 +334,9 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                             du.delete_alert_data(dynamo, address)
                             stored_alert_data_cluster = du.read_alert_data(dynamo, cluster)
                             if not stored_alert_data_cluster.empty:
-                                alert_data_cluster = pd.concat([stored_alert_data_address, stored_alert_data_cluster], ignore_index=True, axis=0).drop_duplicates(subset=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'transaction_hash', 'address_filter'], inplace=False)
+                                alert_data_cluster = pd.concat([stored_alert_data_address, stored_alert_data_cluster], ignore_index=True, axis=0).drop_duplicates(subset=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'transaction_hash'], inplace=False)
                             else:
-                                alert_data_cluster = stored_alert_data_address.drop_duplicates(subset=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'transaction_hash', 'address_filter'], inplace=False)
+                                alert_data_cluster = stored_alert_data_address.drop_duplicates(subset=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'transaction_hash'], inplace=False)
                             du.put_alert_data(dynamo, cluster, alert_data_cluster)
                         
                         if address in du.read_fp_mitigation_clusters(dynamo):
@@ -432,7 +432,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                         else:
                             columns = base_columns
                             new_alert_data = pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash, filter_data]], columns=columns)
-                        alert_data_cluster = pd.concat([alert_data_cluster, new_alert_data], ignore_index=True, axis=0).drop_duplicates(subset=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'transaction_hash', 'address_filter'], inplace=False)
+                        alert_data_cluster = pd.concat([alert_data_cluster, new_alert_data], ignore_index=True, axis=0).drop_duplicates(subset=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'transaction_hash'], inplace=False)
                         logging.info(f"alert {alert_event.alert_hash} - alert data size for cluster {cluster} now: {len(alert_data_cluster)}")
                         du.put_alert_data(dynamo, cluster, alert_data_cluster)
                         alert_data = alert_data_cluster
