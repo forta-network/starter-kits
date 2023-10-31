@@ -56,7 +56,7 @@ class AlertCombinerFinding:
         anomaly_clause = f" Anomaly score: {anomaly_score}" if anomaly_score > 0 else ""
 
         confidence = 0.2
-        if bot_source == "BlocSec":
+        if bot_source == "BlockSec":
             confidence = 0.8
 
         labels = []
