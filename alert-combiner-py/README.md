@@ -132,7 +132,7 @@ The Attack Detector bot emits the following alerts:
 
 - ATTACK-DETECTOR-PREPARATION
 
-  - Fires when there are only Funding and Preparation stage alerts.
+  - Fires when there are only Funding and Preparation stage alerts and in conjunction with one of the ATTACK-DETECTOR-(1-4) alerts.
   - Severity is always set to "high"
   - Type is always set to "exploit"
   - Note: the detection bot will only alert once per cluster observed
