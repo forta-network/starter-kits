@@ -10,13 +10,14 @@ import io
 import re
 import json
 import math
+import pytz
 import traceback
 import joblib
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 
 import forta_agent
-from forta_agent import Finding, FindingType, FindingSeverity
+from forta_agent import Finding, FindingType, FindingSeverity, get_alerts, get_labels
 from web3 import Web3
 
 from src.constants import (BASE_BOTS, ALERTED_ENTITIES_ML_KEY, ALERTED_ENTITIES_ML_QUEUE_SIZE, ALERTED_ENTITIES_PASSTHROUGH_KEY, ALERTED_ENTITIES_PASSTHROUGH_QUEUE_SIZE, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE, ALERTED_ENTITIES_SIMILAR_CONTRACT_KEY, ALERTED_ENTITIES_SIMILAR_CONTRACT_QUEUE_SIZE, ALERTED_ENTITIES_MANUAL_KEY, ALERTED_ENTITIES_MANUAL_QUEUE_SIZE, ALERTED_ENTITIES_MANUAL_METAMASK_KEY, ALERTED_ENTITIES_MANUAL_METAMASK_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
@@ -42,6 +43,7 @@ INITIAL_METAMASK_LIST_CONSUMPTION = True
 INITIALIZATION_TIME = datetime.now()
 CHAIN_ID = -1
 BOT_VERSION = Utils.get_bot_version()
+LAST_PROCESSED_TIME = 0 # Used to update reactive likely fps
 
 ALERTED_ENTITIES_ML = dict()  # cluster -> alert_id
 ALERTED_ENTITIES_PASSTHROUGH = dict()  # cluster -> alert_id
@@ -54,6 +56,9 @@ ALERTED_FP_CLUSTERS = dict()  # clusters -> alert_id (dummy val) which are consi
 FINDINGS_CACHE_BLOCK = []
 FINDINGS_CACHE_ALERT = []
 FINDINGS_CACHE_TRANSACTION = []
+REACTIVE_LIKELY_FPS = {}  # address -> list of label metadata (addresses that are yet to be checked)
+SCAMMER_ASSOCIATION_LABELS = None
+SIMILAR_CONTRACT_LABELS = None
 DF_CONTRACT_SIGNATURES = None
 
 MODEL = None
@@ -936,6 +941,98 @@ def emit_new_fp_finding(w3) -> list:
 
     return findings
 
+
+# This function is called once per hour to update the REACTIVE_LIKELY_FPS dictionary. 
+# It fetches scammer addresses from Scam Detector alerts generated 89 days ago (at that specific hour) and then retrieves 
+# scammer labels for those addresses. The retrieved data is used to update the dictionary.
+def update_reactive_likely_fps(w3, current_date) -> list:
+    logging.info(f"{BOT_VERSION}: update reactive likely fps called")
+    global REACTIVE_LIKELY_FPS
+    global ALERTED_FP_CLUSTERS
+    global SIMILAR_CONTRACT_LABELS
+    global SCAMMER_ASSOCIATION_LABELS
+    global LAST_PROCESSED_TIME
+    findings = []
+
+    current_time = int(current_date.timestamp())
+
+    if current_date.minute == 0 and current_time - LAST_PROCESSED_TIME > 3500:
+        logging.info(f"{BOT_VERSION}: update reactive likely fps called on the 00 minute. Querying past labels.")
+        LAST_PROCESSED_TIME = current_time
+
+        source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
+        
+        # Calculate timestamps for different periods (7 days, 30 days)
+        periods = {
+            "7_days_ago": current_date - timedelta(days=7),
+            "30_days_ago": current_date - timedelta(days=30),
+        }
+        start = time.time()
+
+        for period_name, period_date in periods.items():
+            # fetch_alerts 
+            milliseconds_ago = (current_date - period_date).total_seconds() * 1000
+            start_milliseconds_ago = int(milliseconds_ago)
+            end_milliseconds_ago = int(milliseconds_ago - 3600 * 1000)
+
+            # fetch_labels
+            current_unix_timestamp_ms = int(current_date.timestamp() * 1000)
+            period_in_days = (current_date - period_date).days
+            period_in_ms = period_in_days * 24 * 60 * 60 * 1000
+            get_labels_created_since_timestamp_ms = current_unix_timestamp_ms - period_in_ms
+
+            alerts = Utils.fetch_alerts(source_id, start_milliseconds_ago, end_milliseconds_ago, BOT_VERSION, CHAIN_ID)
+            logging.info(f"{BOT_VERSION}: update reactive likely fps (alerts count {period_name}): {len(alerts)}")
+
+            unique_scammers_list = Utils.process_past_alerts(alerts, REACTIVE_LIKELY_FPS, BOT_VERSION)
+
+            labels = Utils.fetch_labels(unique_scammers_list, source_id, get_labels_created_since_timestamp_ms, BOT_VERSION)
+            logging.info(f"{BOT_VERSION}: update reactive likely fps (labels count {period_name}): {len(labels)}")
+
+            for label in labels:
+                if not label.remove:
+                    # There may be multiple labels for the same scammer entity, due to different label metadata
+                    entity = label.entity
+                    metadata = label.metadata
+                    if entity not in REACTIVE_LIKELY_FPS:
+                        REACTIVE_LIKELY_FPS[entity] = [metadata]
+                    else:
+                        REACTIVE_LIKELY_FPS[entity].append(metadata) 
+        end = time.time()
+        logging.info(f"{BOT_VERSION}: update reactive likely fps (REACTIVE_LIKELY_FPS count): {len(REACTIVE_LIKELY_FPS)}")
+        logging.warn(f"{BOT_VERSION}: update reactive likely fps (processing took): {end - start} seconds")
+    else:
+        #  Create reactive FP findings
+        if REACTIVE_LIKELY_FPS:
+            if current_date.minute == 5:
+                # Refresh the data every hour (at the 05 minute)
+                SIMILAR_CONTRACT_LABELS = None
+                SCAMMER_ASSOCIATION_LABELS = None
+
+            address = next(iter(REACTIVE_LIKELY_FPS), None)
+            logging.info(f"{BOT_VERSION}: Processing address: {address}")
+            if Utils.is_fp(w3, address, CHAIN_ID):
+                logging.info(f"{BOT_VERSION}: {address} is an FP. Emitting FP finding.")
+                update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, address, "SCAM-DETECTOR-FALSE-POSITIVE")
+                findings.append(ScamDetectorFinding.alert_FP(w3, address, "scammer", REACTIVE_LIKELY_FPS[address]))
+                if SCAMMER_ASSOCIATION_LABELS is None:
+                        SCAMMER_ASSOCIATION_LABELS = get_scammer_association_labels(w3, forta_explorer)
+                if SIMILAR_CONTRACT_LABELS is None:
+                    SIMILAR_CONTRACT_LABELS = get_similar_contract_labels(w3, forta_explorer)
+                for (entity, label, metadata) in obtain_all_fp_labels(w3, address, block_chain_indexer, forta_explorer, SIMILAR_CONTRACT_LABELS, SCAMMER_ASSOCIATION_LABELS, CHAIN_ID):
+                        logging.info(f"{BOT_VERSION}: Processing entity: {entity} - {label}")
+                        if entity != address:
+                            logging.info(f"{BOT_VERSION}: Emitting FP mitigation finding for {entity} {label}")
+                            update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, entity, "SCAM-DETECTOR-FALSE-POSITIVE")
+                            findings.append(ScamDetectorFinding.alert_FP(w3, entity, label, metadata))
+                            if entity in REACTIVE_LIKELY_FPS:
+                                del REACTIVE_LIKELY_FPS[entity]                            
+            
+            del REACTIVE_LIKELY_FPS[address]
+            logging.info(f"{BOT_VERSION}: {len(REACTIVE_LIKELY_FPS)} likely FPs yet to be processed")
+   
+    return findings
+
 def get_value(items: dict, key: str):
     v = ''
     if key in items:
@@ -1312,9 +1409,13 @@ def provide_handle_block(w3):
                 Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.handle_block", traceback.format_exc()))
                 return []
 
+        global REACTIVE_LIKELY_FPS
         global FINDINGS_CACHE_BLOCK
         findings = []
-        dt = datetime.fromtimestamp(block_event.block.timestamp)
+
+        timestamp = block_event.block.timestamp
+        utc_timezone = pytz.UTC
+        dt = datetime.fromtimestamp(timestamp, tz=utc_timezone)    
         logging.info(f"{BOT_VERSION}: handle block called with block timestamp {dt}")
         
         if Utils.is_beta():
@@ -1359,10 +1460,10 @@ def provide_handle_block(w3):
 
             persist_state()
             logging.info(f"{BOT_VERSION}: Persisted state")
-            
-            
-            
         
+        reactive_fp_findings = update_reactive_likely_fps(w3, dt) 
+        FINDINGS_CACHE_BLOCK.extend(reactive_fp_findings)
+
         for finding in FINDINGS_CACHE_BLOCK[0:25]:  # 25 findings per block due to size limitation
             if finding is not None:
                 findings.append(finding)

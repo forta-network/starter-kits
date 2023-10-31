@@ -1,16 +1,18 @@
 
 from web3 import Web3
 from hexbytes import HexBytes
-from forta_agent import get_labels, Label, Finding, FindingSeverity, FindingType, AlertEvent
+from forta_agent import get_labels, get_alerts, Label, Finding, FindingSeverity, FindingType, AlertEvent
 import requests
 import logging
 import io
 import rlp
 import base64
 import gnupg
+import time
 import pandas as pd
 import json
 import os
+import math
 from datetime import datetime, timedelta
 import traceback
 from web3 import Web3
@@ -280,8 +282,10 @@ class Utils:
                 return True
 
             tx_count = 0
+            has_zero_nonce = False
             try:
                 tx_count = Utils.get_max_tx_count(w3, cluster)
+                has_zero_nonce = tx_count == 0
             except BaseException as e:
                 error_finding = Utils.alert_error(str(e), "Utils.get_max_tx_count", f"{traceback.format_exc()}")
                 Utils.ERROR_CACHE.add(error_finding)
@@ -291,20 +295,21 @@ class Utils:
                 logging.info(f"Cluster {cluster} transacton count: {tx_count}")
                 return True
             
-            try:
-                from src.blockchain_indexer_service import BlockChainIndexer
-                block_chain_indexer = BlockChainIndexer()
-                if block_chain_indexer.has_deployed_high_tx_count_contract(cluster, chain_id):
-                    logging.info(f"Cluster {cluster} has deployed a high tx count contract")
-                    return True
-                else:
-                    logging.info(f"Cluster {cluster} has not deployed a high tx count contract")
+            if not has_zero_nonce:
+                try:
+                    from src.blockchain_indexer_service import BlockChainIndexer
+                    block_chain_indexer = BlockChainIndexer()
+                    if block_chain_indexer.has_deployed_high_tx_count_contract(cluster, chain_id):
+                        logging.info(f"Cluster {cluster} has deployed a high tx count contract")
+                        return True
+                    else:
+                        logging.info(f"Cluster {cluster} has not deployed a high tx count contract")
 
-            except BaseException as e:
-                error_finding = Utils.alert_error(str(e), "Utils.block_chain_indexer.has_deployed_high_tx_count_contract", f"{traceback.format_exc()}")
-                Utils.ERROR_CACHE.add(error_finding)
-                logging.error(f"Exception in assessing has_deployed_high_tx_count_contract for cluster {cluster}: {e}")
-                return False
+                except BaseException as e:
+                    error_finding = Utils.alert_error(str(e), "Utils.block_chain_indexer.has_deployed_high_tx_count_contract", f"{traceback.format_exc()}")
+                    Utils.ERROR_CACHE.add(error_finding)
+                    logging.error(f"Exception in assessing has_deployed_high_tx_count_contract for cluster {cluster}: {e}")
+                    return False
 
         if Utils.is_in_fp_mitigation_list(cluster):
             logging.info(f"Cluster {cluster} is in fp mitigation list")
@@ -501,5 +506,104 @@ class Utils:
                 alert_event.alert.labels = finding.labels
         
         return alert_event
+
+    @staticmethod
+    def process_past_alerts(alerts, reactive_likely_fps: dict, bot_version: str):
+        unique_scammers = set()
+        try:
+            for alert in alerts:
+                if alert.alert_id not in ["SCAM-DETECTOR-FALSE-POSITIVE", "SCAM-DETECTOR-MANUAL-METAMASK-PHISHING", "DEBUG-ERROR", "SCAM-DETECTOR-ADDRESS-POISONING"]:
+                    scammer_address = alert.metadata.get('scammerAddress')
+                    scammer_addresses = alert.metadata.get('scammerAddresses')
+                    if scammer_address is not None and scammer_address not in reactive_likely_fps:
+                        unique_scammers.add(scammer_address)
+                    elif scammer_addresses is not None and scammer_addresses not in reactive_likely_fps:
+                        unique_scammers.add(scammer_addresses)
+        except Exception as e:
+            logging.warning(f"{bot_version}: process_past_alerts (scammer address missing): {e} - {traceback.format_exc()}")
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.process_past_alerts", traceback.format_exc()))
+        return list(unique_scammers)
     
+    @staticmethod
+    def fetch_labels(unique_scammers_list, source_id, get_labels_created_since_timestamp_ms, BOT_VERSION):
+        labels = []
+        starting_cursor = None
+        should_retry_from_error = False
+        labels_response = None
+        batch_size = 200
+        page_size = 1000
+
+        for i in range(0, len(unique_scammers_list), batch_size):
+            batch = unique_scammers_list[i:i + batch_size]
+
+            while True:
+                if labels_response and labels_response.page_info and labels_response.page_info.has_next_page:
+                    starting_cursor = labels_response.page_info.end_cursor
+                    should_retry_from_error = False
+
+                try:
+                    query = {
+                        "entities": batch,
+                        "source_ids": [source_id],
+                        "labels": ["scammer"],
+                        "created_since": get_labels_created_since_timestamp_ms,
+                        "state": True,
+                        "first": page_size,
+                        "starting_cursor": starting_cursor
+                    }
+
+                    labels_response = get_labels(query)
+                    labels.extend(labels_response.labels)
+                except Exception as e:
+                    if (isinstance(e, AttributeError) and 'NoneType' in str(e)) or (isinstance(e, Exception) and "Internal server error" in str(e)):
+                        # Reduce the page size in order to reduce the response size and try again
+                        page_size = math.floor(page_size / 2)
+                        should_retry_from_error = page_size > 1
+                    else:
+                        logging.warning(f"{BOT_VERSION}: update reactive likely fps (get_labels error): {e} - {traceback.format_exc()}")
+                        Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.update_reactive_likely_fps.internal3", traceback.format_exc()))
+                        raise e
+
+                if not should_retry_from_error and not labels_response.page_info.has_next_page:
+                    break
+
+        return labels
     
+    @staticmethod
+    def fetch_alerts(source_id, start_milliseconds_ago, end_milliseconds_ago, BOT_VERSION, CHAIN_ID):
+        response = None
+        starting_cursor = None
+        should_retry_from_error = False
+        page_size = 1200
+        alerts = []
+
+        while True:
+                if response and response.page_info and response.page_info.has_next_page:
+                    starting_cursor = {
+                        'alertId': response.page_info.end_cursor.alert_id,
+                        'blockNumber': response.page_info.end_cursor.block_number
+                    }
+                    should_retry_from_error = False
+                try:
+                    query = {
+                        "bot_ids": [source_id],
+                        "created_since": start_milliseconds_ago,
+                        "created_before": end_milliseconds_ago,
+                        "starting_cursor": starting_cursor,
+                        "chain_id": CHAIN_ID,
+                        "first": page_size
+                    }
+                    response = get_alerts(query)
+                    alerts.extend(response.alerts)
+                except Exception as e:
+                    if  (isinstance(e, AttributeError) and 'NoneType' in str(e)) or (isinstance(e, Exception) and "Internal server error" in str(e)):
+                        # Reduce the page size in order to reduce the response size and try again
+                        page_size = math.floor(page_size / 2)
+                        should_retry_from_error = page_size > 1
+                    else:
+                        logging.warning(f"{BOT_VERSION}: fetch_alerts (get_alerts error): {e} - {traceback.format_exc()}")
+                        Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.fetch_alerts", traceback.format_exc()))
+                if (not should_retry_from_error and response.page_info.end_cursor.alert_id == ""):
+                    break
+
+        return alerts
