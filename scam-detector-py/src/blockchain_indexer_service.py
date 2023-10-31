@@ -226,8 +226,8 @@ class BlockChainIndexer:
 
         try:
             addresses_str = ','.join(addresses)
-            labels_url = f"https://api-metadata.etherscan.io/v1/api.ashx?module=nametag&action=getaddresstag&address={addresses_str}&tag=trusted&apikey={BlockChainIndexer.get_api_key(1)}"
-
+            labels_url = f"https://api-metadata.etherscan.io/v1/api.ashx?module=nametag&action=getaddresstag&address={addresses_str}&tag=trusted&apikey={BlockChainIndexer.get_api_key(1)}"         
+            
             success = False
             count = 0
             while not success:
@@ -235,11 +235,19 @@ class BlockChainIndexer:
                 if data.status_code == 200:
                     json_data = json.loads(data.content)
                     success = True
-                    for result in json_data["result"]:
-                        if len(result["labels"]):
-                            address_labels[result["address"]] = result["labels"] 
-                    for address, labels in address_labels.items():
-                        logging.info(f"Labels for address {address}: {', '.join(labels)}")   
+                    if isinstance(json_data["result"], list):
+                        for result in json_data["result"]:
+                            if len(result["labels"]):
+                                address_labels[result["address"]] = {
+                                    "labels": result["labels"],
+                                    "nametag": result.get("nametag", "")  # Include nametag if it exists, otherwise an empty string
+                                }
+                    else:
+                        logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")
+                    for address, data in address_labels.items():
+                        labels = data["labels"]
+                        nametag = data["nametag"]
+                        logging.info(f"Labels for address {address}: {', '.join(labels)}, Nametag: {nametag}")
                     return address_labels
                 else:
                     logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")

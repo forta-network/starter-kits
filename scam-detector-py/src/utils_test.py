@@ -136,6 +136,17 @@ class TestUtils:
                 }
             }),
             Finding({
+                'name': 'Scam finding',
+                'description': 'Description',
+                'alert_id': "alert_id",
+                'type': FindingType.Scam,
+                'severity': FindingSeverity.Critical,           
+                'labels': [],
+                'metadata': {
+                    'scammer_address': '0x466f98db3aadae7ea60fe43065ee4d198f2e7b39' # Phish / Hack
+                }
+            }),
+            Finding({
                 'name': 'Non scam finding',
                 'description': 'Description',
                 'alert_id': "alert_id",
@@ -151,8 +162,11 @@ class TestUtils:
         filtered_findings = Utils.filter_out_likely_fps(FINDINGS_CACHE_ALERT)
 
         if Utils.is_beta():
-            assert len(filtered_findings) == 2
-            assert filtered_findings[1].alert_id == 'SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION'
+            assert len(filtered_findings) == 3
+            assert filtered_findings[2].alert_id == 'SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION'
+            assert filtered_findings[2].metadata['etherscan_labels'] == 'Contract Deployer'
+            assert filtered_findings[2].metadata['etherscan_nametag'] == ''
         else: 
-            assert len(filtered_findings) == 1
+            assert len(filtered_findings) == 2
             assert filtered_findings[0].name == 'Scam finding'
+            assert filtered_findings[1].name == 'Scam finding'
