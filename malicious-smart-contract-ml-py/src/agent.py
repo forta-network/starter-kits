@@ -39,7 +39,7 @@ def initialize():
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
-    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
 
 
 def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
@@ -61,58 +61,59 @@ def detect_malicious_contract_tx(
     malicious_findings = []
     safe_findings = []
 
-    if len(transaction_event.traces) > 0:
-        for trace in transaction_event.traces:
-            if trace.type == "create":
-                created_contract_address = (
-                    trace.result.address if trace.result else None
-                )
-                error = trace.error if trace.error else None
-                logger.info(f"Contract created {created_contract_address}")
-                if error is not None:
-                    nonce = (
-                        transaction_event.transaction.nonce
-                        if transaction_event.from_ == trace.action.from_
-                        else 1
-                    )  # for contracts creating other contracts, the nonce would be 1. WARN: this doesn't handle create2 tx
-                    contract_address = calc_contract_address(
-                        w3, trace.action.from_, nonce
-                    )
-                    logger.warn(
-                        f"Contract {contract_address} creation failed with tx {trace.transactionHash}: {error}"
-                    )
 
-                # creation bytecode contains both initialization and run-time bytecode.
-                creation_bytecode = trace.action.init
-                for finding in detect_malicious_contract(
-                    w3,
-                    trace.action.from_,
-                    created_contract_address,
-                    creation_bytecode,
-                    error=error,
-                ):
-                    if finding.alert_id == "SUSPICIOUS-TOKEN-CONTRACT-CREATION":
-                        malicious_findings.append(finding)
-                    else:
-                        safe_findings.append(finding)
-
-    else:  # Trace isn't supported, To improve coverage, process contract creations from EOAs.
-        if transaction_event.to is None:
-            nonce = transaction_event.transaction.nonce
-            created_contract_address = calc_contract_address(
-                w3, transaction_event.from_, nonce
+    for trace in transaction_event.traces:
+        logger.info(trace.type)
+        if trace.type == "create":
+            created_contract_address = (
+                trace.result.address if trace.result else None
             )
-            creation_bytecode = transaction_event.transaction.data
+            error = trace.error if trace.error else None
+            logger.info(f"Contract created {created_contract_address}")
+            if error is not None:
+                nonce = (
+                    transaction_event.transaction.nonce
+                    if transaction_event.from_ == trace.action.from_
+                    else 1
+                )  # for contracts creating other contracts, the nonce would be 1. WARN: this doesn't handle create2 tx
+                contract_address = calc_contract_address(
+                    w3, trace.action.from_, nonce
+                )
+                logger.warn(
+                    f"Contract {contract_address} creation failed with tx {trace.transactionHash}: {error}"
+                )
+
+            # creation bytecode contains both initialization and run-time bytecode.
+            creation_bytecode = trace.action.init
             for finding in detect_malicious_contract(
                 w3,
-                transaction_event.from_,
+                trace.action.from_,
                 created_contract_address,
                 creation_bytecode,
+                error=error,
             ):
-                if finding.alert_id == "SUSPICIOUS-TOKEN-CONTRACT-CREATION":
+                if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
                     malicious_findings.append(finding)
                 else:
                     safe_findings.append(finding)
+
+    if transaction_event.to is None:
+        nonce = transaction_event.transaction.nonce
+        created_contract_address = calc_contract_address(
+            w3, transaction_event.from_, nonce
+        )
+        logger.info(f"Contract created {created_contract_address}")
+        creation_bytecode = transaction_event.transaction.data
+        for finding in detect_malicious_contract(
+            w3,
+            transaction_event.from_,
+            created_contract_address,
+            creation_bytecode,
+        ):
+            if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
+                malicious_findings.append(finding)
+            else:
+                safe_findings.append(finding)
 
     # Reduce findings to 10 because we cannot return more than 10 findings per request
     return (malicious_findings + safe_findings)[:10]
@@ -123,7 +124,7 @@ def detect_malicious_contract(
 ) -> list:
     findings = []
 
-    if created_contract_address is not None:
+    if created_contract_address is not None and code is not None:
         if len(code) > BYTE_CODE_LENGTH_THRESHOLD:
             try:
                 opcodes = EvmBytecode(code).disassemble()

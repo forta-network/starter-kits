@@ -20,7 +20,7 @@ class AlertCombinerFinding:
 
     @staticmethod
     def create_finding(block_chain_indexer, addresses: str, victim_address: str, victim_name, anomaly_score: float, severity: FindingSeverity, alert_id: str, 
-        alert_event: forta_agent.alert_event.AlertEvent, alert_data: pd.DataFrame, victim_metadata: dict, anomaly_scores_by_stage: pd.DataFrame, chain_id: int) -> Finding:
+        alert_event: forta_agent.alert_event.AlertEvent, alert_data: pd.DataFrame, victim_metadata: dict, anomaly_scores_by_stage: pd.DataFrame, chain_id: int, bot_source: str) -> Finding:
         # alert_data -> 'stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash', 'address_filter' (+ 'chain_id' for L2s)
 
         #only emit ATTACK-DETECTOR-4 and ATTACK-DETECTOR-5 alerts in test local or beta environments, but not production
@@ -31,7 +31,8 @@ class AlertCombinerFinding:
         for index, row in anomaly_scores_by_stage.iterrows():
             anomaly_scores[f'anomaly_score_stage_{row["stage"]}'] = row["anomaly_score"]
         attacker_address = {"attacker_address": addresses}
-        anomaly_score = {"anomaly_score": anomaly_score}
+        anomaly_score_dict = {"anomaly_score": anomaly_score}
+        bot_source_dict = {"bot_source": bot_source}
         involved_addresses = set()
         alert_data["addresses"].apply(lambda x: [involved_addresses.add(item) for item in x])
         involved_addresses = list(involved_addresses)[0:500]
@@ -50,8 +51,13 @@ class AlertCombinerFinding:
             else:
                 involved_address_bloom_filters[f'involved_address_bloom_filter_{index}'] = '' 
 
-        meta_data = {**attacker_address, **victim_metadata, **anomaly_scores, **anomaly_score, **involved_addresses, **involved_alerts, **involved_address_bloom_filters}
+        meta_data = {**attacker_address, **victim_metadata, **anomaly_scores, **anomaly_score_dict, **involved_addresses, **involved_alerts, **involved_address_bloom_filters, **bot_source_dict}
         victim_clause = f" on {victim_name} ({victim_address.lower()})" if victim_address else ""
+        anomaly_clause = f" Anomaly score: {anomaly_score}" if anomaly_score > 0 else ""
+
+        confidence = 0.2
+        if bot_source == "BlocSec":
+            confidence = 0.8
 
         labels = []
         for address in addresses.split(','):
@@ -59,7 +65,7 @@ class AlertCombinerFinding:
                 'entityType': EntityType.Address,
                 'label': "attacker-eoa",
                 'entity': address,
-                'confidence': 0.20,
+                'confidence': confidence,
                 'metadata': {
                     'alert_id': alert_id,
                     'chain_id': chain_id,
@@ -74,7 +80,7 @@ class AlertCombinerFinding:
                         'entityType': EntityType.Address,
                         'label': "attacker-contract",
                         'entity': contract,
-                        'confidence': 0.20,
+                        'confidence': confidence,
                         'metadata': {
                             'alert_ids': alert_id,
                             'chain_id': chain_id,
@@ -129,7 +135,7 @@ class AlertCombinerFinding:
         })
     
     @staticmethod
-    def attack_finding_manual(block_chain_indexer, attacker_cluster: str, reported_by: str, chain_id: int) -> Finding:
+    def attack_finding_manual(block_chain_indexer, attacker_cluster: str, reported_by: str, chain_id: int, test_flag = False) -> Finding:
         label_doesnt_exist = False
         labels = []
 
@@ -144,7 +150,7 @@ class AlertCombinerFinding:
             
             logging.info(f"Querying for existing label: {label_query_options_dict}")
             labels_response = get_labels(label_query_options_dict)
-            if not labels_response.labels:
+            if test_flag or not labels_response.labels:
                 logging.info(f"Label doesn't exist for {attacker_address}")
                 label_doesnt_exist = True
             else:

@@ -1,5 +1,30 @@
 # Scam Detector Bot Release Notes
 
+## 2.20.12 (beta - 10/21/2023, 10/23/2023 - prod (without private key compromise, phishing ML bot))
+- fixed chain patrol bug
+- changed one pager promoUrl
+
+## 2.20.9
+- fixed address poisoning zero value bug
+- added unique key to reduce dupe alerts
+
+## 2.20.7
+- added one pager and updated documentation
+- etherscan FP label mitigation
+- Chainpatrol Bot Integration
+- Fix https://github.com/forta-network/starter-kits/issues/321
+
+## v2.20.5
+- MM fix
+- update scam detector sample to Sept data
+
+## v2.20.4 
+- turned ADDRESS-POISONING-ZERO-VALUE to a passthrough alert (precision of this alert is 100%)
+
+## v2.20.3 (September 20th - beta)
+- debugged MM feature
+- added new NIP-7 and NIP-8 alert ids for native ice phishing
+
 ## v2.20.2 (September 19th - beta (without metamask), September 19th - prod (without metamask, private key compromise, phishing ML bot))
 - corrected description
 

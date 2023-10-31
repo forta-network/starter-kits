@@ -1,5 +1,5 @@
-from blockchain_indexer_service import BlockChainIndexer
-from web3_mock import EOA_ADDRESS_SMALL_TX
+from src.blockchain_indexer_service import BlockChainIndexer
+from src.web3_mock import EOA_ADDRESS_SMALL_TX
 
 class TestBlockChainIndexer:
     def test_get_contract_deployments_has_zettablock(self):
@@ -29,3 +29,9 @@ class TestBlockChainIndexer:
         contract_deployer_address = '0xfc19e4ce0e0a27b09f2011ef0512669a0f76367a' # Binance: Deployer 3
         has_deployed_high_tx_count_contract = BlockChainIndexer.has_deployed_high_tx_count_contract(contract_deployer_address, 56)
         assert has_deployed_high_tx_count_contract == True, "should be true"
+
+    def test_get_etherscan_labels(self):
+        address = '0x1673888242bad06cc87a7bcaff392cb27218b3e3' # Uniswap V3: FORT-USDC 
+        labels = BlockChainIndexer.get_etherscan_labels([address])
+        assert labels == {'0x1673888242bad06cc87a7bcaff392cb27218b3e3': ['Uniswap']},"should return Uniswap label"
+

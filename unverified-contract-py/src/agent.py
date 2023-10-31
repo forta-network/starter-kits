@@ -88,7 +88,7 @@ def is_contract(w3, address) -> bool:
         logging.warn(f"Web3 error for is_contract method", {address: address, e: e})
         return False
 
-
+@lru_cache(maxsize=12800)
 def get_storage_addresses(w3, address) -> set:
     """
     this function returns the addresses that are references in the storage of a contract (first CONTRACT_SLOT_ANALYSIS_DEPTH slots)
@@ -133,6 +133,7 @@ def get_storage_addresses(w3, address) -> set:
     return address_set
 
 
+@lru_cache(maxsize=12800)
 def get_opcode_addresses(w3, address) -> set:
     """
     this function returns the addresses that are references in the opcodes of a contract
@@ -167,7 +168,7 @@ def cache_contract_creation(
     global MUTEX
 
     logging.info(
-        f"Scanning transaction {transaction_event.transaction.hash} on chain {w3.eth.chain_id}"
+        f"Scanning transaction {transaction_event.transaction.hash} on chain {CHAIN_ID}"
     )
     while MUTEX:
         logging.info(f"Sleeping...")

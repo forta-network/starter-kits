@@ -11,6 +11,7 @@ import io
 from forta_agent import EntityType
 from datetime import datetime, timedelta
 import requests
+from unittest.mock import Mock, patch
 
 from storage import dynamo_table, get_secrets
 from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS,
@@ -171,7 +172,7 @@ class TestAlertCombiner:
                     "alertId": alert_id,
                     "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
                     "source":
-                        {"bot": {'id': bot_id}, "block": {}, 'transactionHash': '0x123'},
+                        {"bot": {'id': bot_id}, "block": {}, 'transactionHash': hash},
                     "metadata": metadata,
                     "labels": labels,
                     "addressBloomFilter": address_filter
@@ -188,7 +189,7 @@ class TestAlertCombiner:
                     "alertId": alert_id,
                     "createdAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f123Z"),  # 2022-11-18T03:01:21.457234676Z
                     "source":
-                        {"bot": {'id': bot_id}, "block": {}, 'transactionHash': '0x123'},
+                        {"bot": {'id': bot_id}, "block": {}, 'transactionHash': hash},
                     "metadata": metadata,
                     "addressBloomFilter": address_filter
                     }
@@ -456,6 +457,35 @@ class TestAlertCombiner:
 
         assert len(findings) == 1, "alert should have been raised given three alerts and score exceeds threshold"
         assert abs(findings[0].metadata["anomaly_score"] - 5e-9) < 1e-20, 'incorrect anomaly score'
+
+    def test_alert_passthrough_without_victim(self):
+        # one passthrough alert
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
+        agent.initialize()
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xe39e45ab19bb1c9a30887e157a21393680d336232263c96b326f68fa57a29723", "BlockSec Attack Alert", {"from":"0xCD03ed98868A6cd78096F116A4b56a5f2C67757d","potential_victim":"Unknown","suspicious_address":"0xCD03ed98868A6cd78096F116A4b56a5f2C67757d","to":"0x11f3f6F9DdFA6E25F419C17A11a2808eF5311220","txhash":"0xabc"})  
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+        assert len(findings) == 1, "alert should have been raised"
+        assert findings[0].description == '0xcd03ed98868a6cd78096f116a4b56a5f2c67757d likely involved in an attack (0xabc). '
+        assert findings[0].alert_id == 'ATTACK-DETECTOR-7'
+        assert findings[0].metadata['bot_source'] == 'BlockSec'
+
+        
+    def test_alert_passthrough_with_victim(self):
+        # one passthrough alert
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
+        agent.initialize()
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xe39e45ab19bb1c9a30887e157a21393680d336232263c96b326f68fa57a29723", "BlockSec Attack Alert", {"from":"0xCD03ed98868A6cd78096F116A4b56a5f2C67757d","potential_victim":"0x11f3f6F9DdFA6E25F419C17A11a2808eF5311220","suspicious_address":"0xCD03ed98868A6cd78096F116A4b56a5f2C67757d","to":"0x11f3f6F9DdFA6E25F419C17A11a2808eF5311220","txhash":"0xabc"})  
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+        assert len(findings) == 1, "alert should have been raised"
+        assert findings[0].description == '0xcd03ed98868a6cd78096f116a4b56a5f2c67757d likely involved in an attack (0xabc) on  (0x11f3f6f9ddfa6e25f419c17a11a2808ef5311220). '
+        assert findings[0].alert_id == 'ATTACK-DETECTOR-7'
+        assert findings[0].metadata['bot_source'] == 'BlockSec'
+
+    
 
     def test_alert_simple_case_with_victim(self):
         # three alerts in diff stages for a given EOA

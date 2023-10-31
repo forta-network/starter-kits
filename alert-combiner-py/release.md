@@ -1,5 +1,14 @@
 # Attack Detector Bot Release Notes
 
+## v3.51.0 (Oct 25 2023: beta2)
+- integrate blocksec bot by introducing passthrough alertID (ATTACK-DETECTOR-7)
+- update to sdk 0.1.43
+
+## v3.50.4 (Sept 25 2023: beta)
+- integrated ownership transfer bot
+- added POSITIVE-REPUTATION-2 FP mitigation
+- update to sdk 0.1.41
+
 ## v3.50.3 (Seot 12 2023: beta, Sept 19 2023: prod)
 - update to sdk 0.1.40/0.1.21
 - updated long description

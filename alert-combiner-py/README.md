@@ -122,7 +122,16 @@ The Attack Detector bot emits the following alerts:
   - Type is always set to "exploit"
   - Note: the detection bot will only alert once per cluster observed
 
+- ATTACK-DETECTOR-7
+
+  - Fired when a passthrough alert has been observed (e.g. blocksec bot)
+  - Severity is always set to "critical"
+  - Type is always set to "exploit"
+  - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
+  - Note: the detection bot will only alert once per cluster observed; FP mitigations are not applied to this alert ID
+
 - ATTACK-DETECTOR-PREPARATION
+
   - Fires when there are only Funding and Preparation stage alerts.
   - Severity is always set to "high"
   - Type is always set to "exploit"
@@ -422,5 +431,6 @@ The following bots are used to mitigate FPs:
 | 0xabdeff7672e59d53c7702777652e318ada644698a9faf2e7f608ec846b07325b | MEV account bot | MEV-ACCOUNT |
 | 0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400 | High funding activity through TC | FUNDING-TORNADO-CASH-HIGH |
 | 0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f | Positive reputation bot | POSITIVE-REPUTATION-1 |
+| 0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f | Positive reputation bot | POSITIVE-REPUTATION-2 |
 | 0xe04b3fa79bd6bc6168a211bcec5e9ac37d5dd67a41a1884aa6719f8952fbc274 | Victim Notification bot | VICTIM-NOTIFICATION-1 |
 In addtion, Etherscan tags are used for FP mitigation.

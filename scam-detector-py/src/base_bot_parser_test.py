@@ -136,6 +136,16 @@ class TestBaseBotParser:
         urls = BaseBotParser.get_scammer_urls(w3,alert_event)
         assert "withdraw-llido.com" in urls, "this should be the url"
 
+
+    def test_get_chainpatrol_scammer_url(self):
+        metadata = {"reason":"reported","reportId":"7655","reportUrl":"https://app.chainpatrol.io/reports/7655","status":"BLOCKED","type":"URL","updatedAt":"2023-10-09T00:53:48.625Z","URL":"free-mantle.foundation-claim.com"}
+        labels = []
+        
+        alert_event = TestBaseBotParser.generate_alert("0x42dbb60aa8059dd395df9f66230f63852856f7fdd0d6d3fc55b708f8f84a3f47", "CHAINPATROL-SCAM-ASSET", "ChainPatrol detected scam: free-mantle.foundation-claim.com", metadata, labels)
+        urls = BaseBotParser.get_scammer_urls(w3,alert_event)
+        assert "free-mantle.foundation-claim.com" in urls, "this should be the url"
+
+
     def test_get_scammer_notification_scam(self):
         metadata = {"message":"HARD SCAM DETECTED\n\nVerify: https://t.me/iTokenEthereum/534392\nWarning issued by iToken - a cloud based token spotter & scam detector.","notifier_eoa":"0xba6e11347856c79797af6b2eac93a8145746b4f9","notifier_name":"🛑scam-warning🛑.eth","scammer_eoa":"0xcc019f779e0bc922e1c04426d36d2e49516378d9"}
         alert_event = TestBaseBotParser.generate_alert("0x112eaa6e9d705efb187be0073596e1d149a887a88660bd5491eece44742e738e", "SCAM-NOTIFIER-EOA", "description", metadata)

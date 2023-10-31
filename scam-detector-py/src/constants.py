@@ -1,5 +1,5 @@
 DEBUG_ALERT_ENABLED = False
-ENABLE_METAMASK_CONSUMPTION = False
+ENABLE_METAMASK_CONSUMPTION = True
 
 ALERT_LOOKBACK_WINDOW_IN_DAYS = 7
 
@@ -79,6 +79,8 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560", "NEW-SCAMMER-CONTRACT-CODE-HASH", "PassThrough", "SCAM-DETECTOR-SIMILAR-CONTRACT"),  # contract similarity bot
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-5", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing using soc eng contract (static)
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-6", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing using soc eng contract (dynamic)
+                ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-7", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing using soc eng contract (static)
+                ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-8", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing using soc eng contract (dynamic)
                 ("0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15", "HARD-RUG-PULL-1", "PassThrough", "SCAM-DETECTOR-HARD-RUG-PULL"),  # hard rug pull bot
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE && SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION", "PassThrough", "SCAM-DETECTOR-SOFT-RUG-PULL"),  # soft rug pull bot
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION && SOFT-RUG-PULL-SUS-POOL-REMOVAL", "PassThrough", "SCAM-DETECTOR-SOFT-RUG-PULL"),  # soft rug pull bot
@@ -116,7 +118,7 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS-INFO", "Combination", ""),
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-SUSPICIOUS-APPROVAL", "Combination", ""),
                 ("0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e", "FUNDING-CHANGENOW-LOW-AMOUNT", "Combination", ""),
-                ("0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502", "ADDRESS-POISONING-ZERO-VALUE", "Combination", ""),
+                ("0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502", "ADDRESS-POISONING-ZERO-VALUE", "PassThrough", "SCAM-DETECTOR-ADDRESS-POISONING"),
                 ("0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SAFE-CONTRACT-CREATION", "Combination", ""),
                 ("0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", "Combination", ""),
                 ("0xabdeff7672e59d53c7702777652e318ada644698a9faf2e7f608ec846b07325b", "MEV-ACCOUNT", "Combination", ""),
@@ -144,8 +146,9 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-2", "PassThrough", "SCAM-DETECTOR-SCAMMER-ASSOCIATION"),  # global model
                 ("0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8", "SOCIAL-ENG-CONTRACT-CREATION", "PassThrough", "SCAM-DETECTOR-UNKNOWN"),  # social engineering contract
                 ("0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8", "SOCIAL-ENG-CONTRACT-CREATION-NULL-ADDRESS", "PassThrough", "SCAM-DETECTOR-UNKNOWN"),  # social engineering contract
-                ("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-3", "PassThrough", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE"),
-                ("0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e", "EOA-PHISHING-SCAMMER", "PassThrough", "SCAM-DETECTOR-UNKNOWN"), # unknown as it seems to pick up a lot of rug pulls
+                ("0x42dbb60aa8059dd395df9f66230f63852856f7fdd0d6d3fc55b708f8f84a3f47", "CHAINPATROL-SCAM-ASSET", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"), # chainpatrol bot
+                #("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-3", "PassThrough", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE"),
+                #("0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e", "EOA-PHISHING-SCAMMER", "PassThrough", "SCAM-DETECTOR-UNKNOWN"), # phish ML model; unknown as it seems to pick up a lot of rug pulls
                 ]
 
 # model information

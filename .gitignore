@@ -15,3 +15,11 @@ keys.py~
 *.gpg
 .gitignore
 *.key
+scam-detector-py/src/fp_mitigation/models/ae_state_dict.pt
+scam-detector-py/src/fp_mitigation/models/ae.pkl
+scam-detector-py/src/fp_mitigation/models/fp_lgbm.pkl
+scam-detector-py/src/fp_mitigation/models/fp_xgb.pkl
+scam-detector-py/src/fp_mitigation/models/ohe.pkl
+alert-combiner-py/src/fp_mitigation/models/ae_state_dict.pt
+alert-combiner-py/src/fp_mitigation/models/ae.pkl
+alert-combiner-py/src/fp_mitigation/models/attack_lgbm.pkl

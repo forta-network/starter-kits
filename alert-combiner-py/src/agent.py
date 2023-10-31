@@ -17,8 +17,8 @@ from forta_agent import FindingSeverity, get_labels, get_alerts
 from src.findings import AlertCombinerFinding
 from src.constants import (BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_FP_CLUSTERS_QUEUE_SIZE, MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE, ATTACK_DETECTOR_BOT_ID, ATTACK_DETECTOR_BETA_BOT_ID,
                            FP_MITIGATION_BOTS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE,
-                           MIN_ALERTS_COUNT, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ALERTED_FP_CLUSTERS_KEY, MANUALLY_ALERTED_ENTITIES_KEY, VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS, DEFAULT_ANOMALY_SCORE, HIGHLY_PRECISE_BOTS,
-                           ALERTED_CLUSTERS_FP_MITIGATED_KEY, FINDINGS_CACHE_BLOCK_KEY, END_USER_ATTACK_BOTS, POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD)
+                           MIN_ALERTS_COUNT, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ALERTED_FP_CLUSTERS_KEY, MANUALLY_ALERTED_ENTITIES_KEY, VICTIM_IDENTIFICATION_BOTS, DEFAULT_ANOMALY_SCORE, HIGHLY_PRECISE_BOTS,
+                           ALERTED_CLUSTERS_FP_MITIGATED_KEY, FINDINGS_CACHE_BLOCK_KEY, END_USER_ATTACK_BOTS, POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD, PASSTHROUGH_BOTS)
 from src.L2Cache import L2Cache
 from src.storage import s3_client, dynamo_table, get_secrets
 from src.blockchain_indexer_service import BlockChainIndexer
@@ -110,16 +110,19 @@ def initialize():
         if CHAIN_ID in [10, 42161]:
             subscription_json.append({"botId": bot, "chainId": 1})
 
+    for bot, alertId, source in PASSTHROUGH_BOTS:
+        subscription_json.append({"botId": bot, "chainId": CHAIN_ID})
+        if CHAIN_ID in [10, 42161]:
+            subscription_json.append({"botId": bot, "chainId": 1})
+
+    for bot, alertId in VICTIM_IDENTIFICATION_BOTS:
+        subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
+        if CHAIN_ID in [10, 42161]:
+            subscription_json.append({"botId": bot, "alertId": alertId, "chainId": 1})
+
     subscription_json.append({"botId": ENTITY_CLUSTER_BOT, "alertId": ENTITY_CLUSTER_BOT_ALERT_ID, "chainId": CHAIN_ID})
-
-    subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0], "chainId": CHAIN_ID})
-
-    subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1], "chainId": CHAIN_ID})
-
     if CHAIN_ID in [10, 42161]:
         subscription_json.append({"botId": ENTITY_CLUSTER_BOT, "alertId": ENTITY_CLUSTER_BOT_ALERT_ID, "chainId": 1})
-        subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0], "chainId": 1})
-        subscription_json.append({"botId": VICTIM_IDENTIFICATION_BOT, "alertId": VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1], "chainId": 1})
 
     INITIALIZED = True
 
@@ -164,7 +167,7 @@ def get_pot_attacker_addresses(alert_event: forta_agent.alert_event.AlertEvent) 
     pot_attacker_addresses = []
     try:
         for label in alert_event.alert.labels:
-            if label.label is not None and ('attack' in label.label.lower() or 'exploit' in label.label.lower() or 'scam' in label.label.lower()):
+            if label.label is not None and ('attack' in label.label.lower() or 'exploit' in label.label.lower() or 'scam' in label.label.lower() or 'suspicious_address' in label.label.lower()):
                 pot_attacker_addresses.append(label.entity)
         logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} - Analysing {len(pot_attacker_addresses)} pot attacker addresses obtained from labels")
 
@@ -196,7 +199,12 @@ def get_victim_info(alert_data: pd.DataFrame, victims: dict):
         tx_hash_with_victim_info = df_intersection.iloc[0]["transaction_hash"]
         victim_metadata = victims[tx_hash_with_victim_info]
         victim_address = victim_metadata["address1"] if "address1" in victim_metadata.keys() else ""
+        if victim_address == "":
+            victim_address = victim_metadata["potential_victim"] if "potential_victim" in victim_metadata.keys() and victim_metadata["potential_victim"] != "Unknown" else ""
         victim_name = victim_metadata["tag1"] if "tag1" in victim_metadata.keys() else ""
+        if victim_name == "" and victim_address != "":
+            victim_name = Utils.get_etherscan_label(victim_address)
+
 
     return victim_address, victim_name, victim_metadata
 
@@ -225,13 +233,18 @@ def get_anomaly_score(alert_event: forta_agent.alert_event.AlertEvent) -> float:
 
 def is_polygon_validator(w3, cluster: str, tx_hash: str) -> bool:
     if CHAIN_ID == 137:
-        tx = w3.eth.get_transaction_receipt(tx_hash)
-        for log in tx['logs']:
-            if len(log['topics']) > 3:
-                if log['topics'][0] == HexBytes('0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63'):  # logfeetransfer event
-                    validator = log['topics'][3].hex()[-40:]  # validator in 3rd pos
-                    if validator in cluster:
-                        return True
+        try:
+            tx = w3.eth.get_transaction_receipt(tx_hash)
+            for log in tx['logs']:
+                if len(log['topics']) > 3:
+                    if log['topics'][0] == HexBytes('0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63'):  # logfeetransfer event
+                        validator = log['topics'][3].hex()[-40:]  # validator in 3rd pos
+                        if validator in cluster:
+                            return True
+        except Exception as e:
+            logging.error(f"Error fetching transaction receipt: {e}")
+            return True # assume validator if error, to avoid false positives
+
     return False
 
 def get_end_user_attack_addresses(alert_event: forta_agent.alert_event.AlertEvent) -> list:
@@ -332,9 +345,17 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                             du.put_end_user_attack_cluster(dynamo, cluster)
 
                 # update victim alerts
-                if (in_list(alert_event, [(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[0]),(VICTIM_IDENTIFICATION_BOT, VICTIM_IDENTIFICATION_BOT_ALERT_IDS[1])])):
+                if (in_list(alert_event, VICTIM_IDENTIFICATION_BOTS)):
                     logging.info(f"alert {alert_event.alert_hash} is a victim identification alert")
-                    du.put_victim(dynamo, alert_event.alert.source.transaction_hash, alert_event.alert.metadata)
+                    transaction_hash = None
+                    if 'txhash' in alert_event.alert.metadata.keys():
+                        transaction_hash = alert_event.alert.metadata['txhash']
+                    if transaction_hash is None:
+                        transaction_hash = alert_event.alert.source.transaction_hash
+                        
+                    if transaction_hash is not None:
+                        du.put_victim(dynamo, transaction_hash, alert_event.alert.metadata) 
+                    
 
                 # update FP mitigation clusters
                 if in_list(alert_event, FP_MITIGATION_BOTS):
@@ -363,6 +384,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                     logging.info(f"alert {alert_event.alert_hash}: is a base bot {alert_event.alert.source.bot.id}, {alert_event.alert_id} alert for addresses {alert_event.alert.addresses}")
 
                     # analyze attacker addresses from labels if there are any; otherwise analyze all addresses
+                    bot_source = "Forta Base Bots"
                     pot_attacker_addresses = get_pot_attacker_addresses(alert_event)
 
 
@@ -415,27 +437,28 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                         du.put_alert_data(dynamo, cluster, alert_data_cluster)
                         alert_data = alert_data_cluster
                         
-                        # 3. contains highly precise bot
+                        # contains highly precise bot
                         highly_precise_bot_alert_id_count = 0
                         is_highly_precise_bot_preparation_stage_alert_id = False
                         highly_precise_bot_ids = set()
                         uniq_bot_alert_ids = alert_data[['bot_id', 'alert_id']].drop_duplicates(inplace=False)
                         for bot_id, alert_id, s in HIGHLY_PRECISE_BOTS:
-                            if bot_id == '0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac':  # temp hot fix for FP; awaiting FP mitigation from basebot (https://github.com/NethermindEth/forta-starter-kits/issues/59)
-                                highly_precise_bot_alerts = alert_data[(alert_data['bot_id'] == bot_id) & (alert_data['alert_id'] == alert_id)]
-                                if len(highly_precise_bot_alerts) > 0 and highly_precise_bot_alerts['anomaly_score'].max() > 0.5:
-                                    logging.info(f"Large profit anomaly score not anomalous enough ({highly_precise_bot_alerts['anomaly_score'].max()}) for inclusion in high precision count; skipping ...")
-                                    continue
-
                             if len(uniq_bot_alert_ids[(uniq_bot_alert_ids['bot_id'] == bot_id) & (uniq_bot_alert_ids['alert_id'] == alert_id)]) > 0:
                                 highly_precise_bot_alert_id_count += 1
                                 if not is_highly_precise_bot_preparation_stage_alert_id and  s == "Preparation":
                                     is_highly_precise_bot_preparation_stage_alert_id = True
                                 highly_precise_bot_ids.add(bot_id)
 
+                        is_passthrough_bot = False
+                        for bot_id, alert_id, source in PASSTHROUGH_BOTS:
+                            if alert_event.bot_id == bot_id and alert_event.alert.alert_id == alert_id:
+                                is_passthrough_bot = True
+                                bot_source = "BlockSec"
+                                break
+
                         # analyze alert_data to see whether conditions are met to generate a finding
                         # 1. Have to have at least MIN_ALERTS_COUNT bots reporting alerts
-                        if len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT or highly_precise_bot_alert_id_count>0:
+                        if len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT or highly_precise_bot_alert_id_count>0 or is_passthrough_bot:
                             # 2. Have to have overall anomaly score of less than ANOMALY_SCORE_THRESHOLD
                             anomaly_scores_by_stages = alert_data[['stage', 'anomaly_score']].drop_duplicates(inplace=False)
                             anomaly_scores = anomaly_scores_by_stages.groupby('stage').min()
@@ -448,6 +471,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                             
                             if anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE or len(anomaly_scores) == 4 or (highly_precise_bot_alert_id_count>0 and len(anomaly_scores)>1) or (len(highly_precise_bot_ids)>1):
                                 logging.info(f"alert {alert_event.alert_hash} - Overall anomaly score for {cluster} is below threshold, 4 stages, or highly precise bot with 2 stages have been observed or two highly precise bots have been observed. Unless FP mitigation kicks in, will raise finding.")
+
                                 if CHAIN_ID in [10, 42161] and alert_data[alert_data['chain_id'] == CHAIN_ID].empty:
                                     logging.info(f"No alert on chain {CHAIN_ID} for {cluster}. Wont raise finding")
                                     continue
@@ -504,6 +528,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                     findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-1", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
                                     if is_preparation_alert:
                                         findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-PREPARATION", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
+
                                 elif not end_user_attack and not fp_mitigated and ((highly_precise_bot_alert_id_count > 0 and len(anomaly_scores) > 1) or (len(highly_precise_bot_ids)>1)) and cluster not in ALERTED_CLUSTERS_STRICT:
                                     logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
                                     victims = du.read_victims(dynamo)
@@ -512,6 +537,12 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                     findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-2", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
                                     if is_preparation_alert:
                                         findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-PREPARATION", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
+                                elif not end_user_attack and is_passthrough_bot and cluster not in ALERTED_CLUSTERS_STRICT:
+                                    logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.")
+                                    victims = du.read_victims(dynamo)
+                                    victim_address, victim_name, victim_metadata = get_victim_info(alert_data, victims)
+                                    update_list(ALERTED_CLUSTERS_STRICT, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
+                                    findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, -1, FindingSeverity.Critical, "ATTACK-DETECTOR-7", alert_event, alert_data, victim_metadata, pd.DataFrame(columns=['stage', 'anomaly_score']), CHAIN_ID, bot_source))
                                 elif not end_user_attack and not fp_mitigated and (len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT and anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT) and cluster not in ALERTED_CLUSTERS_STRICT:
                                     logging.info(f"alert {alert_event.alert_hash} -1 critical severity finding for {cluster}. Anomaly score is {anomaly_score}.") 
                                     victims = du.read_victims(dynamo)
@@ -520,6 +551,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                     findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-3", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
                                     if is_preparation_alert:
                                         findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-PREPARATION", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
+
                                 elif not end_user_attack and not fp_mitigated and (len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT  and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE) and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT:
                                     logging.info(f"alert {alert_event.alert_hash} -1 low severity finding for {cluster}. Anomaly score is {anomaly_score}.") 
                                     victims = du.read_victims(dynamo)
@@ -528,18 +560,19 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                     findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Low, "ATTACK-DETECTOR-4", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
                                     if is_preparation_alert:
                                         findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Critical, "ATTACK-DETECTOR-PREPARATION", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
+
                                 elif not end_user_attack and fp_mitigated and (cluster not in ALERTED_CLUSTERS_FP_MITIGATED) and (((len(anomaly_scores) == 4) and cluster not in ALERTED_CLUSTERS_STRICT) or ((highly_precise_bot_alert_id_count > 0 and len(anomaly_scores) > 1) and cluster not in ALERTED_CLUSTERS_STRICT) or (len(highly_precise_bot_ids)>1) or ((len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT and anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT) and cluster not in ALERTED_CLUSTERS_STRICT)
                                                                                          or ((len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT  and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE) and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT)):
                                     victims = du.read_victims(dynamo)
                                     victim_address, victim_name, victim_metadata = get_victim_info(alert_data, victims)
                                     update_list(ALERTED_CLUSTERS_FP_MITIGATED, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
-                                    findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Info, "ATTACK-DETECTOR-5", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
+                                    findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Info, "ATTACK-DETECTOR-5", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID, bot_source))
                                 elif end_user_attack and not fp_mitigated and (cluster not in ALERTED_CLUSTERS_FP_MITIGATED) and (((len(anomaly_scores) == 4) and cluster not in ALERTED_CLUSTERS_STRICT) or ((highly_precise_bot_alert_id_count > 0 and len(anomaly_scores) > 1) and cluster not in ALERTED_CLUSTERS_STRICT) or (len(highly_precise_bot_ids)>1) or ((len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT and anomaly_score < ANOMALY_SCORE_THRESHOLD_STRICT) and cluster not in ALERTED_CLUSTERS_STRICT)
                                                                                          or ((len(alert_data['bot_id'].drop_duplicates(inplace=False)) >= MIN_ALERTS_COUNT  and anomaly_score < ANOMALY_SCORE_THRESHOLD_LOOSE) and cluster not in ALERTED_CLUSTERS_LOOSE and cluster not in ALERTED_CLUSTERS_STRICT)):
                                     victims = du.read_victims(dynamo)
                                     victim_address, victim_name, victim_metadata = get_victim_info(alert_data, victims)
                                     update_list(ALERTED_CLUSTERS_FP_MITIGATED, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, cluster)
-                                    findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Info, "ATTACK-DETECTOR-6", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID))
+                                    findings.append(AlertCombinerFinding.create_finding(block_chain_indexer, cluster, victim_address, victim_name, anomaly_score, FindingSeverity.Info, "ATTACK-DETECTOR-6", alert_event, alert_data, victim_metadata, anomaly_scores_by_stages, CHAIN_ID, bot_source))
                                 else:
                                     logging.info(f"alert {alert_event.alert_hash} - Not raising finding for {cluster}. Already alerted.")
 
@@ -611,7 +644,7 @@ def emit_manual_finding(w3, du, test = False) -> list:
                 tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
                 account = "" if 'nan' in str(row["Account"]) else row['Account']
                 update_list(MANUALLY_ALERTED_ENTITIES, MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE, cluster)
-                finding = AlertCombinerFinding.attack_finding_manual(block_chain_indexer, cluster, account + " " + tweet, chain_id)
+                finding = AlertCombinerFinding.attack_finding_manual(block_chain_indexer, cluster, account + " " + tweet, chain_id, test)
                 if finding is not None:
                     findings.append(finding)
                 logging.info(f"Findings count {len(findings)}")
