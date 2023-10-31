@@ -348,7 +348,9 @@ class TestAlertCombiner:
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # smart contract ML bot
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 
-        assert len(findings) == 1, "alert should have been raised"
+        assert len(findings) == 2, "2 alerts should have been raised"
+        assert findings[0].alert_id == "ATTACK-DETECTOR-2", "should have been a ATTACK-DETECTOR-2 alert"
+        assert findings[1].alert_id == "ATTACK-DETECTOR-PREPARATION", "should have raised a preparation alert"
 
 
     def test_get_attacker_from_labels(self):
@@ -615,7 +617,7 @@ class TestAlertCombiner:
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 1, "only 1 alert should have been raised"
         assert findings[0].severity == FindingSeverity.Low, "low severity alert should have been raised"
-
+        
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOTS-TRANSACTIONS", {"anomaly_score": (50.0 / 10000000)})  # exploitation, flashbot -> alert count = 50; ad-scorer tx-count -> denominator 10000000
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
 

@@ -2,6 +2,7 @@ from unittest.mock import Mock
 from datetime import datetime
 import time
 import pandas as pd
+import hashlib
 
 from dynamo_utils import DynamoUtils, TEST_TAG
 from constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
@@ -24,8 +25,10 @@ class TestDynamoUtils:
 
         du.put_entity_cluster(dynamo, alert_created_at_str, address, cluster)
 
+        sortIdHash = hashlib.sha256(address.encode()).hexdigest()
+
         dynamo.put_item.assert_called_once_with(Item={'itemId': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|entity_cluster',
-                                                'sortKey': address, 'address': address, 'cluster': cluster, 'expiresAt': expiresAt})
+                                                'sortKey': sortIdHash, 'address': address, 'cluster': cluster, 'expiresAt': expiresAt})
 
     def test_put_fp_mitigation_cluster(self):
         dynamo = Mock()
@@ -38,8 +41,10 @@ class TestDynamoUtils:
         du = DynamoUtils(TEST_TAG, TestDynamoUtils.CHAIN_ID) 
         du.put_fp_mitigation_cluster(dynamo, address) 
 
+        sortIdHash = hashlib.sha256(address.encode()).hexdigest()
+
         dynamo.put_item.assert_called_once_with(
-            Item={'itemId': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|fp_mitigation_cluster', 'sortKey': address, 'address': address, 'expiresAt': expiresAt})
+            Item={'itemId': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|fp_mitigation_cluster', 'sortKey': sortIdHash, 'address': address, 'expiresAt': expiresAt})
 
     def test_put_end_user_attack_cluster(self):
         dynamo = Mock()
@@ -52,8 +57,10 @@ class TestDynamoUtils:
         du = DynamoUtils(TEST_TAG, TestDynamoUtils.CHAIN_ID) 
         du.put_end_user_attack_cluster(dynamo, address)
 
+        sortIdHash = hashlib.sha256(address.encode()).hexdigest()
+
         dynamo.put_item.assert_called_once_with(
-            Item={'itemId': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|end_user_attack_cluster', 'sortKey': address, 'address': address, 'expiresAt': expiresAt})
+            Item={'itemId': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|end_user_attack_cluster', 'sortKey': sortIdHash, 'address': address, 'expiresAt': expiresAt})
     
     def test_put_alert_data(self):
         dynamo = Mock()
@@ -72,8 +79,10 @@ class TestDynamoUtils:
         du = DynamoUtils(TEST_TAG, TestDynamoUtils.CHAIN_ID) 
         du.put_alert_data(dynamo, cluster, dataframe)
 
+        sortIdHash = hashlib.sha256(cluster.encode()).hexdigest()
+
         dynamo.put_item.assert_called_once_with(Item={'itemId': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|alert',
-                                                'sortKey': cluster, 'cluster': cluster, 'dataframe': dataframe_json, 'expiresAt': expiresAt})
+                                                'sortKey': sortIdHash, 'cluster': cluster, 'dataframe': dataframe_json, 'expiresAt': expiresAt})
     
     def test_put_victim(self):
         dynamo = Mock()
@@ -86,8 +95,10 @@ class TestDynamoUtils:
 
         du = DynamoUtils(TEST_TAG, TestDynamoUtils.CHAIN_ID) 
         du.put_victim(dynamo, transaction_hash, metadata)
+
+        sortIdHash = hashlib.sha256(transaction_hash.encode()).hexdigest()
         dynamo.put_item.assert_called_once_with(Item={'itemId': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|victim',
-                                                'sortKey': transaction_hash, 'transaction_hash': transaction_hash, 'metadata': metadata, 'expiresAt': expiresAt})
+                                                'sortKey': sortIdHash, 'transaction_hash': transaction_hash, 'metadata': metadata, 'expiresAt': expiresAt})
 
     def test_read_entity_clusters(self):
         dynamo = Mock()
@@ -100,8 +111,10 @@ class TestDynamoUtils:
         du = DynamoUtils(TEST_TAG, TestDynamoUtils.CHAIN_ID)
         du.read_entity_clusters(dynamo, address)
 
+        sortIdHash = hashlib.sha256(address.encode()).hexdigest()
+
         dynamo.query.assert_called_once_with(KeyConditionExpression='itemId = :id AND sortKey = :sid', ExpressionAttributeValues={
-                                         ':id': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|entity_cluster', ':sid': f'{address}'})
+                                         ':id': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|entity_cluster', ':sid': f'{sortIdHash}'})
 
     def test_read_fp_mitigation_clusters(self):
         dynamo = Mock()
@@ -138,8 +151,10 @@ class TestDynamoUtils:
         du = DynamoUtils(TEST_TAG, TestDynamoUtils.CHAIN_ID)
         du.read_alert_data(dynamo, cluster)
 
+        sortIdHash = hashlib.sha256(cluster.encode()).hexdigest()
+
         dynamo.query.assert_called_once_with(KeyConditionExpression='itemId = :id AND sortKey = :sid', ExpressionAttributeValues={
-            ':id': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|alert', ':sid': f'{cluster}'})
+            ':id': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|alert', ':sid': f'{sortIdHash}'})
 
     def test_read_victims(self):
         dynamo = Mock()

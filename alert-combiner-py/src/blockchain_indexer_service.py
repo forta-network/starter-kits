@@ -4,6 +4,7 @@ import os
 import requests
 import json
 import rlp
+import traceback
 import time
 from io import StringIO
 from web3 import Web3
@@ -12,6 +13,7 @@ import logging
 from datetime import datetime, timedelta
 
 from src.storage import get_secrets
+from src.utils import Utils
 
 class BlockChainIndexer:
 
@@ -111,6 +113,7 @@ class BlockChainIndexer:
                     logging.warning(f"Error getting contract on etherscan for {address}, {chain_id} {data.status_code} {data.content}")
                     count += 1
                     if count > 10:
+                        Utils.ERROR_CACHE.add(Utils.alert_error(f'request etherscan {data.status_code}', "blockchain_indexer_service.get_contracts", ""))
                         break
                     time.sleep(1)
         
@@ -159,9 +162,43 @@ class BlockChainIndexer:
                         contracts.add(row["address"].lower())
                 else:
                     logging.warning(f"Error getting contract on zettablock for {address}, {chain_id} {res.status_code} {res.text}")
+                    Utils.ERROR_CACHE.add(Utils.alert_error(f'request zettablock {res.status_code}', "blockchain_indexer_service.get_contracts", ""))
 
             except Exception as e:
                 logging.warning(f"Error getting contract on zettablock for {address}, {chain_id} {e}")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "blockchain_indexer_service.get_contracts", traceback.format_exc()))
 
         logging.info(f"get_contracts for {address} on {chain_id}; returning {len(contracts)}.")
         return contracts
+    
+    @staticmethod
+    @RateLimiter(max_calls=1, period=1)
+    def get_etherscan_labels(address, chain_id) -> set:
+        labels_url = f"https://api-metadata.etherscan.io/v1/api.ashx?module=nametag&action=getaddresstag&address={address}&tag=trusted&apikey={BlockChainIndexer.get_api_key(chain_id)}"
+        labels = set()
+        success = False
+        count = 0
+        while not success:
+            data = requests.get(labels_url)
+            if data.status_code == 200:
+                json_data = json.loads(data.content)
+                success = True 
+                if "result" in json_data:
+                    result_data = json_data.get("result")
+                    if isinstance(result_data, list) and result_data:
+                        labels.update(result_data[0].get("labels", []))
+                        labels.add(result_data[0].get("nametag", ""))
+                    elif isinstance(result_data, str):
+                        logging.warning(f"Etherscan Error Response: {result_data}")
+                    else:
+                        logging.warning("Etherscan response does not contain valid data.")
+                else:
+                    logging.warning("Etherscan response does not contain 'result' field.")
+            else:
+                logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")
+                count += 1
+                if count > 10:
+                    Utils.ERROR_CACHE.add(Utils.alert_error(f'request etherscan {data.status_code}', "blockchain_indexer_service.get_etherscan_labels", ""))
+                    break
+                time.sleep(1)
+        return labels

@@ -14,6 +14,8 @@ DEFAULT_ANOMALY_SCORE = 0.001  # used if anomaly score is less or eq than 0
 
 POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD = 40  # assume validator if alert count is larger than this threshold on polygon as the topic analysis seems unreliable
 
+DATAFRAME_SIZE_LIMIT = 350 * 1024 # 350KB
+
 ATTACK_DETECTOR_BOT_ID = "0x80ed808b586aeebe9cdd4088ea4dea0a8e322909c0e4493c993e060e89c09ed1"
 ATTACK_DETECTOR_BETA_BOT_ID = "0xac82fb2a572c7c0d41dc19d24790db17148d1e00505596ebe421daf91c837799"
 
