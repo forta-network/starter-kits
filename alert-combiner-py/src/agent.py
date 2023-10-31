@@ -484,7 +484,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
 
                                 if CHAIN_ID == 1:
                                     # Etherscan API
-                                    etherscan_labels = block_chain_indexer.get_etherscan_labels(cluster)
+                                    etherscan_labels = block_chain_indexer.get_etherscan_labels(cluster, CHAIN_ID)
                                     if etherscan_labels and all(
                                         not any(word in label.lower() for word in ['attack', 'phish', 'hack', 'heist', 'drainer', 'exploit', 'scam', 'fraud', '.eth'])
                                         for label in etherscan_labels

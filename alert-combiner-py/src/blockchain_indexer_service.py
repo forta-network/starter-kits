@@ -173,8 +173,8 @@ class BlockChainIndexer:
     
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
-    def get_etherscan_labels(address) -> set:
-        labels_url = f"https://api-metadata.etherscan.io/v1/api.ashx?module=nametag&action=getaddresstag&address={address}&tag=trusted&apikey={BlockChainIndexer.get_api_key(1)}"
+    def get_etherscan_labels(address, chain_id) -> set:
+        labels_url = f"https://api-metadata.etherscan.io/v1/api.ashx?module=nametag&action=getaddresstag&address={address}&tag=trusted&apikey={BlockChainIndexer.get_api_key(chain_id)}"
         labels = set()
         success = False
         count = 0
