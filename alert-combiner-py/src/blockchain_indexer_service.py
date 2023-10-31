@@ -182,10 +182,18 @@ class BlockChainIndexer:
             data = requests.get(labels_url)
             if data.status_code == 200:
                 json_data = json.loads(data.content)
-                success = True
-                if "result" in json_data and len(json_data["result"]) > 0:
-                    labels = json_data["result"][0]["labels"] + [json_data["result"][0]["nametag"]]                      
-                return labels
+                success = True 
+                if "result" in json_data:
+                    result_data = json_data.get("result")
+                    if isinstance(result_data, list) and result_data:
+                        labels.update(result_data[0].get("labels", []))
+                        labels.add(result_data[0].get("nametag", ""))
+                    elif isinstance(result_data, str):
+                        logging.warning(f"Etherscan Error Response: {result_data}")
+                    else:
+                        logging.warning("Etherscan response does not contain valid data.")
+                else:
+                    logging.warning("Etherscan response does not contain 'result' field.")
             else:
                 logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")
                 count += 1
