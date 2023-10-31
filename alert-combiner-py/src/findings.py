@@ -95,9 +95,9 @@ class AlertCombinerFinding:
         logging.info(f"Unique key of {addresses},{victim_clause},{alert_id}: {unique_key}")
 
         if alert_id == "ATTACK-DETECTOR-PREPARATION":
-            description = f'{addresses} likely involved in an attack preparation ({alert_event.alert_hash}){victim_clause}. Anomaly score: {anomaly_score}'
+            description = f'{addresses} likely involved in an attack preparation ({alert_event.alert_hash}){victim_clause}. {anomaly_clause}'
         else:
-            description = f'{addresses} likely involved in an attack ({alert_event.alert_hash}){victim_clause}. Anomaly score: {anomaly_score}'
+            description = f'{addresses} likely involved in an attack ({alert_event.alert_hash}){victim_clause}. {anomaly_clause}'
 
         return Finding({
                        'name': 'Attack detector identified an EOA with behavior consistent with an attack',
