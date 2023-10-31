@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import os
 import logging
+import traceback
 import forta_agent
 import hashlib
 
@@ -55,7 +56,7 @@ class AlertCombinerFinding:
         anomaly_clause = f" Anomaly score: {anomaly_score}" if anomaly_score > 0 else ""
 
         confidence = 0.2
-        if bot_source == "BlocSec":
+        if bot_source == "BlockSec":
             confidence = 0.8
 
         labels = []
@@ -88,13 +89,19 @@ class AlertCombinerFinding:
                     }))
             except Exception as e:
                 logging.warning(f"Error getting contracts for {address} {e}")
+                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "findings.create_finding", traceback.format_exc()))
 
         unique_key = hashlib.sha256(f'{addresses},{victim_clause},{alert_id}'.encode()).hexdigest()
         logging.info(f"Unique key of {addresses},{victim_clause},{alert_id}: {unique_key}")
 
+        if alert_id == "ATTACK-DETECTOR-PREPARATION":
+            description = f'{addresses} likely involved in an attack preparation ({alert_event.alert_hash}){victim_clause}. {anomaly_clause}'
+        else:
+            description = f'{addresses} likely involved in an attack ({alert_event.alert_hash}){victim_clause}. {anomaly_clause}'
+
         return Finding({
                        'name': 'Attack detector identified an EOA with behavior consistent with an attack',
-                       'description': f'{addresses} likely involved in an attack ({alert_event.alert_hash}){victim_clause}. {anomaly_clause}',
+                       'description': description,
                        'alert_id': alert_id,
                        'type': FindingType.Exploit,
                        'severity': severity,

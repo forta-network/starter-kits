@@ -116,28 +116,38 @@ The Attack Detector bot emits the following alerts:
   - Note: the detection bot will only alert once per cluster observed
 
 - ATTACK-DETECTOR-6
+
   - Fires when any of the above alerts would have triggered, but was associated with an end user attack. This alert is only emitted in beta version of bot.
   - Severity is always set to "info"
   - Type is always set to "exploit"
   - Note: the detection bot will only alert once per cluster observed
 
 - ATTACK-DETECTOR-7
+
   - Fired when a passthrough alert has been observed (e.g. blocksec bot)
   - Severity is always set to "critical"
   - Type is always set to "exploit"
   - Meta data will contain the date range when attack took place, the attacker address, a list of detection bots that triggered that were utilized by this detection bot to make a decision as well as any of the transactions and addresses that were mentioned in any of the underlying alerts
   - Note: the detection bot will only alert once per cluster observed; FP mitigations are not applied to this alert ID
 
-The metadata for each alert will contain:
- - anomaly_score - the overall anomaly score, which the bot thresholds on
- - anomaly_score_stage_STAGE - the anomaly score per stage (funding, preparation, exploitation, money laundering)
- - attacker address - the EOA that executed the attack
- - involved_addresses_X - the address that was touched in any of the base alerts
- - involved_address_bloom_filter_X - the bloom filter that contains all touched address of the base bot if the address field was capped
- - involved_alert_X - the bot_id, alert_id, and alert_hash for all the base bot alerts
+- ATTACK-DETECTOR-PREPARATION
 
+  - Fires when there are only Funding and Preparation stage alerts and in conjunction with one of the ATTACK-DETECTOR-(1-4) alerts.
+  - Severity is always set to "high"
+  - Type is always set to "exploit"
+  - Note: the detection bot will only alert once per cluster observed
+
+The metadata for each alert will contain:
+
+- anomaly_score - the overall anomaly score, which the bot thresholds on
+- anomaly_score_stage_STAGE - the anomaly score per stage (funding, preparation, exploitation, money laundering)
+- attacker address - the EOA that executed the attack
+- involved_addresses_X - the address that was touched in any of the base alerts
+- involved_address_bloom_filter_X - the bloom filter that contains all touched address of the base bot if the address field was capped
+- involved_alert_X - the bot_id, alert_id, and alert_hash for all the base bot alerts
 
 For example:
+
 ```
   {
     "createdAt": "2023-08-19T12:35:59.129519588Z",
