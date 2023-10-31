@@ -128,6 +128,14 @@ class TestBaseBotParser:
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
         assert "0x2ed12fb3146cd2eac390ea73acc83f80d6020b03" in addresses, "this should be the scammer address"
 
+    def test_get_blocksec_drainer_address(self):
+        metadata = {}
+        label = {"entity": "0xfaee4d9ce515c83cdca2e4a7365e7ecbbe74d29d","entityType": "ADDRESS","label": "affiliate","metadata": {},"confidence": 1}
+        labels = [label]
+        alert_event = TestBaseBotParser.generate_alert("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Phishing-drainer", "Drainer report.", metadata, labels)
+        addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
+        assert "0xfaee4d9ce515c83cdca2e4a7365e7ecbbe74d29d" in addresses, "this should be the scammer address"
+
     def test_get_blocksec_scammer_url(self):
         metadata = {'scammer': '', 'URL': 'withdraw-llido.com', 'detail': 'https://urlscan.io/result/1870a15b-2b37-4980-9968-ac8a01e083f9/', 'transaction': ''}
         labels = []

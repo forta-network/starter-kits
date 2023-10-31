@@ -224,13 +224,18 @@ def get_anomaly_score(alert_event: forta_agent.alert_event.AlertEvent) -> float:
 
 def is_polygon_validator(w3, cluster: str, tx_hash: str) -> bool:
     if CHAIN_ID == 137:
-        tx = w3.eth.get_transaction_receipt(tx_hash)
-        for log in tx['logs']:
-            if len(log['topics']) > 3:
-                if log['topics'][0] == HexBytes('0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63'):  # logfeetransfer event
-                    validator = log['topics'][3].hex()[-40:]  # validator in 3rd pos
-                    if validator in cluster:
-                        return True
+        try:
+            tx = w3.eth.get_transaction_receipt(tx_hash)
+            for log in tx['logs']:
+                if len(log['topics']) > 3:
+                    if log['topics'][0] == HexBytes('0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63'):  # logfeetransfer event
+                        validator = log['topics'][3].hex()[-40:]  # validator in 3rd pos
+                        if validator in cluster:
+                            return True
+        except Exception as e:
+            logging.error(f"Error fetching transaction receipt: {e}")
+            return True # assume validator if error, to avoid false positives
+
     return False
 
 def get_end_user_attack_addresses(alert_event: forta_agent.alert_event.AlertEvent) -> list:
@@ -579,7 +584,7 @@ def emit_manual_finding(w3, du, test = False) -> list:
                 tweet = "" if 'nan' in str(row["Tweet"]) else row['Tweet']
                 account = "" if 'nan' in str(row["Account"]) else row['Account']
                 update_list(MANUALLY_ALERTED_ENTITIES, MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE, cluster)
-                finding = AlertCombinerFinding.attack_finding_manual(block_chain_indexer, cluster, account + " " + tweet, chain_id)
+                finding = AlertCombinerFinding.attack_finding_manual(block_chain_indexer, cluster, account + " " + tweet, chain_id, test)
                 if finding is not None:
                     findings.append(finding)
                 logging.info(f"Findings count {len(findings)}")

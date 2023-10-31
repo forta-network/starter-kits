@@ -455,7 +455,7 @@ class TestScamDetector:
         bot_id = "0x42dbb60aa8059dd395df9f66230f63852856f7fdd0d6d3fc55b708f8f84a3f47"
         alert_id = "CHAINPATROL-SCAM-ASSET"
         description = "ChainPatrol detected scam: free-mantle.foundation-claim.com"
-        metadata = {"reason":"reported","reportId":"7655","reportUrl":"https://app.chainpatrol.io/reports/7655","status":"BLOCKED","type":"URL","updatedAt":"2023-10-09T00:53:48.625Z","URL":"free-mantle.foundation-claim.com"}
+        metadata = {"reason":"reported","reportId":"7655","report_url":"https://app.chainpatrol.io/reports/7655","status":"BLOCKED","type":"URL","updatedAt":"2023-10-09T00:53:48.625Z","Url":"free-mantle.foundation-claim.com"}
         labels = []
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
 
@@ -559,6 +559,32 @@ class TestScamDetector:
                 assert label.label == 'scammer'
                 found_contract = True   
         assert found_contract, "should have found scammer contract"
+
+
+    def test_detect_blocksec_phishing_drainer_encrypted(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534"
+        alert_id = "Phishing-drainer"
+        description = "Drainer report."
+        metadata = {'scammer': 'Inferno Drainer Affiliate Account', 'transaction': '0xaf300549d642b31bc2a1d6cf1dbf31213be7634f5bfb5d5ada45b1e6d7bb1f48'}
+        label = {"entity": "0xfaee4d9ce515c83cdca2e4a7365e7ecbbe74d29d","entityType": "ADDRESS","label": "affiliate","metadata": {},"confidence": 1}
+        labels = [ label ]
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
+
+        encrypted_alert_event = TestScamDetector.encrypt_alert_event(alert_event)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, encrypted_alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding for the affiliate EOA"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
+        assert finding.labels[0].entity == '0xfaee4d9ce515c83cdca2e4a7365e7ecbbe74d29d'
+        assert finding.labels[0].label == 'scammer'
+      
 
     def test_detect_soft_rug_pull(self):
         agent.initialize()
@@ -1308,7 +1334,8 @@ class TestScamDetector:
             assert len(findings) == 5, "length should have been 5, alert for the Etherscan FP mitigation should have been triggered"
             last_finding = findings[4]
             assert last_finding.alert_id == "SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION", "should be etherscan fp mitigation finding"
-            assert last_finding.metadata is not None, "metadata should not be empty"
+            assert last_finding.metadata['etherscan_labels'] == "Proposer Fee Recipient"
+            assert last_finding.metadata['etherscan_nametag'] == "Fee Recipient: 0xF4...A38"
             assert len(last_finding.labels) > 0, "labels should not be empty"
             assert last_finding.labels[0].label == 'benign', "should be a benign label"
         else:
