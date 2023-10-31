@@ -67,13 +67,13 @@ class Utils:
             res = requests.get(etherscan_label_api + address.lower())
             if res.status_code == 200:
                 labels = res.json()
-                if len(labels) > 0:
-                    return labels['events'][0]['label']['label']
+                if labels and len(labels.get('events', [])) > 0:
+                     return labels['events'][0]['label']['label']
         except Exception as e:
             error_finding = Utils.alert_error(str(e), "Utils.get_etherscan_label", f"{traceback.format_exc()}")
             Utils.ERROR_CACHE.add(error_finding)
             logging.error(f"Exception in get_etherscan_label {e}")
-            return ""
+        return ""
 
     @staticmethod
     def get_total_shards(CHAIN_ID: int) -> int:
@@ -102,19 +102,31 @@ class Utils:
         return Utils.IS_BETA
     
     @staticmethod
+    def sanitize(msg: str) -> str:
+        # replace any key value pairs where key contains 'key' with 'X'ex for the value
+        # e.g. description&apiKey=foobar&test=foo to description&apiKey=XXXXXX&test=foo
+
+        msg_arr = msg.split('&')
+        for i in range(len(msg_arr)):
+            if 'key' in msg_arr[i].lower() and '=' in msg_arr[i]:
+                msg_arr[i] = msg_arr[i].split('=')[0] + '=XXXXXX'
+        msg_sanatized = '&'.join(msg_arr)
+        return msg_sanatized
+    
+    @staticmethod
     def alert_error(error_description: str, error_source: str, error_stacktrace: str) -> Finding:
 
         labels = []
         
         return Finding({
             'name': 'Attack detector encountered a recoverable error.',
-            'description': f'Error: {error_description}',
+            'description': f'Error: {Utils.sanitize(error_description)}',
             'alert_id': 'DEBUG-ERROR',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'metadata': {
-                'error_source': error_source,
-                'error_stacktrace': error_stacktrace
+                'error_source': Utils.sanitize(error_source),
+                'error_stacktrace': Utils.sanitize(error_stacktrace)
             },
             'labels': labels
         })
