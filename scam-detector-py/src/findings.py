@@ -186,28 +186,6 @@ class ScamDetectorFinding:
                 **common_scammer_contract_label_properties
             }))
 
-            labels.append(Label({
-                'entityType': EntityType.Address,
-                'label': 'scammer',
-                'entity': scammer_contract_address,
-                'confidence': confidence,
-                'metadata': {
-                    'address_type': 'contract',
-                    'chain_id': chain_id,
-                    'base_bot_alert_ids': base_bot_alert_id,  # base bot alert id: contract similarity alert id
-                    'base_bot_alert_hashes': base_bot_alert_hash,
-                    'associated_scammer_contract': existing_scammer_contract_address,
-                    'associated_scammer_threat_categories': ','.join(original_threat_categories),
-                    'associated_scammer_alert_hashes': alert_hash,
-                    'deployer_info': f"Deployer {scammer_address} deployed a contract {scammer_contract_address} that is similar to a contract {existing_scammer_contract_address} deployed by a known scammer {existing_scammer_address} involved in {','.join(original_threat_categories)} scam (alert hash: {alert_hash}); this contract may or may not be related to this particular scam, but was created by the scammer.",
-                    'threat_category': threat_category,
-                    'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
-                    'bot_version': Utils.get_bot_version(),
-                    'label_version': ScamDetectorFinding.LABEL_VERSION,
-                    'logic': 'propagation'
-                }
-            }))
-
             # get all deployed contracts by EOA and add label for those using etherscan or allium
             try:
                 contracts = block_chain_indexer.get_contracts(scammer_address, chain_id)
@@ -435,7 +413,7 @@ class ScamDetectorFinding:
         })
 
     @staticmethod
-    def alert_FP(w3, address: str, label: str, metadata: Union[tuple, list[dict]]) -> Finding:
+    def alert_FP(w3, address: str, label: str, metadata: Union[tuple, List[dict]]) -> Finding:
         labels = []
 
         if (isinstance(metadata, tuple)):
