@@ -1,8 +1,12 @@
 # Scam Detector Bot Release Notes
 
-## 2.22.0
-- upgrade to sdk 0.1.43/0.1.23
+## 2.22.1 (beta2 - 11/1/2023)
+- upgrade to sdk 0.1.44/0.1.24
+- FP etherscan label fixes
+- Reactive FP handling
 
+## 2.22.0 (beta2 - 10/25/2023)
+- upgrade to sdk 0.1.43/0.1.23
 
 ## 2.20.12 (beta - 10/21/2023, 10/23/2023 - prod (without private key compromise, phishing ML bot))
 - fixed chain patrol bug
