@@ -1097,8 +1097,9 @@ def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_e
                 logging.info(f"{BOT_VERSION}: {starting_address} processing contract {address}. Label {row['labelstr']}")
                 if row['metadata'] is not None and "address_type" in row['metadata'].keys() and "threat_category" in row['metadata'].keys() and row['metadata']['address_type'] == 'contract':
                     threat_category = row['metadata']['threat_category']
+                    label = row['labelstr']
                     logging.info(f"{BOT_VERSION}: {starting_address} adding FP label threat category {threat_category} for contract {address}")
-                    fp_labels.add((address,threat_category, tuple([f"{k}={v}" for k, v in row['metadata'].items()])))
+                    fp_labels.add((address,label, tuple([f"{k}={v}" for k, v in row['metadata'].items()])))
 
                     similar_contract_labels_for_address = similar_contract_labels[similar_contract_labels['from_entity'] == address]
                     for index, row in similar_contract_labels_for_address.iterrows():
@@ -1122,8 +1123,9 @@ def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_e
                 logging.info(f"{BOT_VERSION}: {starting_address} processing EOA {address}. Label {row['labelstr']}")
                 if row['metadata'] is not None and "address_type" in row['metadata'].keys() and "threat_category" in row['metadata'].keys() and row['metadata']['address_type'] == 'EOA':
                     threat_category = row['metadata']['threat_category']
+                    label = row['labelstr']
                     logging.info(f"{BOT_VERSION}: {starting_address} adding FP label threat category {threat_category} for EOA {address}")
-                    fp_labels.add((address,threat_category,tuple([f"{k}={v}" for k, v in row['metadata'].items()])))
+                    fp_labels.add((address,label,tuple([f"{k}={v}" for k, v in row['metadata'].items()])))
 
                     # query all deployed contract and add to to_process set
                     contract_addresses = block_chain_indexer.get_contracts(address, chain_id)
