@@ -1136,16 +1136,17 @@ class TestScamDetector:
         sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
         sorted_fp_labels = list(sorted_fp_labels)
         assert len(sorted_fp_labels) == 2, "should have two FP label; one for the EOA, one for the contract"
-        # tuple of entity, threat category, metadata (tuple of key value pairs)
+        # tuple of entity, label, metadata (tuple of key value pairs)
         label_0 = list(sorted_fp_labels)[0]
         assert label_0[0] == EOA_ADDRESS_SMALL_TX.lower()
-        assert label_0[1] == 'address-poisoner'
+        assert label_0[1] == 'scammer'
         assert 'address_type=EOA' in label_0[2] 
+        assert 'threat_category=address-poisoner' in label_0[2]
         label_1 = list(sorted_fp_labels)[1]
         assert label_1[0] == CONTRACT.lower()
-        assert label_1[1] == 'address-poisoner'
+        assert label_1[1] == 'scammer'
         assert 'address_type=contract' in label_1[2]
-        
+        assert 'threat_category=address-poisoner' in label_1[2]
 
 
     def test_obtain_all_fp_labels_scammer_association(self):
@@ -1160,16 +1161,18 @@ class TestScamDetector:
         fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_LARGE_TX, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, 1)
         sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
         sorted_fp_labels = list(sorted_fp_labels)
-        assert len(sorted_fp_labels) == 4, "should have three FP labels; one for each EOA and contract"
+        assert len(sorted_fp_labels) == 4, "should have four FP labels; one for each EOA and contract"
 
         label_0 = list(sorted_fp_labels)[0]
         assert label_0[0] == EOA_ADDRESS_SMALL_TX.lower()
-        assert label_0[1] == 'address-poisoner'
+        assert label_0[1] == 'scammer'
         assert 'address_type=EOA' in label_0[2] 
+        assert 'threat_category=address-poisoner' in label_0[2]
         label_3 = list(sorted_fp_labels)[3]
         assert label_3[0] == EOA_ADDRESS_LARGE_TX.lower()
-        assert label_3[1] == 'address-poisoner'
+        assert label_3[1] == 'scammer'
         assert 'address_type=EOA' in label_3[2]
+        assert 'threat_category=address-poisoner' in label_3[2]
         
        
     def test_obtain_all_fp_labels_similar_contract(self):
