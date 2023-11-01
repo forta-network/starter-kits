@@ -583,8 +583,9 @@ class ScamDetectorFinding:
             labels = []
             threat_category = ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT")
             confidence = Utils.get_confidence_value(threat_category)
-            common_label_properties = {
-                'entityType': EntityType.Address,                
+            labels.append(Label({
+                'entityType': EntityType.Address,      
+                'label': 'scammer',          
                 'entity': scammer_contract_address,
                 'confidence': confidence,
                 'metadata': { # there is no base bot alert id as this happens from handleTx handler
@@ -600,16 +601,8 @@ class ScamDetectorFinding:
                     'label_version': ScamDetectorFinding.LABEL_VERSION,
                     'logic': 'propagation'
                 }
-            }
-            labels.append(Label({                
-                'label': 'scammer',
-                **common_label_properties
             }))
-            labels.append(Label({                
-                'label': 'scammer-association',
-                **common_label_properties
-            }))
-
+        
             metadata = {}
             metadata['scammer_address'] = scammer_address
             metadata['scammer_contract_address'] = scammer_contract_address
