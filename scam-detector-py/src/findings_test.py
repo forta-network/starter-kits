@@ -208,7 +208,7 @@ class TestScamFindings:
         assert finding.metadata['involved_threat_categories'] == "address-poisoner"
         assert finding.metadata['involved_alert_hash_1'] == "0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016"
 
-        assert len(finding.labels) == 2
+        assert len(finding.labels) == 3
 
         assert finding.labels[0].entity_type == EntityType.Address
         assert finding.labels[0].entity == "0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0"
@@ -233,6 +233,18 @@ class TestScamFindings:
         assert finding.labels[1].metadata["deployer_info"] == "Deployer 0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0 deployed a contract 0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2 that is similar to a contract 0xe22536ac6f6a20dbb283e7f61a880993eab63313 deployed by a known scammer 0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e involved in address-poisoner scam (alert hash: 0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016); this contract may or may not be related to this particular scam, but was created by the scammer."
         assert finding.labels[1].metadata["threat_category"] == "similar-contract"
         assert finding.labels[1].metadata["threat_description_url"] == ScamDetectorFinding.get_threat_description_url(alert_id)
+
+        assert finding.labels[2].entity_type == EntityType.Address
+        assert finding.labels[2].entity == "0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2"
+        assert finding.labels[2].label == "similar-contract"
+        assert finding.labels[2].confidence == Utils.get_confidence_value('similar-contract')
+        assert finding.labels[2].metadata["address_type"] == "contract"
+        assert finding.labels[2].metadata["logic"] == "propagation"
+        assert finding.labels[2].metadata["base_bot_alert_ids"] == base_bot_alert_id
+        assert finding.labels[2].metadata["base_bot_alert_hashes"] == base_bot_alert_hash
+        assert finding.labels[2].metadata["deployer_info"] == "Deployer 0x7e6b6f2be1bb8d2e1d5fcefa2d6df86b6e03b8d0 deployed a contract 0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2 that is similar to a contract 0xe22536ac6f6a20dbb283e7f61a880993eab63313 deployed by a known scammer 0xc1015eb4d9aa4f77d79cf04825cbfb7fc04e232e involved in address-poisoner scam (alert hash: 0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016); this contract may or may not be related to this particular scam, but was created by the scammer."
+        assert finding.labels[2].metadata["threat_category"] == "similar-contract"
+        assert finding.labels[2].metadata["threat_description_url"] == ScamDetectorFinding.get_threat_description_url(alert_id)
         
 
     def test_alert_FP(self):
@@ -306,7 +318,7 @@ class TestScamFindings:
         assert finding.description == f'{EOA_ADDRESS_SMALL_TX} is associated with scammer {EOA_ADDRESS_LARGE_TX} (SCAM-DETECTOR-SCAMMER-ASSOCIATION, propagation)'
         assert finding.metadata['involved_alert_id_1'] == "SCAM-DETECTOR-ICE-PHISHING"
         assert finding.metadata['involved_alert_hash_1'] == original_alert_hash
-        assert len(finding.labels) == 2, "should be 2"  
+        assert len(finding.labels) == 4, "should be 4"  
         assert finding.labels[0].entity == EOA_ADDRESS_SMALL_TX
         assert finding.labels[0].label == "scammer"
         assert finding.labels[0].metadata["address_type"] == "EOA"
@@ -320,14 +332,39 @@ class TestScamFindings:
         assert finding.labels[0].metadata['associated_scammer_alert_hashes'] == original_alert_hash
         assert finding.labels[0].metadata["threat_category"] == "scammer-association"
 
-        assert finding.labels[1].entity == CONTRACT
-        assert finding.labels[1].label == "scammer"
-        assert finding.labels[1].metadata["address_type"] == "contract"
+        assert finding.labels[1].entity == EOA_ADDRESS_SMALL_TX
+        assert finding.labels[1].label == "scammer-association"
+        assert finding.labels[1].metadata["address_type"] == "EOA"
         assert finding.labels[1].metadata["logic"] == "propagation"
-        assert finding.labels[1].metadata["threat_category"] == "scammer-deployed-contract"
 
-        assert finding.labels[1].confidence == (Utils.get_confidence_value('ice-phishing') * 0.5 * 0.8)
+        assert finding.labels[1].confidence == Utils.get_confidence_value('ice-phishing') * 0.5
+        assert finding.labels[1].metadata['base_bot_alert_ids'] == base_bot_alert_id
+        assert finding.labels[1].metadata['base_bot_alert_hashes'] == base_bot_alert_hash
         assert finding.labels[1].metadata['associated_scammer'] == EOA_ADDRESS_LARGE_TX
         assert finding.labels[1].metadata['associated_scammer_threat_categories'] == 'ice-phishing'
         assert finding.labels[1].metadata['associated_scammer_alert_hashes'] == original_alert_hash
-        assert finding.labels[1].metadata['deployer_info'] == f"Deployer {EOA_ADDRESS_SMALL_TX} associated with a scammer {EOA_ADDRESS_LARGE_TX}; this contract may or may not be related to this particular scam, but was created by the scammer."
+        assert finding.labels[1].metadata["threat_category"] == "scammer-association"
+
+        assert finding.labels[2].entity == CONTRACT
+        assert finding.labels[2].label == "scammer"
+        assert finding.labels[2].metadata["address_type"] == "contract"
+        assert finding.labels[2].metadata["logic"] == "propagation"
+        assert finding.labels[2].metadata["threat_category"] == "scammer-deployed-contract"
+
+        assert finding.labels[2].confidence == (Utils.get_confidence_value('ice-phishing') * 0.5 * 0.8)
+        assert finding.labels[2].metadata['associated_scammer'] == EOA_ADDRESS_LARGE_TX
+        assert finding.labels[2].metadata['associated_scammer_threat_categories'] == 'ice-phishing'
+        assert finding.labels[2].metadata['associated_scammer_alert_hashes'] == original_alert_hash
+        assert finding.labels[2].metadata['deployer_info'] == f"Deployer {EOA_ADDRESS_SMALL_TX} associated with a scammer {EOA_ADDRESS_LARGE_TX}; this contract may or may not be related to this particular scam, but was created by the scammer."
+
+        assert finding.labels[3].entity == CONTRACT
+        assert finding.labels[3].label == "scammer-association"
+        assert finding.labels[3].metadata["address_type"] == "contract"
+        assert finding.labels[3].metadata["logic"] == "propagation"
+        assert finding.labels[3].metadata["threat_category"] == "scammer-deployed-contract"
+
+        assert finding.labels[3].confidence == (Utils.get_confidence_value('ice-phishing') * 0.5 * 0.8)
+        assert finding.labels[3].metadata['associated_scammer'] == EOA_ADDRESS_LARGE_TX
+        assert finding.labels[3].metadata['associated_scammer_threat_categories'] == 'ice-phishing'
+        assert finding.labels[3].metadata['associated_scammer_alert_hashes'] == original_alert_hash
+        assert finding.labels[3].metadata['deployer_info'] == f"Deployer {EOA_ADDRESS_SMALL_TX} associated with a scammer {EOA_ADDRESS_LARGE_TX}; this contract may or may not be related to this particular scam, but was created by the scammer."
