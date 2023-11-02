@@ -31,6 +31,7 @@ class Utils:
     BOT_VERSION = None
     TOTAL_SHARDS = None
     IS_BETA = None
+    IS_BETA_ALT = None
 
     QUALITY_METRICS = None
 
@@ -416,6 +417,15 @@ class Utils:
             logging.debug("loaded package.json")
             Utils.IS_BETA = 'beta' in package["name"]
         return Utils.IS_BETA
+
+    @staticmethod
+    def is_beta_alt() -> str:
+        if Utils.IS_BETA_ALT is None:
+            logging.debug("getting bot version from package.json")
+            package = json.load(open("package.json"))
+            logging.debug("loaded package.json")
+            Utils.IS_BETA_ALT = '2' in package["name"]
+        return Utils.IS_BETA_ALT
         
     @staticmethod
     def get_shard(CHAIN_ID: int, timestamp: int) -> int:
