@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## 2.22.2 (beta2 - 11/2/2023)
+- upgrade to sdk 0.1.44/0.1.24
+- fix issue #349
+
 ## 2.22.1 (beta2 - 11/1/2023)
 - upgrade to sdk 0.1.44/0.1.24
 - FP etherscan label fixes

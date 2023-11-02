@@ -53,6 +53,10 @@ class ScamDetectorFinding:
         
     @staticmethod
     def get_threat_category(alert_id: str) -> str:
+        if "-MANUAL" in alert_id:
+            # SCAM-DETECTOR-MANUAL-ICE-PHISHING -> SCAM-DETECTOR-ICE-PHISHING
+            alert_id = alert_id.replace("-MANUAL", "")
+
         if alert_id == "SCAM-DETECTOR-ICE-PHISHING" or alert_id == "SCAM-DETECTOR-METAMASK-PHISHING":
             return "ice-phishing"
         elif alert_id == "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER":
