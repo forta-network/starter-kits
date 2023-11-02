@@ -35,6 +35,10 @@ ALERTED_FP_CLUSTERS_QUEUE_SIZE = 10000
 TX_COUNT_FILTER_THRESHOLD = 2000  # ignore EOAs with tx count larger than this threshold to mitigate FPs
 CONTRACTS_TX_COUNT_FILTER_THRESHOLD = 5000 # ignore EOAs that have deployed a contract with tx count larger than this threshold to mitigate FPs
 
+SCAM_DETECTOR_BOT_ID = '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
+SCAM_DETECTOR_BETA_BOT_ID = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8'
+SCAM_DETECTOR_BETA_ALT_BOT_ID = '0xb27524b92bf27e6aa499a3a7239232ad425219b400d3c844269f4a657a4adf03'
+
 BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "nft-phishing-sale", "PassThrough", "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER"),  # seaport orders
              ("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "nft-possible-phishing-transfer", "Combination", ""),
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing

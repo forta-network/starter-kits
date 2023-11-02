@@ -11,7 +11,7 @@ import traceback
 import hashlib
 
 from src.utils import Utils
-from src.constants import MODEL_NAME
+from src.constants import MODEL_NAME, SCAM_DETECTOR_BOT_ID, SCAM_DETECTOR_BETA_BOT_ID, SCAM_DETECTOR_BETA_ALT_BOT_ID
 
 class ScamDetectorFinding:
 
@@ -119,7 +119,7 @@ class ScamDetectorFinding:
         alert_id = "SCAM-DETECTOR-SIMILAR-CONTRACT"  # only used in context of alerts; in context of labels we talk about threat-categories
 
         original_threat_categories = set()  # scammer-eoa/* threat categories of the original scammer
-        source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
+        source_id = SCAM_DETECTOR_BETA_ALT_BOT_ID if Utils.is_beta_alt() else (SCAM_DETECTOR_BETA_BOT_ID if Utils.is_beta() else SCAM_DETECTOR_BOT_ID)
         df_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = existing_scammer_contract_address.lower())
 
         for index, row in df_labels.iterrows():
@@ -496,7 +496,7 @@ class ScamDetectorFinding:
 
 
         for entity in entities.split(","):
-            source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
+            source_id = SCAM_DETECTOR_BETA_ALT_BOT_ID if Utils.is_beta_alt() else (SCAM_DETECTOR_BETA_BOT_ID if Utils.is_beta() else SCAM_DETECTOR_BOT_ID)
             df_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = entity.lower()) if not initial_metamask_list_consumption else pd.DataFrame()
             if df_labels.empty:
                 label_doesnt_exist = True
