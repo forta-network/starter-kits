@@ -39,7 +39,7 @@ class TestSocialEngContractAgent:
                     'logs': []}
             })
 
-            agent.detect_social_eng_contract_creations(w3, contract_interaction_tx_event)
+            agent.detect_social_eng_account_creations(w3, contract_interaction_tx_event)
 
         assert(len(agent.CONTRACTS_QUEUE) == CONTRACT_QUEUE_SIZE + 1)
 
@@ -71,8 +71,8 @@ class TestSocialEngContractAgent:
                 'logs': []}
         })
 
-        agent.detect_social_eng_contract_creations(w3, contract_interaction_tx_event)
-        agent.detect_social_eng_contract_creations(w3, contract_interaction_tx_event)
+        agent.detect_social_eng_account_creations(w3, contract_interaction_tx_event)
+        agent.detect_social_eng_account_creations(w3, contract_interaction_tx_event)
 
 
         assert(len(agent.CONTRACTS_QUEUE) == 2)
@@ -96,13 +96,13 @@ class TestSocialEngContractAgent:
                 'logs': []}
         })
 
-        agent.detect_social_eng_contract_creations(w3, contract_interaction_tx_event)
+        agent.detect_social_eng_account_creations(w3, contract_interaction_tx_event)
 
 
         assert(len(agent.CONTRACTS_QUEUE) == 1)
 
     @patch("src.findings.calculate_alert_rate", return_value=1.0)
-    def test_soc_eng_creation_finding(self, mocker):
+    def test_soc_eng_contract_creation_finding(self, mocker):
         agent.initialize()
 
         contract_interaction_tx_event = create_transaction_event({
@@ -122,7 +122,7 @@ class TestSocialEngContractAgent:
                 'logs': []}
         })
 
-        agent.detect_social_eng_contract_creations(w3, contract_interaction_tx_event)
+        agent.detect_social_eng_account_creations(w3, contract_interaction_tx_event)
 
         contract_creation_tx_event = create_transaction_event({
 
@@ -140,7 +140,7 @@ class TestSocialEngContractAgent:
                 'logs': []}
         })
 
-        findings = agent.detect_social_eng_contract_creations(w3, contract_creation_tx_event)
+        findings = agent.detect_social_eng_account_creations(w3, contract_creation_tx_event)
         assert len(findings) == 1, "should have 1 finding"
         assert findings[0].alert_id == 'SOCIAL-ENG-CONTRACT-CREATION'
         assert "anomaly_score" in findings[0].metadata
@@ -161,7 +161,7 @@ class TestSocialEngContractAgent:
 
 
 
-    def test_soc_eng_creation_no_finding_identical_contract(self):
+    def test_soc_eng_contract_creation_no_finding_identical_contract(self):
         agent.initialize()
 
         contract_interaction_tx_event = create_transaction_event({
@@ -181,7 +181,7 @@ class TestSocialEngContractAgent:
                 'logs': []}
         })
 
-        agent.detect_social_eng_contract_creations(w3, contract_interaction_tx_event)
+        agent.detect_social_eng_account_creations(w3, contract_interaction_tx_event)
 
         contract_creation_tx_event = create_transaction_event({
 
@@ -199,11 +199,11 @@ class TestSocialEngContractAgent:
                 'logs': []}
         })
 
-        findings = agent.detect_social_eng_contract_creations(w3, contract_creation_tx_event)
+        findings = agent.detect_social_eng_account_creations(w3, contract_creation_tx_event)
         assert len(findings) == 0, "should have 0 on identical contract addresses"
 
 
-    def test_soc_eng_creation_no_finding_no_contract_in_queue(self):
+    def test_soc_eng_contract_creation_no_finding_no_contract_in_queue(self):
         agent.initialize()
 
         contract_creation_tx_event = create_transaction_event({
@@ -222,11 +222,11 @@ class TestSocialEngContractAgent:
                 'logs': []}
         })
 
-        findings = agent.detect_social_eng_contract_creations(w3, contract_creation_tx_event)
+        findings = agent.detect_social_eng_account_creations(w3, contract_creation_tx_event)
         assert len(findings) == 0, "should have no finding"
 
     @patch("src.findings.calculate_alert_rate", return_value=1.0)
-    def test_soc_eng_creation_finding_null_address(self, mocker):
+    def test_soc_eng_contract_creation_finding_null_address(self, mocker):
         agent.initialize()
 
         contract_creation_tx_event = create_transaction_event({
@@ -245,7 +245,7 @@ class TestSocialEngContractAgent:
                 'logs': []}
         })
 
-        findings = agent.detect_social_eng_contract_creations(w3, contract_creation_tx_event)
+        findings = agent.detect_social_eng_account_creations(w3, contract_creation_tx_event)
         assert len(findings) == 1, "should have 1 finding"
         assert "anomaly_score" in findings[0].metadata
         assert findings[0].alert_id == 'SOCIAL-ENG-CONTRACT-CREATION-NULL-ADDRESS'
@@ -263,3 +263,40 @@ class TestSocialEngContractAgent:
         assert findings[0].labels[2].toDict()["entity"] == '0x0000000000000000000000000000000000000000', "should have contract address as label"
         assert findings[0].labels[2].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
         assert findings[0].labels[2].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+
+
+    @patch("src.findings.calculate_alert_rate", return_value=1.0)
+    def test_soc_eng_eoa_creation_finding_null(self, mocker):
+        agent.initialize()
+
+        contract_creation_tx_event = create_transaction_event({
+
+            'transaction': {
+                'hash': "0",
+                'from': '0x0000d672409da288ca5b9aa85d1a55b803ba0000',
+                'to': EOA_ADDRESS,
+                'value': 1000000000000000000,
+                'nonce': 9,
+
+            },
+            'block': {
+                'number': 1,
+                'timestamp': datetime.now().timestamp(),
+            },
+            'receipt': {
+                'logs': []}
+        })
+
+        findings = agent.detect_social_eng_account_creations(w3, contract_creation_tx_event)
+        assert len(findings) == 1, "should have 1 finding"
+        assert findings[0].alert_id == 'SOCIAL-ENG-EOA-CREATION-NULL-ADDRESS'
+        assert "anomaly_score" in findings[0].metadata
+        assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
+        assert findings[0].labels[0].toDict()["entity"] == '0x0000d672409da288ca5b9aa85d1a55b803ba0000', "should have EOA address as label"
+        assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[0].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+
+        assert findings[0].labels[1].toDict()["label"] == 'victim', "should have attacker as label"
+        assert findings[0].labels[1].toDict()["entity"] == '0x0000000000000000000000000000000000000000', "should have contract address as label"
+        assert findings[0].labels[1].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[1].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
