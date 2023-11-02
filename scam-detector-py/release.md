@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## 2.22.3 (beta2 - 11/2/2023)
+- integrated SOCIAL-ENG-EOA-CREATION-NULL-ADDRESS to capture drainer addresses more comprehensively
+- integrated NIP-9 to capture certain phishing related multicall attacks
+
 ## 2.22.2 (beta2 - 11/2/2023)
 - upgrade to sdk 0.1.44/0.1.24
 - fix issue #349
