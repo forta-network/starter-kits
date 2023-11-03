@@ -1,5 +1,8 @@
 # Attack Detector Bot Release Notes
 
+## v3.51.4 (Nov 3 2023: beta2)
+- redeploy
+
 ## v3.51.4 (Oct 31 2023: beta2)
 - etherscan label FP mitigation
 - addition of error log findings
