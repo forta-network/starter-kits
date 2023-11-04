@@ -1,5 +1,9 @@
 # Attack Detector Bot Release Notes
 
+## v3.52.0 (Nov 3 2023: beta)
+- Added new MEV bot (Liquidation AlertID) for FP mitigation
+- update to sdk 0.1.45/0.1.25
+
 ## v3.51.3 (Oct 26 2023: beta)
 - Added new MEV bot (Arbitrage AlertID) for FP mitigation
 
