@@ -10,6 +10,7 @@ import sys
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 heuristic = AddressPoisoningRules()
 blockexplorer = BlockExplorer(web3.eth.chain_id)
+CHAIN_ID = -1
 
 # Logging set up.
 root = logging.getLogger()
@@ -57,6 +58,9 @@ def initialize():
 
     global fake_value_phishing_contracts
     fake_value_phishing_contracts = set()
+
+    global CHAIN_ID
+    CHAIN_ID = web3.eth.chain_id
 
 
 def parse_logs_for_transfer_and_approval_info(transaction_event, contracts):
@@ -148,8 +152,9 @@ def detect_address_poisoning(w3, blockexplorer, heuristic, transaction_event):
     global low_value_phishing_contracts
     global fake_value_phishing_contracts
 
+    global CHAIN_ID
+
     findings = []
-    chain_id = w3.eth.chain_id
     logs = w3.eth.get_transaction_receipt(transaction_event.hash)['logs']
 
     # Return alert type if previously detected, but if not return empty string
@@ -174,7 +179,7 @@ def detect_address_poisoning(w3, blockexplorer, heuristic, transaction_event):
         if ALERT_TYPE == "ADDRESS-POISONING-FAKE-TOKEN":
             contracts = set([log['address'] for log in logs])
         else:
-            contracts = STABLECOIN_CONTRACTS[chain_id]
+            contracts = STABLECOIN_CONTRACTS[CHAIN_ID]
 
         transfer_logs = parse_logs_for_transfer_and_approval_info(transaction_event, contracts)
         attackers, victims = get_attacker_victim_lists(w3, transfer_logs, ALERT_TYPE)
@@ -188,29 +193,29 @@ def detect_address_poisoning(w3, blockexplorer, heuristic, transaction_event):
     and not heuristic.are_tokens_minted(logs)):
         denominator_count += 1
         
-        if chain_id == 137:
+        if CHAIN_ID == 137:
             logs = logs[:-1]
         
         log_length = len(logs)
         
         # Zero value address poisoning heuristic ->
         if (log_length >= 3 
-        and heuristic.are_all_logs_stablecoins(logs, chain_id) >= 0.4 
+        and heuristic.are_all_logs_stablecoins(logs, CHAIN_ID) >= 0.4 
         and heuristic.are_all_logs_transfers_or_approvals(logs) 
-        and heuristic.is_zero_value_tx(logs, chain_id)): 
+        and heuristic.is_zero_value_tx(logs, CHAIN_ID)): 
             logging.info(f"Detected phishing transaction from EOA: {transaction_event.from_}, and Contract: {transaction_event.to}")
             ALERT_TYPE = "ADDRESS-POISONING-ZERO-VALUE"
             zero_value_alert_count += 1
             score = (1.0 * zero_value_alert_count) / denominator_count
             zero_value_phishing_contracts.update([transaction_event.to])
-            transfer_logs = parse_logs_for_transfer_and_approval_info(transaction_event, STABLECOIN_CONTRACTS[chain_id])
+            transfer_logs = parse_logs_for_transfer_and_approval_info(transaction_event, STABLECOIN_CONTRACTS[CHAIN_ID])
             attackers, victims = get_attacker_victim_lists(w3, transfer_logs, ALERT_TYPE)
             attackers.extend([transaction_event.from_, transaction_event.to])
 
         # Fake token address poisoning heuristic ->
         elif (log_length >= 5
         and heuristic.are_all_logs_transfers_or_approvals(logs)
-        and heuristic.are_tokens_using_known_symbols(w3, logs, chain_id)):
+        and heuristic.are_tokens_using_known_symbols(w3, logs, CHAIN_ID)):
             logging.info(f"Detected phishing transaction from EOA: {transaction_event.from_}, and Contract: {transaction_event.to}")
             ALERT_TYPE = "ADDRESS-POISONING-FAKE-TOKEN"
             fake_token_alert_count += 1
@@ -223,12 +228,12 @@ def detect_address_poisoning(w3, blockexplorer, heuristic, transaction_event):
        
         # Low value address poisoning heuristic ->
         elif (log_length >= 10
-        and heuristic.are_all_logs_stablecoins(logs, chain_id) >= 0.9
+        and heuristic.are_all_logs_stablecoins(logs, CHAIN_ID) >= 0.9
         and heuristic.are_all_logs_transfers_or_approvals(logs)
         and heuristic.is_data_field_repeated(logs)):
             logging.info(f"Possible low-value address poisoning - making additional checks...")
             PENDING_ALERT_TYPE = "ADDRESS-POISONING-LOW-VALUE"
-            transfer_logs = parse_logs_for_transfer_and_approval_info(transaction_event, STABLECOIN_CONTRACTS[chain_id])
+            transfer_logs = parse_logs_for_transfer_and_approval_info(transaction_event, STABLECOIN_CONTRACTS[CHAIN_ID])
             attackers, victims = get_attacker_victim_lists(w3, transfer_logs, PENDING_ALERT_TYPE)
             if ((len(attackers) - len(victims)) == 1
             and check_for_similar_transfer(blockexplorer, transfer_logs, victims)):

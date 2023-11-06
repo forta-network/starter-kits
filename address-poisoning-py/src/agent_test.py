@@ -18,6 +18,7 @@ real_blockexplorer = BlockExplorer(real_w3.eth.chain_id)
 class TestAddressPoisoningAgent:
 
     def test_transaction_processing_speed(self):
+        agent.initialize()
 
         global transaction_to_eoa
         transaction_to_eoa = create_transaction_event({
