@@ -77,7 +77,7 @@ OFFICIAL_SYMBOLS = {
     1: ['USDT', 'USDC', 'ETH', 'DAI'],
     56: ['USDT', 'USDC', 'BSC', 'anyUSDC', 'DAI', 'BUSD'],
     137: ['USDT', 'USDC', 'MATIC', 'BUSD', 'DAI'],
-    42161: ['USDT', 'USDC', 'DAI', 'TUSD'],
+    42161: ['USDT', 'USDC', 'DAI', 'TUSD', 'ARB'],
     10: ['USDT', 'USDC', 'DAI', 'OP'],
     250: ['TUSD', 'USDC', 'DAI', 'FETH'],
     43114: ['USDT.e', 'USDt', 'USDC', 'USDC.e', 'BUSD.e', 'BUSD', 'DAI.e', 'AVAX']
