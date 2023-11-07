@@ -1,10 +1,17 @@
 {
   "name": "address-poisoning-detector",
-  "version": "0.3.12",
-  "description": "Agent detecting address poisoning - zero value, low value, and fake token phishing transfers",
-  "repository": "https://github.com/tf0rs/forta-address-poisoning-agent",
+  "displayName": "Address Poisoning Detector",
+  "version": "0.4.0",
+  "description": "Bot detecting address poisoning - zero value, low value, and fake token phishing transfers",
+  "repository": "https://github.com/forta-network/starter-kits/tree/main/address-poisoning-py",
   "chainIds": [
-    1, 56, 137, 42161, 10, 250, 43114
+    1,
+    56,
+    137,
+    42161,
+    10,
+    250,
+    43114
   ],
   "chainSettings": {
     "1": {
@@ -45,7 +52,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.33"
+    "forta-agent": "^0.1.45"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"
