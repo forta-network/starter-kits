@@ -3,6 +3,7 @@ from src.findings import AddressPoisoningFinding
 from src.rules import AddressPoisoningRules
 from src.constants import *
 from src.blockexplorer import BlockExplorer
+from src.storage import get_secrets
 import logging
 import sys
 
@@ -32,6 +33,7 @@ zero_value_phishing_contracts = set()
 low_value_phishing_contracts = set()
 fake_value_phishing_contracts = set()
 
+secrets = None
 
 def initialize():
     """
@@ -62,6 +64,8 @@ def initialize():
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
+    global secrets
+    secrets = get_secrets()
 
 def parse_logs_for_transfer_and_approval_info(transaction_event, contracts):
     transfer_logs = []
@@ -83,19 +87,33 @@ def get_attacker_victim_lists(w3, decoded_logs, alert_type):
     attackers = []
     victims = []
 
-    if (alert_type == "ADDRESS-POISONING-ZERO-VALUE" 
-    or alert_type == "ADDRESS-POISONING-FAKE-TOKEN"):
+    if alert_type == "ADDRESS-POISONING-FAKE-TOKEN":
+        from_as_attacker_count = 0
+        to_as_attacker_count = 0
         for log in log_args:
             from_tx_count = w3.eth.get_transaction_count(log['from'])
             to_tx_count = w3.eth.get_transaction_count(log['to'])
             if from_tx_count > to_tx_count:
                 attackers.append(log['to'])
                 victims.append(log['from'])
+                to_as_attacker_count += 1
             else:
                 attackers.append(log['from'])
                 victims.append(log['to'])
+                from_as_attacker_count += 1
+        for log in log_args:
+            from_address = log['from']
+            to_address = log['to']
+            if (from_as_attacker_count > to_as_attacker_count and to_address in attackers) or (to_as_attacker_count > from_as_attacker_count and from_address in attackers):
+                attackers_index = attackers.index(from_address if from_address in attackers else to_address)
+                attackers[attackers_index], victims[attackers_index] = victims[attackers_index], attackers[attackers_index]
         attackers = list(set(attackers))
         victims = list(set(victims))
+    elif alert_type == "ADDRESS-POISONING-ZERO-VALUE":
+        senders = [str.lower(log['from']) for log in log_args]
+        receivers = [str.lower(log['to']) for log in log_args]
+        victims = list(set(senders))
+        attackers = list(set([x for x in receivers if x not in senders]))       
     elif alert_type == "ADDRESS-POISONING-LOW-VALUE":
         senders = [str.lower(log['from']) for log in log_args]
         receivers = [str.lower(log['to']) for log in log_args]
@@ -153,6 +171,10 @@ def detect_address_poisoning(w3, blockexplorer, heuristic, transaction_event):
     global fake_value_phishing_contracts
 
     global CHAIN_ID
+
+    # Filter out FPs by bulk NFT transfers using Opensea Transfer Helper (e.g. tx 0x042103cdc19f74c0bbaf09ea6eafa13031354cb0e3b8fe3c82d74e6d100569d1)
+    if transaction_event.to == OPENSEA_TRANSFER_HELPER:
+        return []
 
     findings = []
     logs = w3.eth.get_transaction_receipt(transaction_event.hash)['logs']
