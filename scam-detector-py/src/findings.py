@@ -297,6 +297,9 @@ class ScamDetectorFinding:
         if alert_id in ["SCAM-DETECTOR-IMPERSONATING-TOKEN", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-NFT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING', 'SCAM-DETECTOR-UNKNOWN', 'SCAM-DETECTOR-PIG-BUTCHERING', 'SCAM-DETECTOR-SLEEP-DROP', 'SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE', 'SCAM-DETECTOR-GAS-MINTING']:
             if scammer_addresses != '':
                 for scammer_address in scammer_addresses.split(","):
+                    label_unique_key = hashlib.sha256(f'{scammer_addresses},{alert_id},{chain_id}'.encode()).hexdigest()
+                    logging.info(f'Unique key of {scammer_addresses},{alert_id},{chain_id}: {label_unique_key}')
+
                     labels.append(Label({
                         'entityType': EntityType.Address,
                         'label': 'scammer',
@@ -314,7 +317,8 @@ class ScamDetectorFinding:
                             'feature_vector': feature_vector_str,
                             'model_name': MODEL_NAME,
                             'logic': logic
-                        }
+                        },
+                        'uniqueKey': label_unique_key
                     }))
 
                     # perf optimization; these are the poisoned addresses that usually have no activity, but the POISONER are still being checked
@@ -325,6 +329,9 @@ class ScamDetectorFinding:
                             contracts = block_chain_indexer.get_contracts(scammer_address, chain_id)
                             logging.info(f"Got {len(contracts)} contracts for scammer address {scammer_address}")
                             for contract in contracts:
+                                label_unique_key = hashlib.sha256(f'{contract},{alert_id},{chain_id}'.encode()).hexdigest()
+                                logging.info(f'Unique key of {contract},{alert_id},{chain_id}: {label_unique_key}')
+
                                 if contract in scammer_contract_addresses:
                                     labels.append(Label({
                                         'entityType': EntityType.Address,
@@ -344,7 +351,8 @@ class ScamDetectorFinding:
                                             'feature_vector': feature_vector_str,
                                             'model_name': MODEL_NAME,
                                             'logic': logic
-                                        }
+                                        },
+                                        'uniqueKey': label_unique_key
                                     }))
                                 else:
                                     labels.append(Label({
@@ -363,14 +371,18 @@ class ScamDetectorFinding:
                                             'bot_version': Utils.get_bot_version(),
                                             'label_version': ScamDetectorFinding.LABEL_VERSION,
                                             'logic': 'propagation'
-                                        }
+                                        },
+                                        'uniqueKey': label_unique_key
                                     }))
                         except Exception as e:
                             logging.warning(f"Error getting contracts for scammer address {scammer_address}: {e}")
                             Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "findings.scam_finding", traceback.format_exc()))
 
-                    
+
             if url != "":
+                label_unique_key = hashlib.sha256(f'{url},{alert_id},{chain_id}'.encode()).hexdigest()
+                logging.info(f'Unique key of {url},{alert_id},{chain_id}: {label_unique_key}')
+
                 labels.append(Label({
                     'entityType': EntityType.Url,
                     'label': 'scammer',
@@ -388,9 +400,10 @@ class ScamDetectorFinding:
                         'model_name': MODEL_NAME,
                         'logic': logic,
                         'source_url_scan_url': url_scan_url
-                    }
+                    },
+                    'uniqueKey': label_unique_key
                 }))
-                    
+
 
         findings_metadata = {**attacker_address_md_dict, **start_date_dict, **end_date_dict, **involved_addresses_dict, **involved_alert_ids_dict, **involved_alert_hashes_dict, **logic_dict, **confidence_dict, **feature_vector_dict, **model_name_dict, **url_scan_url_dict}
       
