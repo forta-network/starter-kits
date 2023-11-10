@@ -18,7 +18,7 @@ class FPMitigator:
             logging.info(f"Chain id {self.chain_id} is not supported. fp-mitigation")
             return None
         in_data = self.download_data.create_graph_around_address(address)
-        logging.info(f'{address}-fpfp-downloaded-data: {in_data}')
+        # logging.info(f'{address}-fpfp-downloaded-data: {in_data}')
         if in_data is None:
             return None
         embeddings = self.autoencoder.encode(in_data)

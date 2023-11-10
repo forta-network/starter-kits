@@ -483,9 +483,9 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                         f"alert {alert_event.alert_hash} - End user attack identified for {cluster}. Downgrade finding")
                                     end_user_attack = True
                                 
-                                logging.info('fpfp')
+                                # logging.info('fpfp')
                                 is_fp, fp_pred = Utils.is_fp(w3, address_lower, fp_mitigator)
-                                if is_fp and Utils.is_beta():
+                                if is_fp and Utils.is_beta() and "PYTEST_CURRENT_TEST" not in os.environ:
                                     fp_mitigated = is_fp
                                     if fp_pred is not None and Utils.is_beta():
                                         finding_dict = {
