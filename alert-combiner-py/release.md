@@ -1,5 +1,18 @@
 # Attack Detector Bot Release Notes
 
+## v3.51.4 (Nov 3 2023: beta2, Nov 6 2023: prod)
+- redeploy
+
+## v3.51.4 (Oct 31 2023: beta2)
+- etherscan label FP mitigation
+- addition of error log findings
+- new alert ID firing on funding/preparation 
+- bug fixes
+
+## v3.51.3 (Oct 25 2023: beta2)
+- integrate blocksec bot by introducing passthrough alertID (ATTACK-DETECTOR-7)
+- update to sdk 0.1.43
+
 ## v3.50.4 (Sept 25 2023: beta)
 - integrated ownership transfer bot
 - added POSITIVE-REPUTATION-2 FP mitigation
