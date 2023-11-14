@@ -1,5 +1,8 @@
 # Attack Detector Bot Release Notes
 
+## v3.51.5 (Nov 14 2023: beta2, Nov 14 2023: prod)
+- update to sdk 0.1.45
+
 ## v3.51.4 (Nov 3 2023: beta2, Nov 6 2023: prod)
 - redeploy
 

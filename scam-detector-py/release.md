@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## 2.20.13 prod (without private key compromise, phishing ML bot)
+- update sdk to 0.1.45
+
 ## 2.20.12 (beta - 10/21/2023, 10/23/2023 - prod (without private key compromise, phishing ML bot))
 - fixed chain patrol bug
 - changed one pager promoUrl
