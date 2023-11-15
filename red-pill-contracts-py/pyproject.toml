@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "forta-bot-red-pill"
+version = "0.1.22"
+description = "Bot scanning the blockchain for red-pill contracts"
+authors = ["apehex <apehex@protonmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9, <4"
+forta-agent = ">=0.1.25"
+forta-toolkit = ">=0.1.22"
+ioseeth = ">=0.1.16"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
