@@ -992,6 +992,189 @@
             }
         },
       "monthly": {  
+         "2023-10": {
+            "overall": {
+                "precision": {
+                    "value": 0.9540,
+                    "N": 1088,
+                    "lower_bound": 0.9424,
+                    "upper_bound": 0.9650,
+                    "confidence": 0.9
+                },
+                "recall": {
+                    "value": 0.527,
+                    "N": 36,
+                    "lower_bound": 0.3938,
+                    "upper_bound": 0.9785,
+                    "confidence": 0.9
+                }
+            },
+            "address-poisoner": {
+                "precision": {
+                    "value": 0.9153,
+                    "N": 177,
+                    "lower_bound": 0.8743,
+                    "upper_bound": 0.9437,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 0.989
+                }
+            },
+            "fraudulent-nft-order": {
+                "precision": {
+                    "value": 1,
+                    "N": 20,
+                    "lower_bound": 0.88,
+                    "upper_bound": 1,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 0.853
+                }
+            },
+            "hard-rug-pull": {
+                "precision": {
+                    "value": 0.9130,
+                    "N": 46,
+                    "lower_bound": 0.8198,
+                    "upper_bound": 0.9604,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 0.72
+                }                
+            },
+            "ice-phishing": {
+                "precision": {
+                    "value": 0.9772,
+                    "N": 351,
+                    "lower_bound": 0.96,
+                    "upper_bound": 0.9871,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 0.990
+                }
+            },
+            "native-ice-phishing": {
+                "precision": {
+                    "value": 0.9737,
+                    "N": 38,
+                    "lower_bound": 0.8903,
+                    "upper_bound": 0.9941,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 1
+                }                    
+            },
+            "native-ice-phishing-social-engineering": {
+                "precision": {
+                    "value": 0.9720,
+                    "N": 107,
+                    "lower_bound": 0.9319,
+                    "upper_bound": 0.9887,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 0.984
+                }  
+            },
+            "pig-butchering": {
+                "precision": {
+                    "value": 1.00,
+                    "N": 41,
+                    "lower_bound": 0.9381,
+                    "upper_bound": 1.00,
+                    "confidence": 0.9
+                },
+                  "weighted_precision": {
+                    "value": 1
+                }               
+            },
+            "scammer-association": {
+                "precision": {
+                    "value": 0.9412,
+                    "N": 34,
+                    "lower_bound": 0.8370,
+                    "upper_bound": 0.9803,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 0.979
+                } 
+            },
+            "scammer-deployed-contract": {
+                "precision": {
+                    "value": 0.9808,
+                    "N": 52,
+                    "lower_bound": 0.9183,
+                    "upper_bound": 0.9957,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 0.951
+                } 
+            },
+            "soft-rug-pull": {
+                "precision": {
+                    "value": 1,
+                    "N": 64,
+                    "lower_bound": 0.9594,
+                    "upper_bound": 1,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 0.786
+                } 
+            },
+            "unknown": {
+                "precision": {
+                    "value": 0.9703,
+                    "N": 101,
+                    "lower_bound": 0.9280,
+                    "upper_bound": 0.9881,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 0.919
+                } 
+            },
+            "wash-trading": {
+                "precision": {
+                    "value": 0.9355,
+                    "N": 31,
+                    "lower_bound": 0.8226,
+                    "upper_bound": 0.9784,
+                    "confidence": 0.9
+                },
+                "weighted_precision": {
+                    "value": 1
+                } 
+            },       
+            "gas-minting": {
+                "precision": {
+                    "value": 0.8750,
+                    "N": 8,
+                    "lower_bound": 0.5888,
+                    "upper_bound": 0.9716,
+                    "confidence": 0.9
+                } 
+            },       
+            "rake-token": {
+                "precision": {
+                    "value": 0.8667,
+                    "N": 45,
+                    "lower_bound": 0.96,
+                    "upper_bound": 0.9871,
+                    "confidence": 0.9
+                },
+                  "weighted_precision": {
+                    "value": 1 
+                }
+            }
+        },
         "2023-09": {
             "overall": {
                 "precision": {
