@@ -1124,7 +1124,7 @@
                     "value": 0.527,
                     "N": 36,
                     "lower_bound": 0.3938,
-                    "upper_bound": 0.9785,
+                    "upper_bound": 0.657,
                     "confidence": 0.9
                 }
             },
