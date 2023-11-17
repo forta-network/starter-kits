@@ -1,12 +1,12 @@
 {
   "name": "attack-detector-feed",
-  "version": "3.51.5",
+  "version": "3.51.6",
   "displayName": "Attack Detector Feed",
   "description": "Identifies protocol attacks in real-time; often before any digital assets are being stolen",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/alert-combiner-py",
   "longDescription": "The Attack Detector provides real-time alerts regarding smart contract exploits - prior to, during or directly after the attack. It is collectively maintained by the Forta Foundation, Nethermind and members of the Forta developer community. Utilizing cutting edge smart contract exploit and advanced anomaly detection powered by advanced ML models, the Attack Detector monitors activity along the exploit lifecycle (funding, preparation, exploitation, money laundering) and emits high confidence alerts during these 4 stages of an attack. Used by DeFi protocols, institutional investors, hedge funds, and other industry participants with direct or indirect exposure to DeFi smart contract risk. Attack Detector alerts are emitted in real-time to your preferred communication channel (webhook, Slack, TG, etc.), giving your team the crucial lead time to respond. Read about how the Attack Detector fired several early warning alerts on multiple incoming attacks such as the $197 M Euler exploit. Learn more in the documentation below, and request a free trial today.",
   "licenseUrl": "https://github.com/forta-network/starter-kits/tree/main/alert-combiner-py/LICENSE",
-  "promoUrl": "https://forta.org/blog/detecting-a-197-million-hack-before-exploitation-euler-finance-hack-retrospective/",
+  "promoUrl": "https://drive.google.com/file/d/1VWb9LtkFT1z72XmrkNyCq6hDkYQnrS5Z/view?pli=1",
   "chainIds": [
     1,
     56,
@@ -19,7 +19,7 @@
   "chainSettings": {
     "default": {
       "shards": 8,
-      "target": 3
+      "target": 4
     }
   },
   "scripts": {
