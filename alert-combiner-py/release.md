@@ -1,7 +1,7 @@
 # Attack Detector Bot Release Notes
 
-## v3.52.0 (Nov 15 2023: beta2)
-- Added new MEV bot for FP mitigation
+## v3.51.6 (Nov 17 2023: beta2, Nov 17 2023: prod)
+- updated promo URL
 
 ## v3.51.5 (Nov 14 2023: beta2, Nov 14 2023: prod)
 - update to sdk 0.1.45
@@ -12,7 +12,7 @@
 ## v3.51.4 (Oct 31 2023: beta2)
 - etherscan label FP mitigation
 - addition of error log findings
-- new alert ID firing on funding/preparation 
+- new alert ID firing on funding/preparation
 - bug fixes
 
 ## v3.51.3 (Oct 25 2023: beta2)
