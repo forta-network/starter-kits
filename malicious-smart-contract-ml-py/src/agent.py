@@ -5,6 +5,7 @@ from evmdasm import EvmBytecode
 from web3 import Web3
 from os import environ
 
+
 from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
     MODEL_THRESHOLD,
@@ -15,10 +16,10 @@ from src.logger import logger
 from src.utils import (
     calc_contract_address,
     get_features,
+    get_function_signatures,
     get_storage_addresses,
     is_contract,
 )
-
 from src.storage import get_secrets
 
 SECRETS_JSON = get_secrets()
@@ -63,7 +64,6 @@ def detect_malicious_contract_tx(
 
 
     for trace in transaction_event.traces:
-        logger.info(trace.type)
         if trace.type == "create":
             created_contract_address = (
                 trace.result.address if trace.result else None
@@ -136,12 +136,14 @@ def detect_malicious_contract(
                 model_score,
                 opcode_addresses,
             ) = exec_model(w3, opcodes, from_)
+            function_signatures = get_function_signatures(w3, opcodes)
             logger.info(f"{created_contract_address}: score={model_score}")
 
             finding = ContractFindings(
                 from_,
                 created_contract_address,
                 set.union(storage_addresses, opcode_addresses),
+                function_signatures,
                 model_score,
                 MODEL_THRESHOLD,
                 error=error,
