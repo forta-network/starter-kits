@@ -9,7 +9,7 @@ readme = "README.md"
 python = ">=3.9, <4"
 forta-agent = ">=0.1.25"
 forta-toolkit = ">=0.1.22"
-ioseeth = ">=0.1.16"
+ioseeth = ">=0.1.18"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

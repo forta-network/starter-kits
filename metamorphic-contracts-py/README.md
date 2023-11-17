@@ -7,7 +7,7 @@ Implementation for the detection techniques described in the [report about smart
 Here, "evasion" refers to any tactic that deceives end-users or circumvents defense mechanisms.
 
 More specifically, the bot is focused on contrats that are able to change their bytecode while staying at the same address.
-These contracts are said to be "metamorphic". 
+These contracts are said to be "metamorphic".
 
 ## Support
 
@@ -34,7 +34,7 @@ The metamorphic contracts are spotted when created to perform static analysis on
 - `METAMORPHISM-MUTANT-DEPLOYMENT`:
     - the mutant address is attached as a label
 
-For all the alerts:    
+For all the alerts:
 
 - Type is always set to `Suspicious`
 - Severity is always `Info`
@@ -89,7 +89,7 @@ Original work by [apehex](https://github.com/apehex).
 
 Relies on the packages:
 
-- [`ioseeth`][github-apehex-ioseeth] for the detection logic 
+- [`ioseeth`][github-apehex-ioseeth] for the detection logic
 - [`forta-toolkit`][github-apehex-toolkit] for the data wrangling
 
 ## License
