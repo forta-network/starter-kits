@@ -90,9 +90,21 @@ def get_attacker_victim_lists(w3, decoded_logs, alert_type):
     if alert_type == "ADDRESS-POISONING-FAKE-TOKEN":
         from_as_attacker_count = 0
         to_as_attacker_count = 0
+        tx_counts = {}
+
         for log in log_args:
-            from_tx_count = w3.eth.get_transaction_count(log['from'])
-            to_tx_count = w3.eth.get_transaction_count(log['to'])
+            from_address = log['from']
+            to_address = log['to']
+
+            # Retrieve or calculate transaction counts and store them
+            if from_address not in tx_counts:
+                tx_counts[from_address] = w3.eth.get_transaction_count(from_address)
+            if to_address not in tx_counts:
+                tx_counts[to_address] = w3.eth.get_transaction_count(to_address)
+
+            from_tx_count = tx_counts[from_address]
+            to_tx_count = tx_counts[to_address]
+
             if from_tx_count > to_tx_count:
                 attackers.append(log['to'])
                 victims.append(log['from'])
@@ -104,9 +116,13 @@ def get_attacker_victim_lists(w3, decoded_logs, alert_type):
         for log in log_args:
             from_address = log['from']
             to_address = log['to']
+
+            if (tx_counts[from_address] == 0 and tx_counts[to_address] != 0) or (tx_counts[from_address] != 0 and tx_counts[to_address] == 0):
+                continue
+
             if (from_as_attacker_count > to_as_attacker_count and to_address in attackers) or (to_as_attacker_count > from_as_attacker_count and from_address in attackers):
-                attackers_index = attackers.index(from_address if from_address in attackers else to_address)
-                attackers[attackers_index], victims[attackers_index] = victims[attackers_index], attackers[attackers_index]
+                index = attackers.index(from_address if from_address in attackers else to_address)
+                attackers[index], victims[index] = victims[index], attackers[index]
         attackers = list(set(attackers))
         victims = list(set(victims))
     elif alert_type == "ADDRESS-POISONING-ZERO-VALUE":
