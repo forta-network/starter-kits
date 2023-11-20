@@ -56,11 +56,11 @@ class Utils:
 
     @staticmethod
     def get_manual_list() -> pd.DataFrame:
-        content = open('manual_alert_list_test.tsv', 'r').read() if Utils.in_test_state() else open('manual_alert_list.tsv', 'r').read()
+        content = open('manual_alert_list_test.tsv', 'r').read() if Utils.in_test_state() else open('manual_alert_list_v2.tsv', 'r').read()
         if not Utils.in_test_state():
-            res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/manual_alert_list.tsv')
+            res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/scam-detector-py/manual_alert_list_v2.tsv')
             logging.info(f"Made request to fetch manual alerts: {res.status_code}")
-            content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
+            content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list_v2.tsv', 'r').read()
 
         df_manual_findings = pd.read_csv(io.StringIO(content), sep='\t')
         return df_manual_findings

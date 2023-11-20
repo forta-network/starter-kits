@@ -277,6 +277,10 @@ For reference, each field is described below:
     <td>associated_scammer_alert_hashes</td>
     <td>When dealing with alerts that create an association with a different scammer or scammer contract, this field will contain threat information (alert_hashes) about the different scammers the label is associated with.</td>
   </tr>
+  <tr>
+    <td>attribution</td>
+    <td>Attribution of the entity (e.g. Inferno Drainer).</td>
+  </tr>
 </table>
 
 ## Using the Intelligence
@@ -521,10 +525,11 @@ Here is an example of what that data looks like:
               "threat_category=rake-token",
               "threat_description_url=https://forta.org/attacks#rake-token",
               "bot_version=2.15.6",
-              "label_version=2.1.0",
+              "label_version=2.2.0",
               "feature_vector=",
               "model_name=v3_scammer_model.joblib",
-              "logic=passthrough"
+              "logic=passthrough",
+              "attribution=Inferno Drainer"
             ]
           },
           "source": {
@@ -548,10 +553,11 @@ Here is an example of what that data looks like:
               "threat_category=rake-token",
               "threat_description_url=https://forta.org/attacks#rake-token",
               "bot_version=2.15.6",
-              "label_version=2.1.0",
+              "label_version=2.2.0",
               "feature_vector=",
               "model_name=v3_scammer_model.joblib",
-              "logic=passthrough"
+              "logic=passthrough",
+              "attribution=Inferno Drainer"
             ]
           },
           "source": {

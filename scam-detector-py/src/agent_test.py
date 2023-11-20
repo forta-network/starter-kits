@@ -570,7 +570,7 @@ class TestScamDetector:
         alert_id = "Phishing-drainer"
         description = "Drainer report."
         metadata = {'scammer': 'Inferno Drainer Affiliate Account', 'transaction': '0xaf300549d642b31bc2a1d6cf1dbf31213be7634f5bfb5d5ada45b1e6d7bb1f48'}
-        label = {"entity": "0xfaee4d9ce515c83cdca2e4a7365e7ecbbe74d29d","entityType": "ADDRESS","label": "affiliate","metadata": {},"confidence": 1}
+        label = {"entity": "0xfaee4d9ce515c83cdca2e4a7365e7ecbbe74d29d","entityType": "ADDRESS","label": "affiliate","metadata": {"drainer-name": "Inferno Drainer"},"confidence": 1}
         labels = [ label ]
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
 
@@ -582,9 +582,11 @@ class TestScamDetector:
         finding = findings[0]
         assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
         assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.metadata['attribution'] == 'Inferno Drainer', "should have drainer name in metadata"
         assert len(finding.labels) > 0, "labels should not be empty"
         assert finding.labels[0].entity == '0xfaee4d9ce515c83cdca2e4a7365e7ecbbe74d29d'
         assert finding.labels[0].label == 'scammer'
+        assert finding.labels[0].metadata['attribution'] == 'Inferno Drainer'
       
 
     def test_detect_soft_rug_pull(self):
@@ -1307,9 +1309,12 @@ class TestScamDetector:
         for finding in findings[:4]:
             address_lower = "0x5ae30eb89d761675b910e5f7acc9c5da0c85baaa".lower()
             if address_lower in finding.description.lower():
-                assert findings[0].alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
-                assert findings[0].description == f"{address_lower} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)", "wrong description"
-                assert findings[0].metadata["reported_by"] == "Blocksec "
+                assert finding.alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+                assert finding.description == f"{address_lower} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)", "wrong description"
+                assert finding.metadata["reported_by"] == "Blocksec "
+                assert finding.metadata["attribution"] == "Inferno Drainer"
+                assert finding.labels[0].entity == address_lower, "entity should be attacker address"
+                assert finding.labels[0].metadata["attribution"] == "Inferno Drainer", "should be drainer"
 
         # Metamask phishing list findings
         for finding in findings[4:]:
@@ -1344,6 +1349,7 @@ class TestScamDetector:
         for label in findings[0].labels:
             if label.label == 'scammer' and label.entity.lower() == '0xd89a4f1146ea3ddc8f21f97b562d97858d89d307':
                 found_contract = True
+                assert label.metadata['attribution'] == 'Inferno Drainer'
         assert found_contract
 
     def test_etherscan_fp_mitigation(self):

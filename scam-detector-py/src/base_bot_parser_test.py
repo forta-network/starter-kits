@@ -1,7 +1,7 @@
 from forta_agent import create_alert_event,FindingSeverity, AlertEvent, Label, EntityType
 from web3_mock import Web3Mock
 
-from base_bot_parser import BaseBotParser
+from src.base_bot_parser import BaseBotParser
 
 w3 = Web3Mock()
 
@@ -121,12 +121,24 @@ class TestBaseBotParser:
         assert "0xb4d91be6d0894de00a3e57c24f7abb0233814c82".lower() in addresses["0x3b31724aff894849b90c48024bab38f25a5ee302"]["scammer-contracts"]
 
     def test_get_blocksec_scammer_address(self):
+        metadata = {"test": "foo"}
+        label = {"entity": "0x2ed12fb3146cd2eac390ea73acc83f80d6020b03","entityType": "ADDRESS","label": "phish","metadata": {"drainer-name": "Inferno Drainer"},"confidence": 1}
+        labels = [label]
+        alert_event = TestBaseBotParser.generate_alert("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Ice-phishing", "description", metadata, labels)
+        addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
+        assert "0x2ed12fb3146cd2eac390ea73acc83f80d6020b03" in addresses, "this should be the scammer address"
+        assert "test" in addresses["0x2ed12fb3146cd2eac390ea73acc83f80d6020b03"]
+        assert "drainer-name" in addresses["0x2ed12fb3146cd2eac390ea73acc83f80d6020b03"]
+        assert "Inferno Drainer" == addresses["0x2ed12fb3146cd2eac390ea73acc83f80d6020b03"]["drainer-name"]
+
+    def test_get_blocksec_scammer_address_attribution_from_label_metadata(self):
         metadata = {}
         label = {"entity": "0x2ed12fb3146cd2eac390ea73acc83f80d6020b03","entityType": "ADDRESS","label": "phish","metadata": {},"confidence": 1}
         labels = [label]
         alert_event = TestBaseBotParser.generate_alert("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Ice-phishing", "description", metadata, labels)
         addresses = BaseBotParser.get_scammer_addresses(w3,alert_event)
         assert "0x2ed12fb3146cd2eac390ea73acc83f80d6020b03" in addresses, "this should be the scammer address"
+
 
     def test_get_blocksec_drainer_address(self):
         metadata = {}

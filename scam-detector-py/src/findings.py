@@ -15,7 +15,7 @@ from src.constants import MODEL_NAME, SCAM_DETECTOR_BOT_ID, SCAM_DETECTOR_BETA_B
 
 class ScamDetectorFinding:
 
-    LABEL_VERSION = "2.1.0"
+    LABEL_VERSION = "2.2.0"
 
     @staticmethod
     def get_threat_description_url(alert_id: str) -> str:
@@ -280,6 +280,8 @@ class ScamDetectorFinding:
         involved_alert_hashes_dict = {"involved_alert_hashes_" + str(i): alert_id for i, alert_id in enumerate(involved_alert_hashes, 1)}
         logic_dict = {"logic": logic}
         url_scan_url_dict = {"url_scan_url": url_scan_url}
+        attribution = "" if 'drainer-name' not in metadata.keys() else metadata['drainer-name'] # a bit hacky as its not set by the bot parser; as such, any additional bots that set attribution need to set it to drainer-name
+        attribution_dict = {"attribution": attribution} 
 
 
         labels = []
@@ -316,7 +318,8 @@ class ScamDetectorFinding:
                             'label_version': ScamDetectorFinding.LABEL_VERSION,
                             'feature_vector': feature_vector_str,
                             'model_name': MODEL_NAME,
-                            'logic': logic
+                            'logic': logic,
+                            'attribution': attribution
                         },
                         'uniqueKey': label_unique_key
                     }))
@@ -350,7 +353,8 @@ class ScamDetectorFinding:
                                             'label_version': ScamDetectorFinding.LABEL_VERSION,
                                             'feature_vector': feature_vector_str,
                                             'model_name': MODEL_NAME,
-                                            'logic': logic
+                                            'logic': logic,
+                                            'attribution': attribution
                                         },
                                         'uniqueKey': label_unique_key
                                     }))
@@ -370,7 +374,8 @@ class ScamDetectorFinding:
                                             'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                                             'bot_version': Utils.get_bot_version(),
                                             'label_version': ScamDetectorFinding.LABEL_VERSION,
-                                            'logic': 'propagation'
+                                            'logic': 'propagation',
+                                            'attribution': attribution
                                         },
                                         'uniqueKey': label_unique_key
                                     }))
@@ -399,13 +404,14 @@ class ScamDetectorFinding:
                         'feature_vector': feature_vector_str,
                         'model_name': MODEL_NAME,
                         'logic': logic,
-                        'source_url_scan_url': url_scan_url
+                        'source_url_scan_url': url_scan_url,
+                        'attribution': attribution
                     },
                     'uniqueKey': label_unique_key
                 }))
 
 
-        findings_metadata = {**attacker_address_md_dict, **start_date_dict, **end_date_dict, **involved_addresses_dict, **involved_alert_ids_dict, **involved_alert_hashes_dict, **logic_dict, **confidence_dict, **feature_vector_dict, **model_name_dict, **url_scan_url_dict}
+        findings_metadata = {**attacker_address_md_dict, **start_date_dict, **end_date_dict, **involved_addresses_dict, **involved_alert_ids_dict, **involved_alert_hashes_dict, **logic_dict, **confidence_dict, **feature_vector_dict, **model_name_dict, **url_scan_url_dict, **attribution_dict}
       
         description = f'{scammer_addresses} likely involved in a scam ({alert_id}, {logic})'
         name = 'Scam detector identified an EOA with past alerts mapping to scam behavior'
@@ -504,7 +510,7 @@ class ScamDetectorFinding:
         })
 
     @staticmethod
-    def scam_finding_manual(block_chain_indexer, forta_explorer, entity_type: str, entities: str, threat_category: str, reported_by: str, chain_id: int, comment:str = '', initial_metamask_list_consumption: bool = False) -> Finding:
+    def scam_finding_manual(block_chain_indexer, forta_explorer, entity_type: str, entities: str, threat_category: str, reported_by: str, chain_id: int, comment:str = '', initial_metamask_list_consumption: bool = False, attribution: str = "") -> Finding:
         label_doesnt_exist = False
         
         labels = []
@@ -531,7 +537,8 @@ class ScamDetectorFinding:
                         'bot_version': Utils.get_bot_version(),
                         'label_version': ScamDetectorFinding.LABEL_VERSION,
                         'logic': 'manual',
-                        'comment': comment
+                        'comment': comment,
+                        'attribution': attribution
                     }
                 }))
                 # get all deployed contracts by EOA and add label for those using etherscan or allium
@@ -552,7 +559,8 @@ class ScamDetectorFinding:
                                 'bot_version': Utils.get_bot_version(),
                                 'label_version': ScamDetectorFinding.LABEL_VERSION,
                                 'logic': 'propagation',
-                                'comment': comment
+                                'comment': comment,
+                                'attribution': attribution
                             }
                         }))
             else:
@@ -565,7 +573,7 @@ class ScamDetectorFinding:
                 'alert_id': "SCAM-DETECTOR-MANUAL-" + alert_id_threat_category,
                 'type': FindingType.Scam,
                 'severity': FindingSeverity.Critical,
-                'metadata': {"reported_by": reported_by, 'comment': comment},
+                'metadata': {"reported_by": reported_by, 'comment': comment, 'attribution': attribution},
                 'labels': labels
             })
        

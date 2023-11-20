@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## 2.22.5 (beta2 - 11/20/2023)
+- added attribution support (blocksec bot and manual list)
+
+
 ## 2.22.4 (beta2 - 11/8/2023)
 - upgrade to sdk 0.1.45/0.1.25
 - unique label logic

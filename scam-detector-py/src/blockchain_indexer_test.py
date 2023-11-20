@@ -1,5 +1,5 @@
-from src.blockchain_indexer_service import BlockChainIndexer
-from src.web3_mock import EOA_ADDRESS_SMALL_TX
+from blockchain_indexer_service import BlockChainIndexer
+from web3_mock import EOA_ADDRESS_SMALL_TX
 
 class TestBlockChainIndexer:
     def test_get_contract_deployments_has_zettablock(self):
