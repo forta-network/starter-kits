@@ -1,6 +1,6 @@
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import io
 import traceback
@@ -39,6 +39,8 @@ ALERTED_CLUSTERS_FP_MITIGATED = []  # cluster
 MANUALLY_ALERTED_ENTITIES = []
 ALERT_ID_STAGE_MAPPING = dict()  # (bot_id, alert_id) -> stage
 ALERTED_FP_CLUSTERS = [] 
+REACTIVE_LIKELY_FPS = {}  # address -> list of label and label metadata (addresses that are yet to be checked)
+LAST_PROCESSED_TIME = 0 # Used to update reactive likely fps
 FINDINGS_CACHE_BLOCK = []
 
 s3 = None
@@ -288,6 +290,86 @@ def get_end_user_attack_addresses(alert_event: forta_agent.alert_event.AlertEven
 
     return list(addresses)
 
+
+def update_reactive_likely_fps(w3, current_date) -> list:
+    logging.info("Update reactive likely fps called")
+    global REACTIVE_LIKELY_FPS
+    global ALERTED_FP_CLUSTERS
+    global LAST_PROCESSED_TIME
+    findings = []
+
+    current_time = int(current_date.timestamp())
+
+    if current_date.minute == 0 and current_time - LAST_PROCESSED_TIME > 3500:
+        logging.info("Update reactive likely fps called on the 00 minute. Querying past labels.")
+        LAST_PROCESSED_TIME = current_time
+
+        source_id = ATTACK_DETECTOR_BETA_BOT_ID if Utils.is_beta() else ATTACK_DETECTOR_BOT_ID
+        
+        # Calculate timestamps for different periods (2 days, 7 days, 30 days, 89 days)
+        periods = {
+            "2_days_ago": current_date - timedelta(days=2),
+            "7_days_ago": current_date - timedelta(days=7),
+            "30_days_ago": current_date - timedelta(days=30),
+            "89_days_ago": current_date - timedelta(days=89)
+        }
+        start = time.time()
+
+        for period_name, period_date in periods.items():
+            # fetch_alerts 
+            milliseconds_ago = (current_date - period_date).total_seconds() * 1000
+            start_milliseconds_ago = int(milliseconds_ago)
+            end_milliseconds_ago = int(milliseconds_ago - 3600 * 1000)
+
+            # fetch_labels
+            current_unix_timestamp_ms = int(current_date.timestamp() * 1000)
+            period_in_days = (current_date - period_date).days
+            period_in_ms = period_in_days * 24 * 60 * 60 * 1000
+            get_labels_created_since_timestamp_ms = current_unix_timestamp_ms - period_in_ms
+
+            alerts = Utils.fetch_alerts(source_id, start_milliseconds_ago, end_milliseconds_ago, CHAIN_ID)
+            logging.info(f"update reactive likely fps (alerts count {period_name}): {len(alerts)}")
+            unique_attackers_list = Utils.process_past_alerts(alerts, REACTIVE_LIKELY_FPS)
+
+            labels = Utils.fetch_labels(unique_attackers_list, source_id, get_labels_created_since_timestamp_ms)
+            logging.info(f"update reactive likely fps (labels count {period_name}): {len(labels)}")
+
+            for label in labels:
+                if not label.remove:
+                    # There may be multiple labels for the same attacker entity, due to different label metadata
+                    entity = label.entity
+                    label_name = label.label
+                    metadata = label.metadata
+                    if entity not in REACTIVE_LIKELY_FPS:
+                        REACTIVE_LIKELY_FPS[entity] = {'label': label_name, 'metadata': [metadata]}
+                    else:
+                        REACTIVE_LIKELY_FPS[entity]['metadata'].append(metadata)
+
+        end = time.time()
+        logging.info(f"update reactive likely fps (REACTIVE_LIKELY_FPS count): {len(REACTIVE_LIKELY_FPS)}")
+        logging.warn(f"update reactive likely fps (processing took): {end - start} seconds")
+    else:
+        #  Create reactive FP findings
+        if REACTIVE_LIKELY_FPS:
+            address = next(iter(REACTIVE_LIKELY_FPS), None)
+            logging.info(f"Processing address: {address}")
+            if Utils.is_fp(w3, address, CHAIN_ID):
+                logging.info(f"{address} is an FP. Emitting FP finding.")
+                update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, address)
+                findings.append(AlertCombinerFinding.alert_FP(address, REACTIVE_LIKELY_FPS[address]['label'], REACTIVE_LIKELY_FPS[address]['metadata']))
+                for (entity, label, metadata) in obtain_all_fp_labels(address):
+                        logging.info(f"Processing entity: {entity} - {label}")
+                        if entity != address:
+                            logging.info(f"Emitting FP mitigation finding for {entity} {label}")
+                            update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, entity)
+                            findings.append(AlertCombinerFinding.alert_FP(entity, label, [metadata]))
+                            if entity in REACTIVE_LIKELY_FPS:
+                                del REACTIVE_LIKELY_FPS[entity]                            
+            
+            del REACTIVE_LIKELY_FPS[address]
+            logging.info(f"{len(REACTIVE_LIKELY_FPS)} likely FPs yet to be processed")
+   
+    return findings
 
 def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> list:
     """
@@ -686,7 +768,7 @@ def emit_new_fp_finding() -> list:
                     for (entity, label, metadata) in obtain_all_fp_labels(address):
                         logging.info(f"Emitting FP mitigation finding for {entity} {label}")
                         update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, entity)
-                        findings.append(AlertCombinerFinding.alert_FP(entity, label, metadata))
+                        findings.append(AlertCombinerFinding.alert_FP(entity, label, [metadata]))
                         logging.info(f"Findings count {len(FINDINGS_CACHE_BLOCK)}")
     except BaseException as e:
         logging.warning(f"emit fp finding exception: {e} - {traceback.format_exc()}")
@@ -851,6 +933,9 @@ def provide_handle_block(w3, du):
             
             persist_state()
             logging.info(f"Persisted state")
+
+        reactive_fp_findings = update_reactive_likely_fps(w3, dt) 
+        FINDINGS_CACHE_BLOCK.extend(reactive_fp_findings)
         
         for finding in FINDINGS_CACHE_BLOCK[0:10]: 
             findings.append(finding)
