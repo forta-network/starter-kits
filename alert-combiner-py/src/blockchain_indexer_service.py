@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 
 from src.storage import get_secrets
 from src.utils import Utils
+from src.constants import CONTRACTS_TX_COUNT_FILTER_THRESHOLD
 
 class BlockChainIndexer:
 
@@ -36,6 +37,25 @@ class BlockChainIndexer:
             return "https://api.ftmscan.com"
         elif chain_id == 43114:
             return "https://api.snowtrace.io"
+
+        raise Exception("Chain ID not supported")
+    
+    @staticmethod
+    def get_first_block_number(chain_id):
+        if chain_id == 1:
+            return 16000000
+        elif chain_id == 137:
+            return  37000000
+        elif chain_id == 56:
+            return  23000000
+        elif chain_id == 42161:
+            return 50000000
+        elif chain_id == 10:
+            return 35000000
+        elif chain_id == 250:
+            return 50000000
+        elif chain_id == 43114:
+            return 23000000
 
         raise Exception("Chain ID not supported")
 
@@ -107,7 +127,7 @@ class BlockChainIndexer:
                 if data.status_code == 200:
                     json_data = json.loads(data.content)
                     success = True
-                    df_etherscan_temp = pd.DataFrame(data=json_data["result"])
+                    df_etherscan_temp = pd.DataFrame(data=json_data.get("result", []) if isinstance(json_data.get("result"), list) else [])
                     df_etherscan = pd.concat([df_etherscan, df_etherscan_temp], axis=0)
                 else:
                     logging.warning(f"Error getting contract on etherscan for {address}, {chain_id} {data.status_code} {data.content}")
@@ -162,7 +182,7 @@ class BlockChainIndexer:
                         contracts.add(row["address"].lower())
                 else:
                     logging.warning(f"Error getting contract on zettablock for {address}, {chain_id} {res.status_code} {res.text}")
-                    Utils.ERROR_CACHE.add(Utils.alert_error(f'request zettablock {res.status_code}', "blockchain_indexer_service.get_contracts", ""))
+                    Utils.ERROR_CACHE.add(Utils.alert_error(f'request Zettablock Error {res.status_code}', "blockchain_indexer_service.get_contracts", ""))
 
             except Exception as e:
                 logging.warning(f"Error getting contract on zettablock for {address}, {chain_id} {e}")
@@ -202,3 +222,30 @@ class BlockChainIndexer:
                     break
                 time.sleep(1)
         return labels
+    
+    @staticmethod
+    @RateLimiter(max_calls=1, period=1)
+    def has_deployed_high_tx_count_contract(address, chain_id) -> bool:
+        contracts = BlockChainIndexer.get_contracts(address, chain_id)
+        logging.info(f"has_deployed_high_tx_count_contract for address {address} on {chain_id} called.")
+
+        for contract in contracts:
+            transactions_for_contract = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={contract}&startblock={BlockChainIndexer.get_first_block_number(chain_id)}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
+
+            success = False
+            count = 0
+            while not success:
+                data = requests.get(transactions_for_contract)
+                if data.status_code == 200:
+                    json_data = json.loads(data.content)
+                    success = True
+                    if len(json_data["result"]) > CONTRACTS_TX_COUNT_FILTER_THRESHOLD:
+                        return True                   
+                else:
+                    logging.warning(f"Error getting contract on etherscan for {contract}, {chain_id} {data.status_code} {data.content}")
+                    count += 1
+                    if count > 10:
+                        Utils.ERROR_CACHE.add(Utils.alert_error(f'request etherscan {data.status_code}', "blockchain_indexer_service.get_contracts", ""))
+                        break
+                    time.sleep(1)
+        return False
