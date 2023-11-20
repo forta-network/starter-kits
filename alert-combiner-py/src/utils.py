@@ -5,9 +5,11 @@ import re
 import traceback
 import logging
 import json
-from forta_agent import Finding, FindingType, FindingSeverity
+import math
+from forta_agent import Finding, FindingType, FindingSeverity, get_alerts, get_labels
 
 from src.error_cache import ErrorCache
+from src.constants import TX_COUNT_FILTER_THRESHOLD
 
 etherscan_label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
 
@@ -130,4 +132,163 @@ class Utils:
             },
             'labels': labels
         })
+    
+    @staticmethod
+    def get_max_tx_count(w3, cluster: str) -> int:
+        max_transaction_count = 0
+        for address in cluster.split(','):
+            transaction_count = w3.eth.get_transaction_count(Web3.toChecksumAddress(address))
+            if transaction_count > max_transaction_count:
+                max_transaction_count = transaction_count
+        return max_transaction_count
+    
+    @staticmethod
+    def is_fp(w3, cluster: str, chain_id, is_address: bool = True) -> bool:
+        global ERROR_CACHE
+
+        if is_address: # if it's not a URL
+            etherscan_label = (Utils.get_etherscan_label(cluster)).lower()
+            if not ('attack' in etherscan_label
+                    or 'phish' in etherscan_label
+                    or 'hack' in etherscan_label
+                    or 'heist' in etherscan_label
+                    or 'exploit' in etherscan_label
+                    or 'drainer' in etherscan_label
+                    or 'scam' in etherscan_label
+                    or 'fraud' in etherscan_label
+                    or '.eth' in etherscan_label
+                    or etherscan_label == ''):
+                logging.info(f"Cluster {cluster} etherscan label: {etherscan_label}")
+                return True
+
+            tx_count = 0
+            has_zero_nonce = False
+            try:
+                tx_count = Utils.get_max_tx_count(w3, cluster)
+                has_zero_nonce = tx_count == 0
+            except BaseException as e:
+                error_finding = Utils.alert_error(str(e), "Utils.get_max_tx_count", f"{traceback.format_exc()}")
+                Utils.ERROR_CACHE.add(error_finding)
+                logging.error(f"Exception in assessing get_transaction_count for cluster {cluster}: {e}")
+
+            if tx_count > TX_COUNT_FILTER_THRESHOLD:
+                logging.info(f"Cluster {cluster} transacton count: {tx_count}")
+                return True
+            
+            if not has_zero_nonce:
+                try:
+                    from src.blockchain_indexer_service import BlockChainIndexer
+                    block_chain_indexer = BlockChainIndexer()
+                    if block_chain_indexer.has_deployed_high_tx_count_contract(cluster, chain_id):
+                        logging.info(f"Cluster {cluster} has deployed a high tx count contract")
+                        return True
+                    else:
+                        logging.info(f"Cluster {cluster} has not deployed a high tx count contract")
+
+                except BaseException as e:
+                    error_finding = Utils.alert_error(str(e), "Utils.block_chain_indexer.has_deployed_high_tx_count_contract", f"{traceback.format_exc()}")
+                    Utils.ERROR_CACHE.add(error_finding)
+                    logging.error(f"Exception in assessing has_deployed_high_tx_count_contract for cluster {cluster}: {e}")
+                    return False        
+
+        return False
+    
+    @staticmethod
+    def process_past_alerts(alerts, reactive_likely_fps: dict):
+        unique_attackers = set()
+        try:
+            for alert in alerts:
+                if alert.alert_id not in ["FP-MITIGATED-ATTACK", "ATTACK-DETECTOR-FALSE-POSITIVE"]:
+                    attacker_address = alert.metadata.get('attackerAddress')
+                    if attacker_address is not None and attacker_address not in reactive_likely_fps:
+                        unique_attackers.add(attacker_address)
+        except Exception as e:
+            logging.warning(f"process_past_alerts (attacker address missing): {e} - {traceback.format_exc()}")
+            Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.process_past_alerts", traceback.format_exc()))
+        return list(unique_attackers)
+    
+    
+    @staticmethod
+    def fetch_labels(unique_attackers_list, source_id, get_labels_created_since_timestamp_ms):
+        labels = []
+        starting_cursor = None
+        should_retry_from_error = False
+        labels_response = None
+        batch_size = 200
+        page_size = 1000
+
+        for i in range(0, len(unique_attackers_list), batch_size):
+            batch = unique_attackers_list[i:i + batch_size]
+
+            while True:
+                if labels_response and labels_response.page_info and labels_response.page_info.has_next_page:
+                    starting_cursor = labels_response.page_info.end_cursor
+                    should_retry_from_error = False
+
+                try:
+                    query = {
+                        "entities": batch,
+                        "source_ids": [source_id],
+                        "labels": ["attacker-eoa", "attacker-contract"],
+                        "created_since": get_labels_created_since_timestamp_ms,
+                        "state": True,
+                        "first": page_size,
+                        "starting_cursor": starting_cursor
+                    }
+
+                    labels_response = get_labels(query)
+                    labels.extend(labels_response.labels)
+                except Exception as e:
+                    if (isinstance(e, AttributeError) and 'NoneType' in str(e)) or (isinstance(e, Exception) and "Internal server error" in str(e)):
+                        # Reduce the page size in order to reduce the response size and try again
+                        page_size = math.floor(page_size / 2)
+                        should_retry_from_error = page_size > 1
+                    else:
+                        logging.warning("update reactive likely fps (get_labels error): {e} - {traceback.format_exc()}")
+                        Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.update_reactive_likely_fps.internal3", traceback.format_exc()))
+                        raise e
+
+                if not should_retry_from_error and not labels_response.page_info.has_next_page:
+                    break
+
+        return labels
+    
+    @staticmethod
+    def fetch_alerts(source_id, start_milliseconds_ago, end_milliseconds_ago, CHAIN_ID):
+        response = None
+        starting_cursor = None
+        should_retry_from_error = False
+        page_size = 1200
+        alerts = []
+
+        while True:
+                if response and response.page_info and response.page_info.has_next_page:
+                    starting_cursor = {
+                        'alertId': response.page_info.end_cursor.alert_id,
+                        'blockNumber': response.page_info.end_cursor.block_number
+                    }
+                    should_retry_from_error = False
+                try:
+                    query = {
+                        "bot_ids": [source_id],
+                        "created_since": start_milliseconds_ago,
+                        "created_before": end_milliseconds_ago,
+                        "starting_cursor": starting_cursor,
+                        "chain_id": CHAIN_ID,
+                        "first": page_size
+                    }
+                    response = get_alerts(query)
+                    alerts.extend(response.alerts)
+                except Exception as e:
+                    if  (isinstance(e, AttributeError) and 'NoneType' in str(e)) or (isinstance(e, Exception) and "Internal server error" in str(e)):
+                        # Reduce the page size in order to reduce the response size and try again
+                        page_size = math.floor(page_size / 2)
+                        should_retry_from_error = page_size > 1
+                    else:
+                        logging.warning(f"fetch_alerts (get_alerts error): {e} - {traceback.format_exc()}")
+                        Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.fetch_alerts", traceback.format_exc()))
+                if (not should_retry_from_error and response.page_info.end_cursor.alert_id == ""):
+                    break
+
+        return alerts
          

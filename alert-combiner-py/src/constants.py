@@ -9,6 +9,8 @@ ALERTED_CLUSTERS_MAX_QUEUE_SIZE = 10000
 ALERTED_FP_CLUSTERS_QUEUE_SIZE = 10000
 MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE = 10000
 
+TX_COUNT_FILTER_THRESHOLD = 2000  # ignore EOAs with tx count larger than this threshold to mitigate FPs
+CONTRACTS_TX_COUNT_FILTER_THRESHOLD = 5000 # ignore EOAs that have deployed a contract with tx count larger than this threshold to mitigate FPs
 
 DEFAULT_ANOMALY_SCORE = 0.001  # used if anomaly score is less or eq than 0
 
