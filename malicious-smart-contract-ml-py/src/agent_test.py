@@ -56,6 +56,15 @@ class TestMaliciousSmartContractML:
             contract_address == "0x728ad672409DA288cA5B9AA85D1A55b803bA97D7"
         ), "should be the same contract address"
 
+    def test_get_function_signatures(self):
+        bytecode = w3.eth.get_code(MALICIOUS_CONTRACT)
+        opcodes = EvmBytecode(bytecode.hex()).disassemble()
+        function_signatures = agent.get_function_signatures(w3, opcodes)
+        assert(len(function_signatures)==8)
+        assert("0x1e9a6950" in function_signatures)
+
+
+
     def test_get_features(self):
         bytecode = w3.eth.get_code(MALICIOUS_CONTRACT)
         opcodes = EvmBytecode(bytecode.hex()).disassemble()
@@ -94,6 +103,7 @@ class TestMaliciousSmartContractML:
             None,
         )
         assert finding.severity == FindingSeverity.High
+        assert '0x1e9a6950' in finding.metadata['function_signatures']
 
     def test_detect_malicious_contract_benign(self):
         agent.initialize()

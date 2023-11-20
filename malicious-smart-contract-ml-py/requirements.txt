@@ -1,4 +1,4 @@
-forta_agent>=0.1.17
+forta_agent>=0.1.25
 setuptools>=61.3.1
 hexbytes>=0.2.2
 evmdasm>=0.1.10
