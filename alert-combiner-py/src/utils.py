@@ -94,6 +94,7 @@ class Utils:
     def is_fp(w3, scammer_address_lower=None, fp_mitigator: FPMitigator = None) -> (bool, float):
         if FPMitigator is not None and scammer_address_lower is not None :
             predicted_value_fp = fp_mitigator.mitigate_fp(scammer_address_lower)
+            logging.info(f"FP Mitigation for address {scammer_address_lower}: {predicted_value_fp}")
             if predicted_value_fp is not None and predicted_value_fp > FP_THRESHOLD:
                 return True, predicted_value_fp 
         return False, None

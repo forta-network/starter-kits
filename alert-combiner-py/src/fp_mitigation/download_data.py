@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import requests
 import torch
+import json
+import time
 from sklearn.preprocessing import StandardScaler
 from torch_geometric.data import HeteroData
 
@@ -206,6 +208,10 @@ class DownloadData:
         'block_range_erc721', 'avg_gas_price_gwei_erc721',
         'range_gas_price_gwei_erc721']
         data = self.get_initial_data(central_node)
+        logging.info(f'Initial data shape: {data.shape}')
+        if data.shape[0] == 0:
+            data = self.get_data_today_zettablock(central_node)
+            logging.info(f'New data shape: {data.shape}')
         data = data[column_order]
         data = data.drop_duplicates()
         return data
@@ -348,3 +354,181 @@ class DownloadData:
         except Exception as e:
             logging.info(f'fpfp-error-{e}')
             return None
+
+    def get_response(self, queryrun_id):
+        waited_time = 0
+        incremenet = 5
+        queryrun_status_endpoint = f'https://api.zettablock.com/api/v1/queryruns/{queryrun_id}/status'
+        while waited_time < 180:
+            res = requests.get(queryrun_status_endpoint, headers=self.headers)
+            state = json.loads(res.text)['state']
+            if state == 'SUCCEEDED' or state == 'FAILED':
+                return state
+            time.sleep(incremenet)
+            waited_time += incremenet
+        logging.info('query timed out, please check status message for details')
+
+    def get_data_today_zettablock(self, address):
+        query = """
+        SELECT
+        *
+        FROM
+        (
+            SELECT
+            eth.from_address AS from_address,
+            eth.to_address AS to_address,
+            eth.from_address_tx AS tx_from,
+            eth.to_address_tx AS tx_to,
+            SUM(CAST(eth.VALUE AS DOUBLE) / POW(10, eth.decimals)) AS sum_eth_transfer_eth,
+            MAX(CAST(eth.VALUE AS DOUBLE) / POW(10, eth.decimals)) AS max_eth_transfer_eth,
+            COUNT(eth.symbol) AS n_transactions_eth,
+            COUNT(DISTINCT(eth.block_number)) AS n_different_blocks_eth,
+            MAX(eth.block_number) - MIN(eth.block_number) AS block_range_eth,
+            AVG(tr_eth.gas_price) / POW(10, 9) AS avg_gas_price_gwei_eth,
+            (MAX(tr_eth.gas_price) - MIN(tr_eth.gas_price)) / POW(10, 9) AS range_gas_price_gwei_eth
+            FROM
+            ethereum_mainnet.eth_transfers AS eth
+            LEFT JOIN ethereum_mainnet.transactions AS tr_eth ON eth.transaction_hash = tr_eth.hash
+            WHERE
+            eth.block_time between current_date - interval '2' day and current_date
+            AND tr_eth.block_time between current_date - interval '2' day and current_date
+            AND (eth.from_address = '{address}'
+            OR eth.to_address = '{address}'
+            OR eth.from_address_tx = '{address}'
+            OR eth.to_address_tx = '{address}')
+            GROUP BY
+            eth.from_address,
+            eth.to_address,
+            eth.from_address_tx,
+            eth.to_address_tx
+        ) AS eth_final FULL OUTER
+        JOIN (
+            SELECT
+            transactions_agg.from_address AS from_address,
+            transactions_agg.to_address AS to_address,
+            transactions_agg.tx_from AS tx_from,
+            transactions_agg.tx_to AS tx_to,
+            COUNT(transactions_agg.transaction_hash) AS n_transactions_erc721,
+            COUNT(DISTINCT(transactions_agg.transaction_hash)) AS n_unique_transactions_erc721,
+            COUNT(DISTINCT(transactions_agg.name)) AS n_unique_tokens_erc721,
+            AVG(transactions_agg.n_tokens) AS avg_token_tx_erc721,
+            MAX(transactions_agg.n_tokens) AS max_token_tx_erc721,
+            AVG(transactions_agg.avg_value) AS avg_value_erc721,
+            MAX(transactions_agg.avg_value) AS max_value_erc721,
+            COUNT(DISTINCT(transactions_agg.block_number)) AS n_different_blocks_erc721,
+            MAX(transactions_agg.block_number) - MIN(transactions_agg.block_number) AS block_range_erc721,
+            AVG(transactions_agg.avg_gas_price) / POW(10, 9) AS avg_gas_price_gwei_erc721,
+            (
+                MAX(transactions_agg.avg_gas_price) - MIN(transactions_agg.avg_gas_price)
+            ) / POW(10, 9) AS range_gas_price_gwei_erc721
+            FROM
+            (
+                SELECT
+                erc721.from_address,
+                erc721.to_address,
+                erc721.transaction_hash,
+                erc721.contract_address,
+                erc721.name,
+                tr.from_address AS tx_from,
+                tr.to_address AS tx_to,
+                COUNT(erc721.token_id) AS n_tokens,
+                AVG(tr.value) / POW(10, 18) AS avg_value,
+                AVG(erc721.block_number) AS block_number,
+                AVG(tr.gas_price) AS avg_gas_price
+                FROM
+                ethereum_mainnet.erc721_evt_transfer AS erc721
+                LEFT JOIN ethereum_mainnet.transactions AS tr ON erc721.transaction_hash = tr.hash
+                WHERE
+                erc721.block_time between current_date - interval '2' day and current_date
+                AND tr.block_time between current_date - interval '2' day and current_date
+                AND (erc721.from_address = '{address}'
+                OR erc721.to_address = '{address}'
+                OR tr.from_address = '{address}'
+                OR tr.to_address = '{address}')
+                GROUP BY
+                erc721.from_address,
+                erc721.to_address,
+                erc721.transaction_hash,
+                erc721.contract_address,
+                erc721.name,
+                tr.from_address,
+                tr.to_address
+            ) AS transactions_agg
+            GROUP BY
+            transactions_agg.from_address,
+            transactions_agg.to_address,
+            transactions_agg.tx_from,
+            transactions_agg.tx_to
+        ) AS erc721_final USING (from_address, to_address, tx_from, tx_to) FULL OUTER
+        JOIN (
+            SELECT
+            erc20.from_address AS from_address,
+            erc20.to_address AS to_address,
+            tr.from_address AS tx_from,
+            tr.to_address AS tx_to,
+            SUM(
+                CAST(erc20.VALUE AS DOUBLE) * all_prices.price / POW(10, erc20.decimals)
+            ) AS sum_usd_price_erc20,
+            MAX(
+                CAST(erc20.VALUE AS DOUBLE) * all_prices.price / POW(10, erc20.decimals)
+            ) AS max_usd_price_erc20,
+            COUNT(erc20.symbol) AS n_transactions_erc20,
+            COUNT(DISTINCT(erc20.block_number)) AS n_different_blocks_erc20,
+            COUNT(DISTINCT(erc20.symbol)) AS n_tokens_erc20,
+            COUNT(DISTINCT(erc20.contract_address)) AS n_different_contracts_erc20,
+            MAX(erc20.block_number) - MIN(erc20.block_number) AS block_range_erc20,
+            AVG(tr.gas_price) / POW(10, 9) AS avg_gas_price_gwei_erc20,
+            (MAX(tr.gas_price) - MIN(tr.gas_price)) / POW(10, 9) AS range_gas_price_gwei_erc20
+            FROM
+            ethereum_mainnet.erc20_evt_transfer erc20
+            LEFT JOIN ethereum_mainnet.transactions tr ON erc20.transaction_hash = tr.hash
+            LEFT JOIN prices.usd all_prices ON erc20.symbol = all_prices.symbol
+            AND date_trunc('minute', erc20.block_time) = all_prices.minute
+            AND erc20.contract_address = LOWER(all_prices.ethereum_token_address)
+            WHERE
+            erc20.block_time between current_date - interval '2' day and current_date
+            AND tr.block_time between current_date - interval '2' day and current_date
+            AND all_prices.minute between current_date - interval '2' day and current_date
+            AND (erc20.from_address = '{address}'
+            OR erc20.to_address = '{address}'
+            OR tr.from_address = '{address}'
+            OR tr.to_address = '{address}')
+            GROUP BY
+            erc20.from_address,
+            erc20.to_address,
+            tr.from_address,
+            tr.to_address
+        ) AS erc20_final USING (from_address, to_address, tx_from, tx_to) 
+        where from_address = '{address}'
+        or to_address = '{address}'
+        or tx_from = '{address}'
+        or tx_to = '{address}'
+        """
+        logging.info(f'Getting data from today from zettablock for address: {address}')
+        in_query = {"query": query.format(address=address.lower()), "resultCacheExpireMillis": 1000*60*60}
+        response = requests.post(self.data_lake_query_url, json=in_query, headers=self.headers)
+        if response.status_code != 200:
+            logging.info(f'Error getting data from zettablock: {response.text}')
+            return None
+        
+        query_id = response.json()['id']
+        data_lake_submission_endpoints = f'https://api.zettablock.com/api/v1/queries/{query_id}/trigger'
+        res = requests.post(data_lake_submission_endpoints, headers=self.headers, data='{}')
+
+        queryrun_id = res.json()['queryrunId']
+        query_success = self.get_response(queryrun_id)
+        if query_success == 'SUCCEEDED':
+            # Fetch result from queryrun id
+            params = {'includeColumnName': 'true'}
+            queryrun_result_endpoint = f'https://api.zettablock.com/api/v1/stream/queryruns/{queryrun_id}/result'
+            # if the result is huge, consider using stream and write to a file
+            query_response = requests.get(queryrun_result_endpoint, headers=self.headers, params=params)
+        else:
+            logging.info('query failed, please check status message for details')
+            return None
+        df = pd.DataFrame([lines.split(',') for lines in query_response.text.split('\n')])
+        df.columns = df.iloc[0]
+        df.drop(0, inplace=True)
+        df.drop(df.tail(1).index,inplace=True)
+        df = df.reset_index(drop=True)
+        return df
