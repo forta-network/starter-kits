@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## 2.20.13 prod (11/21/2023 - prod (without private key compromise, phishing ML bot))
+- update one pager
+
 ## 2.20.13 prod (without private key compromise, phishing ML bot)
 - update sdk to 0.1.45
 
