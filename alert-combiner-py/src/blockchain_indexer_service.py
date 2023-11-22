@@ -18,7 +18,6 @@ from src.constants import CONTRACTS_TX_COUNT_FILTER_THRESHOLD
 
 class BlockChainIndexer:
 
-    FIRST_BLOCK_NUMBER = 15000000
     SECRETS_JSON = None
 
     @staticmethod
@@ -118,7 +117,7 @@ class BlockChainIndexer:
         if not disable_etherscan:
             logging.info(f"get_contracts from etherscan for {address} on {chain_id}.")
             df_etherscan = pd.DataFrame(columns=['nonce', 'to', 'isError'])
-            transaction_for_address = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={address}&startblock={BlockChainIndexer.FIRST_BLOCK_NUMBER}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
+            transaction_for_address = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={address}&startblock={BlockChainIndexer.get_first_block_number(chain_id)}&endblock=999999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
             
             success = False
             count = 0
@@ -230,7 +229,7 @@ class BlockChainIndexer:
         logging.info(f"has_deployed_high_tx_count_contract for address {address} on {chain_id} called.")
 
         for contract in contracts:
-            transactions_for_contract = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={contract}&startblock={BlockChainIndexer.get_first_block_number(chain_id)}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
+            transactions_for_contract = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={contract}&startblock={BlockChainIndexer.get_first_block_number(chain_id)}&endblock=999999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
 
             success = False
             count = 0
