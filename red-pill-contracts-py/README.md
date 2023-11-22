@@ -27,7 +27,7 @@ The bots use the transaction traces, so they only runs on Ethereum for now.
 - [Credits](#credits)
 - [License](#license)
 
-### Example
+## Example
 
 Boiled to the essential, a red-pill contract looks like:
 
@@ -43,7 +43,7 @@ contract RedPill {
 }
 ```
 
-### Alerts
+## Alerts
 
 The red-pill contracts are spotted when created to perform static analysis on the bytecode:
 
@@ -61,7 +61,7 @@ For all the alerts:
   - `to`: the transaction recipient
   - `anomaly_score`: the alert rate for this combination of bot / alert type
 
-### Detection Process
+## Detection Process
 
 Red-pill contracts try to detect simulation environments by looking for default values in the global variables.
 
