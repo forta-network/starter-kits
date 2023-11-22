@@ -1,28 +1,30 @@
 """Test the formating of alerts / findings"""
 
 import forta_agent
+import forta_toolkit
 import pytest
 
 import src.findings as findings
+import tests.test_data as data
 
 # FIXTURES ####################################################################
-
-SENDER = '0x3360a4e0eb33161da911b85f7c343e02ea41bbbd' # random
-RECEIVER = '0x22bc0693163ec3cee5ded3c2ee55ddbcb2ba9bbe' # Multisend
 
 # FORMAT ######################################################################
 
 def test_format():
-    _f = findings.FormatBatchTxFinding(txhash='', sender=SENDER, receiver=RECEIVER, token='ERC20', transfers=[], chain_id=1, confidence_score=0.5, malicious_score=0.5, alert_id='BATCH-ERC20-TX', alert_rate=0.1)
+    __log = data.TRANSACTIONS['evasion']['metamorphism'][0]
+    __tx = forta_toolkit.parsing.transaction.parse_transaction_data(transaction=__log.transaction)
+    __traces = [forta_toolkit.parsing.traces.parse_trace_data(trace=__t) for __t in __log.traces]
+    _f = findings.format_finding(
+        chain_id=1,
+        alert_id=(findings.EvasionTechnique.Metamorphism, findings.MetamorphismAlert.FactoryDeployment),
+        transaction=__tx,
+        log={},
+        trace=__traces[0],
+        confidence=0.8)
     assert type(_f) == forta_agent.Finding
     assert len(_f.name) > 0
     assert len(_f.description) > 0
     assert len(_f.alert_id) > 0
-    assert _f.type == forta_agent.FindingType.Info
-    assert _f.severity == forta_agent.FindingSeverity.Info or forta_agent.FindingSeverity.Low
-
-# CRITICITY ###################################################################
-
-def test_severity_increases_when_malicious_score_increases():
-    _f_erc20 = findings.FormatBatchTxFinding(txhash='', sender=SENDER, receiver=RECEIVER, token='ERC20', transfers=[], chain_id=1, confidence_score=0.9, malicious_score=0.7, alert_id='BATCH-ERC20-TX', alert_rate=0.1)
-    assert _f_erc20.severity == forta_agent.FindingSeverity.Low
+    assert _f.type == forta_agent.FindingType.Suspicious
+    assert _f.severity == forta_agent.FindingSeverity.Info
