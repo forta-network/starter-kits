@@ -26,7 +26,7 @@ The bots use the transaction traces, so they only runs on Ethereum for now.
 - [Credits](#credits)
 - [License](#license)
 
-### Examples
+## Examples
 
 Metamorphism has been used by MEV bots and hackers.
 This technique requires 2 intermediate contracts, the factory and implementation contracts, to (re)deploy the mutant contract.
@@ -47,7 +47,7 @@ Mutant destruction:
 
 - MEV bot: [0xff7c1a73c054b75f146afe109972a608afd9503b6962e062c392e131b1678b89](https://explorer.phalcon.xyz/tx/eth/0xff7c1a73c054b75f146afe109972a608afd9503b6962e062c392e131b1678b89)
 
-### Alerts
+## Alerts
 
 The metamorphic contracts are spotted when created to perform static analysis on the bytecode:
 
@@ -67,7 +67,7 @@ For all the alerts:
   - `to`: the transaction recipient
   - `anomaly_score`: the alert rate for this combination of bot / alert type
 
-### Detection Process
+## Detection Process
 
 Out of all the transactions on the target contracts, the factory creation and the mutant creation are the most outstanding.
 
