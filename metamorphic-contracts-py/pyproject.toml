@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "forta-bot-metamorphism"
-version = "0.1.22"
+version = "0.1.23"
 description = "Bot scanning the blockchain for metamorphic contracts"
 authors = ["apehex <apehex@protonmail.com>"]
 readme = "README.md"
@@ -8,8 +8,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.9, <4"
 forta-agent = ">=0.1.25"
-forta-toolkit = ">=0.1.22"
-ioseeth = ">=0.1.18"
+forta-toolkit = ">=0.1.23"
+ioseeth = ">=0.1.19"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

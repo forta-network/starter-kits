@@ -1,4 +1,4 @@
 forta_agent>=0.1.25
-forta_toolkit>=0.1.22
-ioseeth>=0.1.18
+forta_toolkit>=0.1.23
+ioseeth>=0.1.19
 setuptools>=68
