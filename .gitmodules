@@ -1,0 +1,3 @@
+[submodule "Forta-Twitter-Bot"]
+	path = Forta-Twitter-Bot
+	url = https://github.com/rodri-forta/Forta-Twitter-Bot.git
