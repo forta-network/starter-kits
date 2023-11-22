@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## 2.22.6 (beta2 - 11/22/2023)
+- remove pkc-3 and phishing ML bot (which is not used in prod)
+- fixed manual list but
+
 ## 2.22.5 (beta2 - 11/20/2023)
 - added attribution support (blocksec bot and manual list)
 
