@@ -712,24 +712,24 @@ class TestScamDetector:
         assert finding.metadata is not None, "metadata should not be empty"
         assert len(finding.labels) > 0, "labels should not be empty"
 
+    # 11/22/2023 - disabled as we havent been able to ship this for while now
+    # def test_detect_private_key_compromise(self):
+    #     agent.initialize()
+    #     agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
-    def test_detect_private_key_compromise(self):
-        agent.initialize()
-        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+    #     bot_id = "0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03"
+    #     alert_id = "PKC-3"
+    #     description = "0x006a176a0092b19ad0438919b08a0ed317a2a9b5 transferred funds to 0xdcde9a1d3a0357fa3db6ae14aacb188155362974 and has been inactive for a week"
+    #     metadata = {"anomalyScore":"0.00011111934217349434","attacker":"0xdcde9a1d3a0357fa3db6ae14aacb188155362974","transferredAsset":"MATIC","txHash":"0xd39f161892b9cb184b9daa44d2d5ce4a75ab3133275d5f12a4a2b5eed56b6f41","victims":"0x006a176a0092b19ad0438919b08a0ed317a2a9b5"}
+    #     alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        bot_id = "0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03"
-        alert_id = "PKC-3"
-        description = "0x006a176a0092b19ad0438919b08a0ed317a2a9b5 transferred funds to 0xdcde9a1d3a0357fa3db6ae14aacb188155362974 and has been inactive for a week"
-        metadata = {"anomalyScore":"0.00011111934217349434","attacker":"0xdcde9a1d3a0357fa3db6ae14aacb188155362974","transferredAsset":"MATIC","txHash":"0xd39f161892b9cb184b9daa44d2d5ce4a75ab3133275d5f12a4a2b5eed56b6f41","victims":"0x006a176a0092b19ad0438919b08a0ed317a2a9b5"}
-        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+    #     findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
-        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
-
-        assert len(findings) == 1, "this should have triggered a finding"
-        finding = findings[0]
-        assert finding.alert_id == "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "should be private key compromise finding"
-        assert finding.metadata is not None, "metadata should not be empty"
-        assert len(finding.labels) > 0, "labels should not be empty"
+    #     assert len(findings) == 1, "this should have triggered a finding"
+    #     finding = findings[0]
+    #     assert finding.alert_id == "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "should be private key compromise finding"
+    #     assert finding.metadata is not None, "metadata should not be empty"
+    #     assert len(finding.labels) > 0, "labels should not be empty"
 
 
     def test_detect_impersonating_token(self):
@@ -1225,60 +1225,60 @@ class TestScamDetector:
         sorted_fp_labels = list(sorted_fp_labels)
         assert len(sorted_fp_labels) == 4, "should have four FP labels; one for each EOA and contract"
 
+    # 11/22/2023 - removed because we have not been able to ship this for some time now
+    # def test_detect_ice_phishing_ml(self):
+    #     agent.initialize()
+    #     agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
-    def test_detect_ice_phishing_ml(self):
-        agent.initialize()
-        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+    #     bot_id = "0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e"
+    #     alert_id = "EOA-PHISHING-SCAMMER"
+    #     description = "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12 has been identified as a phishing scammer"
+    #     metadata = {
+    #         "scammer": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
+    #         "feature_generation_time_sec": 55.393977834,
+    #         "prediction_time_sec": 3.258650750000001,
+    #         "feature_1_from_address_count_unique_ratio": 0.8977777777777778,
+    #         "feature_2_from_address_nunique": 202,
+    #         "feature_3_in_block_number_std": 103944.45395073255,
+    #         "feature_4_in_ratio": 0.0000027220471162690886,
+    #         "feature_5_ratio_from_address_nunique": 0.6824324324324325,
+    #         "feature_6_total_time": 9495012,
+    #         "feature_7_from_in_min_std": 0,
+    #         "feature_8_from_in_block_timespan_median": 477557,
+    #         "feature_9_from_out_min_std": 0,
+    #         "feature_10_from_out_block_std_median": 166256.50317778645,
+    #         "feature_11_to_in_sum_min": 48516.30387100715,
+    #         "feature_12_to_in_sum_median": 196337.4491312858,
+    #         "feature_13_to_in_sum_median_ratio": 5190.0165806816785,
+    #         "feature_14_to_in_min_min": 1e-18,
+    #         "feature_15_to_in_block_std_median": 236914.9074575176,
+    #         "feature_16_to_out_min_std": 0,
+    #         "anomaly_score": 1,
+    #         "model_version": "1678286940",
+    #         "model_threshold": 0.5,
+    #         "model_score": 0.659,
+    #     }
+    #     label = {
+    #         "entityType": "Address",
+    #         "entity": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
+    #         "label": "scammer-eoa",
+    #         "confidence": 0.659,
+    #         "remove": False,
+    #         "metadata": {}
+    #         }
+    #     labels = [ label ]
+    #     alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
 
-        bot_id = "0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e"
-        alert_id = "EOA-PHISHING-SCAMMER"
-        description = "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12 has been identified as a phishing scammer"
-        metadata = {
-            "scammer": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
-            "feature_generation_time_sec": 55.393977834,
-            "prediction_time_sec": 3.258650750000001,
-            "feature_1_from_address_count_unique_ratio": 0.8977777777777778,
-            "feature_2_from_address_nunique": 202,
-            "feature_3_in_block_number_std": 103944.45395073255,
-            "feature_4_in_ratio": 0.0000027220471162690886,
-            "feature_5_ratio_from_address_nunique": 0.6824324324324325,
-            "feature_6_total_time": 9495012,
-            "feature_7_from_in_min_std": 0,
-            "feature_8_from_in_block_timespan_median": 477557,
-            "feature_9_from_out_min_std": 0,
-            "feature_10_from_out_block_std_median": 166256.50317778645,
-            "feature_11_to_in_sum_min": 48516.30387100715,
-            "feature_12_to_in_sum_median": 196337.4491312858,
-            "feature_13_to_in_sum_median_ratio": 5190.0165806816785,
-            "feature_14_to_in_min_min": 1e-18,
-            "feature_15_to_in_block_std_median": 236914.9074575176,
-            "feature_16_to_out_min_std": 0,
-            "anomaly_score": 1,
-            "model_version": "1678286940",
-            "model_threshold": 0.5,
-            "model_score": 0.659,
-        }
-        label = {
-            "entityType": "Address",
-            "entity": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
-            "label": "scammer-eoa",
-            "confidence": 0.659,
-            "remove": False,
-            "metadata": {}
-            }
-        labels = [ label ]
-        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
+    #     findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
-        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
-
-        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
-        finding = findings[0]
-        assert finding.alert_id == "SCAM-DETECTOR-UNKNOWN", "should be unknown finding"
-        assert finding.metadata is not None, "metadata should not be empty"
-        assert len(finding.labels) > 0, "labels should not be empty"
-        assert finding.labels[0].entity == '0xc6f5341d0cfea47660985b1245387ebc0dbb6a12'
-        assert finding.labels[0].label == 'scammer'
-        assert finding.labels[0].confidence == 0.659
+    #     assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
+    #     finding = findings[0]
+    #     assert finding.alert_id == "SCAM-DETECTOR-UNKNOWN", "should be unknown finding"
+    #     assert finding.metadata is not None, "metadata should not be empty"
+    #     assert len(finding.labels) > 0, "labels should not be empty"
+    #     assert finding.labels[0].entity == '0xc6f5341d0cfea47660985b1245387ebc0dbb6a12'
+    #     assert finding.labels[0].label == 'scammer'
+    #     assert finding.labels[0].confidence == 0.659
 
 
     def test_emit_new_manual_finding(self):

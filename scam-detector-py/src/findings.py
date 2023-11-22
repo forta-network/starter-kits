@@ -492,6 +492,11 @@ class ScamDetectorFinding:
                 'label': 'benign',
                 'entity': address,
                 'confidence': 0.99,
+                'metadata': {
+                    'benign_address': address,
+                    'etherscan_labels': ', '.join(etherscan_labels),
+                    'etherscan_nametag': etherscan_nametag
+                    }
                 })
             ]
         
