@@ -15,7 +15,9 @@ The bots use the transaction traces, so they only runs on Ethereum for now.
 
 ## Table of Contents
 
+- [Example](#example)
 - [Alerts](#alerts)
+- [Detection Process](#detection-process)
 - [Options](#options)
 - [Implementations](#implementations)
 - [Development](#development)
@@ -25,14 +27,30 @@ The bots use the transaction traces, so they only runs on Ethereum for now.
 - [Credits](#credits)
 - [License](#license)
 
-## Alerts
+### Example
+
+Boiled to the essential, a red-pill contract looks like:
+
+```solidity
+contract RedPill {
+    function print() public view returns (string memory) {
+        if (block.coinbase == address(0x0000000000000000000000000000000000000000)) {
+            return "blue pill";
+        } else {
+            return "red pill";
+        }
+    }
+}
+```
+
+### Alerts
 
 The red-pill contracts are spotted when created to perform static analysis on the bytecode:
 
 - `LOGIC-BOMB-RED-PILL-DEPLOYMENT`:
     - the address of the contract is attached as a label
 
-For all the alerts:
+For all the alerts:    
 
 - Type is always set to `Suspicious`
 - Severity is always `Info`
@@ -42,6 +60,33 @@ For all the alerts:
   - `from`: the transaction sender
   - `to`: the transaction recipient
   - `anomaly_score`: the alert rate for this combination of bot / alert type
+
+### Detection Process
+
+Red-pill contracts try to detect simulation environments by looking for default values in the global variables.
+
+The detection looks for conditional branches depending on the global variables.
+These tests have a pattern that can be directly found in the bytecode with regex.
+
+It matches chunks of HEX encoded bytecode like:
+
+```
+600073ffffffffffffffffffffffffffffffffffffffff164173ffffffffffffffffffffffffffffffffffffffff16141561012757
+```
+
+```
+6000                                          # PUSH1 0
+73ffffffffffffffffffffffffffffffffffffffff16  # cast to address
+41                                            # block.coinbase
+73ffffffffffffffffffffffffffffffffffffffff16  # cast to address
+1415                                          # equality test
+610127                                        # PUSH2 => instruction offset
+57                                            # JUMPI
+```
+
+The detection regex accounts for variation in the compilation process due to solidity version and optimization parameters.
+
+For more details, see [the report][report-web3-evasion].
 
 ## Options
 
