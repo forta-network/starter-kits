@@ -87,6 +87,76 @@ This init code is a stager that is required to leverage the `CREATE2`, it looks 
 
 For more details, see [the report][report-web3-evasion].
 
+### Indicators
+
+#### Metamorphic Factory
+
+- runtime bytecode contains OPCODE `CREATE`
+- runtime bytecode contains OPCODE `CREATE2`
+- creation bytecode contains metamorphic init code
+
+#### Mutant Contract
+
+- creation bytecode is metamorphic init code
+- runtime bytecode is not included in creation bytecode
+- runtime bytecode has changed
+
+## Scoring The Transactions
+
+The bot decisions are guided by probability metrics / scores.
+
+### Interpretation Of Probabilities
+
+The confidence that a transaction match a given target is a ratio that can be interpreted as follows:
+
+- if equal to `0.5`, it is undecided, the bot didn't find enough evidence for / against
+- from `0.5` to `1`, the chances go toward the certainty of a match
+- from `0.5` to `0`, the agent is ruling out the possibility of a match
+
+### Scoring Process
+
+These metrics are computed in two steps:
+
+- first all the indicators (IOCs) are computed
+- then each indicator is quantified
+- then these individual indicators are combined into a probability
+
+The indicators for each evasion technique are listed in the previous sections.
+
+### Quantifying The Indicators
+
+The indicators are boolean values that signal the presence / absence of a given feature in the transaction.
+`True` and `False` values are quantified by their impact on the score:
+
+- `0.5` when the indicator has no impact
+- `0.5` to `1` the more it increases the probability of a match
+- `0.5` to `0` the more it lessens the probability of a match
+
+### Combining Probabilities
+
+Finally, the list of quantified indicators is turned into probabilities with the conflation function, $\xi$:
+
+$$\begin{align}
+Conflation(p_1, ..., p_N) &= \xi(p_1, ..., p_N) \\
+                          &= \frac{{\prod_{i=1}}^{N} p_i}{{\prod_{i=1}}^{N} p_i + {\prod_{i=1}}^{N} (1 - p_i)}
+\end{align}$$
+
+Given a list of probabilities $\{p_i\}$ and an extra probability $p$, the conflation has the following properties:
+
+- if $p = 0.5$ then $\xi(p_1, ..., p_N, p) = \xi(p_1, ..., p_N)$
+- if $p > 0.5$ then $\xi(p_1, ..., p_N, p) > \xi(p_1, ..., p_N)$
+- if $p < 0.5$ then $\xi(p_1, ..., p_N, p) < \xi(p_1, ..., p_N)$
+
+For example:
+
+- when an indicator (presence / absence) doesn't add information it can be scored as `0.5`.
+- `0.9` to greatly increase the probability
+- `0.4` to slightly decrease the probability
+- `0.1` to strongly decrease the probability
+- etc
+
+Rather than each individual score, it is the tendency of the list of scores that drives the overall metric toward a low / high probability.
+
 ## Options
 
 The bot settings are located in `src/options.py`:
