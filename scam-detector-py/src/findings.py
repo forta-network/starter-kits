@@ -299,8 +299,8 @@ class ScamDetectorFinding:
         if alert_id in ["SCAM-DETECTOR-IMPERSONATING-TOKEN", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-NFT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING', 'SCAM-DETECTOR-UNKNOWN', 'SCAM-DETECTOR-PIG-BUTCHERING', 'SCAM-DETECTOR-SLEEP-DROP', 'SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE', 'SCAM-DETECTOR-GAS-MINTING']:
             if scammer_addresses != '':
                 for scammer_address in scammer_addresses.split(","):
-                    label_unique_key = hashlib.sha256(f'{scammer_addresses},{alert_id},{chain_id}'.encode()).hexdigest()
-                    logging.info(f'Unique key of {scammer_addresses},{alert_id},{chain_id}: {label_unique_key}')
+                    label_unique_key = hashlib.sha256(f'{scammer_address},{alert_id},{chain_id}'.encode()).hexdigest()
+                    logging.info(f'Unique key of {scammer_address},{alert_id},{chain_id}: {label_unique_key}')
 
                     labels.append(Label({
                         'entityType': EntityType.Address,
