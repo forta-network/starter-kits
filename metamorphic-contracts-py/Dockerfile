@@ -11,7 +11,7 @@ RUN python3 -m pip install --user -r requirements.txt
 FROM node:12-alpine
 # this python version should match the build stage python version
 RUN apk update
-RUN apk add python3 py3-pip build-base
+RUN apk add python3 py3-pip
 COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local:$PATH
 ENV NODE_ENV=production

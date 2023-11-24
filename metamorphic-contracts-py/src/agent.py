@@ -14,9 +14,6 @@ import forta_toolkit.parsing.logs
 import forta_toolkit.parsing.traces
 import forta_toolkit.profiling
 
-import ioseeth.indicators.events
-import ioseeth.metrics.evasion.morphing.metamorphism
-
 import src.findings
 import src.options
 import src.scoring
@@ -29,7 +26,6 @@ PROVIDER = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 # INIT ########################################################################
 
 forta_toolkit.logging.setup_logger(logging.INFO)
-# forta_toolkit.parsing.env.load_secrets()
 
 def initialize():
     """Initialize the state variables that are tracked across tx and blocks."""
@@ -60,7 +56,6 @@ def handle_transaction_factory(
         __findings = []
         # parse all the data
         __tx = forta_toolkit.parsing.transaction.parse_transaction_data(transaction=log.transaction)
-        __logs = [forta_toolkit.parsing.logs.parse_log_data(log=__l) for __l in log.logs]
         __traces = [forta_toolkit.parsing.traces.parse_trace_data(trace=__t) for __t in log.traces]
         # iterate over each subtrace
         for __t in __traces:
