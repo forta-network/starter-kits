@@ -613,7 +613,7 @@ class Utils:
                     else:
                         logging.warning(f"{BOT_VERSION}: fetch_alerts (get_alerts error): {e} - {traceback.format_exc()}")
                         Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.fetch_alerts", traceback.format_exc()))
-                if (not should_retry_from_error and response.page_info.end_cursor.alert_id == ""):
+                if (not should_retry_from_error and response and response.page_info.end_cursor.alert_id == ""):
                     break
 
         return alerts
