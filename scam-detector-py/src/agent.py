@@ -505,7 +505,7 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
         feature_vector = build_feature_vector(alert_list, cluster)
         score = get_model_score(feature_vector)
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got score {score} for cluster {cluster}. Processing took {time.time() - start_time} seconds.")
-        model_threshold = MODEL_ALERT_THRESHOLD_LOOSE if Utils.is_beta() else MODEL_ALERT_THRESHOLD_STRICT
+        model_threshold = MODEL_ALERT_THRESHOLD_LOOSE if (Utils.is_beta() or Utils.is_beta_alt()) else MODEL_ALERT_THRESHOLD_STRICT
         logging.info(f"{BOT_VERSION}: model threshold {model_threshold}.")
         if score>model_threshold:
             #since this is a expensive function, will only check if we are about to raise an alert
@@ -887,7 +887,7 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.alert_id} {alert_event.chain_id} processing took {end_all - start_all} seconds")
     except BaseException as e:
         logging.warning(f"{BOT_VERSION}: alert {alert_event.alert_hash} - Exception in process_alert {alert_event.alert_hash}: {e} - {traceback.format_exc()}")
-        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV') and not Utils.is_beta():
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV') and not Utils.is_beta() and not Utils.is_beta_alt():
             logging.error(f"{BOT_VERSION}: alert {alert_event.alert_hash} - Raising exception to expose error to scannode")
             raise e
         else:
@@ -1222,7 +1222,7 @@ def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transact
                 findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
     except BaseException as e:
         logging.warning(f"{BOT_VERSION}: transaction {transaction_event.hash} - Exception in detect_scammer_contract_creation {transaction_event.hash}: {e} - {traceback.format_exc()}")
-        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV') and not Utils.is_beta():
+        if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV') and not Utils.is_beta() and not Utils.is_beta_alt():
             logging.error(f"{BOT_VERSION}: transaction {transaction_event.hash} - Raising exception to expose error to scannode")
             raise e
         else:
@@ -1346,7 +1346,7 @@ def provide_handle_alert(w3):
         global FINDINGS_CACHE_ALERT
         global DEBUG_ALERT_ENABLED
         findings = []
-        if Utils.is_beta() and DEBUG_ALERT_ENABLED:
+        if (Utils.is_beta() or Utils.is_beta_alt()) and DEBUG_ALERT_ENABLED:
             dt = parse_datetime_with_high_precision(alert_event.alert.created_at)
             unix_timestamp = (dt - datetime(1970, 1, 1)).total_seconds()
             unix_timestamp_sec = int(unix_timestamp)
@@ -1423,7 +1423,7 @@ def provide_handle_block(w3):
         dt = datetime.fromtimestamp(timestamp, tz=utc_timezone)    
         logging.info(f"{BOT_VERSION}: handle block called with block timestamp {dt}")
         
-        if Utils.is_beta():
+        if Utils.is_beta() or Utils.is_beta_alt():
             logging.info(f"{BOT_VERSION}: Handle block called. Adding {Utils.ERROR_CACHE.len()} error findings.")
             findings.extend(Utils.ERROR_CACHE.get_all())
         Utils.ERROR_CACHE.clear()
