@@ -234,6 +234,6 @@ ZETTABLOCK_FP_MITIGATION_URL = "https://api.zettablock.com/api/v1/dataset/sq_863
 # AutoEncoder model path
 AE_MODEL_PATH = "src/fp_mitigation/models/ae_state_dict.pt"
 # FP mitigation model paths
-FP_MODELS_PATH = ['src/fp_mitigation/models/attack_lgbm.pkl']
+FP_MODELS_PATH = ['src/fp_mitigation/models/attack_lgbm_recall_20238.pkl']
 # FP mitigation threshold
 FP_THRESHOLD = 0.3

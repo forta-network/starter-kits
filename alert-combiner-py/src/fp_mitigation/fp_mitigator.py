@@ -17,7 +17,7 @@ class FPMitigator:
         if self.chain_id != 1:
             logging.info(f"Chain id {self.chain_id} is not supported. fp-mitigation")
             return None
-        in_data = self.download_data.create_graph_around_address(address, total_addresses=2000)
+        in_data = self.download_data.create_graph_around_address(address, total_addresses=5000)
         # logging.info(f'{address}-fpfp-downloaded-data: {in_data}')
         if in_data is None:
             return None
