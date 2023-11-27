@@ -194,15 +194,15 @@ async function getContractCreation(
   const chainInfo: ChainInfo = {
     1: {
       baseUrl: "https://api.etherscan.io/api",
-      apiKey: keys.apiKeys.scamNotifier.ETHERSCAN_KEY,
+      apiKey: keys.apiKeys.ETHERSCAN_TOKEN,
     },
     56: {
       baseUrl: "https://api.bscscan.com/api",
-      apiKey: keys.apiKeys.scamNotifier.BSCSCAN_KEY,
+      apiKey: keys.apiKeys.BSCSCAN_TOKEN,
     },
     137: {
       baseUrl: "https://api.polygonscan.com/api",
-      apiKey: keys.apiKeys.scamNotifier.POLYGONSCAN_KEY,
+      apiKey: keys.apiKeys.POLYGONSCAN_TOKEN,
     },
   };
 

@@ -8,16 +8,14 @@ const ownerDB = "https://research.forta.network/database/owner/";
 
 export type secrets = {
   apiKeys: {
-    scamNotifier: {
-      NEO4J_USERNAME: string;
-      PROD_NEO4J_URI: string;
-      PROD_NEO4J_PASSWORD: string;
-      TEST_NEO4J_URI: string;
-      TEST_NEO4J_PASSWORD: string;
-      ETHERSCAN_KEY: string;
-      POLYGONSCAN_KEY: string;
-      BSCSCAN_KEY: string;
-    };
+    NEO4J_USERNAME: string;
+    PROD_NEO4J_URI: string;
+    PROD_NEO4J_PASSWORD: string;
+    TEST_NEO4J_URI: string;
+    TEST_NEO4J_PASSWORD: string;
+    ETHERSCAN_TOKEN: string;
+    POLYGONSCAN_TOKEN: string;
+    BSCSCAN_TOKEN: string;
   };
 };
 

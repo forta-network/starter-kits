@@ -13,7 +13,7 @@ export function createDriver(keys: secrets, flag?: string): any {
     TEST_NEO4J_PASSWORD,
     PROD_NEO4J_URI,
     PROD_NEO4J_PASSWORD,
-  } = keys.apiKeys.scamNotifier;
+  } = keys.apiKeys;
   const uri = flag === "TEST" ? TEST_NEO4J_URI : PROD_NEO4J_URI;
   const password = flag === "TEST" ? TEST_NEO4J_PASSWORD : PROD_NEO4J_PASSWORD;
 
