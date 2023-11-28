@@ -58,6 +58,7 @@ class FortaExplorer:
         df_forta['remove'] = df_forta['label'].apply(lambda x: x.remove)
         df_forta['confidence'] = df_forta['label'].apply(lambda x: x.confidence)
         df_forta['metadata'] = df_forta['label'].apply(lambda x: x.metadata)
+        df_forta['uniqueKey'] = df_forta['label'].apply(lambda x: getattr(x, 'unique_key', ''))
         df_forta['botVersion'] = df_forta['label'].apply(lambda x: FortaExplorer.get_value(x.metadata, 'bot_version'))
 
         return df_forta
