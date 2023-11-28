@@ -436,7 +436,7 @@ class ScamDetectorFinding:
         })
 
     @staticmethod
-    def alert_FP(w3, address: str, label: str, metadata: Union[tuple, List[dict]]) -> Finding:
+    def alert_FP(w3, address: str, label: str, metadata: Union[tuple, List[dict]], unique_keys: List[str]) -> Finding:
         labels = []
 
         if (isinstance(metadata, tuple)):
@@ -446,27 +446,31 @@ class ScamDetectorFinding:
                 key = pair.split("=")[0]
                 value = pair.split("=")[1]
                 metadata_dict[key] = value
-
-            labels.append(Label({
+            label_data = {
                 'entityType': EntityType.Address,
                 'label': label,
                 'entity': address,
                 'confidence': 0.99,
                 'remove': "true",
-                'metadata': metadata_dict
-
-            }))
+                'metadata': metadata_dict,
+            }
+            if unique_keys[0]:
+                label_data['uniqueKey'] = unique_keys[0]
+            labels.append(Label(label_data))
         else:
             # Reactive FP mitigation case
-            for metadata_dict in metadata:
-                labels.append(Label({
+            for index, metadata_dict in enumerate(metadata):
+                label_data = {
                     'entityType': EntityType.Address,
                     'label': label,
                     'entity': address,
                     'confidence': 0.99,
                     'remove': "true",
-                    'metadata': metadata_dict
-                }))
+                    'metadata': metadata_dict,
+                }
+                if unique_keys[index]:
+                    label_data['uniqueKey'] = unique_keys[index]
+                labels.append(Label(label_data))
                 
         
         unique_key = hashlib.sha256(f'{address},{str(metadata)}'.encode()).hexdigest()
