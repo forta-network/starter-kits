@@ -929,10 +929,10 @@ def emit_new_fp_finding(w3) -> list:
                         if similar_contract_labels is None:
                             similar_contract_labels = get_similar_contract_labels(w3, forta_explorer)
                         
-                        for (entity, label, metadata) in obtain_all_fp_labels(w3, address, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, CHAIN_ID):
+                        for (entity, label, metadata, unique_key) in obtain_all_fp_labels(w3, address, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, CHAIN_ID):
                             logging.info(f"{BOT_VERSION}: Emitting FP mitigation finding for {entity} {label}")
                             update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, entity, "SCAM-DETECTOR-FALSE-POSITIVE")
-                            findings.append(ScamDetectorFinding.alert_FP(w3, entity, label, metadata))
+                            findings.append(ScamDetectorFinding.alert_FP(w3, entity, label, metadata, [unique_key]))
                             logging.info(f"{BOT_VERSION}: Findings count {len(findings)}")
             except Exception as e:
                 logging.warning(f"{BOT_VERSION}: emit fp finding exception: {e} - {traceback.format_exc()}")
@@ -994,15 +994,15 @@ def update_reactive_likely_fps(w3, current_date) -> list:
             for label in labels:
                 if not label.remove:
                     # There may be multiple labels for the same scammer entity, due to different label metadata
-                    entity = label.entity
-                    metadata = label.metadata
+                    entity, metadata, unique_key = label.entity, label.metadata, label.unique_key
                     if entity not in REACTIVE_LIKELY_FPS:
-                        REACTIVE_LIKELY_FPS[entity] = [metadata]
+                       REACTIVE_LIKELY_FPS[entity] = ([metadata], [unique_key])
                     else:
-                        REACTIVE_LIKELY_FPS[entity].append(metadata) 
+                        REACTIVE_LIKELY_FPS[entity][0].append(metadata)  # Append to the metadata list
+                        REACTIVE_LIKELY_FPS[entity][1].append(unique_key)  # Append to the unique key list
         end = time.time()
         logging.info(f"{BOT_VERSION}: update reactive likely fps (REACTIVE_LIKELY_FPS count): {len(REACTIVE_LIKELY_FPS)}")
-        logging.warn(f"{BOT_VERSION}: update reactive likely fps (processing took): {end - start} seconds")
+        logging.info(f"{BOT_VERSION}: update reactive likely fps (processing took): {end - start} seconds")
     else:
         #  Create reactive FP findings
         if REACTIVE_LIKELY_FPS:
@@ -1016,17 +1016,18 @@ def update_reactive_likely_fps(w3, current_date) -> list:
             if Utils.is_fp(w3, address, CHAIN_ID):
                 logging.info(f"{BOT_VERSION}: {address} is an FP. Emitting FP finding.")
                 update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, address, "SCAM-DETECTOR-FALSE-POSITIVE")
-                findings.append(ScamDetectorFinding.alert_FP(w3, address, "scammer", REACTIVE_LIKELY_FPS[address]))
+                metadata_array, unique_keys_array = REACTIVE_LIKELY_FPS[address]
+                findings.append(ScamDetectorFinding.alert_FP(w3, address, "scammer", metadata_array, unique_keys_array))
                 if SCAMMER_ASSOCIATION_LABELS is None:
                         SCAMMER_ASSOCIATION_LABELS = get_scammer_association_labels(w3, forta_explorer)
                 if SIMILAR_CONTRACT_LABELS is None:
                     SIMILAR_CONTRACT_LABELS = get_similar_contract_labels(w3, forta_explorer)
-                for (entity, label, metadata) in obtain_all_fp_labels(w3, address, block_chain_indexer, forta_explorer, SIMILAR_CONTRACT_LABELS, SCAMMER_ASSOCIATION_LABELS, CHAIN_ID):
+                for (entity, label, metadata, unique_key) in obtain_all_fp_labels(w3, address, block_chain_indexer, forta_explorer, SIMILAR_CONTRACT_LABELS, SCAMMER_ASSOCIATION_LABELS, CHAIN_ID):
                         logging.info(f"{BOT_VERSION}: Processing entity: {entity} - {label}")
                         if entity != address:
                             logging.info(f"{BOT_VERSION}: Emitting FP mitigation finding for {entity} {label}")
                             update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, entity, "SCAM-DETECTOR-FALSE-POSITIVE")
-                            findings.append(ScamDetectorFinding.alert_FP(w3, entity, label, metadata))
+                            findings.append(ScamDetectorFinding.alert_FP(w3, entity, label, metadata, [unique_key]))
                             if entity in REACTIVE_LIKELY_FPS:
                                 del REACTIVE_LIKELY_FPS[entity]                            
             
@@ -1100,8 +1101,9 @@ def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_e
                 if row['metadata'] is not None and "address_type" in row['metadata'].keys() and "threat_category" in row['metadata'].keys() and row['metadata']['address_type'] == 'contract':
                     threat_category = row['metadata']['threat_category']
                     label = row['labelstr']
+                    unique_key = row['uniqueKey']
                     logging.info(f"{BOT_VERSION}: {starting_address} adding FP label threat category {threat_category} for contract {address}")
-                    fp_labels.add((address,label, tuple([f"{k}={v}" for k, v in row['metadata'].items()])))
+                    fp_labels.add((address,label, tuple([f"{k}={v}" for k, v in row['metadata'].items()]), unique_key))
 
                     similar_contract_labels_for_address = similar_contract_labels[similar_contract_labels['from_entity'] == address]
                     for index, row in similar_contract_labels_for_address.iterrows():
@@ -1126,8 +1128,9 @@ def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_e
                 if row['metadata'] is not None and "address_type" in row['metadata'].keys() and "threat_category" in row['metadata'].keys() and row['metadata']['address_type'] == 'EOA':
                     threat_category = row['metadata']['threat_category']
                     label = row['labelstr']
+                    unique_key = row['uniqueKey']
                     logging.info(f"{BOT_VERSION}: {starting_address} adding FP label threat category {threat_category} for EOA {address}")
-                    fp_labels.add((address,label,tuple([f"{k}={v}" for k, v in row['metadata'].items()])))
+                    fp_labels.add((address,label,tuple([f"{k}={v}" for k, v in row['metadata'].items()]), unique_key))
 
                     # query all deployed contract and add to to_process set
                     contract_addresses = block_chain_indexer.get_contracts(address, chain_id)
