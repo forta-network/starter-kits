@@ -119,7 +119,6 @@
                 }
             }
         },           
-          "weekly": {
                 "2023-44": {
                 "ice-phishing": {
                     "precision": {
@@ -239,7 +238,6 @@
                 }
             }
         }, 
-         "weekly": {
                 "2023-43": {
                 "ice-phishing": {
                     "precision": {
