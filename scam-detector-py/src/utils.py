@@ -367,7 +367,7 @@ class Utils:
         
                 if not has_keyword:
                     # Emit a likely false positive alert for each address in the beta version of Scam Detector
-                    if Utils.is_beta():
+                    if Utils.is_beta() or Utils.is_beta_alt():
                         from src.findings import ScamDetectorFinding
                         likely_fp_finding = ScamDetectorFinding.alert_etherscan_likely_FP(address, labels_list, nametag)
                         FINDINGS_CACHE_ALERT.append(likely_fp_finding)
