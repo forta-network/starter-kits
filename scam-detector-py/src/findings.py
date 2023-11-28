@@ -299,8 +299,8 @@ class ScamDetectorFinding:
         if alert_id in ["SCAM-DETECTOR-IMPERSONATING-TOKEN", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-NFT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING', 'SCAM-DETECTOR-UNKNOWN', 'SCAM-DETECTOR-PIG-BUTCHERING', 'SCAM-DETECTOR-SLEEP-DROP', 'SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE', 'SCAM-DETECTOR-GAS-MINTING']:
             if scammer_addresses != '':
                 for scammer_address in scammer_addresses.split(","):
-                    label_unique_key = hashlib.sha256(f'{scammer_addresses},{alert_id},{chain_id}'.encode()).hexdigest()
-                    logging.info(f'Unique key of {scammer_addresses},{alert_id},{chain_id}: {label_unique_key}')
+                    label_unique_key = hashlib.sha256(f'{scammer_address},{alert_id},{chain_id}'.encode()).hexdigest()
+                    logging.info(f'Unique key of {scammer_address},{alert_id},{chain_id}: {label_unique_key}')
 
                     labels.append(Label({
                         'entityType': EntityType.Address,
@@ -436,7 +436,7 @@ class ScamDetectorFinding:
         })
 
     @staticmethod
-    def alert_FP(w3, address: str, label: str, metadata: Union[tuple, List[dict]]) -> Finding:
+    def alert_FP(w3, address: str, label: str, metadata: Union[tuple, List[dict]], unique_keys: List[str]) -> Finding:
         labels = []
 
         if (isinstance(metadata, tuple)):
@@ -446,27 +446,31 @@ class ScamDetectorFinding:
                 key = pair.split("=")[0]
                 value = pair.split("=")[1]
                 metadata_dict[key] = value
-
-            labels.append(Label({
+            label_data = {
                 'entityType': EntityType.Address,
                 'label': label,
                 'entity': address,
                 'confidence': 0.99,
                 'remove': "true",
-                'metadata': metadata_dict
-
-            }))
+                'metadata': metadata_dict,
+            }
+            if unique_keys[0]:
+                label_data['uniqueKey'] = unique_keys[0]
+            labels.append(Label(label_data))
         else:
             # Reactive FP mitigation case
-            for metadata_dict in metadata:
-                labels.append(Label({
+            for index, metadata_dict in enumerate(metadata):
+                label_data = {
                     'entityType': EntityType.Address,
                     'label': label,
                     'entity': address,
                     'confidence': 0.99,
                     'remove': "true",
-                    'metadata': metadata_dict
-                }))
+                    'metadata': metadata_dict,
+                }
+                if unique_keys[index]:
+                    label_data['uniqueKey'] = unique_keys[index]
+                labels.append(Label(label_data))
                 
         
         unique_key = hashlib.sha256(f'{address},{str(metadata)}'.encode()).hexdigest()

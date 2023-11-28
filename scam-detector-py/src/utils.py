@@ -606,14 +606,14 @@ class Utils:
                     response = get_alerts(query)
                     alerts.extend(response.alerts)
                 except Exception as e:
-                    if  (isinstance(e, AttributeError) and 'NoneType' in str(e)) or (isinstance(e, Exception) and "Internal server error" in str(e)):
+                    if  (isinstance(e, AttributeError) and 'NoneType' in str(e)) or (isinstance(e, Exception) and "Internal server error" in str(e)) or ("request source is not a deployed agent" in str(e)):
                         # Reduce the page size in order to reduce the response size and try again
                         page_size = math.floor(page_size / 2)
                         should_retry_from_error = page_size > 1
                     else:
                         logging.warning(f"{BOT_VERSION}: fetch_alerts (get_alerts error): {e} - {traceback.format_exc()}")
                         Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.fetch_alerts", traceback.format_exc()))
-                if (not should_retry_from_error and response.page_info.end_cursor.alert_id == ""):
+                if (not page_size) or (not should_retry_from_error and response and response.page_info.end_cursor.alert_id == ""):
                     break
 
         return alerts
