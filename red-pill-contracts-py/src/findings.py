@@ -4,7 +4,7 @@ import enum
 import logging
 
 import forta_agent
-import forta_toolkit
+import forta_toolkit.findings
 import ioseeth.indicators.events
 
 # TYPES #######################################################################
@@ -53,8 +53,8 @@ def get_alert_description(alert_id: tuple, transaction: dict, log: dict, trace: 
     __pattern = ALERT_DESCRIPTION_PATTERNS.get(alert_id, '')
     __description = ''
     if alert_id[0] == EvasionTechnique.LogicBomb:
-        __sender = trace.get('from', '0x')
-        __recipient = trace.get('to', '0x')
+        __sender = trace.get('action_from', '0x')
+        __recipient = trace.get('action_to', '0x')
         __description = __pattern.format(sender=__sender, recipient=__recipient)
     return __description
 
@@ -83,7 +83,7 @@ def get_alert_labels(chain_id: int, alert_id: tuple, transaction: dict, log: dic
     if alert_id == (EvasionTechnique.LogicBomb, LogicBombAlert.RedPill):
         __l = __template.copy()
         __l['label'] = 'red-pill-contract'
-        __l['entity'] = trace.get('to', '0x')
+        __l['entity'] = trace.get('action_to', '0x')
         __labels.append(forta_agent.Label(__l))
     return __labels
 

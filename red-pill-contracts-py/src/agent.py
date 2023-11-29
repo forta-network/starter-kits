@@ -11,6 +11,7 @@ import forta_toolkit.alerts
 import forta_toolkit.logging
 import forta_toolkit.parsing.env
 import forta_toolkit.parsing.traces
+import forta_toolkit.preprocessing
 import forta_toolkit.profiling
 
 import src.findings
@@ -24,7 +25,7 @@ PROVIDER = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 # INIT ########################################################################
 
-forta_toolkit.logging.setup_logger(logging.INFO)
+forta_toolkit.logging.setup_logger(level=logging.INFO, version=forta_toolkit.parsing.env.get_bot_version())
 
 def initialize():
     """Initialize the state variables that are tracked across tx and blocks."""
@@ -45,28 +46,27 @@ def handle_transaction_factory(
     history_size: int=src.options.ALERT_HISTORY_SIZE
 ) -> callable:
     """Setup the main handler."""
+    global CHAIN_ID
 
     @forta_toolkit.profiling.timeit
     @forta_toolkit.alerts.alert_history(size=history_size)
-    def __handle_transaction(log: TransactionEvent) -> list:
+    @forta_toolkit.preprocessing.parse_forta_arguments
+    def __handle_transaction(transaction: dict, logs: list, traces: list, **kwargs) -> list:
         """Main function called on the logs gathered by the Forta network."""
         global CHAIN_ID
         # result: list of alerts
         __findings = []
-        # parse all the data
-        __tx = forta_toolkit.parsing.transaction.parse_transaction_data(transaction=log.transaction)
-        __traces = [forta_toolkit.parsing.traces.parse_trace_data(trace=__t) for __t in log.traces]
         # iterate over each subtrace
-        for __t in __traces:
+        for __t in traces:
             # analyse the transaction
             __scores = src.scoring.score_trace(trace=__t)
             # iterate over the scan results
             for __id, __score in __scores.items():
                 if __score >= min_confidence:
                     # keep a trace on the node
-                    logging.info(src.findings.get_alert_description(chain_id=CHAIN_ID, alert_id=__id, transaction=__tx, log={}, trace=__t))
+                    logging.info(src.findings.get_alert_description(chain_id=CHAIN_ID, alert_id=__id, transaction=transaction, log={}, trace=__t))
                     # raise an alert
-                    __findings.append(src.findings.format_finding(chain_id=CHAIN_ID, alert_id=__id, confidence=__score, transaction=__tx, log={}, trace=__t))
+                    __findings.append(src.findings.format_finding(chain_id=CHAIN_ID, alert_id=__id, confidence=__score, transaction=transaction, log={}, trace=__t))
         return __findings
 
     return __handle_transaction

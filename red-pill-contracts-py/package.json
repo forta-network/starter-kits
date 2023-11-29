@@ -1,6 +1,6 @@
 {
   "name": "forta-bot-red-pill",
-  "version": "0.2.43",
+  "version": "0.5.27",
   "description": "Bot scanning the blockchain for red-pill contracts",
   "repository": "https://github.com/apehex/forta-bots-evasion/",
   "chainIds": [1],
