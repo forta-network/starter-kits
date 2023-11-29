@@ -752,7 +752,7 @@ def emit_manual_finding(w3, test = False) -> list:
                         cluster = entity_clusters[scammer_address_lower]
 
                     if Utils.is_contract(w3, cluster):
-                        logging.info(f"Manual finding: Address {cluster} is a contract")
+                        logging.info(f"Manual finding: Address {cluster} is a contract. Not alerting.")
                         continue
 
                     threat_category = "unknown" if 'nan' in str(row["Threat category"]) else row['Threat category']

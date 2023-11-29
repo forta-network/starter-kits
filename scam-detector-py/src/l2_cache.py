@@ -19,18 +19,20 @@ class L2Cache:
     @staticmethod
     def write(obj: object, chain_id: int, key: str):
         key = f"{VERSION}-{key}"
+        byte_length = 0
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
             attempt = 0  
             while attempt < L2Cache.MAX_RETRIES:
                 try:
                     logging.info(f"Persisting {key} using API")
                     bytes = pickle.dumps(obj)
+                    byte_length = len(bytes)
                     token = forta_agent.fetch_jwt({})
 
                     headers = {"Authorization": f"Bearer {token}"}
                     res = requests.post(f"{DATABASE}{key}_{chain_id}", data=bytes, headers=headers)
                     if res.status_code != 200:
-                        Utils.ERROR_CACHE.add(Utils.alert_error(f'Error {res.status_code} while persisting key {key} to DB.', "l2_cache.write.internal", ""))
+                        Utils.ERROR_CACHE.add(Utils.alert_error(f'Error {res.status_code} while persisting key {key} to DB; size {byte_length}.', "l2_cache.write.internal", ""))
                     logging.info(f"Persisting {key}_{chain_id} to database. Response: {res}")
                     break
                 except Exception as e:

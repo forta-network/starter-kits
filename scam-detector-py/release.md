@@ -1,6 +1,9 @@
 # Scam Detector Bot Release Notes
 
 ## 2.22.8 (beta2 - 11/28/2023)
+- add cache size to debug errors
+
+## 2.22.8 (beta2 - 11/28/2023)
 - fix unique key label FP handling
 
 ## 2.22.7 (beta2 - 11/22/2023)
