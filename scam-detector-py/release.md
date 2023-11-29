@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## 2.22.9 (beta2 - 11/29/2023)
+- added ICE-PHISHING-ZERO-NONCE-ALLOWANCE
+
 ## 2.22.8 (beta2 - 11/28/2023)
 - add cache size to debug errors
 
