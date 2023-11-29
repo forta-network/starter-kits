@@ -35,7 +35,7 @@ class BlockChainIndexer:
         elif chain_id == 250:
             return 50000000
         elif chain_id == 43114:
-            return 23000000
+            return 33000000
 
         raise Exception("Chain ID not supported")
 
