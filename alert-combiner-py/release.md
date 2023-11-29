@@ -1,5 +1,8 @@
 # Attack Detector Bot Release Notes
 
+## v3.52.1 (Nov 29 2023: beta2)
+- Fix bug 372
+
 ## v3.52.0 (Nov 15 2023: beta2)
 - Added new MEV bot for FP mitigation
 
