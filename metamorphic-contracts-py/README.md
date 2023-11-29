@@ -164,12 +164,16 @@ The bot settings are located in `src/options.py`:
 ```python
 MIN_CONFIDENCE = 0.7 # probability threshold
 ALERT_HISTORY_SIZE = 16384 # in number of transactions recorded
+DATABASE_CHUNK_SIZE = 2 ** 10 # number of DB records saved in each file
 ```
 
 The bot only fires alerts when the probability score for a given threat is above `MIN_CONFIDENCE`.
 
 It keeps a local history of all the alerts raised to compute stats.
 The history size is set by `ALERT_HISTORY_SIZE`.
+
+Each parquet file will roughly hold `DATABASE_CHUNK_SIZE` rows.
+With `2 ** 10`, on ethereum mainnet and at the rate of november 2023, a file will be written to disk every 10h as a rule of thumb.
 
 ## Tests
 
