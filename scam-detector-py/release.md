@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## 2.20.14 (11/29/2023 - beta (without private key compromise, phishing ML bot))
+- reved cache to reset cache size
+
 ## 2.20.13 prod (11/21/2023 - prod (without private key compromise, phishing ML bot))
 - update one pager
 

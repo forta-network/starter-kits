@@ -8,7 +8,7 @@ import traceback
 import forta_agent
 
 DATABASE = "https://research.forta.network/database/bot/"
-VERSION = "V10"
+VERSION = "V11"
 
 from src.utils import Utils
 
