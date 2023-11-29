@@ -52,6 +52,9 @@ class AlertCombinerFinding:
                 involved_address_bloom_filters[f'involved_address_bloom_filter_{index}'] = '' 
 
         meta_data = {**attacker_address, **victim_metadata, **anomaly_scores, **anomaly_score_dict, **involved_addresses, **involved_alerts, **involved_address_bloom_filters, **bot_source_dict}
+
+        involved_addresses_list = [address for key, address in meta_data.items() if key.startswith('involved_addresses_')]
+
         victim_clause = f" on {victim_name} ({victim_address.lower()})" if victim_address else ""
         anomaly_clause = f" Anomaly score: {anomaly_score}" if anomaly_score > 0 else ""
 
@@ -107,7 +110,8 @@ class AlertCombinerFinding:
                        'severity': severity,
                        'metadata': meta_data,
                        'unique_key': unique_key,
-                       'labels': labels
+                       'labels': labels,
+                       'addresses': involved_addresses_list
                        })
 
     @staticmethod
