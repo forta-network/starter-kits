@@ -15,5 +15,5 @@ def score_trace(trace: dict, **kwargs) -> dict:
     # scores each evasion technique
     __scores = {(sf.EvasionTechnique.LogicBomb, sf.LogicBombAlert.RedPill): 0.5}
     # update scores
-    __scores[(sf.EvasionTechnique.LogicBomb, sf.LogicBombAlert.RedPill)] = is_trace_red_pill_contract_creation(action=trace['type'], runtime_bytecode=trace['output'])
+    __scores[(sf.EvasionTechnique.LogicBomb, sf.LogicBombAlert.RedPill)] = is_trace_red_pill_contract_creation(action=trace['action_type'], runtime_bytecode=trace['result_code'])
     return __scores
