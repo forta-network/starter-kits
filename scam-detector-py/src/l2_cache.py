@@ -9,12 +9,13 @@ import traceback
 import forta_agent
 
 DATABASE = "https://research.forta.network/database/bot/"
-VERSION = "V10"
+VERSION = "V11"
 
 from src.utils import Utils
 
 class L2Cache:
     MAX_RETRIES = 3
+    PERSISTENCE_SIZE_LIMIT = 4 * 1024 * 1024 # 4.5 MB
 
     @staticmethod
     def write(obj: object, chain_id: int, key: str):
