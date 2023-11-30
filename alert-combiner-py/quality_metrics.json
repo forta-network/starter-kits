@@ -1,0 +1,43 @@
+{
+    "monthly": {
+        "2023-10": {
+            "overall": {
+                "contextual-precision": {
+                    "value": 0.95,
+                    "N": 57,
+                    "lower_bound": 0.88,
+                    "upper_bound": 0.98,
+                    "confidence": 0.9
+                },
+                "new-contextual-precision": {
+                    "value": 1.00,
+                    "N": 57,
+                    "lower_bound": 0.95,
+                    "upper_bound": 1.00,
+                    "confidence": 0.9
+                },
+                "recall": {
+                    "value": 0.70,
+                    "N": 10,
+                    "lower_bound": 0.44,
+                    "upper_bound": 0.87,
+                    "confidence": 0.9
+                },
+                "contextual-recall": {
+                    "value": 0.70,
+                    "N": 10,
+                    "lower_bound": 0.44,
+                    "upper_bound": 0.87,
+                    "confidence": 0.9
+                },
+                "new-contextual-recall": {
+                    "value": 0.40,
+                    "N": 10,
+                    "lower_bound": 0.19,
+                    "upper_bound": 0.64,
+                    "confidence": 0.9
+                }
+            }
+        }
+    }
+}
