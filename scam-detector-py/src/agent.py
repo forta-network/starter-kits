@@ -236,16 +236,21 @@ def update_list(items: dict, max_size: int, item: str, alert_id: str, list_name:
         items[item] = set()
     items[item].add(logic+alert_id)
 
-
     while len(items) > max_size:
-        items.popitem(last=False)
+        if isinstance(items, list):
+            items.pop(0)
+        else:
+            items.popitem(last=False)
 
     count = 0
     if len(items) % 1000 == 0:
         while len(pickle.dumps(items)) > L2Cache.PERSISTENCE_SIZE_LIMIT:
             for i in range(100): # remove 100 items at a time given pickle is expensive
                 if len(items) > 0:
-                    items.popitem(last=False) # remove oldest item
+                    if isinstance(items, list):
+                        items.pop(0)
+                    else:
+                        items.popitem(last=False)
                     count += 1
     
     if count > 0:
