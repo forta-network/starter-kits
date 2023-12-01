@@ -291,7 +291,7 @@ def get_end_user_attack_addresses(alert_event: forta_agent.alert_event.AlertEven
     return list(addresses)
 
 
-def update_reactive_likely_fps(w3, current_date) -> list:
+def update_reactive_likely_fps(w3, du, current_date) -> list:
     logging.info("Update reactive likely fps called")
     global REACTIVE_LIKELY_FPS
     global ALERTED_FP_CLUSTERS
@@ -353,7 +353,7 @@ def update_reactive_likely_fps(w3, current_date) -> list:
         if REACTIVE_LIKELY_FPS:
             address = next(iter(REACTIVE_LIKELY_FPS), None)
             logging.info(f"Processing address: {address}")
-            if Utils.is_fp(w3, address, CHAIN_ID):
+            if Utils.is_fp(w3, du, dynamo, address):
                 logging.info(f"{address} is an FP. Emitting FP finding.")
                 update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, address)
                 findings.append(AlertCombinerFinding.alert_FP(address, REACTIVE_LIKELY_FPS[address]['label'], REACTIVE_LIKELY_FPS[address]['metadata']))
@@ -934,7 +934,7 @@ def provide_handle_block(w3, du):
             persist_state()
             logging.info(f"Persisted state")
 
-        reactive_fp_findings = update_reactive_likely_fps(w3, dt) 
+        reactive_fp_findings = update_reactive_likely_fps(w3, du, dt) 
         FINDINGS_CACHE_BLOCK.extend(reactive_fp_findings)
         
         for finding in FINDINGS_CACHE_BLOCK[0:10]: 
