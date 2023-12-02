@@ -87,7 +87,7 @@ def get_attacker_victim_lists(w3, decoded_logs, alert_type):
     attackers = []
     victims = []
 
-    if alert_type == "ADDRESS-POISONING-FAKE-TOKEN":
+    if alert_type in ["ADDRESS-POISONING-FAKE-TOKEN", "ADDRESS-POISONING-ZERO-VALUE"]:
         from_as_attacker_count = 0
         to_as_attacker_count = 0
         tx_counts = {}
@@ -124,12 +124,7 @@ def get_attacker_victim_lists(w3, decoded_logs, alert_type):
                 index = attackers.index(from_address if from_address in attackers else to_address)
                 attackers[index], victims[index] = victims[index], attackers[index]
         attackers = list(set(attackers))
-        victims = list(set(victims))
-    elif alert_type == "ADDRESS-POISONING-ZERO-VALUE":
-        senders = [str.lower(log['from']) for log in log_args]
-        receivers = [str.lower(log['to']) for log in log_args]
-        victims = list(set(senders))
-        attackers = list(set([x for x in receivers if x not in senders]))       
+        victims = list(set(victims))      
     elif alert_type == "ADDRESS-POISONING-LOW-VALUE":
         senders = [str.lower(log['from']) for log in log_args]
         receivers = [str.lower(log['to']) for log in log_args]
