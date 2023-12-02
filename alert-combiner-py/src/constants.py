@@ -1,4 +1,5 @@
 ALERTS_LOOKBACK_WINDOW_IN_HOURS = 24
+FP_MITIGATION_EXPIRY_IN_HOURS = 365 * 24
 MIN_ALERTS_COUNT = 3
 ANOMALY_SCORE_THRESHOLD_STRICT = 0.0000001
 ANOMALY_SCORE_THRESHOLD_LOOSE = 0.0001
@@ -9,6 +10,8 @@ ALERTED_CLUSTERS_MAX_QUEUE_SIZE = 10000
 ALERTED_FP_CLUSTERS_QUEUE_SIZE = 10000
 MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE = 10000
 
+TX_COUNT_FILTER_THRESHOLD = 2000  # ignore EOAs with tx count larger than this threshold to mitigate FPs
+CONTRACTS_TX_COUNT_FILTER_THRESHOLD = 5000 # ignore EOAs that have deployed a contract with tx count larger than this threshold to mitigate FPs
 
 DEFAULT_ANOMALY_SCORE = 0.001  # used if anomaly score is less or eq than 0
 
@@ -33,6 +36,7 @@ FP_MITIGATION_BOTS = [("0x5bb675492f3accba1d35e7f59f584b6fae11df919f13223f3056a6
                       ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-HIGH"),
                       ("0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f", "POSITIVE-REPUTATION-1"),
                       ("0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f", "POSITIVE-REPUTATION-2"),
+                      ("0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f", "POSITIVE-REPUTATION-3"),
                       ("0xe04b3fa79bd6bc6168a211bcec5e9ac37d5dd67a41a1884aa6719f8952fbc274", "VICTIM-NOTIFICATION-1")
                       ]
 

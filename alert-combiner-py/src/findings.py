@@ -114,18 +114,22 @@ class AlertCombinerFinding:
                        })
 
     @staticmethod
-    def alert_FP(address: str, label: str, metadata: dict) -> Finding:
+    def alert_FP(address: str, label: str, metadata_list: list) -> Finding:
 
         labels = []
-        labels.append(Label({
-                'entityType': EntityType.Address,
-                'label': label,
-                'entity': address,
-                'confidence': 0.99,
-                'remove': "true",
-                'metadata': metadata
+        for metadata in metadata_list:
+            labels.append(Label({
+                    'entityType': EntityType.Address,
+                    'label': label,
+                    'entity': address,
+                    'confidence': 0.99,
+                    'remove': "true",
+                    'metadata': metadata
 
-            }))
+                }))
+            
+        unique_key = hashlib.sha256(f'{address},{label},{metadata_list},ATTACK-DETECTOR-FALSE-POSITIVE'.encode()).hexdigest()
+        logging.info(f"Unique key of {address},{label},{metadata_list},ATTACK-DETECTOR-FALSE-POSITIVE: {unique_key}")
 
         return Finding({
             'name': 'Attack detector identified an address that was incorrectly alerted on. Emitting false positive alert.',
@@ -134,7 +138,8 @@ class AlertCombinerFinding:
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'metadata': {},
-            'labels': labels
+            'labels': labels,
+            'unique_key': unique_key
         })
     
     @staticmethod
