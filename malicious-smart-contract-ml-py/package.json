@@ -1,6 +1,6 @@
 {
   "name": "malicious-smart-contract-ml-v3",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/malicious-smart-contract-ml-py",
   "description": "Malicious Smart Contract Detection Bot V3",
   "chainIds": [
@@ -14,20 +14,20 @@
   ],
   "chainSettings": {
     "1": {
-      "shards": 3,
-      "target": 2
+      "shards": 6,
+      "target": 3
     },
     "56": {
-      "shards": 5,
-      "target": 2
+      "shards": 10,
+      "target": 3
     },
     "137": {
-      "shards": 5,
-      "target": 2
+      "shards": 10,
+      "target": 3
     },
     "default": {
-      "shards": 2,
-      "target": 2
+      "shards": 4,
+      "target": 3
     }
   },
   "scripts": {
@@ -53,7 +53,7 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.33"
+    "forta-agent": "^0.1.45"
   },
   "devDependencies": {
     "nodemon": "^2.0.8"

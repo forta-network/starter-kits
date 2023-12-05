@@ -2,12 +2,17 @@ from web3 import Web3
 from hexbytes import HexBytes
 import requests
 import re
+import traceback
 import logging
 import json
+from forta_agent import Finding, FindingType, FindingSeverity
+
+from src.error_cache import ErrorCache
 
 etherscan_label_api = "https://api.forta.network/labels/state?sourceIds=etherscan,0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede&entities="
 
 class Utils:
+    ERROR_CACHE = ErrorCache
     CONTRACT_CACHE = dict()
     TOTAL_SHARDS = None
     IS_BETA = None
@@ -25,10 +30,16 @@ class Utils:
             return Utils.CONTRACT_CACHE[addresses]
         else:
             is_contract = True
-            for address in addresses.split(','):
-                code = w3.eth.get_code(Web3.toChecksumAddress(address))
-                is_contract = is_contract & (code != HexBytes('0x'))
-            Utils.CONTRACT_CACHE[addresses] = is_contract
+            try:
+                for address in addresses.split(','):
+                    code = w3.eth.get_code(Web3.toChecksumAddress(address))
+                    is_contract = is_contract & (code != HexBytes('0x'))
+                Utils.CONTRACT_CACHE[addresses] = is_contract
+            except Exception as e:
+                error_finding = Utils.alert_error(str(e), "Utils.is_contract", f"{traceback.format_exc()}")
+                Utils.ERROR_CACHE.add(error_finding)
+                logging.error(f"Exception in assessing is_contract for address(es) {addresses}: {e}")
+
             return is_contract
         
     @staticmethod
@@ -56,11 +67,13 @@ class Utils:
             res = requests.get(etherscan_label_api + address.lower())
             if res.status_code == 200:
                 labels = res.json()
-                if len(labels) > 0:
-                    return labels['events'][0]['label']['label']
+                if labels and len(labels.get('events', [])) > 0:
+                     return labels['events'][0]['label']['label']
         except Exception as e:
-            logging.warning(f"Exception in get_etherscan_label {e}")
-            return ""
+            error_finding = Utils.alert_error(str(e), "Utils.get_etherscan_label", f"{traceback.format_exc()}")
+            Utils.ERROR_CACHE.add(error_finding)
+            logging.error(f"Exception in get_etherscan_label {e}")
+        return ""
 
     @staticmethod
     def get_total_shards(CHAIN_ID: int) -> int:
@@ -87,4 +100,34 @@ class Utils:
             logging.debug("loaded package.json")
             Utils.IS_BETA = 'beta' in package["name"]
         return Utils.IS_BETA
+    
+    @staticmethod
+    def sanitize(msg: str) -> str:
+        # replace any key value pairs where key contains 'key' with 'X'ex for the value
+        # e.g. description&apiKey=foobar&test=foo to description&apiKey=XXXXXX&test=foo
+
+        msg_arr = msg.split('&')
+        for i in range(len(msg_arr)):
+            if 'key' in msg_arr[i].lower() and '=' in msg_arr[i]:
+                msg_arr[i] = msg_arr[i].split('=')[0] + '=XXXXXX'
+        msg_sanatized = '&'.join(msg_arr)
+        return msg_sanatized
+    
+    @staticmethod
+    def alert_error(error_description: str, error_source: str, error_stacktrace: str) -> Finding:
+
+        labels = []
+        
+        return Finding({
+            'name': 'Attack detector encountered a recoverable error.',
+            'description': f'Error: {Utils.sanitize(error_description)}',
+            'alert_id': 'DEBUG-ERROR',
+            'type': FindingType.Info,
+            'severity': FindingSeverity.Info,
+            'metadata': {
+                'error_source': Utils.sanitize(error_source),
+                'error_stacktrace': Utils.sanitize(error_stacktrace)
+            },
+            'labels': labels
+        })
          

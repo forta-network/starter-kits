@@ -2,7 +2,7 @@ from forta_agent import create_transaction_event
 import random
 
 import agent
-from web3_mock import Web3Mock, EOA_ADDRESS_NEW, EOA_ADDRESS_OLD
+from web3_mock import Web3Mock, EOA_ADDRESS_NEW, EOA_ADDRESS_OLD, EOA_ADDRESS_CONTRACT_DEPLOYER
 from blockexplorer_mock import BlockExplorerMock
 
 w3 = Web3Mock()
@@ -106,3 +106,26 @@ class TestPositiveReputation:
 
         findings = agent.detect_positive_reputation(w3, blockexplorer, tx_event)
         assert len(findings) == 1, "Bot didnt successfully detect positive reputation by age"
+
+    def test_detect_positive_reputation_by_age_and_contract_deployment(self):
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+        agent.initialize()
+        tx_event = create_transaction_event({
+            'transaction': {
+                'hash': "0",
+                'from': EOA_ADDRESS_CONTRACT_DEPLOYER,
+                'value': 0,
+                'to': "",
+                'nonce': 10,
+            },
+            'block': {
+                'number': 0
+            },
+            'logs': [],
+            'receipt': {
+                'logs': []}
+        })
+
+        findings = agent.detect_positive_reputation(w3, blockexplorer, tx_event)
+        assert len(findings) == 1, "Bot didnt successfully detect positive reputation by age"
+        assert findings[0].alert_id == "POSITIVE-REPUTATION-3", "Wrong alert emitted"

@@ -9,7 +9,7 @@ from web3 import Web3
 
 from datetime import datetime, timedelta
 
-from src.constants import MIN_NONCE, MIN_AGE_IN_DAYS, CACHE_EXPIRY_IN_DAYS
+from src.constants import MIN_NONCE, MIN_AGE_IN_DAYS, MIN_AGE_IN_DAYS_FOR_CONTRACT_DEPLOYMENT, CACHE_EXPIRY_IN_DAYS
 from src.findings import PositiveReputationFindings
 from src.blockexplorer import BlockExplorer
 from src.storage import get_secrets, dynamo_table, s3_client
@@ -90,7 +90,6 @@ def put_first_tx(address: str, first_tx_datetime: datetime):
 def read_first_tx(address: str):
     global CHAIN_ID
 
-    entity_clusters = dict()
     itemId = f"{item_id_prefix}|{CHAIN_ID}|first_tx|{address}"
     logging.debug(f"Reading entity clusters for address {address} from itemId {itemId}")
     logging.debug(f"Dynamo : {dynamo}")
@@ -163,30 +162,31 @@ def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent
     logging.info(f"Analyzing transaction {transaction_event.transaction.hash} on chain {CHAIN_ID}")
 
     findings = []
+    address = transaction_event.transaction.from_.lower()
 
-    # get the nonce of the sender
-    if transaction_event.transaction.nonce >= MIN_NONCE:
-        first_tx = read_first_tx(transaction_event.transaction.from_.lower())
-        if first_tx is None:
-            logging.info(f"Checking first tx of address with blockexplorer {transaction_event.transaction.from_}")
-            first_tx = blockexplorer.get_first_tx(transaction_event.transaction.from_)
-            put_first_tx(transaction_event.transaction.from_.lower(), first_tx)
+    # Get the first transaction of the sender
+    first_tx = read_first_tx(address)
+    if first_tx is None:
+        logging.info(f"Checking first tx of address with blockexplorer {address}")
+        first_tx = blockexplorer.get_first_tx(address)
+        put_first_tx(address, first_tx)
 
-        if first_tx < datetime.now() - timedelta(days=MIN_AGE_IN_DAYS):
-            if not read_pos_rep(transaction_event.transaction.from_.lower()):
-                put_pos_rep_address(transaction_event.transaction.from_.lower())
-                findings.append(PositiveReputationFindings.positive_reputation(transaction_event.transaction.from_, CHAIN_ID))
-    else:
-        first_tx = read_first_tx(transaction_event.transaction.from_.lower())
-        if first_tx is None:
-            logging.info(f"Checking first tx of address with blockexplorer {transaction_event.transaction.from_}")
-            first_tx = blockexplorer.get_first_tx(transaction_event.transaction.from_)
-            put_first_tx(transaction_event.transaction.from_.lower(), first_tx)
+    # Check if the first transaction is older than the minimum age
+    if first_tx < datetime.now() - timedelta(days=MIN_AGE_IN_DAYS): 
+        if not read_pos_rep(address):
+            put_pos_rep_address(address)
 
-        if first_tx < datetime.now() - timedelta(days=MIN_AGE_IN_DAYS):
-            if not read_pos_rep(transaction_event.transaction.from_.lower()):
-                put_pos_rep_address(transaction_event.transaction.from_.lower())
-                findings.append(PositiveReputationFindings.positive_reputation_by_age(transaction_event.transaction.from_, CHAIN_ID))
+            # Append findings based on the nonce condition
+            if transaction_event.transaction.nonce >= MIN_NONCE:
+                findings.append(PositiveReputationFindings.positive_reputation(address, CHAIN_ID))
+            else:
+                findings.append(PositiveReputationFindings.positive_reputation_by_age(address, CHAIN_ID))
+    elif first_tx < datetime.now() - timedelta(days=MIN_AGE_IN_DAYS_FOR_CONTRACT_DEPLOYMENT):
+        if not read_pos_rep(address):
+
+            if blockexplorer.has_deployed_high_tx_count_contract(address, CHAIN_ID):
+                put_pos_rep_address(address)
+                findings.append(PositiveReputationFindings.positive_reputation_by_contract_deployment(address, CHAIN_ID))
 
 
     return findings

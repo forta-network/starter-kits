@@ -50,11 +50,6 @@ def run_all_extended(central_node, alert_event, web3):
             'type': forta_agent.FindingType.Scam
         }
     logger.info(f"{central_node}:\t{graph_statistics} new attackers found")
-    # if attackers_df.shape[0] > MAX_FINDINGS:
-    #     logger.info(f"{central_node}:\tToo many attackers found: {attackers_df.shape[0]}")
-    # if attackers_df.shape[0] >= int(PERCENTAGE_ATTACKERS * graph_statistics['n_nodes']):
-    #     logger.info(f"{central_node}:\tToo many attackers found in relation to the graph. Lowering confidencce: {attackers_df.shape[0]}")
-    #     finding_dict['severity'] = forta_agent.FindingSeverity.Medium
     # We will only consider the model as working if it has less or equal than MAX_FINDINGS_PER_ADDRESS findings. Otherwise we remove all findings
     if attackers_df.shape[0] <= MAX_FINDINGS_PER_ADDRESS:
         for row_idx in range(attackers_df.shape[0]):
@@ -82,8 +77,8 @@ def run_all_extended(central_node, alert_event, web3):
             all_findings_list.append(Finding(finding_dict))
     else:
         logger.info(f"{central_node}:\tToo many attackers found: {attackers_df.shape[0]}. Not adding any findings")
-    if alert_event.alert.alert_id in ['SCAM-DETECTOR-NATIVE-ICE-PHISHING']:
-        logger.info(f"{central_node}:\tAlert {alert_event.alert.alert_id} is a native ice phishing alert. Not running global model")
+    if alert_event.alert.alert_id in ['SCAM-DETECTOR-NATIVE-ICE-PHISHING', "SCAM-DETECTOR-ICE-PHISHING"]:
+        logger.info(f"{central_node}:\tAlert {alert_event.alert.alert_id}. Not running global model")
         return all_findings_list
     # Prepare the dataset for the global model
     finding_dict_global = finding_dict.copy()
@@ -92,9 +87,6 @@ def run_all_extended(central_node, alert_event, web3):
     finding_dict_global['description'] = 'Address marked as scammer by label propagation (global model)'
     # Restarting severity
     finding_dict_global['severity'] = forta_agent.FindingSeverity.High
-    # if attackers_df_global.shape[0] >= int(PERCENTAGE_ATTACKERS * graph_statistics['n_nodes']):
-    #     logger.info(f"{central_node}:\tToo many attackers found in relation to the graph for global model. Lowering confidencce: {attackers_df_global.shape[0]}")
-    #     finding_dict_global['severity'] = forta_agent.FindingSeverity.Medium
     if attackers_df_global.shape[0] <= MAX_FINDINGS_PER_ADDRESS:
         for row_idx in range(attackers_df_global.shape[0]):
             attacker_info = attackers_df_global.iloc[row_idx]
@@ -185,7 +177,7 @@ def provide_handle_alert(w3):
         global global_futures
 
         list_of_addresses = []
-        if alert_event.alert.alert_id in ['SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-SCAMMER-ASSOCIATION']:
+        if alert_event.alert.alert_id in ['SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-SCAMMER-ASSOCIATION', 'SCAM-DETECTOR-FALSE-POSITIVE']:
             logger.debug(f"Invalid alert id. Addresses: {';'.join([label.entity for label in alert_event.alert.labels])}")
             return []
         for label in alert_event.alert.labels:
