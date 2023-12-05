@@ -1,6 +1,9 @@
 # Scam Detector Bot Release Notes
 
-## 2.22.10 (beta2 - 11/29/2023)
+## 2.23.0 (beta2 - 12/5/2023)
+- initial version
+
+## 2.22.10 (beta2 - 11/29/2023, prod - 12/4/2023)
 - fix issue 392
 
 ## 2.22.9 (beta2 - 11/29/2023)
@@ -15,7 +18,7 @@
 ## 2.22.7 (beta2 - 11/22/2023)
 - fix beta2 handling
 
-## 2.22.6 (beta2 - 11/22/2023)
+## 2.22.6 (beta2 - 11/22/2023, prod - 12/4/2023)
 - remove pkc-3 and phishing ML bot (which is not used in prod)
 - fixed manual list but
 
