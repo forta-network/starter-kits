@@ -1528,7 +1528,7 @@ def provide_handle_transaction(w3):
                 raise Exception(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Raising exception.")
             else:
                 logging.warning(f"{BOT_VERSION}: Not initialized (initialized called: {INITIALIZED_CALLED}) handle transaction {INITIALIZED}. Time elapsed: {time_elapsed}. Return empty finding.")
-                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "agent.handle_transaction", traceback.format_exc()))
+                Utils.ERROR_CACHE.add(Utils.alert_error("Not initialized", "agent.handle_transaction", traceback.format_exc()))
                 return []
         
         global FINDINGS_CACHE_TRANSACTION
