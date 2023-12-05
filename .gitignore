@@ -23,3 +23,6 @@ scam-detector-py/src/fp_mitigation/models/ohe.pkl
 alert-combiner-py/src/fp_mitigation/models/ae_state_dict.pt
 alert-combiner-py/src/fp_mitigation/models/ae.pkl
 alert-combiner-py/src/fp_mitigation/models/attack_lgbm.pkl
+alert-combiner-py/*.ipynb
+alert-combiner-py/*.csv
+.gitignore

@@ -4,6 +4,7 @@ import os
 import io
 import random
 import base64
+import json
 import gnupg
 from datetime import datetime
 import pandas as pd
@@ -560,6 +561,34 @@ class TestScamDetector:
                 found_contract = True   
         assert found_contract, "should have found scammer contract"
 
+
+    def test_detect_blocksec_phishing_drainer_encrypted(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534"
+        alert_id = "Phishing-drainer"
+        description = "Drainer report."
+        metadata = {'scammer': 'Inferno Drainer Affiliate Account', 'transaction': '0xaf300549d642b31bc2a1d6cf1dbf31213be7634f5bfb5d5ada45b1e6d7bb1f48'}
+        label = {"entity": "0xfaee4d9ce515c83cdca2e4a7365e7ecbbe74d29d","entityType": "ADDRESS","label": "affiliate","metadata": {"drainer-name": "Inferno Drainer"},"confidence": 1}
+        labels = [ label ]
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
+
+        encrypted_alert_event = TestScamDetector.encrypt_alert_event(alert_event)
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, encrypted_alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding for the affiliate EOA"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-ICE-PHISHING", "should be ice phishing finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert finding.metadata['attribution'] == 'Inferno Drainer', "should have drainer name in metadata"
+        assert len(finding.labels) > 0, "labels should not be empty"
+        assert finding.labels[0].entity == '0xfaee4d9ce515c83cdca2e4a7365e7ecbbe74d29d'
+        assert finding.labels[0].label == 'scammer'
+        assert finding.labels[0].metadata['attribution'] == 'Inferno Drainer'
+      
+
     def test_detect_soft_rug_pull(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
@@ -683,24 +712,24 @@ class TestScamDetector:
         assert finding.metadata is not None, "metadata should not be empty"
         assert len(finding.labels) > 0, "labels should not be empty"
 
+    # 11/22/2023 - disabled as we havent been able to ship this for while now
+    # def test_detect_private_key_compromise(self):
+    #     agent.initialize()
+    #     agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
-    def test_detect_private_key_compromise(self):
-        agent.initialize()
-        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+    #     bot_id = "0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03"
+    #     alert_id = "PKC-3"
+    #     description = "0x006a176a0092b19ad0438919b08a0ed317a2a9b5 transferred funds to 0xdcde9a1d3a0357fa3db6ae14aacb188155362974 and has been inactive for a week"
+    #     metadata = {"anomalyScore":"0.00011111934217349434","attacker":"0xdcde9a1d3a0357fa3db6ae14aacb188155362974","transferredAsset":"MATIC","txHash":"0xd39f161892b9cb184b9daa44d2d5ce4a75ab3133275d5f12a4a2b5eed56b6f41","victims":"0x006a176a0092b19ad0438919b08a0ed317a2a9b5"}
+    #     alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
-        bot_id = "0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03"
-        alert_id = "PKC-3"
-        description = "0x006a176a0092b19ad0438919b08a0ed317a2a9b5 transferred funds to 0xdcde9a1d3a0357fa3db6ae14aacb188155362974 and has been inactive for a week"
-        metadata = {"anomalyScore":"0.00011111934217349434","attacker":"0xdcde9a1d3a0357fa3db6ae14aacb188155362974","transferredAsset":"MATIC","txHash":"0xd39f161892b9cb184b9daa44d2d5ce4a75ab3133275d5f12a4a2b5eed56b6f41","victims":"0x006a176a0092b19ad0438919b08a0ed317a2a9b5"}
-        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+    #     findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
-        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
-
-        assert len(findings) == 1, "this should have triggered a finding"
-        finding = findings[0]
-        assert finding.alert_id == "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "should be private key compromise finding"
-        assert finding.metadata is not None, "metadata should not be empty"
-        assert len(finding.labels) > 0, "labels should not be empty"
+    #     assert len(findings) == 1, "this should have triggered a finding"
+    #     finding = findings[0]
+    #     assert finding.alert_id == "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "should be private key compromise finding"
+    #     assert finding.metadata is not None, "metadata should not be empty"
+    #     assert len(finding.labels) > 0, "labels should not be empty"
 
 
     def test_detect_impersonating_token(self):
@@ -780,6 +809,17 @@ class TestScamDetector:
     def test_detect_alert_similar_contract(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        # Read the content of package.json and store the original "name" field
+        original_name = ""
+        with open("package.json", "r") as package_file:
+            package_data = json.load(package_file)
+            original_name = package_data["name"]
+
+        # Modify the "name" field to "beta" (as alt doesn't return labels for the test)
+        package_data["name"] = "beta"
+        with open("package.json", "w") as package_file:
+            json.dump(package_data, package_file, indent=2)
         
         bot_id = "0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560"
         alert_id = "NEW-SCAMMER-CONTRACT-CODE-HASH"
@@ -789,6 +829,11 @@ class TestScamDetector:
         alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
 
         findings = agent.detect_scam(w3, alert_event, True)
+
+        # Revert the "name" field back to its original value
+        package_data["name"] = original_name
+        with open("package.json", "w") as package_file:
+            json.dump(package_data, package_file, indent=2)
 
         assert len(findings) == 1, "this should have triggered a finding"
         assert findings[0].alert_id == "SCAM-DETECTOR-SIMILAR-CONTRACT"
@@ -869,8 +914,8 @@ class TestScamDetector:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
-                'from': '0x58fECB05dc3827257f5Abd2b6C985D0ff0F4d0Ad',
-                'nonce': 0,
+                'from': '0x07f4d1733c85650234a94e884b0d4764c399ab5c', # BNB Chain
+                'nonce': 73,
             },
             'block': {
                 'number': 0
@@ -882,7 +927,7 @@ class TestScamDetector:
 
         assert len(findings) == 1, "this should have triggered a finding"
         assert findings[0].alert_id == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
-        assert findings[0].metadata["scammer_contract_address"] == "0x16110b84fbc144f3879cbd4f201e724c79fbb52d".lower(), "wrong scammer_contract"
+        assert findings[0].metadata["scammer_contract_address"] == "0xa5b7bfe4e73b5b6f9c7462b28ac3b326eda9e3ff".lower(), "wrong scammer_contract"
 
     #TODO once deployed and those labels with new format coming in
     def test_scammer_contract_deployment_indirect(self):
@@ -893,7 +938,7 @@ class TestScamDetector:
         tx_event = create_transaction_event({
             'transaction': {
                 'hash': "0",
-                'from': "0x58fECB05dc3827257f5Abd2b6C985D0ff0F4d0Ad",
+                'from': "0x07f4d1733c85650234a94e884b0d4764c399ab5c",
                 'to': "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
                 'nonce': 0,
             },
@@ -1062,7 +1107,23 @@ class TestScamDetector:
         agent.initialize(True)
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
+        # Read the content of package.json and store the original "name" field
+        original_name = ""
+        with open("package.json", "r") as package_file:
+            package_data = json.load(package_file)
+            original_name = package_data["name"]
+
+        # Modify the "name" field to "beta" (as alt doesn't return labels for the test)
+        package_data["name"] = "beta"
+        with open("package.json", "w") as package_file:
+            json.dump(package_data, package_file, indent=2)
+
         findings = agent.emit_new_fp_finding(w3)
+
+        # Revert the "name" field back to its original value
+        package_data["name"] = original_name
+        with open("package.json", "w") as package_file:
+            json.dump(package_data, package_file, indent=2)
 
         assert len(findings) > 0, "this should have triggered FP findings"
         finding = findings[0]
@@ -1110,16 +1171,17 @@ class TestScamDetector:
         sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
         sorted_fp_labels = list(sorted_fp_labels)
         assert len(sorted_fp_labels) == 2, "should have two FP label; one for the EOA, one for the contract"
-        # tuple of entity, threat category, metadata (tuple of key value pairs)
+        # tuple of entity, label, metadata (tuple of key value pairs)
         label_0 = list(sorted_fp_labels)[0]
         assert label_0[0] == EOA_ADDRESS_SMALL_TX.lower()
-        assert label_0[1] == 'address-poisoner'
+        assert label_0[1] == 'scammer'
         assert 'address_type=EOA' in label_0[2] 
+        assert 'threat_category=address-poisoner' in label_0[2]
         label_1 = list(sorted_fp_labels)[1]
         assert label_1[0] == CONTRACT.lower()
-        assert label_1[1] == 'address-poisoner'
+        assert label_1[1] == 'scammer'
         assert 'address_type=contract' in label_1[2]
-        
+        assert 'threat_category=address-poisoner' in label_1[2]
 
 
     def test_obtain_all_fp_labels_scammer_association(self):
@@ -1134,16 +1196,18 @@ class TestScamDetector:
         fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_LARGE_TX, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, 1)
         sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
         sorted_fp_labels = list(sorted_fp_labels)
-        assert len(sorted_fp_labels) == 4, "should have three FP labels; one for each EOA and contract"
+        assert len(sorted_fp_labels) == 4, "should have four FP labels; one for each EOA and contract"
 
         label_0 = list(sorted_fp_labels)[0]
         assert label_0[0] == EOA_ADDRESS_SMALL_TX.lower()
-        assert label_0[1] == 'address-poisoner'
+        assert label_0[1] == 'scammer'
         assert 'address_type=EOA' in label_0[2] 
+        assert 'threat_category=address-poisoner' in label_0[2]
         label_3 = list(sorted_fp_labels)[3]
         assert label_3[0] == EOA_ADDRESS_LARGE_TX.lower()
-        assert label_3[1] == 'address-poisoner'
+        assert label_3[1] == 'scammer'
         assert 'address_type=EOA' in label_3[2]
+        assert 'threat_category=address-poisoner' in label_3[2]
         
        
     def test_obtain_all_fp_labels_similar_contract(self):
@@ -1161,60 +1225,60 @@ class TestScamDetector:
         sorted_fp_labels = list(sorted_fp_labels)
         assert len(sorted_fp_labels) == 4, "should have four FP labels; one for each EOA and contract"
 
+    # 11/22/2023 - removed because we have not been able to ship this for some time now
+    # def test_detect_ice_phishing_ml(self):
+    #     agent.initialize()
+    #     agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
-    def test_detect_ice_phishing_ml(self):
-        agent.initialize()
-        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+    #     bot_id = "0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e"
+    #     alert_id = "EOA-PHISHING-SCAMMER"
+    #     description = "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12 has been identified as a phishing scammer"
+    #     metadata = {
+    #         "scammer": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
+    #         "feature_generation_time_sec": 55.393977834,
+    #         "prediction_time_sec": 3.258650750000001,
+    #         "feature_1_from_address_count_unique_ratio": 0.8977777777777778,
+    #         "feature_2_from_address_nunique": 202,
+    #         "feature_3_in_block_number_std": 103944.45395073255,
+    #         "feature_4_in_ratio": 0.0000027220471162690886,
+    #         "feature_5_ratio_from_address_nunique": 0.6824324324324325,
+    #         "feature_6_total_time": 9495012,
+    #         "feature_7_from_in_min_std": 0,
+    #         "feature_8_from_in_block_timespan_median": 477557,
+    #         "feature_9_from_out_min_std": 0,
+    #         "feature_10_from_out_block_std_median": 166256.50317778645,
+    #         "feature_11_to_in_sum_min": 48516.30387100715,
+    #         "feature_12_to_in_sum_median": 196337.4491312858,
+    #         "feature_13_to_in_sum_median_ratio": 5190.0165806816785,
+    #         "feature_14_to_in_min_min": 1e-18,
+    #         "feature_15_to_in_block_std_median": 236914.9074575176,
+    #         "feature_16_to_out_min_std": 0,
+    #         "anomaly_score": 1,
+    #         "model_version": "1678286940",
+    #         "model_threshold": 0.5,
+    #         "model_score": 0.659,
+    #     }
+    #     label = {
+    #         "entityType": "Address",
+    #         "entity": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
+    #         "label": "scammer-eoa",
+    #         "confidence": 0.659,
+    #         "remove": False,
+    #         "metadata": {}
+    #         }
+    #     labels = [ label ]
+    #     alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
 
-        bot_id = "0x4aa29f0e18bd56bf85dd96f568a9affb5a367cec4df4b67f5b4ed303ff15271e"
-        alert_id = "EOA-PHISHING-SCAMMER"
-        description = "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12 has been identified as a phishing scammer"
-        metadata = {
-            "scammer": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
-            "feature_generation_time_sec": 55.393977834,
-            "prediction_time_sec": 3.258650750000001,
-            "feature_1_from_address_count_unique_ratio": 0.8977777777777778,
-            "feature_2_from_address_nunique": 202,
-            "feature_3_in_block_number_std": 103944.45395073255,
-            "feature_4_in_ratio": 0.0000027220471162690886,
-            "feature_5_ratio_from_address_nunique": 0.6824324324324325,
-            "feature_6_total_time": 9495012,
-            "feature_7_from_in_min_std": 0,
-            "feature_8_from_in_block_timespan_median": 477557,
-            "feature_9_from_out_min_std": 0,
-            "feature_10_from_out_block_std_median": 166256.50317778645,
-            "feature_11_to_in_sum_min": 48516.30387100715,
-            "feature_12_to_in_sum_median": 196337.4491312858,
-            "feature_13_to_in_sum_median_ratio": 5190.0165806816785,
-            "feature_14_to_in_min_min": 1e-18,
-            "feature_15_to_in_block_std_median": 236914.9074575176,
-            "feature_16_to_out_min_std": 0,
-            "anomaly_score": 1,
-            "model_version": "1678286940",
-            "model_threshold": 0.5,
-            "model_score": 0.659,
-        }
-        label = {
-            "entityType": "Address",
-            "entity": "0xc6f5341d0cfea47660985b1245387ebc0dbb6a12",
-            "label": "scammer-eoa",
-            "confidence": 0.659,
-            "remove": False,
-            "metadata": {}
-            }
-        labels = [ label ]
-        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata, labels)
+    #     findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
 
-        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
-
-        assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
-        finding = findings[0]
-        assert finding.alert_id == "SCAM-DETECTOR-UNKNOWN", "should be unknown finding"
-        assert finding.metadata is not None, "metadata should not be empty"
-        assert len(finding.labels) > 0, "labels should not be empty"
-        assert finding.labels[0].entity == '0xc6f5341d0cfea47660985b1245387ebc0dbb6a12'
-        assert finding.labels[0].label == 'scammer'
-        assert finding.labels[0].confidence == 0.659
+    #     assert len(findings) == 1, "this should have triggered a finding for delpoyer EOA"
+    #     finding = findings[0]
+    #     assert finding.alert_id == "SCAM-DETECTOR-UNKNOWN", "should be unknown finding"
+    #     assert finding.metadata is not None, "metadata should not be empty"
+    #     assert len(finding.labels) > 0, "labels should not be empty"
+    #     assert finding.labels[0].entity == '0xc6f5341d0cfea47660985b1245387ebc0dbb6a12'
+    #     assert finding.labels[0].label == 'scammer'
+    #     assert finding.labels[0].confidence == 0.659
 
 
     def test_emit_new_manual_finding(self):
@@ -1222,16 +1286,35 @@ class TestScamDetector:
         agent.initialize(True)
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
+        # Read the content of package.json and store the original "name" field
+        original_name = ""
+        with open("package.json", "r") as package_file:
+            package_data = json.load(package_file)
+            original_name = package_data["name"]
+
+        # Modify the "name" field to "beta" (as alt doesn't return labels for the test)
+        package_data["name"] = "beta"
+        with open("package.json", "w") as package_file:
+            json.dump(package_data, package_file, indent=2)
+
         findings = agent.emit_manual_finding(w3, True)
+
+        # Revert the "name" field back to its original value
+        package_data["name"] = original_name
+        with open("package.json", "w") as package_file:
+            json.dump(package_data, package_file, indent=2)
 
         assert len(findings) == 4, "this should have triggered manual address findings"
         
         for finding in findings[:4]:
             address_lower = "0x5ae30eb89d761675b910e5f7acc9c5da0c85baaa".lower()
             if address_lower in finding.description.lower():
-                assert findings[0].alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
-                assert findings[0].description == f"{address_lower} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)", "wrong description"
-                assert findings[0].metadata["reported_by"] == "Blocksec "
+                assert finding.alert_id == "SCAM-DETECTOR-MANUAL-ICE-PHISHING", "should be SCAM-DETECTOR-MANUAL-ICE-PHISHING"
+                assert finding.description == f"{address_lower} likely involved in an attack (SCAM-DETECTOR-MANUAL-ICE-PHISHING, manual)", "wrong description"
+                assert finding.metadata["reported_by"] == "Blocksec "
+                assert finding.metadata["attribution"] == "Inferno Drainer"
+                assert finding.labels[0].entity == address_lower, "entity should be attacker address"
+                assert finding.labels[0].metadata["attribution"] == "Inferno Drainer", "should be drainer"
 
         # Metamask phishing list findings
         for finding in findings[4:]:
@@ -1266,6 +1349,7 @@ class TestScamDetector:
         for label in findings[0].labels:
             if label.label == 'scammer' and label.entity.lower() == '0xd89a4f1146ea3ddc8f21f97b562d97858d89d307':
                 found_contract = True
+                assert label.metadata['attribution'] == 'Inferno Drainer'
         assert found_contract
 
     def test_etherscan_fp_mitigation(self):
@@ -1308,7 +1392,8 @@ class TestScamDetector:
             assert len(findings) == 5, "length should have been 5, alert for the Etherscan FP mitigation should have been triggered"
             last_finding = findings[4]
             assert last_finding.alert_id == "SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION", "should be etherscan fp mitigation finding"
-            assert last_finding.metadata is not None, "metadata should not be empty"
+            assert last_finding.metadata['etherscan_labels'] == "Proposer Fee Recipient"
+            assert last_finding.metadata['etherscan_nametag'] == "Fee Recipient: 0xF4...A38"
             assert len(last_finding.labels) > 0, "labels should not be empty"
             assert last_finding.labels[0].label == 'benign', "should be a benign label"
         else:

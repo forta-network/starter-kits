@@ -23,7 +23,7 @@ WORKDIR /app
 COPY ./fp_list.csv ./
 COPY ./quality_metrics.json ./
 COPY ./v3_scammer_model.joblib ./
-COPY ./manual_alert_list.tsv ./
+COPY ./manual_alert_list_v2.tsv ./
 COPY ./LICENSE ./
 COPY ./basebot_parsing_config.csv ./
 COPY ./src ./src

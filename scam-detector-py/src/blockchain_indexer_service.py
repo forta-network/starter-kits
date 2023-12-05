@@ -35,7 +35,7 @@ class BlockChainIndexer:
         elif chain_id == 250:
             return 50000000
         elif chain_id == 43114:
-            return 23000000
+            return 33000000
 
         raise Exception("Chain ID not supported")
 
@@ -117,7 +117,10 @@ class BlockChainIndexer:
         if not disable_etherscan:
             logging.info(f"get_contracts from etherscan for {address} on {chain_id}.")
             df_etherscan = pd.DataFrame(columns=['nonce', 'to', 'isError'])
-            transaction_for_address = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={address}&startblock={BlockChainIndexer.get_first_block_number(chain_id)}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
+            start_block = BlockChainIndexer.get_first_block_number(chain_id)
+            # Snowtrace now allows up to a 1M blockrange
+            end_block = 99999999 if chain_id != 43114 else start_block + 999999
+            transaction_for_address = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={address}&startblock={start_block}&endblock={end_block}&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
             
             success = False
             count = 0
@@ -126,7 +129,7 @@ class BlockChainIndexer:
                 if data.status_code == 200:
                     success = True
                     json_data = json.loads(data.content)
-                    if "result" in json_data and len(json_data["result"])>0 and isinstance(json_data["result"], list):
+                    if "result" in json_data and json_data["result"] is not None and len(json_data["result"])>0 and isinstance(json_data["result"], list):
                         df_etherscan_temp = pd.DataFrame(data=json_data["result"])
                         df_etherscan = pd.concat([df_etherscan, df_etherscan_temp], axis=0)
                 else:
@@ -199,7 +202,11 @@ class BlockChainIndexer:
         logging.info(f"has_deployed_high_tx_count_contract for address {address} on {chain_id} called.")
 
         for contract in contracts:
-            transactions_for_contract = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={contract}&startblock={BlockChainIndexer.get_first_block_number(chain_id)}&endblock=99999999&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
+            start_block = BlockChainIndexer.get_first_block_number(chain_id)
+            # Snowtrace now allows up to a 1M blockrange
+            end_block = 99999999 if chain_id != 43114 else start_block + 999999
+
+            transactions_for_contract = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={contract}&startblock={start_block}&endblock={end_block}&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
 
             success = False
             count = 0
@@ -226,8 +233,8 @@ class BlockChainIndexer:
 
         try:
             addresses_str = ','.join(addresses)
-            labels_url = f"https://api-metadata.etherscan.io/v1/api.ashx?module=nametag&action=getaddresstag&address={addresses_str}&tag=trusted&apikey={BlockChainIndexer.get_api_key(1)}"
-
+            labels_url = f"https://api-metadata.etherscan.io/v1/api.ashx?module=nametag&action=getaddresstag&address={addresses_str}&tag=trusted&apikey={BlockChainIndexer.get_api_key(1)}"         
+            
             success = False
             count = 0
             while not success:
@@ -235,11 +242,19 @@ class BlockChainIndexer:
                 if data.status_code == 200:
                     json_data = json.loads(data.content)
                     success = True
-                    for result in json_data["result"]:
-                        if len(result["labels"]):
-                            address_labels[result["address"]] = result["labels"] 
-                    for address, labels in address_labels.items():
-                        logging.info(f"Labels for address {address}: {', '.join(labels)}")   
+                    if isinstance(json_data["result"], list):
+                        for result in json_data["result"]:
+                            if len(result["labels"]):
+                                address_labels[result["address"]] = {
+                                    "labels": result["labels"],
+                                    "nametag": result.get("nametag", "")  # Include nametag if it exists, otherwise an empty string
+                                }
+                    else:
+                        logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")
+                    for address, data in address_labels.items():
+                        labels = data["labels"]
+                        nametag = data["nametag"]
+                        logging.info(f"Labels for address {address}: {', '.join(labels)}, Nametag: {nametag}")
                     return address_labels
                 else:
                     logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")

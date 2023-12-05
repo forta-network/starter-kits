@@ -2,6 +2,7 @@ from operator import inv
 from time import strftime
 from forta_agent import Finding, FindingType, FindingSeverity, Label, EntityType, get_labels
 from datetime import datetime
+from typing import Optional, List, Union
 import pandas as pd
 import requests
 import logging
@@ -10,11 +11,11 @@ import traceback
 import hashlib
 
 from src.utils import Utils
-from src.constants import MODEL_NAME
+from src.constants import MODEL_NAME, SCAM_DETECTOR_BOT_ID, SCAM_DETECTOR_BETA_BOT_ID, SCAM_DETECTOR_BETA_ALT_BOT_ID
 
 class ScamDetectorFinding:
 
-    LABEL_VERSION = "2.1.0"
+    LABEL_VERSION = "2.2.0"
 
     @staticmethod
     def get_threat_description_url(alert_id: str) -> str:
@@ -52,6 +53,10 @@ class ScamDetectorFinding:
         
     @staticmethod
     def get_threat_category(alert_id: str) -> str:
+        if "-MANUAL" in alert_id:
+            # SCAM-DETECTOR-MANUAL-ICE-PHISHING -> SCAM-DETECTOR-ICE-PHISHING
+            alert_id = alert_id.replace("-MANUAL", "")
+
         if alert_id == "SCAM-DETECTOR-ICE-PHISHING" or alert_id == "SCAM-DETECTOR-METAMASK-PHISHING":
             return "ice-phishing"
         elif alert_id == "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER":
@@ -98,7 +103,7 @@ class ScamDetectorFinding:
             return ""
 
     @staticmethod
-    def alert_similar_contract(block_chain_indexer, forta_explorer, base_bot_alert_id: str, base_bot_alert_hash: str, metadata: dict, chain_id:int) -> Finding:
+    def alert_similar_contract(block_chain_indexer, forta_explorer, base_bot_alert_id: str, base_bot_alert_hash: str, metadata: dict, chain_id:int) -> Optional[Finding]:
 
         # {"alert_hash":"0x92f0e1c5f9677a3ea2903047641213ba62e5a00d62f363efc1a85cd1e184e016",
         #  "new_scammer_contract_address":"0x75577bd21803a13d6ec3e0d784f84e0e7e31cbd2",
@@ -118,7 +123,7 @@ class ScamDetectorFinding:
         alert_id = "SCAM-DETECTOR-SIMILAR-CONTRACT"  # only used in context of alerts; in context of labels we talk about threat-categories
 
         original_threat_categories = set()  # scammer-eoa/* threat categories of the original scammer
-        source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
+        source_id = SCAM_DETECTOR_BETA_ALT_BOT_ID if Utils.is_beta_alt() else (SCAM_DETECTOR_BETA_BOT_ID if Utils.is_beta() else SCAM_DETECTOR_BOT_ID)
         df_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = existing_scammer_contract_address.lower())
 
         for index, row in df_labels.iterrows():
@@ -154,9 +159,8 @@ class ScamDetectorFinding:
                 }
             }))
 
-            labels.append(Label({
+            common_scammer_contract_label_properties = {
                 'entityType': EntityType.Address,
-                'label': 'scammer',
                 'entity': scammer_contract_address,
                 'confidence': confidence,
                 'metadata': {
@@ -174,6 +178,16 @@ class ScamDetectorFinding:
                     'label_version': ScamDetectorFinding.LABEL_VERSION,
                     'logic': 'propagation'
                 }
+            }
+
+            labels.append(Label({
+                'label': 'scammer',
+                **common_scammer_contract_label_properties
+            }))
+
+            labels.append(Label({
+                'label': 'similar-contract',
+                **common_scammer_contract_label_properties
             }))
 
             # get all deployed contracts by EOA and add label for those using etherscan or allium
@@ -224,6 +238,9 @@ class ScamDetectorFinding:
                 'labels': labels
             })
         
+        else:
+            return None
+        
     @staticmethod
     def get_url(metadata:dict) -> str:
         url = metadata['URL'] if 'URL' in metadata.keys() else metadata['url'] if 'url' in metadata.keys() else metadata['Url'] if 'Url' in metadata.keys() else ""
@@ -263,6 +280,8 @@ class ScamDetectorFinding:
         involved_alert_hashes_dict = {"involved_alert_hashes_" + str(i): alert_id for i, alert_id in enumerate(involved_alert_hashes, 1)}
         logic_dict = {"logic": logic}
         url_scan_url_dict = {"url_scan_url": url_scan_url}
+        attribution = "" if 'drainer-name' not in metadata.keys() else metadata['drainer-name'] # a bit hacky as its not set by the bot parser; as such, any additional bots that set attribution need to set it to drainer-name
+        attribution_dict = {"attribution": attribution} 
 
 
         labels = []
@@ -280,6 +299,9 @@ class ScamDetectorFinding:
         if alert_id in ["SCAM-DETECTOR-IMPERSONATING-TOKEN", "SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE", "SCAM-DETECTOR-ICE-PHISHING", 'SCAM-DETECTOR-FRAUDULENT-NFT-ORDER',' SCAM-DETECTOR-1', 'SCAM-DETECTOR-ADDRESS-POISONER', 'SCAM-DETECTOR-ADDRESS-POISONING', 'SCAM-DETECTOR-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING', 'SCAM-DETECTOR-WASH-TRADE', 'SCAM-DETECTOR-HARD-RUG-PULL', 'SCAM-DETECTOR-SOFT-RUG-PULL', 'SCAM-DETECTOR-RAKE-TOKEN', 'SCAM-DETECTOR-SLEEP-MINTING', 'SCAM-DETECTOR-UNKNOWN', 'SCAM-DETECTOR-PIG-BUTCHERING', 'SCAM-DETECTOR-SLEEP-DROP', 'SCAM-DETECTOR-PRIVATE-KEY-COMPROMISE', 'SCAM-DETECTOR-GAS-MINTING']:
             if scammer_addresses != '':
                 for scammer_address in scammer_addresses.split(","):
+                    label_unique_key = hashlib.sha256(f'{scammer_address},{alert_id},{chain_id}'.encode()).hexdigest()
+                    logging.info(f'Unique key of {scammer_address},{alert_id},{chain_id}: {label_unique_key}')
+
                     labels.append(Label({
                         'entityType': EntityType.Address,
                         'label': 'scammer',
@@ -296,8 +318,10 @@ class ScamDetectorFinding:
                             'label_version': ScamDetectorFinding.LABEL_VERSION,
                             'feature_vector': feature_vector_str,
                             'model_name': MODEL_NAME,
-                            'logic': logic
-                        }
+                            'logic': logic,
+                            'attribution': attribution
+                        },
+                        'uniqueKey': label_unique_key
                     }))
 
                     # perf optimization; these are the poisoned addresses that usually have no activity, but the POISONER are still being checked
@@ -308,6 +332,9 @@ class ScamDetectorFinding:
                             contracts = block_chain_indexer.get_contracts(scammer_address, chain_id)
                             logging.info(f"Got {len(contracts)} contracts for scammer address {scammer_address}")
                             for contract in contracts:
+                                label_unique_key = hashlib.sha256(f'{contract},{alert_id},{chain_id}'.encode()).hexdigest()
+                                logging.info(f'Unique key of {contract},{alert_id},{chain_id}: {label_unique_key}')
+
                                 if contract in scammer_contract_addresses:
                                     labels.append(Label({
                                         'entityType': EntityType.Address,
@@ -326,8 +353,10 @@ class ScamDetectorFinding:
                                             'label_version': ScamDetectorFinding.LABEL_VERSION,
                                             'feature_vector': feature_vector_str,
                                             'model_name': MODEL_NAME,
-                                            'logic': logic
-                                        }
+                                            'logic': logic,
+                                            'attribution': attribution
+                                        },
+                                        'uniqueKey': label_unique_key
                                     }))
                                 else:
                                     labels.append(Label({
@@ -345,15 +374,20 @@ class ScamDetectorFinding:
                                             'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                                             'bot_version': Utils.get_bot_version(),
                                             'label_version': ScamDetectorFinding.LABEL_VERSION,
-                                            'logic': 'propagation'
-                                        }
+                                            'logic': 'propagation',
+                                            'attribution': attribution
+                                        },
+                                        'uniqueKey': label_unique_key
                                     }))
                         except Exception as e:
                             logging.warning(f"Error getting contracts for scammer address {scammer_address}: {e}")
                             Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "findings.scam_finding", traceback.format_exc()))
 
-                    
+
             if url != "":
+                label_unique_key = hashlib.sha256(f'{url},{alert_id},{chain_id}'.encode()).hexdigest()
+                logging.info(f'Unique key of {url},{alert_id},{chain_id}: {label_unique_key}')
+
                 labels.append(Label({
                     'entityType': EntityType.Url,
                     'label': 'scammer',
@@ -370,12 +404,14 @@ class ScamDetectorFinding:
                         'feature_vector': feature_vector_str,
                         'model_name': MODEL_NAME,
                         'logic': logic,
-                        'source_url_scan_url': url_scan_url
-                    }
+                        'source_url_scan_url': url_scan_url,
+                        'attribution': attribution
+                    },
+                    'uniqueKey': label_unique_key
                 }))
-                    
 
-        findings_metadata = {**attacker_address_md_dict, **start_date_dict, **end_date_dict, **involved_addresses_dict, **involved_alert_ids_dict, **involved_alert_hashes_dict, **logic_dict, **confidence_dict, **feature_vector_dict, **model_name_dict, **url_scan_url_dict}
+
+        findings_metadata = {**attacker_address_md_dict, **start_date_dict, **end_date_dict, **involved_addresses_dict, **involved_alert_ids_dict, **involved_alert_hashes_dict, **logic_dict, **confidence_dict, **feature_vector_dict, **model_name_dict, **url_scan_url_dict, **attribution_dict}
       
         description = f'{scammer_addresses} likely involved in a scam ({alert_id}, {logic})'
         name = 'Scam detector identified an EOA with past alerts mapping to scam behavior'
@@ -400,25 +436,45 @@ class ScamDetectorFinding:
         })
 
     @staticmethod
-    def alert_FP(w3, address: str, label: str, metadata: tuple) -> Finding:
-
-        #metadata is a tuple and needs to convert to dict
-        metadata_dict = {}
-        for pair in metadata:
-            key = pair.split("=")[0]
-            value = pair.split("=")[1]
-            metadata_dict[key] = value
-
+    def alert_FP(w3, address: str, label: str, metadata: Union[tuple, List[dict]], unique_keys: List[str]) -> Finding:
         labels = []
-        labels.append(Label({
+
+        if (isinstance(metadata, tuple)):
+            #metadata is a tuple and needs to convert to dict
+            metadata_dict = {}
+            for pair in metadata:
+                key = pair.split("=")[0]
+                value = pair.split("=")[1]
+                metadata_dict[key] = value
+            label_data = {
                 'entityType': EntityType.Address,
                 'label': label,
                 'entity': address,
                 'confidence': 0.99,
                 'remove': "true",
-                'metadata': metadata_dict
-
-            }))
+                'metadata': metadata_dict,
+            }
+            if unique_keys[0]:
+                label_data['uniqueKey'] = unique_keys[0]
+            labels.append(Label(label_data))
+        else:
+            # Reactive FP mitigation case
+            for index, metadata_dict in enumerate(metadata):
+                label_data = {
+                    'entityType': EntityType.Address,
+                    'label': label,
+                    'entity': address,
+                    'confidence': 0.99,
+                    'remove': "true",
+                    'metadata': metadata_dict,
+                }
+                if unique_keys[index]:
+                    label_data['uniqueKey'] = unique_keys[index]
+                labels.append(Label(label_data))
+                
+        
+        unique_key = hashlib.sha256(f'{address},{str(metadata)}'.encode()).hexdigest()
+        logging.info(f'Unique key of {address},{str(metadata)}: {unique_key}')
 
         return Finding({
             'name': 'Scam detector identified an address that was incorrectly alerted on. Emitting false positive alert.',
@@ -427,11 +483,12 @@ class ScamDetectorFinding:
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'metadata': {},
-            'labels': labels
+            'unique_key': unique_key,
+            'labels': labels,
         })
 
     @staticmethod
-    def alert_etherscan_likely_FP(address: str) -> Finding:
+    def alert_etherscan_likely_FP(address: str, etherscan_labels: List[str], etherscan_nametag: str) -> Finding:
        
         labels = [
             Label({
@@ -439,6 +496,11 @@ class ScamDetectorFinding:
                 'label': 'benign',
                 'entity': address,
                 'confidence': 0.99,
+                'metadata': {
+                    'benign_address': address,
+                    'etherscan_labels': ', '.join(etherscan_labels),
+                    'etherscan_nametag': etherscan_nametag
+                    }
                 })
             ]
         
@@ -449,13 +511,15 @@ class ScamDetectorFinding:
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
             'metadata': {
-                'benign_address': address
+                'benign_address': address,
+                'etherscan_labels': ', '.join(etherscan_labels),
+                'etherscan_nametag': etherscan_nametag
             },
             'labels': labels
         })
 
     @staticmethod
-    def scam_finding_manual(block_chain_indexer, forta_explorer, entity_type: str, entities: str, threat_category: str, reported_by: str, chain_id: int, comment:str = '', initial_metamask_list_consumption: bool = False) -> Finding:
+    def scam_finding_manual(block_chain_indexer, forta_explorer, entity_type: str, entities: str, threat_category: str, reported_by: str, chain_id: int, comment:str = '', initial_metamask_list_consumption: bool = False, attribution: str = "") -> Finding:
         label_doesnt_exist = False
         
         labels = []
@@ -464,7 +528,7 @@ class ScamDetectorFinding:
 
 
         for entity in entities.split(","):
-            source_id = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8' if Utils.is_beta() else '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474bdacb3ab23'
+            source_id = SCAM_DETECTOR_BETA_ALT_BOT_ID if Utils.is_beta_alt() else (SCAM_DETECTOR_BETA_BOT_ID if Utils.is_beta() else SCAM_DETECTOR_BOT_ID)
             df_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity = entity.lower()) if not initial_metamask_list_consumption else pd.DataFrame()
             if df_labels.empty:
                 label_doesnt_exist = True
@@ -482,7 +546,8 @@ class ScamDetectorFinding:
                         'bot_version': Utils.get_bot_version(),
                         'label_version': ScamDetectorFinding.LABEL_VERSION,
                         'logic': 'manual',
-                        'comment': comment
+                        'comment': comment,
+                        'attribution': attribution
                     }
                 }))
                 # get all deployed contracts by EOA and add label for those using etherscan or allium
@@ -503,7 +568,8 @@ class ScamDetectorFinding:
                                 'bot_version': Utils.get_bot_version(),
                                 'label_version': ScamDetectorFinding.LABEL_VERSION,
                                 'logic': 'propagation',
-                                'comment': comment
+                                'comment': comment,
+                                'attribution': attribution
                             }
                         }))
             else:
@@ -516,7 +582,7 @@ class ScamDetectorFinding:
                 'alert_id': "SCAM-DETECTOR-MANUAL-" + alert_id_threat_category,
                 'type': FindingType.Scam,
                 'severity': FindingSeverity.Critical,
-                'metadata': {"reported_by": reported_by, 'comment': comment},
+                'metadata': {"reported_by": reported_by, 'comment': comment, 'attribution': attribution},
                 'labels': labels
             })
        
@@ -530,8 +596,8 @@ class ScamDetectorFinding:
             threat_category = ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT")
             confidence = Utils.get_confidence_value(threat_category)
             labels.append(Label({
-                'entityType': EntityType.Address,
-                'label': 'scammer',
+                'entityType': EntityType.Address,      
+                'label': 'scammer',          
                 'entity': scammer_contract_address,
                 'confidence': confidence,
                 'metadata': { # there is no base bot alert id as this happens from handleTx handler
@@ -548,7 +614,7 @@ class ScamDetectorFinding:
                     'logic': 'propagation'
                 }
             }))
-
+        
             metadata = {}
             metadata['scammer_address'] = scammer_address
             metadata['scammer_contract_address'] = scammer_contract_address
@@ -572,9 +638,8 @@ class ScamDetectorFinding:
 
         labels = []
         confidence = Utils.get_confidence_value(original_threat_category)
-        labels.append(Label({
+        common_eoa_label_properties = {
             'entityType': EntityType.Address,
-            'label': 'scammer',
             'entity': new_scammer_eoa,
             'confidence': confidence * model_confidence,
             'metadata': {
@@ -591,16 +656,22 @@ class ScamDetectorFinding:
                 'label_version': ScamDetectorFinding.LABEL_VERSION,
                 'logic': 'propagation'
             }
+        }
+        labels.append(Label({
+            'label': 'scammer',
+            **common_eoa_label_properties
+        }))
+
+        labels.append(Label({
+            'label': 'scammer-association',
+            **common_eoa_label_properties
         }))
 
         # get all deployed contracts by EOA and add label for those using etherscan or allium
         try:
             contracts = block_chain_indexer.get_contracts(new_scammer_eoa, chain_id)
-            for contract in contracts:
-                labels.append(Label({
+            common_contract_label_properties = {
                     'entityType': EntityType.Address,
-                    'label': 'scammer',
-                    'entity': contract,
                     'confidence': confidence * model_confidence * 0.8,
                     'metadata': {
                         'address_type': 'contract',
@@ -617,6 +688,17 @@ class ScamDetectorFinding:
                         'label_version': ScamDetectorFinding.LABEL_VERSION,
                         'logic': 'propagation'
                     }
+                }
+            for contract in contracts:
+                labels.append(Label({                    
+                    'label': 'scammer',
+                    'entity': contract,
+                    **common_contract_label_properties
+                }))
+                labels.append(Label({                    
+                    'label': 'scammer-association',
+                    'entity': contract,
+                    **common_contract_label_properties
                 }))
         except Exception as e:
             logging.warning(f"Error getting contracts for scammer address {new_scammer_eoa}: {e}")
