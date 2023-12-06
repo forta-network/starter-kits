@@ -485,7 +485,32 @@ class TestAlertCombiner:
         assert findings[0].alert_id == 'ATTACK-DETECTOR-7'
         assert findings[0].metadata['bot_source'] == 'BlockSec'
 
-    
+
+    def test_alert_consensus(self):
+        # one passthrough alert
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
+        agent.initialize()
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xe39e45ab19bb1c9a30887e157a21393680d336232263c96b326f68fa57a29723", "BlockSec Attack Alert", {"from":EOA_ADDRESS,"potential_victim":"Unknown","suspicious_address":EOA_ADDRESS,"to":"0x11f3f6F9DdFA6E25F419C17A11a2808eF5311220","txhash":"0xabc"})  
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+        assert len(findings) == 1, "alert should have been raised"
+        assert findings[0].description == f'{EOA_ADDRESS.lower()} likely involved in an attack (0xabc). '
+        assert findings[0].alert_id == 'ATTACK-DETECTOR-7'
+        assert findings[0].metadata['bot_source'] == 'BlockSec'
+        assert findings[0].metadata['consensus'] == 0.5
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+        assert len(findings) == 0, "alert should not have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # smart contract ML bot
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+        assert len(findings) == 1, "alert should have been raised" # one for ATTACK-DETECTOR-2; ATTACK-DETECTOR-PREPARATION is not raised as the blocksec bot is in exploitation phase
+
+        assert findings[0].description == f'{EOA_ADDRESS.lower()} likely involved in an attack (0xabc).  Anomaly score: 2e-05'
+        assert findings[0].metadata['bot_source'] == 'BlockSec/Forta Base Bots'
+        assert findings[0].metadata['consensus'] == 1.0
 
     def test_alert_simple_case_with_victim(self):
         # three alerts in diff stages for a given EOA

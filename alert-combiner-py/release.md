@@ -1,5 +1,8 @@
 # Attack Detector Bot Release Notes
 
+## v3.52.3 (Dec 1st 2023: beta2)
+- Added consensus mechanism
+
 ## v3.52.2 (Dec 1st 2023: beta2)
 - Reactive FP mitigation
 

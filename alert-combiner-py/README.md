@@ -145,6 +145,8 @@ The metadata for each alert will contain:
 - involved_addresses_X - the address that was touched in any of the base alerts
 - involved_address_bloom_filter_X - the bloom filter that contains all touched address of the base bot if the address field was capped
 - involved_alert_X - the bot_id, alert_id, and alert_hash for all the base bot alerts
+- bot_sources - the sources of why the AD raised an alert. Could be 'Blocksec' or 'Forta Base Bots'
+- consensus - a percentage (from 0.0 to 1.0) that illustrates how many sources agreed this is an attack. E.g. 0.5 means that either Blocksec or Forta Base Bots identified the attack; 1.0 means that both identified the attack.
 
 For example:
 
@@ -432,5 +434,6 @@ The following bots are used to mitigate FPs:
 | 0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400 | High funding activity through TC | FUNDING-TORNADO-CASH-HIGH |
 | 0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f | Positive reputation bot | POSITIVE-REPUTATION-1 |
 | 0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f | Positive reputation bot | POSITIVE-REPUTATION-2 |
+| 0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f | Positive reputation bot | POSITIVE-REPUTATION-3 |
 | 0xe04b3fa79bd6bc6168a211bcec5e9ac37d5dd67a41a1884aa6719f8952fbc274 | Victim Notification bot | VICTIM-NOTIFICATION-1 |
 In addtion, Etherscan tags are used for FP mitigation.
