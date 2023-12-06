@@ -1,5 +1,8 @@
 # Attack Detector Bot Release Notes
 
+## v3.51.7 (Dec 6 2023: prod)
+- updated documentation
+
 ## v3.51.6 (Nov 17 2023: beta2, Nov 17 2023: prod)
 - updated promo URL
 
