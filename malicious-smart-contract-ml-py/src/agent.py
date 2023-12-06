@@ -34,7 +34,7 @@ def initialize():
     """
     global ML_MODEL
     logger.info("Start loading model")
-    ML_MODEL = load("malicious_non_token_model_02_07_23_exp2.joblib")
+    ML_MODEL = load("voting_clf.joblib")
     logger.info("Complete loading model")
 
     global CHAIN_ID
