@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## 2.23.1 (beta2 - 12/6/2023)
+- added ICE-PHISHING-ZERO-NONCE-ALLOWANCE-TRANSFER
+
 ## 2.23.0 (beta2 - 12/5/2023)
 - initial version
 

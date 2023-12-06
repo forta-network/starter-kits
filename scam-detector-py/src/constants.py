@@ -59,6 +59,7 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-OPENSEA-PROXY-UPGRADE", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PIG-BUTCHERING", "PassThrough", "SCAM-DETECTOR-PIG-BUTCHERING"),  # ice phishing
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-ZERO-NONCE-ALLOWANCE", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
+                ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-ZERO-NONCE-ALLOWANCE-TRANSFER", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
                 ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", "Combination", ""),  # tornado cash withdrawl
                 ("0x617c356a4ad4b755035ef8024a87d36d895ee3cb0864e7ce9b3cf694dd80c82a", "TORNADO-CASH-FUNDED-ACCOUNT-INTERACTION", "Combination", ""),  # Tornado Cash Funded Account Interaction
                 ("0x4adff9a0ed29396d51ef3b16297070347aab25575f04a4e2bd62ec43ca4508d2", "POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH", "Combination", ""),  # money laundering
