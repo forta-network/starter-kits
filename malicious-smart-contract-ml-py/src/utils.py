@@ -15,7 +15,7 @@ def calc_contract_address(w3, address, nonce) -> str:
     """
 
     address_bytes = bytes.fromhex(address[2:].lower())
-    return Web3.to_checksum_address(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
+    return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
 def is_contract(w3, address) -> bool:
@@ -25,7 +25,7 @@ def is_contract(w3, address) -> bool:
     """
     if address is None:
         return True
-    code = w3.eth.get_code(Web3.to_checksum_address(address))
+    code = w3.eth.get_code(Web3.toChecksumAddress(address))
     return code != HexBytes("0x")
 
 def get_function_signatures(w3, opcodes) -> set:
@@ -50,7 +50,7 @@ def get_storage_addresses(w3, address) -> set:
 
     address_set = set()
     for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH):
-        mem = w3.eth.get_storage_at(Web3.to_checksum_address(address), i)
+        mem = w3.eth.get_storage_at(Web3.toChecksumAddress(address), i)
         if mem != HexBytes(
             "0x0000000000000000000000000000000000000000000000000000000000000000"
         ):
@@ -58,9 +58,9 @@ def get_storage_addresses(w3, address) -> set:
             addr_on_left = mem[0:20].hex()
             addr_on_right = mem[12:].hex()
             if is_contract(w3, addr_on_left):
-                address_set.add(Web3.to_checksum_address(addr_on_left))
+                address_set.add(Web3.toChecksumAddress(addr_on_left))
             if is_contract(w3, addr_on_right):
-                address_set.add(Web3.to_checksum_address(addr_on_right))
+                address_set.add(Web3.toChecksumAddress(addr_on_right))
 
     return address_set
 
@@ -80,7 +80,7 @@ def get_features(w3, opcodes, contract_creator) -> list:
             opcode_name = opcode.name.split("_")[0]
         features.append(opcode_name)
         if len(opcode.operand) == 40 and is_contract(w3, opcode.operand):
-            opcode_addresses.add(Web3.to_checksum_address(f"0x{opcode.operand}"))
+            opcode_addresses.add(Web3.toChecksumAddress(f"0x{opcode.operand}"))
 
         if opcode_name in {"PUSH4", "PUSH32"}:
             features.append(opcode.operand)
