@@ -1,6 +1,7 @@
 {
   "name": "cex-funding",
-  "version": "0.0.7",
+  "displayName": "CEX Funding",
+  "version": "0.0.8",
   "description": "CEX Funding Bot",
   "chainIds": [
     1, 56, 137, 43114, 42161, 10, 250
