@@ -1,6 +1,9 @@
 # Scam Detector Bot Release Notes
 
-## 2.22.10 (beta2 - 11/29/2023)
+## 2.22.11 (beta2 - 11/29/2023, prod - 12/7/2023)
+- fix broken link in documentation
+
+## 2.22.10 (beta2 - 11/29/2023, prod - 12/3/2023)
 - fix issue 392
 
 ## 2.22.9 (beta2 - 11/29/2023)

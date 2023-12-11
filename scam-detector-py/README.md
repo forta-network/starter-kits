@@ -28,13 +28,13 @@ The Scam Detector is opinionated, and consumes evidence of and issues judgment a
    
    If a base bot providing scam evidence is trustworthy enough (i.e. its precision is at least 80%), its alerts pass through the Scam Detector and are turned into labels with minimal oversight.
 
-   Whether a base bot alert is treated as a pass-through is set in the `BASE_BOTS` list of [constants.py](https://github.com/forta-network/starter-kits/blob/scam-detector-beta/scam-detector-py/src/constants.py).
+   Whether a base bot alert is treated as a pass-through is set in the `BASE_BOTS` list of [constants.py](https://github.com/forta-network/starter-kits/blob/main/scam-detector-py/src/constants.py).
 
 2. **ML Logic**
 
    Not all base bots have high enough precision to qualify as a pass-through. Nevertheless, they can still be valuable detection tools. In these instances, combining base bots together and only emitting a label under certain conditions allows the Scam Detector to flag threats with acceptable precision. A rule like this could be as follows: if an EOA is associated with a base bot alert from the ice phishing bot as well as an alert of tornado cash funding, emit a label).
    
-   The Scam Detector doesn’t utilize rules that were manually curated by an expert, but rather a supervised machine learning model. It combines alerts from a plethora of base bots (the list can be found [here](https://github.com/forta-network/starter-kits/blob/scam-detector-beta/scam-detector-py/src/constants.py)). For instance, if ice_phishing bot emitted more than 5 alerts for a given EOA, there were no alerts of normal transaction, the wash trading bot with alert Id WASH-TRADE triggered 1 time, and three unique alert Ids from the ice_phishing bot were observed, then emit an ice phishing label for that EOA with a confidence score of 0.89.
+   The Scam Detector doesn’t utilize rules that were manually curated by an expert, but rather a supervised machine learning model. It combines alerts from a plethora of base bots (the list can be found [here](https://github.com/forta-network/starter-kits/blob/main/scam-detector-py/src/constants.py)). For instance, if ice_phishing bot emitted more than 5 alerts for a given EOA, there were no alerts of normal transaction, the wash trading bot with alert Id WASH-TRADE triggered 1 time, and three unique alert Ids from the ice_phishing bot were observed, then emit an ice phishing label for that EOA with a confidence score of 0.89.
 
 3. **Manual Detection**
 
