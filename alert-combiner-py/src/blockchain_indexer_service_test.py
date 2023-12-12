@@ -24,3 +24,8 @@ class TestBlockChainIndexer:
     def test_calc_contract_address(self):
         contract_address = BlockChainIndexer.calc_contract_address(EOA_ADDRESS, 9)
         assert contract_address == "0x728ad672409DA288cA5B9AA85D1A55b803bA97D7", "should be the same contract address"
+
+    def test_get_etherscan_labels(self):
+        address = '0x1673888242bad06cc87a7bcaff392cb27218b3e3' # Uniswap V3: FORT-USDC 
+        labels = BlockChainIndexer.get_etherscan_labels(address, 1)
+        assert labels == {'Uniswap V3: FORT-USDC', 'Uniswap'}, "should return two Uniswap labels"

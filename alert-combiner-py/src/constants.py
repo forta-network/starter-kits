@@ -14,14 +14,17 @@ DEFAULT_ANOMALY_SCORE = 0.001  # used if anomaly score is less or eq than 0
 
 POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD = 40  # assume validator if alert count is larger than this threshold on polygon as the topic analysis seems unreliable
 
+DATAFRAME_SIZE_LIMIT = 350 * 1024 # 350KB
+
 ATTACK_DETECTOR_BOT_ID = "0x80ed808b586aeebe9cdd4088ea4dea0a8e322909c0e4493c993e060e89c09ed1"
 ATTACK_DETECTOR_BETA_BOT_ID = "0xac82fb2a572c7c0d41dc19d24790db17148d1e00505596ebe421daf91c837799"
 
 ENTITY_CLUSTER_BOT = "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9"
 ENTITY_CLUSTER_BOT_ALERT_ID = "ENTITY-CLUSTER"
 
-VICTIM_IDENTIFICATION_BOT = "0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250"
-VICTIM_IDENTIFICATION_BOT_ALERT_IDS = ["VICTIM-IDENTIFIER-PREPARATION-STAGE", "VICTIM-IDENTIFIER-EXPLOITATION-STAGE"]
+VICTIM_IDENTIFICATION_BOTS = [("0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250", "VICTIM-IDENTIFIER-PREPARATION-STAGE"),
+                              ("0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250", "VICTIM-IDENTIFIER-EXPLOITATION-STAGE"),
+                              ("0xe39e45ab19bb1c9a30887e157a21393680d336232263c96b326f68fa57a29723", "BlockSec Attack Alert")]
 
 TX_COUNT_FILTER_THRESHOLD = 500  # ignore EOAs with tx count larger than this threshold to mitigate FPs
 FP_MITIGATION_BOTS = [("0x5bb675492f3accba1d35e7f59f584b6fae11df919f13223f3056a69dc5686b4b", "MEV-SANDWICH-BOT-IDENTIFIED"),
@@ -29,6 +32,7 @@ FP_MITIGATION_BOTS = [("0x5bb675492f3accba1d35e7f59f584b6fae11df919f13223f3056a6
                       ("0x5bb675492f3accba1d35e7f59f584b6fae11df919f13223f3056a69dc5686b4b", "MEV-LIQUIDATION-BOT-IDENTIFIED"),
                       ("0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH-HIGH"),
                       ("0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f", "POSITIVE-REPUTATION-1"),
+                      ("0xd6e19ec6dc98b13ebb5ec24742510845779d9caf439cadec9a5533f8394d435f", "POSITIVE-REPUTATION-2"),
                       ("0xe04b3fa79bd6bc6168a211bcec5e9ac37d5dd67a41a1884aa6719f8952fbc274", "VICTIM-NOTIFICATION-1")
                       ]
 
@@ -50,6 +54,8 @@ HIGHLY_PRECISE_BOTS = [("0x0b241032ca430d9c02eaa6a52d217bbff046f0d1b3f3d2aa928e4
                        ("0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac", "LARGE-PROFIT", "Exploitation"),  # large profit
                        ]
 
+PASSTHROUGH_BOTS = [("0xe39e45ab19bb1c9a30887e157a21393680d336232263c96b326f68fa57a29723", "BlockSec Attack Alert", "BlockSec")]
+
 # will filter EOAs associated with alerts from end user attack bots (will emit those as ATTACK-DETECTOR-6 alertId (beta only))
 END_USER_ATTACK_BOTS = ["0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3bff5ba305c15",  # hard rug pull
                         "0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4",  # soft rug pull
@@ -59,9 +65,6 @@ END_USER_ATTACK_BOTS = ["0xc608f1aff80657091ad14d974ea37607f6e7513fdb8afaa148b3b
                         ]
 END_USER_ATTACK_CLUSTERS_KEY="end_user_attack_clusters_key"
 
-
-VICTIM_IDENTIFICATION_BOT = "0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250"
-VICTIM_IDENTIFICATION_BOT_ALERT_IDS = ["VICTIM-IDENTIFIER-PREPARATION-STAGE", "VICTIM-IDENTIFIER-EXPLOITATION-STAGE"]
 
 BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS", "Exploitation"),  # ice phishing
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PERMITTED-ERC20-TRANSFER", "Preparation"),  # ice phishing
@@ -116,7 +119,7 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x5ab3964d3cb90ad68b6f307a7d5d3219b97c89c74e6aca261633af356ff73b4a", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Celer Network Original Token Vault V2 - Ethereum
              ("0x80749e2072849dacecaea54ec4d4b06d8da4e8c48ebf4cfe8fe9aeb0436a5776", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Celer Network Original Token Vault 2 - Ethereum
              ("0xd40554c0cc8393cb94aa22f4e10d67672a76f64112577f2d700b13bb08405926", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Celer Network cBridge V2 Bridge - Ethereum
-             ("0x6639e223026aaec3c2c2e33c3a501f34e7a63e3c16d301f4f1ba0044135387e8", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol SNX Bridge - Ethereum 
+             ("0x6639e223026aaec3c2c2e33c3a501f34e7a63e3c16d301f4f1ba0044135387e8", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol SNX Bridge - Ethereum
              ("0x50679441079cf1f109311b5559c8141b30001cca0b0cee7e12067b1b4a5cf595", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol Matic Bridge - Ethereum
              ("0x2cb9c3b887edada37b9f198fdd84d12cfc5eeb81d4ea365e5e0097ba829ee2d9", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol ERC20 Bridge - Ethereum
              ("0xf8ca51a34b1d14819a01b731264d0b3356a186d7e42abb3b24eebd6848959823", "BALANCE-DECREASE-ASSETS-ALL-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol DAI Bridge - Ethereum
@@ -170,7 +173,7 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x5ab3964d3cb90ad68b6f307a7d5d3219b97c89c74e6aca261633af356ff73b4a", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Celer Network Original Token Vault V2 - Ethereum
              ("0x80749e2072849dacecaea54ec4d4b06d8da4e8c48ebf4cfe8fe9aeb0436a5776", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Celer Network Original Token Vault 2 - Ethereum
              ("0xd40554c0cc8393cb94aa22f4e10d67672a76f64112577f2d700b13bb08405926", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Celer Network cBridge V2 Bridge - Ethereum
-             ("0x6639e223026aaec3c2c2e33c3a501f34e7a63e3c16d301f4f1ba0044135387e8", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol SNX Bridge - Ethereum 
+             ("0x6639e223026aaec3c2c2e33c3a501f34e7a63e3c16d301f4f1ba0044135387e8", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol SNX Bridge - Ethereum
              ("0x50679441079cf1f109311b5559c8141b30001cca0b0cee7e12067b1b4a5cf595", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol Matic Bridge - Ethereum
              ("0x2cb9c3b887edada37b9f198fdd84d12cfc5eeb81d4ea365e5e0097ba829ee2d9", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol ERC20 Bridge - Ethereum
              ("0xf8ca51a34b1d14819a01b731264d0b3356a186d7e42abb3b24eebd6848959823", "BALANCE-DECREASE-ASSETS-PORTION-REMOVED", "Exploitation"),  # balance decrease for bridge: Hop Protocol DAI Bridge - Ethereum
@@ -227,6 +230,8 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0xabc0bb6fe5e0d0b981dec4aa2337ce91676358c6e8bf1fec06cc558f58c3694e", "UNUSUAL-NATIVE-SWAPS", "MoneyLaundering"),  # unusual native swaps
              ("0x644b77e0d77d68d3841a55843dcdd61840ad3ca09f7e1ab2d2f5191c35f4a998", "ABNORMAL-FUNCTION-CALL-DETECTED-1", "Exploitation"),  # abnormal function call
              ("0x644b77e0d77d68d3841a55843dcdd61840ad3ca09f7e1ab2d2f5191c35f4a998", "ABNORMAL-EMITTED-EVENT-DETECTED-1", "Exploitation"),  # abnormal function call
+             ("0x7704a975c97ed444c0329cade1f85af74566d30fb6a51550529b19153a0781cb", "NETHFORTA-4", "Preparation"),  # ownership transfer
+             ("0xe39e45ab19bb1c9a30887e157a21393680d336232263c96b326f68fa57a29723", "BlockSec Attack Alert", "Exploitation"), #BlockSec bot
              ]
 
 # FP mitigation

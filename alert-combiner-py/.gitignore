@@ -5,6 +5,7 @@ __pycache__
 .pytest_cache
 .env
 *.txt
+*.csv
 V2-*
 secrets.json
 src/fp_mitigation/models
