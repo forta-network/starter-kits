@@ -5,12 +5,19 @@
   "description": "Detecting addresses being funded by ChangeNow",
   "chainIds": [
     1,
+    10,
     56,
-    137
+    137,
+    43114,
+    42161
   ],
   "chainSettings": {
     "1": {
       "shards": 10,
+      "target": 3
+    },
+    "10": {
+      "shards": 5,
       "target": 3
     },
     "56": {
@@ -19,6 +26,14 @@
     },
     "137": {
       "shards": 17,
+      "target": 3
+    },
+    "42161": {
+      "shards": 5,
+      "target": 3
+    },
+    "default": {
+      "shards": 4,
       "target": 3
     }
   },
