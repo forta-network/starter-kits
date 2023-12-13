@@ -24,7 +24,7 @@ class AlertCombinerFinding:
         # alert_data -> 'stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'addresses', 'transaction_hash', 'address_filter' (+ 'chain_id' for L2s)
 
         #only emit ATTACK-DETECTOR-4 and ATTACK-DETECTOR-5 alerts in test local or beta environments, but not production
-        if ((alert_id == "ATTACK-DETECTOR-4" or alert_id == "ATTACK-DETECTOR-5" or alert_id == "ATTACK-DETECTOR-6") and "beta" not in AlertCombinerFinding.get_bot_name() and ('NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'))):
+        if ((alert_id == "ATTACK-DETECTOR-4" or alert_id == "ATTACK-DETECTOR-5" or alert_id == "ATTACK-DETECTOR-6" or alert_id == "ATTACK-DETECTOR-7") and "beta" not in AlertCombinerFinding.get_bot_name() and ('NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'))):
             return None
 
         bot_sources_sorted = list(bot_sources)
