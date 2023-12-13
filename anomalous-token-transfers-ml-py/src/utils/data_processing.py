@@ -40,7 +40,7 @@ def get_first_tx_timestamp(address) -> int:
     """Gets address's first tx timestamp from Etherscan in unix."""
     first_tx_timestamp = -1
     data = {}
-    api_key = SECRETS_JSON['apiKeys']['ETHERSCAN'][randint(0, 1)]
+    api_key = SECRETS_JSON['apiKeys']['ETHERSCAN']
     addr_first_tx_endpoint = f"{ETHERSCAN_ENDPOINT}&address={address}&apikey={api_key}"
     try:
         r = get_first_tx(addr_first_tx_endpoint)
