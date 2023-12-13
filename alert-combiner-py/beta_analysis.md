@@ -14,7 +14,7 @@ Given the beta and prod version behave differently by design (the beta emits, fo
 
 1. Ensure the Attack Detector Beta produces all the expected alert IDs (S2Beta - alertID Chain Distribu)
 2. Ensure the alert ID/chain distribution between the beta and prod version is similar (S2 Beta vs Prod)
-3. Ensure the overlap between the Attack Detector Beta alerts is at least 75% (some discrepancy is explainable given caching) to the prod version
-4. Review the INFO alerts for the beta and ensure that the majority of errors are related to temporary network issues.
+3. Ensure the overlap between the Attack Detector Beta alerts is at least 75% (some discrepancy is explainable given caching) to the prod version unless there are explanations for discrepancies/ confirmation that the differences are not due to a bug (S3 - Prod vs Beta - AllEOAs)
+4. Review the INFO alerts for the beta and ensure that the majority of errors are related to temporary network issues (S4 - beta - Non-Connection Errs)
 
-An example spreadsheet can be found at
+An example spreadsheet can be found at https://docs.google.com/spreadsheets/d/1FBTn4WQKQG88WbZRKsGgwHjI1TDbIbsc/edit?usp=sharing&ouid=109566812136239403089&rtpof=true&sd=true.
