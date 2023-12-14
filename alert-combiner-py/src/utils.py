@@ -5,6 +5,7 @@ import re
 import traceback
 import logging
 import json
+import base64
 import math
 import gnupg
 from forta_agent import Finding, FindingType, FindingSeverity, AlertEvent, get_alerts, get_labels
@@ -36,7 +37,11 @@ class Utils:
                 logging.info(f"Imported private key {fingerprint} into GPG")
     
         if alert_event.alert.name == 'omitted' and 'data' in alert_event.alert.metadata.keys():
-            encrypted_finding_ascii = alert_event.alert.metadata['data']
+            base64_encoded_string = alert_event.alert.metadata['data']
+            logging.info(f"Decrypting alert. Data length of base64 value: {len(base64_encoded_string)}. Private key length {len(private_key)}")
+
+            #base64 decode
+            encrypted_finding_ascii = base64.b64decode(base64_encoded_string).decode('utf-8')
             logging.info(f"Decrypting finding. Data length: {len(encrypted_finding_ascii)}. Private key length {len(private_key)}")
             
             decrypted_finding_json = Utils.gpg.decrypt(encrypted_finding_ascii)
@@ -64,7 +69,7 @@ class Utils:
                 alert_event.alert.metadata = finding.metadata
                 alert_event.alert.alert_id = finding.alert_id
                 alert_event.alert.labels = finding.labels
-        
+    
         return alert_event
 
     @staticmethod
