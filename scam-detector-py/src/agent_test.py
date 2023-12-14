@@ -14,12 +14,12 @@ import requests
 import agent
 from unittest.mock import patch
 
-from src.constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES
-from src.web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX, CONTRACT2
-from src.web3_errormock import Web3ErrorMock
-from src.forta_explorer_mock import FortaExplorerMock
-from src.blockchain_indexer_mock import BlockChainIndexerMock
-from src.utils import Utils
+from constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES
+from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX, CONTRACT2
+from web3_errormock import Web3ErrorMock
+from forta_explorer_mock import FortaExplorerMock
+from blockchain_indexer_mock import BlockChainIndexerMock
+from utils import Utils
 
 
 

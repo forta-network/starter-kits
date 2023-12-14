@@ -1,5 +1,8 @@
 # Scam Detector Bot Release Notes
 
+## 2.23.2 (beta2 - not deployed yet)
+- Etherscan FP mitigation fix
+
 ## 2.23.1 (beta2 - 12/6/2023)
 - added ICE-PHISHING-ZERO-NONCE-ALLOWANCE-TRANSFER
 

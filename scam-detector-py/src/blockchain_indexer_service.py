@@ -228,7 +228,7 @@ class BlockChainIndexer:
     
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
-    def get_etherscan_labels(addresses):
+    def get_etherscan_labels(addresses) -> dict: #address -> {'labels': ['XXXXX'], 'nametag': 'YYYYYY'}
         address_labels = dict()
 
         try:

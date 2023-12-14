@@ -3,9 +3,9 @@ import json
 from forta_agent import get_json_rpc_url, FindingSeverity, FindingType, Finding
 from web3 import Web3
 
-from src.utils import Utils
-from src.constants import CONFIDENCE_MAPPINGS
-from src.web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX
+from utils import Utils
+from constants import CONFIDENCE_MAPPINGS
+from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX
 
 w3 = Web3Mock()
 real_w3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -38,10 +38,7 @@ class TestUtils:
     def test_is_address_aAa(self):
         assert not Utils.is_address(w3, '0x7328BBaaaaAaaaa52f569f2C09f96f915F2C8D73'), "this shouldnt be a valid address"
 
-    def test_etherscan_label(self):
-        label = Utils.get_etherscan_label("0xffc0022959f58aa166ce58e6a38f711c95062b99")
-        assert 'uniswap' in label, "this should be a uniswap address"
-
+  
     def test_max_tx_count(self):
         assert Utils.get_max_tx_count(w3, EOA_ADDRESS_SMALL_TX) == 1999, "this should be 1999"
 

@@ -22,6 +22,7 @@ from src.constants import TX_COUNT_FILTER_THRESHOLD, CONFIDENCE_MAPPINGS
 from src.error_cache import ErrorCache
 from src.storage import get_secrets
 
+
 class Utils:
     ERROR_CACHE = ErrorCache
 
@@ -197,24 +198,6 @@ class Utils:
         return is_address
 
     @staticmethod
-    def get_etherscan_label(cluster: str) -> list:
-        if cluster is None:
-            return ""
-
-        labels_str = []
-
-        response = get_labels({'entities': [cluster],
-                    'sourceIds': Utils.ETHERSCAN_LABEL_SOURCE_IDS,
-                    'state': True})
-        labels = response.labels
-        for label in labels:
-            if label.source.bot is None or label.source.bot.id in Utils.ETHERSCAN_LABEL_SOURCE_IDS:
-                logging.info(f"retreived label for {cluster}: {label.label}")
-                labels_str.append(label.label)
-        
-        return labels_str
-
-    @staticmethod
     def get_max_tx_count(w3, cluster: str) -> int:
         max_transaction_count = 0
         for address in cluster.split(','):
@@ -268,7 +251,14 @@ class Utils:
         global ERROR_CACHE
 
         if is_address: # if it's not a URL
-            etherscan_label = ','.join(Utils.get_etherscan_label(cluster)).lower()
+            from src.blockchain_indexer_service import BlockChainIndexer
+            block_chain_indexer = BlockChainIndexer()
+            labels_dict = block_chain_indexer.get_etherscan_labels(cluster.split(',')) # dict_values([{'labels': ['Proposer Fee Recipient'], 'nametag': 'Fee Recipient: 0xF4...A38'}])
+            labels = []
+            for item in labels_dict.values():
+                if 'labels' in item.keys():
+                    labels.extend(item['labels'])
+            etherscan_label = ','.join(labels).lower()
             if not ('attack' in etherscan_label
                     or 'phish' in etherscan_label
                     or 'hack' in etherscan_label
@@ -348,7 +338,6 @@ class Utils:
 
         # Get Etherscan labels for all unique addresses
         unique_addresses = list(address_to_findings.keys())
-
         from src.blockchain_indexer_service import BlockChainIndexer
         block_chain_indexer = BlockChainIndexer()
         labels = block_chain_indexer.get_etherscan_labels(unique_addresses)

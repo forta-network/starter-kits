@@ -6,8 +6,8 @@ from forta_explorer_mock import FortaExplorerMock
 import pandas as pd
 import hashlib
 
-from src.findings import ScamDetectorFinding
-from src.utils import Utils
+from findings import ScamDetectorFinding
+from utils import Utils
 
 
 forta_explorer = FortaExplorerMock()

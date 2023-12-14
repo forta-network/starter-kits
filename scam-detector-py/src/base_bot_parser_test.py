@@ -1,7 +1,7 @@
 from forta_agent import create_alert_event,FindingSeverity, AlertEvent, Label, EntityType
 from web3_mock import Web3Mock
 
-from src.base_bot_parser import BaseBotParser
+from base_bot_parser import BaseBotParser
 
 w3 = Web3Mock()
 
