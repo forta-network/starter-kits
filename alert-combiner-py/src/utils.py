@@ -64,7 +64,6 @@ class Utils:
                 alert_event.alert.metadata = finding.metadata
                 alert_event.alert.alert_id = finding.alert_id
                 alert_event.alert.labels = finding.labels
-                print("GIAVRAKI MOU KALO", alert_event.alert.name)
         
         return alert_event
 
