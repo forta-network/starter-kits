@@ -412,7 +412,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                     if decryption_key_name in secrets['decryptionKeys']:
                         private_key = secrets['decryptionKeys'][decryption_key_name]
                         logging.info(f"Alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - decrypting alert. Private key length for {decryption_key_name}: {len(private_key)}")
-                        alert_event = Utils.decrypt_alert_event(alert_event, private_key)
+                        alert_event = Utils.decrypt_alert_event(w3, alert_event, private_key)
 
                 # update entity clusters
                 if in_list(alert_event, [(ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_ALERT_ID)]):

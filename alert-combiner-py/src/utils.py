@@ -23,7 +23,7 @@ class Utils:
     gpg = None
 
     @staticmethod
-    def decrypt_alert_event(alert_event: AlertEvent, private_key:str) -> AlertEvent:
+    def decrypt_alert_event(w3, alert_event: AlertEvent, private_key:str) -> AlertEvent:
         if Utils.gpg is None:
             logging.info("Importing private keys into GPG")
     
@@ -48,26 +48,40 @@ class Utils:
             logging.info(f"Decrypted finding. Data length: {len(str(decrypted_finding_json))}")
             if len(str(decrypted_finding_json)) > 0:
                 finding_dict = json.loads(str(decrypted_finding_json))
+                logging.info(finding_dict)
 
                 finding_dict['severity'] = FindingSeverity(finding_dict['severity'])
                 finding_dict['type'] = FindingType(finding_dict['type'])
                 finding_dict['alert_id'] = finding_dict['alertId']
 
-                labels_new = []
-                labels = finding_dict['labels']
-                for label in labels:
-                    if label['entity'] != '':
-                        labels_new.append(label)
-                finding_dict['labels'] = labels_new
-            
-                finding = Finding(finding_dict)
+                # this is all blocksec specific; if additional partners are onboarded this needs to be refactored
+                addresses = set()
+                tx_hash = ''
+                if 'txhash' in finding_dict['metadata'].keys():
+                    tx_hash = finding_dict['metadata']['txhash']
+                    tx_receipt = w3.eth.get_transaction_receipt(tx_hash)
+                    if 'logs' in tx_receipt.keys():
+                        for log in tx_receipt['logs']:
+                            if 'address' in log.keys():
+                                logging.info(f"adding address {log['address']} to addresses")
+                                addresses.add(log['address'])
 
+               
+                if 'addresses' in finding_dict.keys():
+                    for address in finding_dict['addresses']:
+                        addresses.add(address)
+                for val in finding_dict['metadata'].values():
+                    if len(val) == 42 and val.startswith('0x'):
+                        addresses.add(val)
+
+                finding = Finding(finding_dict)
                 alert_event.alert.name = finding.name
                 alert_event.alert.description = finding.description
                 alert_event.alert.severity = FindingSeverity(finding.severity)
                 alert_event.alert.finding_type = FindingType(finding.type)
                 alert_event.alert.metadata = finding.metadata
                 alert_event.alert.alert_id = finding.alert_id
+                alert_event.alert.addresses = list(addresses)
                 alert_event.alert.labels = finding.labels
     
         return alert_event

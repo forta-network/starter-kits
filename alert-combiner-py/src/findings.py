@@ -38,7 +38,7 @@ class AlertCombinerFinding:
         bot_source_dict = {"bot_source": "/".join(bot_sources_sorted)}
         consensus_dict = {"consensus": len(bot_sources) * 1.0 / NUMBER_BOT_SOURCE}
         involved_addresses = set()
-        alert_data["addresses"].apply(lambda x: [involved_addresses.add(item) for item in x])
+        alert_data[alert_data["addresses"].notnull()]["addresses"].apply(lambda x: [involved_addresses.add(item) for item in x])
         involved_addresses = list(involved_addresses)[0:500]
         involved_addresses = {"involved_addresses_" + str(i): address for i, address in enumerate(involved_addresses, 1)}
 
