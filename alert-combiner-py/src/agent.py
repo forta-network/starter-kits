@@ -18,7 +18,7 @@ from src.findings import AlertCombinerFinding
 from src.constants import (BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_FP_CLUSTERS_QUEUE_SIZE, MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE, ATTACK_DETECTOR_BOT_ID, ATTACK_DETECTOR_BETA_BOT_ID,
                            FP_MITIGATION_BOTS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE,
                            MIN_ALERTS_COUNT, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ALERTED_FP_CLUSTERS_KEY, MANUALLY_ALERTED_ENTITIES_KEY, VICTIM_IDENTIFICATION_BOTS, DEFAULT_ANOMALY_SCORE, HIGHLY_PRECISE_BOTS,
-                           ALERTED_CLUSTERS_FP_MITIGATED_KEY, FINDINGS_CACHE_BLOCK_KEY, END_USER_ATTACK_BOTS, POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD, PASSTHROUGH_BOTS)
+                           ALERTED_CLUSTERS_FP_MITIGATED_KEY, FINDINGS_CACHE_BLOCK_KEY, END_USER_ATTACK_BOTS, POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD, PASSTHROUGH_BOTS, ENCRYPTED_BOTS)
 from src.L2Cache import L2Cache
 from src.storage import s3_client, dynamo_table, get_secrets
 from src.blockchain_indexer_service import BlockChainIndexer
@@ -45,6 +45,7 @@ FINDINGS_CACHE_BLOCK = []
 
 s3 = None
 dynamo = None
+secrets = None
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -134,6 +135,7 @@ def reinitialize():
     global CHAIN_ID
     global s3
     global dynamo
+    global secrets
 
     try:
         # initialize dynamo DB
@@ -383,7 +385,8 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
     global ALERTED_CLUSTERS_STRICT
     global CHAIN_ID
     global HIGHLY_PRECISE_BOTS
-   
+    global secrets
+
     findings = []
     try:
         start = time.time()
@@ -401,6 +404,15 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
             #  assess whether we generate a finding
             #  note, only one instance will be running at a time to keep up with alert volume
             try:
+
+                # decrypt the alert if needed
+                if alert_event.bot_id in ENCRYPTED_BOTS.keys() and alert_event.name == 'omitted':
+                    logging.info(f"Alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - decrypting alert event.") 
+                    decryption_key_name = ENCRYPTED_BOTS[alert_event.bot_id]
+                    if decryption_key_name in secrets['decryptionKeys']:
+                        private_key = secrets['decryptionKeys'][decryption_key_name]
+                        logging.info(f"Alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - decrypting alert. Private key length for {decryption_key_name}: {len(private_key)}")
+                        alert_event = Utils.decrypt_alert_event(w3, alert_event, private_key)
 
                 # update entity clusters
                 if in_list(alert_event, [(ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_ALERT_ID)]):

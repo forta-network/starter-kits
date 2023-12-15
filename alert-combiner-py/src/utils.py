@@ -5,8 +5,10 @@ import re
 import traceback
 import logging
 import json
+import base64
 import math
-from forta_agent import Finding, FindingType, FindingSeverity, get_alerts, get_labels
+import gnupg
+from forta_agent import Finding, FindingType, FindingSeverity, AlertEvent, get_alerts, get_labels
 
 from src.error_cache import ErrorCache
 from src.constants import TX_COUNT_FILTER_THRESHOLD
@@ -18,6 +20,71 @@ class Utils:
     CONTRACT_CACHE = dict()
     TOTAL_SHARDS = None
     IS_BETA = None
+    gpg = None
+
+    @staticmethod
+    def decrypt_alert_event(w3, alert_event: AlertEvent, private_key:str) -> AlertEvent:
+        if Utils.gpg is None:
+            logging.info("Importing private keys into GPG")
+    
+            Utils.gpg =  gnupg.GPG(gnupghome='.')
+            import_result = Utils.gpg.import_keys(private_key)
+            if len(import_result.fingerprints) == 0:
+                logging.info("Imported no private key into GPG")
+    
+            for fingerprint in import_result.fingerprints:
+                Utils.gpg.trust_keys(fingerprint, 'TRUST_ULTIMATE')
+                logging.info(f"Imported private key {fingerprint} into GPG")
+    
+        if alert_event.alert.name == 'omitted' and 'data' in alert_event.alert.metadata.keys():
+            base64_encoded_string = alert_event.alert.metadata['data']
+            logging.info(f"Decrypting alert. Data length of base64 value: {len(base64_encoded_string)}. Private key length {len(private_key)}")
+
+            #base64 decode
+            encrypted_finding_ascii = base64.b64decode(base64_encoded_string).decode('utf-8')
+            logging.info(f"Decrypting finding. Data length: {len(encrypted_finding_ascii)}. Private key length {len(private_key)}")
+            
+            decrypted_finding_json = Utils.gpg.decrypt(encrypted_finding_ascii)
+            logging.info(f"Decrypted finding. Data length: {len(str(decrypted_finding_json))}")
+            if len(str(decrypted_finding_json)) > 0:
+                finding_dict = json.loads(str(decrypted_finding_json))
+                logging.info(finding_dict)
+
+                finding_dict['severity'] = FindingSeverity(finding_dict['severity'])
+                finding_dict['type'] = FindingType(finding_dict['type'])
+                finding_dict['alert_id'] = finding_dict['alertId']
+
+                # this is all blocksec specific; if additional partners are onboarded this needs to be refactored
+                addresses = set()
+                tx_hash = ''
+                if 'txhash' in finding_dict['metadata'].keys():
+                    tx_hash = finding_dict['metadata']['txhash']
+                    tx_receipt = w3.eth.get_transaction_receipt(tx_hash)
+                    if 'logs' in tx_receipt.keys():
+                        for log in tx_receipt['logs']:
+                            if 'address' in log.keys():
+                                logging.info(f"adding address {log['address']} to addresses")
+                                addresses.add(log['address'])
+
+               
+                if 'addresses' in finding_dict.keys():
+                    for address in finding_dict['addresses']:
+                        addresses.add(address)
+                for val in finding_dict['metadata'].values():
+                    if len(val) == 42 and val.startswith('0x'):
+                        addresses.add(val)
+
+                finding = Finding(finding_dict)
+                alert_event.alert.name = finding.name
+                alert_event.alert.description = finding.description
+                alert_event.alert.severity = FindingSeverity(finding.severity)
+                alert_event.alert.finding_type = FindingType(finding.type)
+                alert_event.alert.metadata = finding.metadata
+                alert_event.alert.alert_id = finding.alert_id
+                alert_event.alert.addresses = list(addresses)
+                alert_event.alert.labels = finding.labels
+    
+        return alert_event
 
     @staticmethod
     def is_contract(w3, addresses) -> bool:
