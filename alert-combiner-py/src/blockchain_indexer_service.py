@@ -111,7 +111,7 @@ class BlockChainIndexer:
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
     def get_contracts(address, chain_id, disable_etherscan=False, disable_zettablock=False) -> set:
-        logging.info(f"get_contracts for {address} on {chain_id} called.")
+        print(f"get_contracts for {address} on {chain_id} called.")
         contracts = set()
 
         if not disable_etherscan:
@@ -174,6 +174,7 @@ class BlockChainIndexer:
 
                 res = requests.post(endpoint, headers=headers, data=json.dumps(data))
                 if res.status_code == 200:
+                    print(f"get_contracts for {address} on {chain_id}; zettablock response: {res.text}")
                     resjson = json.loads(res.text)
                     records = resjson['data']['records']
                     df = pd.DataFrame(records, columns=['address', 'deployer', 'transaction_hash'])
