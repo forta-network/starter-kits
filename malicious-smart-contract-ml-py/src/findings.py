@@ -10,6 +10,7 @@ class ContractFindings:
         from_address: str,
         contract_address: str,
         contained_addresses: set,
+        function_signatures: set,
         model_score: float,
         model_threshold: float,
         error: str = None,
@@ -18,6 +19,7 @@ class ContractFindings:
             "address_contained_in_created_contract_" + str(i): address
             for i, address in enumerate(contained_addresses, 1)
         }
+        self.metadata["function_signatures"] = ",".join(function_signatures)
         # This contract explorer only works for Ethereum
         self.metadata[
             "oko_contract_explorer"

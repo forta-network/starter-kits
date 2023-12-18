@@ -1,5 +1,57 @@
 # Scam Detector Bot Release Notes
 
+## 2.22.11 (beta2 - 11/29/2023, prod - 12/7/2023)
+- fix broken link in documentation
+
+## 2.22.10 (beta2 - 11/29/2023, prod - 12/3/2023)
+- fix issue 392
+
+## 2.22.9 (beta2 - 11/29/2023)
+- added ICE-PHISHING-ZERO-NONCE-ALLOWANCE
+
+## 2.22.8 (beta2 - 11/28/2023)
+- add cache size to debug errors
+
+## 2.22.8 (beta2 - 11/28/2023)
+- fix unique key label FP handling
+
+## 2.22.7 (beta2 - 11/22/2023)
+- fix beta2 handling
+
+## 2.22.6 (beta2 - 11/22/2023)
+- remove pkc-3 and phishing ML bot (which is not used in prod)
+- fixed manual list but
+
+## 2.22.5 (beta2 - 11/20/2023)
+- added attribution support (blocksec bot and manual list)
+
+
+## 2.22.4 (beta2 - 11/8/2023)
+- upgrade to sdk 0.1.45/0.1.25
+- unique label logic
+
+## 2.22.3 (beta2 - 11/2/2023)
+- integrated SOCIAL-ENG-EOA-CREATION-NULL-ADDRESS to capture drainer addresses more comprehensively
+- integrated NIP-9 to capture certain phishing related multicall attacks
+
+## 2.22.2 (beta2 - 11/2/2023)
+- upgrade to sdk 0.1.44/0.1.24
+- fix issue #349
+
+## 2.22.1 (beta2 - 11/1/2023)
+- upgrade to sdk 0.1.44/0.1.24
+- FP etherscan label fixes
+- Reactive FP handling
+
+## 2.22.0 (beta2 - 10/25/2023)
+- upgrade to sdk 0.1.43/0.1.23
+
+## 2.20.14 (11/29/2023 - beta (without private key compromise, phishing ML bot))
+- reved cache to reset cache size
+
+## 2.20.13 prod (11/21/2023 - prod (without private key compromise, phishing ML bot))
+- update one pager
+
 ## 2.20.13 prod (without private key compromise, phishing ML bot)
 - update sdk to 0.1.45
 

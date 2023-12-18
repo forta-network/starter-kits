@@ -28,6 +28,17 @@ def is_contract(w3, address) -> bool:
     code = w3.eth.get_code(Web3.toChecksumAddress(address))
     return code != HexBytes("0x")
 
+def get_function_signatures(w3, opcodes) -> set:
+    """
+    this function will parse the opcodes and returns all the possible function signatures (essentially whenever we find a 4bytes in a PUSH4 instruction (e.g. PUSH4 0x42966c68))
+    """
+    function_signatures = set()
+    for i, opcode in enumerate(opcodes):
+        opcode_name = opcode.name
+        if opcode_name == "PUSH4":
+            function_signatures.add(f"0x{opcode.operand}")
+    return function_signatures
+
 
 def get_storage_addresses(w3, address) -> set:
     """

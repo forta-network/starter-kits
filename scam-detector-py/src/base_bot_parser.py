@@ -9,8 +9,17 @@ class BaseBotParser:
 
     BASEBOT_PARSING_CONFIG_DF = pd.read_csv('basebot_parsing_config.csv')
 
+
     @staticmethod
-    def get_scammer_urls(w3, alert_event: forta_agent.alert_event.AlertEvent) -> dict:
+    def collect_all_metadata(alert_event: forta_agent.alert_event.AlertEvent) -> dict:
+        metadata = dict()
+        metadata.update(alert_event.alert.metadata)
+        for label in alert_event.alert.labels:
+            metadata.update(label.metadata)
+        return metadata
+
+    @staticmethod
+    def get_scammer_urls(w3, alert_event: forta_agent.alert_event.AlertEvent) -> dict: #entity -> findings metadata union labels metadata
         scammer_urls = dict()
        
                     
@@ -20,7 +29,7 @@ class BaseBotParser:
 
             if row['bot_id'] == alert_event.bot_id and row['alert_id'] in alert_event.alert_id and row["type"] == 'url':
                 if row['location'] == 'description':
-                    metadata_obj = alert_event.alert.metadata.copy()
+                    metadata_obj = BaseBotParser.collect_all_metadata(alert_event)
                     description = alert_event.alert.description.lower()
                     loc = int(row["attacker_address_location_in_description"])
                     metadata_obj["address_information"] = row["address_information"]
@@ -28,7 +37,7 @@ class BaseBotParser:
                         metadata_obj["address_information"] = row["address_information"]
                         scammer_urls[url.lower()] = metadata_obj
                 elif row['location'] == 'label':
-                    metadata_obj = alert_event.alert.metadata.copy()
+                    metadata_obj = BaseBotParser.collect_all_metadata(alert_event)
                     label_name = row['metadata_field']
                     for label in alert_event.alert.labels:
                         if label.label == label_name and label.entity_type == EntityType.Address:
@@ -36,7 +45,7 @@ class BaseBotParser:
                             scammer_urls[label.entity] = metadata_obj
                 elif row['location'] == 'metadata':
                     if row['metadata_field'] in alert_event.alert.metadata.keys():
-                        metadata_obj = alert_event.alert.metadata.copy()
+                        metadata_obj = BaseBotParser.collect_all_metadata(alert_event)
                         metadata = metadata_obj[row["metadata_field"]]
                         for url in re.findall(r"(?:(?:https?|ftp)://)?[\w\-]+(?:\.[\w\-]+)+[\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#]", metadata):
                             metadata_obj["address_information"] = row["address_information"]
@@ -47,7 +56,7 @@ class BaseBotParser:
 
     @staticmethod
     def get_scammer_addresses(w3, alert_event: forta_agent.alert_event.AlertEvent) -> dict:
-        scammer_addresses = dict()
+        scammer_addresses = dict() #address -> findings metadata union labels metadata
        
                     
         for index, row in BaseBotParser.BASEBOT_PARSING_CONFIG_DF.iterrows():
@@ -58,14 +67,14 @@ class BaseBotParser:
 
             if row['bot_id'] == alert_event.bot_id and row['alert_id'] in alert_event.alert_id and row["type"] == 'eoa':
                 if row['location'] == 'description':
-                    metadata_obj = alert_event.alert.metadata.copy()
+                    metadata_obj = BaseBotParser.collect_all_metadata(alert_event)
                     description = alert_event.alert.description.lower()
                     loc = int(row["attacker_address_location_in_description"])
                     metadata_obj["address_information"] = row["address_information"]
                     metadata_obj["scammer-contracts"] = BaseBotParser.get_scammer_contract_addresses(w3, alert_event)
                     scammer_addresses[description[loc:42+loc]] = metadata_obj
                 elif row['location'] == 'label':
-                    metadata_obj = alert_event.alert.metadata.copy()
+                    metadata_obj = BaseBotParser.collect_all_metadata(alert_event)
                     label_name = row['metadata_field']
                     for label in alert_event.alert.labels:
                         if label.label == label_name and label.entity_type == EntityType.Address:
@@ -74,14 +83,14 @@ class BaseBotParser:
                             scammer_addresses[label.entity] = metadata_obj
                 elif row['location'] == 'metadata':
                     if row['metadata_field'] in alert_event.alert.metadata.keys():
-                        metadata_obj = alert_event.alert.metadata.copy()
+                        metadata_obj = BaseBotParser.collect_all_metadata(alert_event)
                         metadata = metadata_obj[row["metadata_field"]]
                         for address in re.findall(r"0x[a-fA-F0-9]{40}", metadata):
                             metadata_obj["address_information"] = row["address_information"]
                             metadata_obj["scammer-contracts"] = BaseBotParser.get_scammer_contract_addresses(w3, alert_event)
                             scammer_addresses[address.lower()] = metadata_obj
                 elif row['location'] == 'tx_to':
-                    metadata_obj = alert_event.alert.metadata.copy()
+                    metadata_obj = BaseBotParser.collect_all_metadata(alert_event)
                     metadata_obj["address_information"] = row["address_information"]
                     metadata_obj["scammer-contracts"] = BaseBotParser.get_scammer_contract_addresses(w3, alert_event)
                     scammer_addresses[w3.eth.get_transaction(alert_event.transaction_hash)['to'].lower()] = metadata_obj
@@ -95,24 +104,24 @@ class BaseBotParser:
         for index, row in BaseBotParser.BASEBOT_PARSING_CONFIG_DF.iterrows():
             if row['bot_id'] == alert_event.bot_id and row['alert_id'] in alert_event.alert_id and row["type"] == 'contract':
                 if row['location'] == 'description':
-                    metadata_obj = alert_event.alert.metadata.copy()
+                    metadata_obj = BaseBotParser.collect_all_metadata(alert_event)
                     description = alert_event.alert.description.lower()
                     loc = int(row["attacker_address_location_in_description"])
                     scammer_contract_addresses.add(description[loc:42+loc])
                 elif row['location'] == 'label':
-                    metadata_obj = alert_event.alert.metadata.copy()
+                    metadata_obj = BaseBotParser.collect_all_metadata(alert_event)
                     label_name = row['metadata_field']
                     for label in alert_event.alert.labels:
                         if label.label == label_name and label.entity_type == EntityType.Address:
                             scammer_contract_addresses.add(label.entity)
                 elif row['location'] == 'metadata':
                     if row['metadata_field'] in alert_event.alert.metadata.keys():
-                        metadata_obj = alert_event.alert.metadata.copy()
+                        metadata_obj = BaseBotParser.collect_all_metadata(alert_event)
                         metadata = metadata_obj[row["metadata_field"]]
                         for address in re.findall(r"0x[a-fA-F0-9]{40}", metadata):
                             scammer_contract_addresses.add(address.lower())
                 elif row['location'] == 'tx_to':
-                    metadata_obj = alert_event.alert.metadata.copy()
+                    metadata_obj = BaseBotParser.collect_all_metadata(alert_event)
                     scammer_contract_addresses.add(w3.eth.get_transaction(alert_event.transaction_hash)['to'].lower())
 
         return scammer_contract_addresses

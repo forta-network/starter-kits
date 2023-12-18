@@ -15,6 +15,12 @@
 ## v3.52.0 (Nov 15 2023: beta2)
 - Added new MEV bot for FP mitigation
 
+## v3.51.7 (Dec 6 2023: prod)
+- updated documentation
+
+## v3.51.6 (Nov 17 2023: beta2, Nov 17 2023: prod)
+- updated promo URL
+
 ## v3.51.5 (Nov 14 2023: beta2, Nov 14 2023: prod)
 - update to sdk 0.1.45
 

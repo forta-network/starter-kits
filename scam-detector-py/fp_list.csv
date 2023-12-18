@@ -180,3 +180,52 @@ address,chain_id,comment
 0x13422774d8416a316390f5aa2e713c5742592aaf,1,Avalance Bridge
 0x28a92dde19d9989f39a49905d7c9c2fac7799bdf,250,USDC Token
 0xe1768f3b55f655812f94b7327062b275a3123082,137,Not Native Ice Phisher
+0x602d9abd5671d24026e2ca473903ff2a9a957407,1, Address flagged as rug puller but indeed removed liqudiity from a pool of Frax
+0xa38aa9ae8953f245b44e84b6f25e0032e58b1f42,1,
+0x5ee84d30c7ee57f63f71c92247ff31f95e26916b,1, Flagged as scamer due to the scam notifier bott. Althiugh received a message there's no reason to conisder it as a scammer
+0x8fe0e1205811d5a7e80ee9dc65ae75cafd71ac8d,1, The scam detector has flagged this address as an exchange
+0x812c1e2ce48c2672b81b7711275df545cdf53655,1, The ML bot seems to be pointing out a normal swap
+0x9cbf099ff424979439dfba03f00b5961784c06ce,1, Seems like this contract was supposed to have been created by a scammer but I don't see the reason. Address is swapping when invoking a function
+0xc4218226a5406aa721eaebc2d9da9564aedd7777,1, seems like the tx for how why it has been flagged was a normal swap
+0xb1d72dd9cd988c727b160886b864ee0004965c8a,1, 1 inch swap
+0xb4fb31e7b1471a8e52dd1e962a281a732ead59c1,1, the SD seems to be pointing out a normal swap
+0x5de4ef4879f4fe3bbadf2227d2ac5d0e2d76c895,1, I don't see why this should be considered as a scammer
+0xed712f0e0f853fcb4d142cdad47867689df66282,1, Seems like the address is invoking a contract to make swaps
+0x0edc1e3a69ff68cf34bdffa83f2f69d2c48170a1,1, Seems like the address is invoking a contract to make swaps
+0xef819443b1cbd55ab0b137f644fffa8ebb4208ee,1, I don't see why this should be considered as a scammer
+0x45ecfd1f5cf000a8320d8b88d53373bdf964f091,1, I don't see why this should be considered as a scammer
+0x12949651a3a7cf952a06fc7f97e13e40f377db9c,1, there was liqudity removal but from legit tokens that are still trading
+0xf9137bb4881d9bdeec2aea32e21709bc47fcd2db,1, Seems this address was flagged as scammer association. Thing is that I see no connection with the central node
+0xb7f1498898d70685851b5331f64bf26215f00415,1, seems this scammer was flagged as soft rug puller. I don't see why exactly
+0xf71d161fdc3895f21612d79f15aa819b7a3d296a,1, There was a liquidity removal but they are still trading
+0x176f3dab24a159341c0509bb36b833e7fdd0a132,1, Justin Sun address
+0xb95a8d8d7699a32552be90c3bbf389feab702557,1, This one was flagged like ice phisher. I don't see why
+0xc5a87e6c6fb14daad332614d8b727bdf80d7c801,1, MEV bot
+0xa626bd40a8c88f59a4cf9b1821a7bd71fad96285,1, Flagged as rug puller and does not seem to be one
+0x7fe4b2632f5ae6d930677d662af26bc0a06672b3,1, The transaction of why this was flagged as ice phisher does not seem as such
+0xed850afe56d61a531a741748168e75a608ecd7f8,1, I don't see why this was flagged as ice phsiher
+0x66364bef617514b745339d67f981b0f3de0463f2,1, I don't see why this was flagged as rug puller
+0x5baac7ccda079839c9524b90df81720834fc039f,1, Doesn't look like ice phishing
+0xd312818347fb054d30925488a7dcfab6e19e9421,1,
+0xcfd727653c3d5a1b943f675781d3245b884f1d34,1, normal swap on 1 inch
+0x20ac0ee73d332d1adcd4155d5ae0bda5a2e90c4c,1, Seems like a mev bot
+0x096187368ac90c47a4df438ccba411debd25d93a,1, the alert is pointing out to a tx that does not seem like ice phishing
+0xb3cef8a292bf665afaaf717a9dbcc156d70d4ad6,1, does not seem like a phisher
+0xdce92f40cadde2c4e3ea78b8892c540e6bfe2f81,1, seem like this was flagged as native ice phisher. Thing here is this address recevied plenty of transactions and some big ones
+0x9ce6e6b60c894d1df9bc3d9d6cc969b79fb176b7,1, Does not seem like ice phisher
+0xc92fb88140442067d8c2a6d18262ea21dcaddfb1,1, flagged as address poisoning address 
+0x598b014cbd88f3e131fb3b9341ba57e85d8febc6,1, I don't see why this should be considered as a scammer
+0x2eb5e5713a874786af6da95f6e4deacedb5dc246,1, the central node was flagged with scammer association label. This error was solved a while ago
+0x77f6abde8bbf87c51a800c43e7b93a7ebdba605f,1, Radiant capital
+0xcbd78f8fb96bae40826a601f8b9ba17782d62527,1, I don't see the scam here
+0x28a92dde19d9989f39a49905d7c9c2fac7799bdf,1, Stargate contract
+0x8196e0648cb16e9151c2920618a58605706b5836,1, I don't see the scam here
+0x0825cb1a6ab802cd2198ced1680f8220942dd947,1, This address received an onchain message but is not alerting a scam
+0x329c54289ff5d6b7b7dae13592c6b1eda1543ed4,1, Aave deployer
+0x0000000000000000000000000000000000000000,1, Null Address
+0x0000000000000000000000000000000000000000,137, Null Address
+0x0000000000000000000000000000000000000000,56, Null Address
+0x0000000000000000000000000000000000000000,10, Null Address
+0x0000000000000000000000000000000000000000,250, Null Address
+0x0000000000000000000000000000000000000000,43114, Null Address
+0x0000000000000000000000000000000000000000,42161, Null Address
