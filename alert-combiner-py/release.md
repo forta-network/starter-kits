@@ -1,5 +1,23 @@
 # Attack Detector Bot Release Notes
 
+## v3.52.5 (Dec 18th 2023: beta2, Dec 18th 2023:prod)
+- After rebase
+
+## v3.52.5 (Dec 15th 2023: beta2)
+- Added decryption of blocksec alerts
+
+## v3.52.3 (Dec 1st 2023: beta2)
+- Added consensus mechanism
+
+## v3.52.2 (Dec 1st 2023: beta2)
+- Reactive FP mitigation
+
+## v3.52.1 (Nov 29 2023: beta2)
+- Fix bug 372
+
+## v3.52.0 (Nov 15 2023: beta2)
+- Added new MEV bot for FP mitigation
+
 ## v3.51.7 (Dec 6 2023: prod)
 - updated documentation
 

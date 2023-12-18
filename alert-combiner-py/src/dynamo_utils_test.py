@@ -5,7 +5,7 @@ import pandas as pd
 import hashlib
 
 from dynamo_utils import DynamoUtils, TEST_TAG
-from constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS
+from constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS, FP_MITIGATION_EXPIRY_IN_HOURS
 
 
 class TestDynamoUtils:
@@ -35,7 +35,7 @@ class TestDynamoUtils:
         dynamo.put_item.return_value = {
             'ResponseMetadata': {'HTTPStatusCode': 200}}
         address = '0x123456789'
-        expiry_offset = ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
+        expiry_offset = FP_MITIGATION_EXPIRY_IN_HOURS * 60 * 60
         expiresAt = int(time.time()) + int(expiry_offset)
 
         du = DynamoUtils(TEST_TAG, TestDynamoUtils.CHAIN_ID) 
