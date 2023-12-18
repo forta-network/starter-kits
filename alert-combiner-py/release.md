@@ -1,6 +1,9 @@
 # Attack Detector Bot Release Notes
 
-## v3.52.4 (Dec 15th 2023: beta2)
+## v3.52.5 (Dec 18th 2023: beta2, Dec 18th 2023:prod)
+- After rebase
+
+## v3.52.5 (Dec 15th 2023: beta2)
 - Added decryption of blocksec alerts
 
 ## v3.52.3 (Dec 1st 2023: beta2)
