@@ -8,7 +8,7 @@ from os import environ
 
 from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
-    MODEL_THRESHOLD,
+    MODEL_THRESHOLD_DICT,
     SAFE_CONTRACT_THRESHOLD,
 )
 from src.findings import ContractFindings
@@ -32,13 +32,23 @@ def initialize():
     """
     this function loads the ml model.
     """
-    global ML_MODEL
-    logger.info("Start loading model")
-    ML_MODEL = load("voting_clf.joblib")
-    logger.info("Complete loading model")
 
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
+
+    global MODEL_THRESHOLD
+    MODEL_THRESHOLD = MODEL_THRESHOLD_DICT.get(str(CHAIN_ID), 0.3)
+    logger.info(f"Model threshold: {MODEL_THRESHOLD}")
+
+    global ML_MODEL
+    logger.info("Start loading model")
+    try:
+        logger.info(f"Loading model for chain {CHAIN_ID}")
+        ML_MODEL = load(f"deployed_models/voting_clf_{CHAIN_ID}.joblib")
+    except:
+        logger.info("Model not found, loading default model")
+        ML_MODEL = load("malicious_non_token_model_02_07_23_exp2.joblib")
+    logger.info("Complete loading model")
 
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
 
