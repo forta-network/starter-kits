@@ -1,5 +1,5 @@
-TEST_MODE = True  # The mode when the bot uses test database
-TRANSFERS_TO_CONFIRM = 2  # Amount of transfers to check the address
+TEST_MODE = False  # The mode when the bot uses test database
+TRANSFERS_TO_CONFIRM = 50  # Amount of transfers to check the address
 NEWLY_CREATED_MAX_TRANSACTIONS_AMOUNT = 5  # Address is newly created if its number of txs is below this value
 DEX_DISABLE = False  # Disables DEX-related alerts
 INFO_ALERTS = False  # Disables INFO alerts
