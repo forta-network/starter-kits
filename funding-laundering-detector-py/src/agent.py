@@ -224,7 +224,6 @@ async def analyze_transaction(transaction_event: forta_agent.transaction_event.T
 
     # This part is responsible for the ERC20 token but the logic is basically the same so no comments needed
     for event in [*transaction_event.filter_log(json.dumps(TRANSFER_EVENT_ABI))]:
-        print('burda mi')
         from_ = extract_argument(event, 'from').lower()
         to = extract_argument(event, 'to').lower()
         value = extract_argument(event, 'value')
