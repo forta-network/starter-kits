@@ -64,25 +64,30 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
             addresses = alert_event.alert.description.split(" ")[0]
             ATTACKER_ADDRESSES[addresses] = alert_event
             logging.info(f"Added {addresses} to queue")
+    return findings
 
-        for (addresses, retrieved_alert_event) in ATTACKER_ADDRESSES.copy().items():
-            logging.info(f"{datetime.now(timezone.utc)} - Assessing {addresses} created at {retrieved_alert_event.alert.created_at}")
-            # created_at string in format 2023-11-11T01:08:35.08635455Z
-            created_at_date = datetime.strptime(retrieved_alert_event.alert.created_at[0:19], "%Y-%m-%dT%H:%M:%S")
-            created_at_date_utc = created_at_date.replace(tzinfo=timezone.utc)
-            if (datetime.now(timezone.utc) - created_at_date_utc).total_seconds() >= WAIT_TIME * 60: # 60 min
-                logging.info(f"Removing {addresses} from queue")
-                del ATTACKER_ADDRESSES[addresses]
-                labels = get_etherscan_labels(addresses, chain_id)
-                for label in labels:
-                    if "exploiter" in label.lower() or "hack" in label.lower():
-                        findings.append(Finding({
-                            'name':"Attributed Exploit Identified by Attack Detector",
-                            'description':f"{addresses} have been associated with {label}",
-                            'alert_id':"ATTACK-NOTIFIER-1",
-                            'severity':FindingSeverity.Critical,
-                            'type':FindingType.Exploit
-                        }))
+def handle_blocks(block_event: forta_agent.block_event.BlockEvent) -> list:
+    findings = []
+    global ATTACKER_ADDRESSES
+
+    for (addresses, retrieved_alert_event) in ATTACKER_ADDRESSES.copy().items():
+        logging.info(f"{datetime.now(timezone.utc)} - Assessing {addresses} created at {retrieved_alert_event.alert.created_at}")
+        # created_at string in format 2023-11-11T01:08:35.08635455Z
+        created_at_date = datetime.strptime(retrieved_alert_event.alert.created_at[0:19], "%Y-%m-%dT%H:%M:%S")
+        created_at_date_utc = created_at_date.replace(tzinfo=timezone.utc)
+        if (datetime.now(timezone.utc) - created_at_date_utc).total_seconds() >= WAIT_TIME * 60: # 60 min
+            logging.info(f"Removing {addresses} from queue")
+            del ATTACKER_ADDRESSES[addresses]
+            labels = get_etherscan_labels(addresses, retrieved_alert_event.alert.chain_id)
+            for label in labels:
+                if "exploiter" in label.lower() or "hack" in label.lower():
+                    findings.append(Finding({
+                        'name':"Attributed Exploit Identified by Attack Detector",
+                        'description':f"{addresses} have been associated with {label}",
+                        'alert_id':"ATTACK-NOTIFIER-1",
+                        'severity':FindingSeverity.Critical,
+                        'type':FindingType.Exploit
+                    }))
 
     return findings
 
@@ -116,7 +121,6 @@ def get_etherscan_labels(addresses, chain_id) -> set:
     labels = set()
     success = False
     count = 0
-    logging.info(labels_url)
     while not success:
         data = requests.get(labels_url)
         if data.status_code == 200:
@@ -128,13 +132,13 @@ def get_etherscan_labels(addresses, chain_id) -> set:
                     labels.update(result_data[0].get("labels", []))
                     labels.add(result_data[0].get("nametag", ""))
                 elif isinstance(result_data, str):
-                    logging.warning(f"Etherscan Error Response: {result_data}")
+                    logging.warning(f"Etherscan Error Response: {data.content}.")
                 else:
-                    logging.warning(f"Etherscan response does not contain valid data {result_data}.")
+                    logging.warning(f"Etherscan response does not contain valid data {data.content}.")
             else:
-                logging.warning("Etherscan response does not contain 'result' field.")
+                logging.warning(f"Etherscan response does not contain 'result' field: {data.content}.")
         else:
-            logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")
+            logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}.")
             count += 1
             if count > 10:
                 break
