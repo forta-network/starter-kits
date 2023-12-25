@@ -641,7 +641,8 @@ class ScamDetectorFinding:
             metadata['scammer_contract_address'] = scammer_contract_address
             metadata['involved_threat_category'] = original_threat_category
             metadata['involved_alert_hash_1'] = original_alert_hash
-            metadata['future_contract_addresses'] = ','.join(future_contract_addresses)
+            if future_contract_addresses:
+                metadata['future_contract_addresses'] = ','.join(future_contract_addresses)
 
             return Finding({
                 'name': 'Scam detector identified a scammer EOA deploying a contract',
