@@ -16,7 +16,7 @@ from src.mixer_bridge_exchange import check_is_mixer_bridge_exchange
 from src.utils import extract_argument
 from .constants import WITHDRAW_ETH_FUNCTION_ABI
 from src.config import DEFAULT_THRESHOLDS, L2_THRESHOLDS, TRANSFERS_TO_CONFIRM, TEST_MODE, DEX_DISABLE, \
-    INFO_ALERTS, BLOCKS_IN_MEMORY_VALUES
+    INFO_ALERTS, BLOCKS_IN_MEMORY_VALUES, MIXER_ADDRESSES
 from src.blockexplorer import BlockExplorer
 
 initialized = False
@@ -43,6 +43,7 @@ else:
     thresholds = DEFAULT_THRESHOLDS
 
 blocks_in_memory = BLOCKS_IN_MEMORY_VALUES.get(CHAIN_ID)
+mixer_addresses = MIXER_ADDRESSES
 
 async def analyze_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent):
     """
@@ -73,7 +74,6 @@ async def analyze_transaction(transaction_event: forta_agent.transaction_event.T
 
         # skip if amount is too small or one of the address is 0x0000...
         if usd > thresholds["TRANSFER_THRESHOLD_IN_USD"] and from_ != NULL_ADDRESS and to != NULL_ADDRESS:
-
             # FUNDING
             if from_ in confirmed_targets_keys and to not in confirmed_targets_keys:  # if we know initiator...
                 DENOMINATOR_COUNT_FUNDING += 1
@@ -110,7 +110,8 @@ async def analyze_transaction(transaction_event: forta_agent.transaction_event.T
                                                                   DENOMINATOR_COUNT_FUNDING, CHAIN_ID))
 
             # LAUNDERING
-            elif to in confirmed_targets_keys and from_ not in confirmed_targets_keys:  # if we know target...
+            elif to in confirmed_targets_keys and from_ not in confirmed_targets_keys or to in mixer_addresses.get(CHAIN_ID, []):
+            # if we know target...
                 DENOMINATOR_COUNT_LAUNDERING += 1
 
                 labels = [
@@ -192,7 +193,7 @@ async def analyze_transaction(transaction_event: forta_agent.transaction_event.T
                                                                       DENOMINATOR_COUNT_FUNDING, CHAIN_ID))
 
                 # LAUNDERING
-                elif to in confirmed_targets_keys and from_ not in confirmed_targets_keys:  # if we know target...
+                elif to in confirmed_targets_keys and from_ not in confirmed_targets_keys or to in mixer_addresses.get(CHAIN_ID, []):  # if we know target...
                     DENOMINATOR_COUNT_LAUNDERING += 1
 
                     labels = [
@@ -268,7 +269,7 @@ async def analyze_transaction(transaction_event: forta_agent.transaction_event.T
                                                               labels, DENOMINATOR_COUNT_FUNDING, CHAIN_ID))
 
         # LAUNDERING
-        elif to in confirmed_targets_keys and from_ not in confirmed_targets_keys:
+        elif to in confirmed_targets_keys and from_ not in confirmed_targets_keys or to in mixer_addresses.get(CHAIN_ID, []):
             DENOMINATOR_COUNT_LAUNDERING += 1
             usd, token = calculate_usd_and_get_symbol(web3, event.address.lower(), ERC20_ABI, value)
             if usd > thresholds["TRANSFER_THRESHOLD_IN_USD"] and (
@@ -345,7 +346,7 @@ async def analyze_transaction(transaction_event: forta_agent.transaction_event.T
                                                               labels, DENOMINATOR_COUNT_FUNDING, CHAIN_ID))
 
         # LAUNDERING
-        elif to in confirmed_targets_keys and from_ not in confirmed_targets_keys:
+        elif to in confirmed_targets_keys and from_ not in confirmed_targets_keys or to in mixer_addresses.get(CHAIN_ID, []):
             DENOMINATOR_COUNT_LAUNDERING += 1
             usd, token = calculate_usd_for_base_token(value, CHAIN_ID)
             if usd > thresholds["TRANSFER_THRESHOLD_IN_USD"] and (
