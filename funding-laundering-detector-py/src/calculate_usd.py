@@ -130,7 +130,7 @@ def calculate_usd_for_base_token(amount, chain_id):
         symbol = 'eth'
         decimals = 18
     else:
-        symbol = 'eth'
+        symbol = 'avax'
         decimals = 18
 
     token_price = 0
