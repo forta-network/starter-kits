@@ -25,10 +25,9 @@ web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 blockexplorer = BlockExplorer(web3.eth.chain_id)
 
 FINDINGS_CACHE = []
-MUTEX = False
 THREAD_STARTED = False
 CREATED_CONTRACTS = {}  # contract and creation timestamp
-
+LOCK = threading.Lock()
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -47,9 +46,6 @@ def initialize():
     """
     global FINDINGS_CACHE
     FINDINGS_CACHE = []
-
-    global MUTEX
-    MUTEX = False
 
     global THREAD_STARTED
     THREAD_STARTED = False
@@ -165,49 +161,46 @@ def cache_contract_creation(
     w3, transaction_event: forta_agent.transaction_event.TransactionEvent
 ):
     global CREATED_CONTRACTS
-    global MUTEX
+
 
     logging.info(
         f"Scanning transaction {transaction_event.transaction.hash} on chain {CHAIN_ID}"
     )
-    while MUTEX:
-        logging.info(f"Sleeping...")
-        time.sleep(1)  # 1 sec
 
-    MUTEX = True
-    created_contract_addresses = []
-    if transaction_event.to is None:
-        nonce = transaction_event.transaction.nonce
-        created_contract_address = calc_contract_address(
-            w3, transaction_event.from_, nonce
-        )
+    with LOCK:
+        created_contract_addresses = []
+        if transaction_event.to is None:
+            nonce = transaction_event.transaction.nonce
+            created_contract_address = calc_contract_address(
+                w3, transaction_event.from_, nonce
+            )
 
-        logging.info(
-            f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}"
-        )
-        CREATED_CONTRACTS[created_contract_address] = transaction_event
+            logging.info(
+                f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}"
+            )
+            CREATED_CONTRACTS[created_contract_address] = transaction_event
 
-    for trace in transaction_event.traces:
-        if trace.type == "create":
-            if (
-                transaction_event.from_ == trace.action.from_
-                or trace.action.from_ in created_contract_addresses
-            ):
-                # for contracts creating other contracts, the nonce would be 1
-                nonce = (
-                    transaction_event.transaction.nonce
-                    if transaction_event.from_ == trace.action.from_
-                    else 1
-                )
-                created_contract_address = calc_contract_address(
-                    w3, trace.action.from_, nonce
-                )
-                logging.info(
-                    f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}"
-                )
+        for trace in transaction_event.traces:
+            if trace.type == "create":
+                if (
+                    transaction_event.from_ == trace.action.from_
+                    or trace.action.from_ in created_contract_addresses
+                ):
+                    # for contracts creating other contracts, the nonce would be 1
+                    nonce = (
+                        transaction_event.transaction.nonce
+                        if transaction_event.from_ == trace.action.from_
+                        else 1
+                    )
+                    created_contract_address = calc_contract_address(
+                        w3, trace.action.from_, nonce
+                    )
+                    logging.info(
+                        f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}"
+                    )
 
-                CREATED_CONTRACTS[created_contract_address] = transaction_event
-    MUTEX = False
+                    CREATED_CONTRACTS[created_contract_address] = transaction_event
+
     contracts_count = len(CREATED_CONTRACTS.items())
     logging.info(f"Created Contracts Count = {contracts_count}")
 
@@ -217,13 +210,10 @@ def detect_unverified_contract_creation(
 ):
     global CREATED_CONTRACTS
     global FINDINGS_CACHE
-    global MUTEX
 
     try:
         while True:
-            if not MUTEX:
-                MUTEX = True
-                # logging.info(f"In detect_unverified MUtex was set to: {MUTEX}")
+            with LOCK:
                 for (
                     created_contract_address,
                     transaction_event,
@@ -349,13 +339,11 @@ def detect_unverified_contract_creation(
                                                 f"Identified verified contract: {created_contract_address}"
                                             )
                                             CREATED_CONTRACTS.pop(created_contract_address)
-                if not infinite:
-                    break
-                MUTEX = False
+            if not infinite:
+                break
 
     except Exception as e:
         logging.warning(f"Exception: {e}")
-        MUTEX = False
 
 
 def provide_handle_transaction(w3, blockexplorer):
