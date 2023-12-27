@@ -278,6 +278,7 @@ def detect_unverified_contract_creation(
                                 logging.info(
                                     f"Identified verified contract: {created_contract_address}"
                                 )
+                                CREATED_CONTRACTS.pop(created_contract_address, None)
 
                     for trace in transaction_event.traces:
                         if trace.type == "create":
@@ -347,6 +348,7 @@ def detect_unverified_contract_creation(
                                             logging.info(
                                                 f"Identified verified contract: {created_contract_address}"
                                             )
+                                            CREATED_CONTRACTS.pop(created_contract_address)
                 if not infinite:
                     break
                 MUTEX = False
