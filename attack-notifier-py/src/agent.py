@@ -59,14 +59,13 @@ def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     chain_id = int(alert_event.chain_id)
     if chain_id == CHAIN_ID:
         logging.info(f"alert {alert_event.alert_hash} received for proper chain {chain_id}")
-
         if "FALSE" not in alert_event.alert_id:
             addresses = alert_event.alert.description.split(" ")[0]
             ATTACKER_ADDRESSES[addresses] = alert_event
             logging.info(f"Added {addresses} to queue")
     return findings
 
-def handle_blocks(block_event: forta_agent.block_event.BlockEvent) -> list:
+def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
     findings = []
     global ATTACKER_ADDRESSES
 
@@ -76,9 +75,9 @@ def handle_blocks(block_event: forta_agent.block_event.BlockEvent) -> list:
         created_at_date = datetime.strptime(retrieved_alert_event.alert.created_at[0:19], "%Y-%m-%dT%H:%M:%S")
         created_at_date_utc = created_at_date.replace(tzinfo=timezone.utc)
         if (datetime.now(timezone.utc) - created_at_date_utc).total_seconds() >= WAIT_TIME * 60: # 60 min
-            logging.info(f"Removing {addresses} from queue")
+            logging.info(f"Removing {addresses} from queue; chain id: {retrieved_alert_event.chain_id}")
             del ATTACKER_ADDRESSES[addresses]
-            labels = get_etherscan_labels(addresses, retrieved_alert_event.alert.chain_id)
+            labels = get_etherscan_labels(addresses, retrieved_alert_event.chain_id)
             for label in labels:
                 if "exploiter" in label.lower() or "hack" in label.lower():
                     findings.append(Finding({
@@ -136,7 +135,7 @@ def get_etherscan_labels(addresses, chain_id) -> set:
                 else:
                     logging.warning(f"Etherscan response does not contain valid data {data.content}.")
             else:
-                logging.warning(f"Etherscan response does not contain 'result' field: {data.content}.")
+                logging.warning(f"Etherscan response does not contain 'result' field: {data.content}.") 
         else:
             logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}.")
             count += 1

@@ -36,7 +36,7 @@ class TestAttackNotifier:
         findings = agent.handle_alert(alert)
         assert len(findings) == 0, "should return one finding"
 
-        findings = agent.handle_blocks(None)
+        findings = agent.handle_block(None)
         assert len(findings) == 1, "should return one finding"
         assert findings[0].description == "0x085bdff2c522e8637d4154039db8746bb8642bff have been associated with Onyx Protocol Exploiter", "should return finding with correct name"
 
@@ -61,6 +61,6 @@ class TestAttackNotifier:
         findings = agent.handle_alert(alert)
         assert len(findings) == 0, "should return zero finding as the alert is still queued"
 
-        findings = agent.handle_blocks(None)
+        findings = agent.handle_block(None)
         assert len(findings) == 0, "should return zero finding as the alert is still queued"
 
