@@ -3,6 +3,7 @@ import sys
 
 from forta_agent import get_json_rpc_url, Web3
 from hexbytes import HexBytes
+from functools import lru_cache
 
 from src.constants import *
 from src.findings import FundingChangenowFindings
@@ -37,6 +38,7 @@ def initialize():
     DENOMINATOR_COUNT = 0
 
 
+@lru_cache(maxsize=100000)
 def is_contract(w3, address):
     """
     this function determines whether address is a contract
