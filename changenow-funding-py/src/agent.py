@@ -63,10 +63,10 @@ def detect_changenow_funding(w3, transaction_event):
 
     # logging.info(f"Analyzing transaction {transaction_event.transaction.hash} on chain {chain_id}")
 
-    logging.info(f"Value: {transaction_event.transaction.value}")
-    logging.info(f"Transaction value: {native_value}")
-    logging.info(f"Address transaction count: {w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.to))}")
-    if (native_value > 0 and (native_value < CHANGENOW_THRESHOLD[chain_id] or is_new_account(w3, transaction_event.to)) and not is_contract(w3, transaction_event.to)):
+    # logging.info(f"Value: {transaction_event.transaction.value}")
+    # logging.info(f"Transaction value: {native_value}")
+    # logging.info(f"Address transaction count: {w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.to))}")
+    if (native_value > 0 and (native_value < changenow_threshold or is_new_account(w3, transaction_event.to)) and not is_contract(w3, transaction_event.to)):
         DENOMINATOR_COUNT += 1
 
 
