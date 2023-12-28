@@ -37,6 +37,9 @@ def initialize():
     global DENOMINATOR_COUNT
     DENOMINATOR_COUNT = 0
 
+    global CHAIN_ID
+    CHAIN_ID = web3.eth.chain_id
+
 
 @lru_cache(maxsize=100000)
 def is_contract(w3, address):
@@ -58,9 +61,13 @@ def detect_changenow_funding(w3, transaction_event):
     global LOW_VOL_ALERT_COUNT
     global NEW_EOA_ALERT_COUNT
     global DENOMINATOR_COUNT
+    global CHAIN_ID
+
+    changenow_threshold = CHANGENOW_THRESHOLD[CHAIN_ID]
+    changenow_addresses = CHANGENOW_ADDRESSES[CHAIN_ID]
 
     findings = []
-    chain_id = w3.eth.chain_id
+
     native_value = transaction_event.transaction.value / 10e17
 
     # logging.info(f"Analyzing transaction {transaction_event.transaction.hash} on chain {chain_id}")
@@ -76,15 +83,15 @@ def detect_changenow_funding(w3, transaction_event):
     if the transaction is from Changenow, and not to a contract: check if transaction count is 0,
     else check if value sent is less than the threshold
     """
-    if (transaction_event.from_ in CHANGENOW_ADDRESSES[chain_id] and not is_contract(w3, transaction_event.to)):
+    if (transaction_event.from_ in changenow_addresses and not is_contract(w3, transaction_event.to)):
         if is_new_account(w3, transaction_event.to):
             NEW_EOA_ALERT_COUNT += 1
             score = (1.0 * NEW_EOA_ALERT_COUNT) / DENOMINATOR_COUNT
-            findings.append(FundingChangenowFindings.funding_changenow(transaction_event, "new-eoa", score, chain_id))
-        elif native_value < CHANGENOW_THRESHOLD[chain_id]:
+            findings.append(FundingChangenowFindings.funding_changenow(transaction_event, "new-eoa", score, CHAIN_ID))
+        elif native_value < changenow_threshold:
             LOW_VOL_ALERT_COUNT += 1
             score = (1.0 * LOW_VOL_ALERT_COUNT) / DENOMINATOR_COUNT
-            findings.append(FundingChangenowFindings.funding_changenow(transaction_event, "low-amount", score, chain_id))
+            findings.append(FundingChangenowFindings.funding_changenow(transaction_event, "low-amount", score, CHAIN_ID))
     return findings
 
 
