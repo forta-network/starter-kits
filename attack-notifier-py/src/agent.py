@@ -97,19 +97,19 @@ def get_api_key(chain_id):
     if SECRETS_JSON is None:
         SECRETS_JSON = get_secrets()
 
-    if chain_id == 1:
+    if int(chain_id) == 1:
         return SECRETS_JSON['apiKeys']['ETHERSCAN_TOKEN']
-    elif chain_id == 137:
+    elif int(chain_id) == 137:
         return SECRETS_JSON['apiKeys']['POLYGONSCAN_TOKEN']
-    elif chain_id == 56:
+    elif int(chain_id) == 56:
         return SECRETS_JSON['apiKeys']['BSCSCAN_TOKEN']
-    elif chain_id == 42161:
+    elif int(chain_id) == 42161:
         return SECRETS_JSON['apiKeys']['ARBISCAN_TOKEN']
-    elif chain_id == 10:
+    elif int(chain_id) == 10:
         return SECRETS_JSON['apiKeys']['OPTIMISTICSCAN_TOKEN']
-    elif chain_id == 250:
+    elif int(chain_id) == 250:
         return SECRETS_JSON['apiKeys']['FTMSCAN_TOKEN']
-    elif chain_id == 43114:
+    elif int(chain_id) == 43114:
         return SECRETS_JSON['apiKeys']['SNOWTRACE_TOKEN']
     
     raise Exception("Chain ID not supported")

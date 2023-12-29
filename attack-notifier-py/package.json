@@ -1,6 +1,6 @@
 {
   "name": "attack-notifier",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Bot that raises an alert when a publicly disclosed attack has been detected by Forta's Attack Detector",
   "repository": "https://github.com/forta-network/starter-kits/attack-notifier-py/",
   "chainIds": [
