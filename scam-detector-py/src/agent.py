@@ -98,6 +98,8 @@ def initialize(test = False):
     try:
         reinitialize()
 
+        Utils.update_fp_list(CHAIN_ID)
+
         global ALERTED_ENTITIES_ML
         alerted_entities_ml = load(CHAIN_ID, ALERTED_ENTITIES_ML_KEY)
         ALERTED_ENTITIES_ML = OrderedDict() if alerted_entities_ml is None else OrderedDict(alerted_entities_ml)
