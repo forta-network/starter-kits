@@ -1204,8 +1204,7 @@ def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transact
             logging.info(f"{BOT_VERSION}: {transaction_event.from_} created contract {created_contract_address}")
             original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
             if original_threat_category != "":
-                future_contract_addresses = [Utils.calc_contract_address(w3, transaction_event.from_, n).lower() for n in range(nonce + 1, nonce + 11)]
-                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID, future_contract_addresses))
+                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID, []))
 
             code = Utils.get_code(w3, created_contract_address)
             for index, row in DF_CONTRACT_SIGNATURES.iterrows():
@@ -1234,11 +1233,11 @@ def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transact
                         trace.result.address if trace.result else None
                     )
                     logging.info(f"Contract created {created_contract_address}")
-                    #  Returns 0 for > 10000 contract internal transactions
-                    contract_nonce = block_chain_indexer.get_contract_nonce(trace.action.from_, transaction_event.block_number, CHAIN_ID)
+                    # Subtract 1 from nonce as the nonce is set to 1 at the time of deployment
+                    contract_nonce = w3.eth.get_transaction_count(Web3.toChecksumAddress(trace.action.from_), block_identifier=transaction_event.block_number) - 1
                     original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
                     if original_threat_category != "":
-                        future_contract_addresses = [] if contract_nonce == 0 else [Utils.calc_contract_address(w3, trace.action.from_, n).lower() for n in range(contract_nonce + 1, contract_nonce + 11)]
+                        future_contract_addresses = [] if contract_nonce < 1 else [Utils.calc_contract_address(w3, trace.action.from_, n).lower() for n in range(contract_nonce + 1, contract_nonce + 11)]
                         findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID, future_contract_addresses))      
             
         pair_created_events = transaction_event.filter_log(PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES[CHAIN_ID].lower())

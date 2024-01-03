@@ -225,37 +225,6 @@ class BlockChainIndexer:
                         break
                     time.sleep(1)
         return False
-
-    @staticmethod
-    @RateLimiter(max_calls=1, period=1)
-    def get_contract_nonce(address, block_number, chain_id) -> int:
-        logging.info(f"get_contract_nonce for contract {address} on {chain_id} called.")
-
-        transactions_for_contract = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlistinternal&address={address}&startblock=0&endblock={block_number}&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
-
-        contract_nonce = 0
-        success = False
-        count = 0
-        while not success:
-            data = requests.get(transactions_for_contract)
-            if data.status_code == 200:
-                json_data = json.loads(data.content)
-                success = True
-                if isinstance(json_data["result"], list):
-                            # Block explorer API returns up to 10000 results
-                            if len(json_data["result"]) == 10000:
-                                return 0
-                            for result in json_data["result"]:
-                                if result["contractAddress"] != "" and result["isError"] == "0":
-                                    contract_nonce += 1
-            else:
-                logging.warning(f"Error getting transactions on etherscan for {address}, {chain_id} {data.status_code} {data.content}")
-                count += 1
-                if count > 10:
-                    Utils.ERROR_CACHE.add(Utils.alert_error(f'request etherscan {data.status_code}', "blockchain_indexer_service.get_contract_nonce", ""))
-                    break
-                time.sleep(1)
-        return contract_nonce
     
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
