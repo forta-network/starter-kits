@@ -5,6 +5,7 @@ EOA_ADDRESS_LARGE_TX = '0xdec08cb92a506B88411da9Ba290f3694BE223c26'  # large tx 
 FUTURE_CONTRACT_TO_BE_DEPLOYED_BY_EOA_LARGE_TX = '0x85ce07420955881ec4d12538d77e3370cd163539'
 CONTRACT = '0x2320A28f52334d62622cc2EaFa15DE55F9987eD9'
 CONTRACT2 = '0x440aECA896009f006EEA3df4BA3A236EE8D57D36'
+SCAM_CONTRACT_DEPLOYER = '0xADE2E990D714D8118814ea998a4B9b4160a74741'
 
 
 
@@ -17,11 +18,15 @@ class EthMock:
     def __init__(self):
         self.contract = ContractMock()
 
-    def get_transaction_count(self, address):
-        if address == EOA_ADDRESS_SMALL_TX:
-            return 1999
-        elif address == EOA_ADDRESS_LARGE_TX:
-            return 2001
+    def get_transaction_count(self, address, block_identifier=None):
+        if block_identifier is None:
+            if address == EOA_ADDRESS_SMALL_TX:
+                return 1999
+            elif address == EOA_ADDRESS_LARGE_TX:
+                return 2001
+        else:
+            if address == SCAM_CONTRACT_DEPLOYER:
+                return 53
         return 0
 
     def chain_id(self):

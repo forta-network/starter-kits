@@ -1280,6 +1280,8 @@ def clear_state():
     
     Utils.FP_MITIGATION_ADDRESSES = set()
     Utils.CONTRACT_CACHE = OrderedDict()
+    Utils.IS_BETA_ALT = None
+    Utils.IS_BETA = None
 
 def persist_state():    
     global ALERTED_ENTITIES_ML

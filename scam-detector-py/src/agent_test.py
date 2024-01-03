@@ -15,7 +15,7 @@ import agent
 from unittest.mock import patch
 
 from constants import BASE_BOTS, MODEL_ALERT_THRESHOLD_LOOSE, MODEL_FEATURES
-from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX, CONTRACT2
+from web3_mock import CONTRACT, EOA_ADDRESS_SMALL_TX, Web3Mock, EOA_ADDRESS_LARGE_TX, CONTRACT2, SCAM_CONTRACT_DEPLOYER
 from web3_errormock import Web3ErrorMock
 from forta_explorer_mock import FortaExplorerMock
 from blockchain_indexer_mock import BlockChainIndexerMock
@@ -1352,6 +1352,45 @@ class TestScamDetector:
                 assert label.metadata['attribution'] == 'Inferno Drainer'
         assert found_contract
 
+
+    def test_scammer_contract_deployment_dynamical(self):
+        Utils.TEST_STATE = True
+        agent.clear_state()
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        tx_event = create_transaction_event({
+            'transaction': {
+                'hash': "0",
+                'from': "0x00003ffA7857408ab714c28B1451914330240000", 
+                'to': SCAM_CONTRACT_DEPLOYER,
+                'nonce': 10,
+            },
+            'block': {
+                'number': 18783860
+            },
+            'traces': [
+                {'type': 'create',
+                 'action': {
+                     'from': SCAM_CONTRACT_DEPLOYER,
+                     'value': 1,
+                 },
+                 'result': {
+                     'address': "0x1bdd75c80ac5191245c656ed0f61ca73cb7018ac"
+                 }
+                }
+            ],
+            'receipt': {
+                'logs': []}
+        })
+
+        findings = agent.detect_scammer_contract_creation(w3, tx_event)
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        assert findings[0].alert_id == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
+        assert findings[0].metadata['scammer_contract_address'] == "0x1bdd75c80ac5191245c656ed0f61ca73cb7018ac"
+        assert '0x9af49eb880e0ef621fd45c6cb8c4738f6f59dafa' in findings[0].metadata['future_contract_addresses']
+        
     def test_etherscan_fp_mitigation(self):
         # Requires bot version to be 'beta' to pass
         agent.clear_state()
