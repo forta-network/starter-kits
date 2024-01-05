@@ -527,7 +527,7 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
         logging.info(f"{BOT_VERSION}: model threshold {model_threshold}.")
         if score>model_threshold:
             #since this is a expensive function, will only check if we are about to raise an alert
-            if Utils.is_fp(w3, cluster, CHAIN_ID):
+            if Utils.is_fp(w3, cluster, CHAIN_ID, FINDINGS_CACHE_ALERT):
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} identified as FP; skipping")
                 continue
 
@@ -578,7 +578,7 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
             continue
 
-        if Utils.is_fp(w3, cluster, CHAIN_ID):
+        if Utils.is_fp(w3, cluster, CHAIN_ID, FINDINGS_CACHE_ALERT):
             logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} identified as FP; skipping")
             continue
 
@@ -600,7 +600,7 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - url {scammer_url} already alerted on for {alert_id}; skipping")
                 continue
 
-            if Utils.is_fp(w3, scammer_url, CHAIN_ID, False):
+            if Utils.is_fp(w3, scammer_url, CHAIN_ID, FINDINGS_CACHE_ALERT, False):
                 logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - url {scammer_url} identified as FP; skipping")
                 continue
 
@@ -632,7 +632,7 @@ def emit_contract_similarity_finding(w3, alert_event: forta_agent.alert_event.Al
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - {scammer_address_lower} similarity score {similarity_score}")
         if similarity_score > CONTRACT_SIMILARITY_BOT_THRESHOLDS[0]:
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - similarity score {similarity_score} is above threshold {CONTRACT_SIMILARITY_BOT_THRESHOLDS[0]}")
-            if not Utils.is_fp(w3, scammer_address_lower, CHAIN_ID):
+            if not Utils.is_fp(w3, scammer_address_lower, CHAIN_ID, FINDINGS_CACHE_ALERT):
                 
                 if not already_alerted(scammer_address_lower, "SCAM-DETECTOR-SIMILAR-CONTRACT", "similar_contract"):
                     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower}; emitting finding")
@@ -665,7 +665,7 @@ def emit_eoa_association_finding(w3, alert_event: forta_agent.alert_event.AlertE
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - {scammer_address_lower} model confidence {model_confidence}")
         if model_confidence > EOA_ASSOCIATION_BOT_THRESHOLDS[0]:
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - model confidence {model_confidence} is above threshold {EOA_ASSOCIATION_BOT_THRESHOLDS[0]}")
-            if not Utils.is_fp(w3, scammer_address_lower, CHAIN_ID):
+            if not Utils.is_fp(w3, scammer_address_lower, CHAIN_ID, FINDINGS_CACHE_ALERT):
                 if not already_alerted(scammer_address_lower, "SCAM-DETECTOR-SCAMMER-ASSOCIATION", "scammer_association"):
                     update_list(ALERTED_ENTITIES_SCAMMER_ASSOCIATION, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE, scammer_address_lower, "SCAM-DETECTOR-SCAMMER-ASSOCIATION", "ALERTED_ENTITIES_SCAMMER_ASSOCIATION", "scammer_association")
                     #"central_node":"0x13549e22de184a881fe3d164612ef15f99f6d4b3",
@@ -1392,21 +1392,11 @@ def provide_handle_alert(w3):
         if not ('NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV')):
             persist_state()
             logging.info(f"{BOT_VERSION}: Persisted state")
-
-        # To prevent exceeding call rate limits, Etherscan labels are checked for likely false positives only on the Ethereum chain.
-        # The FP mitigation process occurs here, batching Etherscan API calls, rather than during finding creation.            
-        if CHAIN_ID == 1:
-            if len(FINDINGS_CACHE_ALERT) >= 5:
-                FINDINGS_CACHE_ALERT = Utils.filter_out_likely_fps(FINDINGS_CACHE_ALERT)
-                for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
-                    if finding is not None:
-                        findings.append(finding)
-                FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
-        else:
-            for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
-                if finding is not None:
-                    findings.append(finding)
-            FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
+       
+        for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
+            if finding is not None:
+                findings.append(finding)
+        FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
 
         logging.info(f"{BOT_VERSION}: Return {len(findings)} finding(s) to handleAlert.") 
 

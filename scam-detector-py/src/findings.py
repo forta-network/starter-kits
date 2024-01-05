@@ -488,7 +488,13 @@ class ScamDetectorFinding:
         })
 
     @staticmethod
-    def alert_etherscan_likely_FP(address: str, etherscan_labels: List[str], etherscan_nametag: str) -> Finding:
+    def alert_likely_FP(address: str, etherscan_labels: List[str], etherscan_nametag: str) -> Finding:
+
+        metadata = {'benign_address': address}
+        if etherscan_labels:
+            metadata['etherscan_labels'] = ', '.join(etherscan_labels)
+        if etherscan_nametag:
+            metadata['etherscan_nametag'] = etherscan_nametag
        
         labels = [
             Label({
@@ -496,25 +502,17 @@ class ScamDetectorFinding:
                 'label': 'benign',
                 'entity': address,
                 'confidence': 0.99,
-                'metadata': {
-                    'benign_address': address,
-                    'etherscan_labels': ', '.join(etherscan_labels),
-                    'etherscan_nametag': etherscan_nametag
-                    }
+                'metadata': metadata
                 })
             ]
         
         return Finding({
             'name': 'Scam detector identified an address that would likely be incorrectly alerted on. Emitting informative alert.',
-            'description': f'{address} likely not involved in a scam (SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION, manual)',
-            'alert_id': 'SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION',
+            'description': f'{address} likely not involved in a scam (SCAM-DETECTOR-FP-MITIGATION, manual)',
+            'alert_id': 'SCAM-DETECTOR-FP-MITIGATION',
             'type': FindingType.Info,
             'severity': FindingSeverity.Info,
-            'metadata': {
-                'benign_address': address,
-                'etherscan_labels': ', '.join(etherscan_labels),
-                'etherscan_nametag': etherscan_nametag
-            },
+            'metadata': metadata,
             'labels': labels
         })
 
