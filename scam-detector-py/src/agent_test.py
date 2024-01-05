@@ -1352,34 +1352,14 @@ class TestScamDetector:
                 assert label.metadata['attribution'] == 'Inferno Drainer'
         assert found_contract
 
-    def test_etherscan_fp_mitigation(self):
+    def test_fp_mitigation(self):
         # Requires bot version to be 'beta' to pass
         agent.clear_state()
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
 
-        # Populating the FINDINGS_CACHE_ALERT with 4 "valid" findings + 1, afterwards, that's gonna be mitigated by the Etherscan Metadata API. (Cache size needs to be at least of size 5 in order for alerts to be triggered)
-        mock_scammer_addresses = [
-            '0x3b31724aff894849b90c48024bab38f25a5ee302',
-            '0x3b31724aff894849b90c48024bab38f25a5ee303',
-            '0x3b31724aff894849b90c48024bab38f25a5ee304',
-            '0x3b31724aff894849b90c48024bab38f25a5ee305'
-        ]
-        for address in mock_scammer_addresses:
-            agent.FINDINGS_CACHE_ALERT.append(Finding({
-                'name': 'Mock alert',
-                'description': 'Mock Alert description',
-                'alert_id': 'SCAM-DETECTOR-MOCK-ALERT',
-                'type': FindingType.Info,
-                'severity': FindingSeverity.Info,
-                'metadata': {'scammer_address': address},
-                'labels': {}
-            }))
-
         findings = []
 
-        # "0xF45347C7E0F840F020F06a09665a0bcC4E092A38" is a non-malicious address (Fee Recipient: 0xF4...A38 label)
-        # Note: The label should not be fetched by Utils.get_etherscan_label(), that uses Forta API, as it would have been mitigated earlier in the execution 
         bot_id = "0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127"
         alert_id = "IMPERSONATED-TOKEN-DEPLOYMENT-POPULAR"
         description = "0xF45347C7E0F840F020F06a09665a0bcC4E092A38 deployed an impersonating token contract at 0xb4d91be6d0894de00a3e57c24f7abb0233814c86. It impersonates token USDC (USDC) at 0x115110423f4ad68a3092b298df7dc2549781108e"
@@ -1389,13 +1369,13 @@ class TestScamDetector:
         findings.extend(agent.handle_alert(alert_event))
        
         if Utils.is_beta():
-            assert len(findings) == 5, "length should have been 5, alert for the Etherscan FP mitigation should have been triggered"
-            last_finding = findings[4]
-            assert last_finding.alert_id == "SCAM-DETECTOR-ETHERSCAN-FP-MITIGATION", "should be etherscan fp mitigation finding"
-            assert last_finding.metadata['etherscan_labels'] == "Proposer Fee Recipient"
-            assert last_finding.metadata['etherscan_nametag'] == "Fee Recipient: 0xF4...A38"
-            assert len(last_finding.labels) > 0, "labels should not be empty"
-            assert last_finding.labels[0].label == 'benign', "should be a benign label"
+            assert len(findings) == 1, "length should have been 2, alert for FP mitigation should have been triggered"
+            finding = findings[0]
+            assert finding.alert_id == "SCAM-DETECTOR-FP-MITIGATION", "should be fp mitigation finding"
+            assert finding.metadata['etherscan_labels'] == "Proposer Fee Recipient"
+            assert finding.metadata['etherscan_nametag'] == "Fee Recipient: 0xF4...A38"
+            assert len(finding.labels) > 0, "labels should not be empty"
+            assert finding.labels[0].label == 'benign', "should be a benign label"
         else:
             assert len(findings) == 4, "length should have been 4, alert mitigated by Etherscan should have been removed"
             last_finding = findings[3]
