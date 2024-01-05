@@ -98,7 +98,7 @@ class EntityClusterAgent:
             self.GRAPH.add_node(checksum_address, last_seen=datetime.now())
             logging.info(f"Added address {checksum_address} to graph. Graph size is now {len(self.GRAPH.nodes)}")
 
-    def is_address_belong_max_transactions(self, w3, address):
+    def is_address_below_max_transactions(self, w3, address):
         if address is None:
             return False
 
@@ -172,14 +172,16 @@ class EntityClusterAgent:
 
             EntityClusterAgent.prune_graph(self.GRAPH)
 
-            #  add edges for each native transfer
+            #  add edges for each native transfer, treated as bidirectional if sender and recipient nonces are less than or equal to NEW_FUNDED_MAX_NONCE
             if transaction_event.transaction.value > 0:
                 logging.info(f"Observing native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
                 if not self.is_contract(w3, transaction_event.transaction.to) and not self.is_contract(w3, transaction_event.transaction.from_):
-                        if self.is_address_belong_max_transactions(w3, transaction_event.transaction.from_) and self.is_address_belong_max_transactions(w3, transaction_event.transaction.to):
+                        if self.is_address_below_max_transactions(w3, transaction_event.transaction.from_) and self.is_address_below_max_transactions(w3, transaction_event.transaction.to):
                             self.add_address(transaction_event.transaction.from_)
                             self.add_address(transaction_event.transaction.to)
                             self.add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
+                            if w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.from_), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE and w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE:
+                                self.add_directed_edge(w3, transaction_event.transaction.to, transaction_event.transaction.from_)
                             finding = self.create_finding(transaction_event.transaction.from_, "Trigger by a bi directional transfer")
                             if finding is not None:
                                 findings.append(finding)
@@ -188,7 +190,7 @@ class EntityClusterAgent:
             if transaction_event.transaction.value > ONE_WAY_WEI_TRANSFER_THRESHOLD:
                 logging.info(f"Observing large native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
                 if not self.is_contract(w3, transaction_event.transaction.to) and not self.is_contract(w3, transaction_event.transaction.from_):
-                    if self.is_address_belong_max_transactions(w3, transaction_event.transaction.from_) and self.is_address_belong_max_transactions(w3, transaction_event.transaction.to):
+                    if self.is_address_below_max_transactions(w3, transaction_event.transaction.from_) and self.is_address_below_max_transactions(w3, transaction_event.transaction.to):
                         self.add_address(transaction_event.transaction.from_)
                         self.add_address(transaction_event.transaction.to)
                         self.add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
@@ -203,7 +205,7 @@ class EntityClusterAgent:
             if transaction_event.transaction.value < NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD:
                 if not self.is_contract(w3, transaction_event.transaction.to) and not self.is_contract(w3, transaction_event.transaction.from_):
                     if w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.from_), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE and w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE:
-                        if self.is_address_belong_max_transactions(w3, transaction_event.transaction.from_) and self.is_address_belong_max_transactions(w3, transaction_event.transaction.to):
+                        if self.is_address_below_max_transactions(w3, transaction_event.transaction.from_) and self.is_address_below_max_transactions(w3, transaction_event.transaction.to):
                             logging.info(f"Observing small native transfer of value {transaction_event.transaction.value} from new EOA {transaction_event.transaction.from_} to new EOA {transaction_event.transaction.to}")
                             self.add_address(transaction_event.transaction.from_)
                             self.add_address(transaction_event.transaction.to)
@@ -222,7 +224,7 @@ class EntityClusterAgent:
                     erc20_to = transfer_event['args']['to']
                     logging.info(f"Observing ERC-20 transfer of value {transfer_event['args']['value']} from {erc20_from} to {erc20_to}")
                     if not self.is_contract(w3, erc20_to) and not self.is_contract(w3, erc20_from):
-                        if self.is_address_belong_max_transactions(w3, erc20_to) and self.is_address_belong_max_transactions(w3, erc20_from):
+                        if self.is_address_below_max_transactions(w3, erc20_to) and self.is_address_below_max_transactions(w3, erc20_from):
                             self.add_address(erc20_from)
                             self.add_address(erc20_to)
                             self.add_directed_edge(w3, erc20_from, erc20_to)
@@ -234,7 +236,7 @@ class EntityClusterAgent:
             if transaction_event.transaction.to is None:
                 contract_address = self.calc_contract_address(transaction_event.transaction.from_, transaction_event.transaction.nonce)
                 logging.info(f"Observing contract creation from {transaction_event.transaction.from_}: {contract_address}")
-                if self.is_address_belong_max_transactions(w3, transaction_event.transaction.from_):
+                if self.is_address_below_max_transactions(w3, transaction_event.transaction.from_):
                     self.add_address(transaction_event.transaction.from_)
                     self.add_address(contract_address)
                     self.add_directed_edge(w3, transaction_event.transaction.from_, contract_address)
