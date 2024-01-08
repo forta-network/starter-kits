@@ -1369,7 +1369,7 @@ class TestScamDetector:
         findings.extend(agent.handle_alert(alert_event))
        
         if Utils.is_beta():
-            assert len(findings) == 1, "length should have been 2, alert for FP mitigation should have been triggered"
+            assert len(findings) == 1, "length should have been 1, alert for FP mitigation should have been triggered"
             finding = findings[0]
             assert finding.alert_id == "SCAM-DETECTOR-FP-MITIGATION", "should be fp mitigation finding"
             assert finding.metadata['etherscan_labels'] == "Proposer Fee Recipient"
@@ -1377,7 +1377,6 @@ class TestScamDetector:
             assert len(finding.labels) > 0, "labels should not be empty"
             assert finding.labels[0].label == 'benign', "should be a benign label"
         else:
-            assert len(findings) == 4, "length should have been 4, alert mitigated by Etherscan should have been removed"
-            last_finding = findings[3]
-            assert last_finding.alert_id == "SCAM-DETECTOR-MOCK-ALERT", "should be a mock alert"
+            assert len(findings) == 0, "length should have been 0, inline FP mitigation should be triggered only in beta versions"
+            
         
