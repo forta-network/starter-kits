@@ -1,6 +1,7 @@
 import requests
 from web3 import Web3
 import json
+from time import sleep
 
 global top_currencies_info
 global top_currencies_info_back
@@ -42,10 +43,39 @@ def update_top_currencies_info(initial_values=None):
         if initial_values:
             top_currencies_info = initial_values
         else:
-            print(f"Error trying to get the tokens using Gecko API: {e}")
             top_currencies_info = top_currencies_info_back
     top_currencies_info_back = top_currencies_info
 
+
+def fetch_token_price(symbol, amount, gecko_tokens, retries=3, delay=0.5):
+    for token in gecko_tokens:
+        if token['symbol'] == symbol:
+            id_ = token['id']
+
+            headers = {
+                'accept': 'application/json',
+            }
+
+            params = {
+                'ids': id_,
+                'vs_currencies': 'usd',
+            }
+
+            for attempt in range(retries):
+                response = requests.get('https://api.coingecko.com/api/v3/simple/price', params=params, headers=headers)
+
+                if response.status_code == 200:
+                    data = response.json()
+                    if id_ in data and 'usd' in data[id_]:
+                        token_price = data[id_].get('usd', 0)
+                        return token_price * amount
+                else:
+                    print(f"Warning: Received status code {response.status_code} from CoinGecko API.")
+
+                sleep(delay)  # Delay before next attempt
+
+    print("Error: Symbol not found or API failed to return valid data.")
+    return 0
 
 def calculate_usd_and_get_symbol(web3, token_address, erc20_abi, amount):
     """
@@ -66,6 +96,7 @@ def calculate_usd_and_get_symbol(web3, token_address, erc20_abi, amount):
         amount = amount / 10 ** decimals
 
         token_price = None
+
         # Search the token in the top 250
         for tci in top_currencies_info:
             if tci['symbol'] == symbol:
@@ -78,24 +109,7 @@ def calculate_usd_and_get_symbol(web3, token_address, erc20_abi, amount):
         if token_price:
             total_in_usd = amount * token_price
         else:
-            for token in gecko_tokens:
-                if token['symbol'] == symbol:
-                    id_ = token['id']
-
-                    headers = {
-                        'accept': 'application/json',
-                    }
-
-                    params = {
-                        'ids': id_,
-                        'vs_currencies': 'usd',
-                    }
-
-                    response = requests.get('https://api.coingecko.com/api/v3/simple/price', params=params,
-                                            headers=headers)
-
-                    token_price = response.json().get(id_, {}).get('usd', 0)
-                    total_in_usd = amount * token_price
+            total_in_usd = fetch_token_price(symbol, amount, gecko_tokens)
 
         return total_in_usd, symbol
     except Exception as e:
