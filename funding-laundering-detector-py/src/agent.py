@@ -69,12 +69,10 @@ async def analyze_transaction(transaction_event: forta_agent.transaction_event.T
         to = transaction_event.to.lower()  # transaction's target
         update_possible_targets(from_, block)  # each of them can be cex / dex etc.
         update_possible_targets(to, block)
-
         # we should know the amount of transfer in USD and native token symbol of this chain
         usd, token = calculate_usd_for_base_token(transaction_event.transaction.value, CHAIN_ID)
         # skip if amount is too small or one of the address is 0x0000...
         if usd > thresholds["TRANSFER_THRESHOLD_IN_USD"] and from_ != NULL_ADDRESS and to != NULL_ADDRESS:
-
             # FUNDING
             if from_ in confirmed_targets_keys and to not in confirmed_targets_keys:  # if we know initiator...
                 DENOMINATOR_COUNT_FUNDING += 1
@@ -142,6 +140,41 @@ async def analyze_transaction(transaction_event: forta_agent.transaction_event.T
                             FundingLaunderingFindings.laundering(from_, to, usd, token.upper(), newly_created,
                                                                  confirmed_targets[to]['type'], transaction_event.hash,
                                                                  labels, DENOMINATOR_COUNT_LAUNDERING, CHAIN_ID))
+
+            if CHAIN_ID == 42161:
+                if transaction_event.transaction.nonce == 0:
+                    DENOMINATOR_COUNT_FUNDING += 1
+                    eoa, newly_created = analyze_address(address=to, timestamp=timestamp)
+                    if len(findings) < 10 and eoa:
+                        # append our finding
+                        labels = [
+                            {
+                                "entity": to,
+                                "entity_type": EntityType.Address,
+                                "label": "eoa",
+                                "confidence": 1.0,
+                            },
+                            {
+                                "entity": from_,
+                                "entity_type": EntityType.Address,
+                                "label": "bridge",
+                                "confidence": 1.0,
+                            },
+                        ]
+                        if newly_created:
+                            findings.append(
+                                FundingLaunderingFindings.funding_newly_created(from_, to, usd, token.upper(),
+                                                                                "bridge",
+                                                                                transaction_event.hash, labels,
+                                                                                DENOMINATOR_COUNT_FUNDING))
+                        elif usd >= thresholds["FUNDING_LOW"] or INFO_ALERTS:
+                            findings.append(
+                                FundingLaunderingFindings.funding(from_, to, usd, token.upper(),
+                                                                  "bridge",
+                                                                  transaction_event.hash, labels,
+                                                                  DENOMINATOR_COUNT_FUNDING, CHAIN_ID))
+
+
 
     if CHAIN_ID == 1 and transaction_event.traces:
         for trace in transaction_event.traces:
