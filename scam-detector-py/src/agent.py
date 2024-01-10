@@ -1143,6 +1143,7 @@ def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_e
 
         if Utils.is_contract(w3, address):
             forta_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity=address)
+            forta_labels = forta_labels[forta_labels['chainId'] == chain_id]
             logging.info(f"{BOT_VERSION}: {starting_address} processing contract {address}. Obtained {len(forta_labels)} labels")
             for index, row in forta_labels.iterrows():
                 logging.info(f"{BOT_VERSION}: {starting_address} processing contract {address}. Label {row['labelstr']}")
@@ -1170,6 +1171,7 @@ def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_e
 
         else:
             forta_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity=address)
+            forta_labels = forta_labels[forta_labels['chainId'] == chain_id]
             logging.info(f"{BOT_VERSION}: {starting_address} processing EOA {address}. Obtained {len(forta_labels)} labels")
             for index, row in forta_labels.iterrows():
                 logging.info(f"{BOT_VERSION}: {starting_address} processing EOA {address}. Label {row['labelstr']}")
