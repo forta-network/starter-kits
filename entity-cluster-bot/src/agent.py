@@ -172,46 +172,27 @@ class EntityClusterAgent:
 
             EntityClusterAgent.prune_graph(self.GRAPH)
 
-            #  add edges for each native transfer, treated as bidirectional if sender and recipient nonces are less than or equal to NEW_FUNDED_MAX_NONCE
+            #  add edges for each native transfer, treated as bidirectional if sender and recipient nonces are less than or equal to NEW_FUNDED_MAX_NONCE _OR_ if large native transfer
             if transaction_event.transaction.value > 0:
-                logging.info(f"Observing native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
                 if not self.is_contract(w3, transaction_event.transaction.to) and not self.is_contract(w3, transaction_event.transaction.from_):
                         if self.is_address_below_max_transactions(w3, transaction_event.transaction.from_) and self.is_address_below_max_transactions(w3, transaction_event.transaction.to):
                             self.add_address(transaction_event.transaction.from_)
                             self.add_address(transaction_event.transaction.to)
                             self.add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
-                            if w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.from_), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE and w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE:
+                            if (w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.from_), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE and w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE) or transaction_event.transaction.value > ONE_WAY_WEI_TRANSFER_THRESHOLD:
                                 self.add_directed_edge(w3, transaction_event.transaction.to, transaction_event.transaction.from_)
-                            finding = self.create_finding(transaction_event.transaction.from_, "Trigger by a bi directional transfer")
-                            if finding is not None:
-                                findings.append(finding)
-
-            #  add edges for large native transfers; will treat as bidirectional transfer
-            if transaction_event.transaction.value > ONE_WAY_WEI_TRANSFER_THRESHOLD:
-                logging.info(f"Observing large native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
-                if not self.is_contract(w3, transaction_event.transaction.to) and not self.is_contract(w3, transaction_event.transaction.from_):
-                    if self.is_address_below_max_transactions(w3, transaction_event.transaction.from_) and self.is_address_below_max_transactions(w3, transaction_event.transaction.to):
-                        self.add_address(transaction_event.transaction.from_)
-                        self.add_address(transaction_event.transaction.to)
-                        self.add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
-                        self.add_directed_edge(w3, transaction_event.transaction.to, transaction_event.transaction.from_)
-
-                        finding = self.create_finding(transaction_event.transaction.from_, "Trigger by a large native transaction")
-                        if finding is not None:
-                            findings.append(finding)
-
-            #  add edges for small native transfers, new accounts
-            # For perfomance it check first the threshould, then if contract that could be cached, the NEW_FUNDED_MAX_NONCE and then it won't check MAX_NONCE as we assume that always NEW_FUNDED_MAX_NONCE <= MAX_NONCE
-            if transaction_event.transaction.value < NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD:
-                if not self.is_contract(w3, transaction_event.transaction.to) and not self.is_contract(w3, transaction_event.transaction.from_):
-                    if w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.from_), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE and w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number) <= NEW_FUNDED_MAX_NONCE:
-                        if self.is_address_below_max_transactions(w3, transaction_event.transaction.from_) and self.is_address_below_max_transactions(w3, transaction_event.transaction.to):
-                            logging.info(f"Observing small native transfer of value {transaction_event.transaction.value} from new EOA {transaction_event.transaction.from_} to new EOA {transaction_event.transaction.to}")
-                            self.add_address(transaction_event.transaction.from_)
-                            self.add_address(transaction_event.transaction.to)
-                            self.add_directed_edge(w3, transaction_event.transaction.from_, transaction_event.transaction.to)
-                            self.add_directed_edge(w3, transaction_event.transaction.to, transaction_event.transaction.from_)
-                            finding = self.create_finding(transaction_event.transaction.from_, "Trigger by a small transfer to new accounts")
+                                if transaction_event.transaction.value < NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD:
+                                    logging.info(f"Observing small native transfer of value {transaction_event.transaction.value} from new EOA {transaction_event.transaction.from_} to new EOA {transaction_event.transaction.to}")
+                                    finding = self.create_finding(transaction_event.transaction.from_, "Trigger by a small transfer to new accounts")
+                                elif transaction_event.transaction.value > ONE_WAY_WEI_TRANSFER_THRESHOLD:
+                                    logging.info(f"Observing large native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
+                                    finding = self.create_finding(transaction_event.transaction.from_, "Trigger by a large native transaction")
+                                else:
+                                    logging.info(f"Observing native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
+                                    finding = self.create_finding(transaction_event.transaction.from_, "Trigger by a bi directional transfer")
+                            else:
+                                logging.info(f"Observing native transfer of value {transaction_event.transaction.value} from {transaction_event.transaction.from_} to {transaction_event.transaction.to}")
+                                finding = self.create_finding(transaction_event.transaction.from_, "Trigger by a bi directional transfer")
                             if finding is not None:
                                 findings.append(finding)
 
