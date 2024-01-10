@@ -98,6 +98,8 @@ def initialize(test = False):
     try:
         reinitialize()
 
+        Utils.update_fp_list(CHAIN_ID)
+
         global ALERTED_ENTITIES_ML
         alerted_entities_ml = load(CHAIN_ID, ALERTED_ENTITIES_ML_KEY)
         ALERTED_ENTITIES_ML = OrderedDict() if alerted_entities_ml is None else OrderedDict(alerted_entities_ml)
@@ -497,6 +499,12 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got base bot alert (combination); extracted {len(scammer_addresses_dict.keys())} scammer addresses. Processing took {time.time() - start_time} seconds.")
     for scammer_address in scammer_addresses_dict.keys():
         scammer_address_lower = scammer_address.lower()
+
+        # Check if the address is in the manual FP list
+        if Utils.is_in_fp_mitigation_list(scammer_address_lower):
+            logging.info(f"Skipped alert for {scammer_address_lower} as it is in the manual FP list.")
+            continue
+
         scammer_contract_addresses = scammer_addresses_dict[scammer_address]['scammer-contracts'] if 'scammer-contracts' in scammer_addresses_dict[scammer_address] else set()
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got scammer address {scammer_address_lower}")
         cluster = scammer_address_lower
@@ -560,6 +568,12 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got base bot alert (passthrough); extracted {len(scammer_addresses_dict.keys())} scammer addresses.")
     for scammer_address in scammer_addresses_dict.keys():
         scammer_address_lower = scammer_address.lower()
+
+        # Check if the address is in the manual FP list
+        if Utils.is_in_fp_mitigation_list(scammer_address_lower):
+            logging.info(f"Skipped alert for {scammer_address_lower} as it is in the manual FP list.")
+            continue
+
         scammer_contract_addresses = scammer_addresses_dict[scammer_address]['scammer-contracts'] if 'scammer-contracts' in scammer_addresses_dict[scammer_address] else set()
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got scammer address {scammer_address_lower}")
         cluster = scammer_address_lower
@@ -626,6 +640,11 @@ def emit_contract_similarity_finding(w3, alert_event: forta_agent.alert_event.Al
     scammer_addresses_lower = BaseBotParser.get_scammer_addresses(w3, alert_event)
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got contract similarity bot alert; got {len(scammer_addresses_lower)} scammer addresses.")
     for scammer_address_lower in scammer_addresses_lower:
+        # Check if the address is in the manual FP list
+        if Utils.is_in_fp_mitigation_list(scammer_address_lower):
+            logging.info(f"Skipped alert for {scammer_address_lower} as it is in the manual FP list.")
+            continue
+
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - processing contract similarity bot address {scammer_address_lower}")
 
         similarity_score = float(alert_event.alert.metadata['similarity_score']) if 'similarity_score' in alert_event.alert.metadata else float(alert_event.alert.metadata['similarityScore'])
@@ -659,6 +678,11 @@ def emit_eoa_association_finding(w3, alert_event: forta_agent.alert_event.AlertE
     scammer_addresses_lower = BaseBotParser.get_scammer_addresses(w3, alert_event)
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got eoa association bot alert; got {len(scammer_addresses_lower)} scammer addresses.")
     for scammer_address_lower in scammer_addresses_lower:
+        # Check if the address is in the manual FP list
+        if Utils.is_in_fp_mitigation_list(scammer_address_lower):
+            logging.info(f"Skipped alert for {scammer_address_lower} as it is in the manual FP list.")
+            continue
+
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - processing eoa association bot address {scammer_address_lower}")
 
         model_confidence = float(alert_event.alert.metadata['model_confidence']) if 'model_confidence' in alert_event.alert.metadata else float(alert_event.alert.metadata['modelConfidence'])
@@ -763,6 +787,12 @@ def emit_manual_finding(w3, test = False) -> list:
                 entity_type = row['EntityType']
                 if entity_type == "Address":
                     scammer_address_lower = row['Entity'].lower().strip()
+
+                    # Check if the address is in the manual FP list
+                    if Utils.is_in_fp_mitigation_list(scammer_address_lower):
+                        logging.info(f"Skipped alert for {scammer_address_lower} as it is in the manual FP list.")
+                        continue
+
                     cluster = scammer_address_lower
                     logging.info(f"Manual finding: Have manual entry for {scammer_address_lower}")
                     entity_clusters = read_entity_clusters(scammer_address_lower)
