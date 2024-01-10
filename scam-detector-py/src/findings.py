@@ -588,7 +588,7 @@ class ScamDetectorFinding:
        
 
     @staticmethod
-    def scammer_contract_deployment(scammer_address: str, scammer_contract_address: str, original_threat_category: str, original_alert_hash: str, chain_id: int) -> Finding:
+    def scammer_contract_deployment(scammer_address: str, scammer_contract_address: str, original_threat_category: str, original_alert_hash: str, chain_id: int, future_contract_addresses: List[str]) -> Finding:
 
         alert_id = "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
         if original_threat_category in ['address-poisoner', 'ice-phishing', 'native-ice-phishing-social-engineering', 'hard-rug-pull', 'soft-rug-pull', 'rake-token', 'impersonating-token'] or original_threat_category == "unknown":  # 2nd check for when threat category wasnt included in the label, but was rather part of metadata; this changed with 0.2.2
@@ -614,12 +614,35 @@ class ScamDetectorFinding:
                     'logic': 'propagation'
                 }
             }))
+
+            for future_contract in future_contract_addresses:
+                labels.append(Label({
+                    'entityType': EntityType.Address,      
+                    'label': 'scammer',          
+                    'entity': future_contract,
+                    'confidence': confidence,
+                    'metadata': { # there is no base bot alert id as this happens from handleTx handler
+                        'address_type': 'contract',
+                        'chain_id': chain_id,
+                        'associated_scammer': scammer_address,  
+                        'associated_scammer_threat_categories': original_threat_category,  
+                        'associated_scammer_alert_hashes': original_alert_hash,
+                        'deployer_info': f"Deployer {scammer_address} involved in {original_threat_category} scam; this contract may or may not be deployed and may or may not be related to this particular scam, but would be created by the scammer.",
+                        'threat_category': ScamDetectorFinding.get_threat_category("SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"),
+                        'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
+                        'bot_version': Utils.get_bot_version(),
+                        'label_version': ScamDetectorFinding.LABEL_VERSION,
+                        'logic': 'propagation'
+                    }
+                }))
         
             metadata = {}
             metadata['scammer_address'] = scammer_address
             metadata['scammer_contract_address'] = scammer_contract_address
             metadata['involved_threat_category'] = original_threat_category
             metadata['involved_alert_hash_1'] = original_alert_hash
+            if future_contract_addresses:
+                metadata['future_contract_addresses'] = ','.join(future_contract_addresses)
 
             return Finding({
                 'name': 'Scam detector identified a scammer EOA deploying a contract',
