@@ -532,7 +532,7 @@ class TestEntityClusterBot:
 
 
 
-    def test_sharding_finding_bidirectional_in_redundacy_env(self):
+    def test_sharding_finding_bidirectional_in_redundancy_env(self):
         TestEntityClusterBot.remove_persistent_state()
 
         right_addr = '0x05f75788d3ec37bc8357c9ba88054c1650dd31f5'
@@ -565,7 +565,6 @@ class TestEntityClusterBot:
         
         agent1b = EntityClusterAgent(DynamoPersistance())   
         agent1b.cluster_entities(real_w3, native_transfer1)
-        print("after cluster_entities call")
         agent1a = EntityClusterAgent(DynamoPersistance())
         findings = agent1a.cluster_entities(real_w3, native_transfer1)
         assert len(findings) == 0, "No findings should be returned as it is not bidirectional"
