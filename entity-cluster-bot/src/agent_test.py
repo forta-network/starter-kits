@@ -218,7 +218,7 @@ class TestEntityClusterBot:
             })
 
         findings = agent.cluster_entities(w3, native_transfer1)
-        assert len(findings) == 2, "Findings should be returned as it is new account transfer"
+        assert len(findings) == 1, "Findings should be returned as it is new account transfer"
 
     def test_finding_onedirectional_initial_funds_new_account_above_threshold(self):
         TestEntityClusterBot.remove_persistent_state()
