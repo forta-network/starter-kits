@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from src.config import NEWLY_CREATED_MAX_TRANSACTIONS_AMOUNT, MIN_AGE_IN_DAYS
+from src.config import MIN_AGE_IN_DAYS
 
 def is_newly_created(address, blockexplorer, timestamp):
     try:
