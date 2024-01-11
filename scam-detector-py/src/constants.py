@@ -39,8 +39,8 @@ SCAM_DETECTOR_BOT_ID = '0x1d646c4045189991fdfd24a66b192a294158b839a6ec121d740474
 SCAM_DETECTOR_BETA_BOT_ID = '0x47c45816807d2eac30ba88745bf2778b61bc106bc76411b520a5289495c76db8'
 SCAM_DETECTOR_BETA_ALT_BOT_ID = '0xb27524b92bf27e6aa499a3a7239232ad425219b400d3c844269f4a657a4adf03'
 
-BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "nft-phishing-sale", "PassThrough", "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER"),  # seaport orders
-             ("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "nft-possible-phishing-transfer", "Combination", ""),
+BASE_BOTS = [("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9f", "nft-phishing-sale", "PassThrough", "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER"),  # seaport orders
+             ("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9f", "nft-possible-phishing-transfer", "Combination", ""),
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PERMITTED-ERC20-TRANSFER", "Combination", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-SUSPICIOUS-TRANSFER", "Combination", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
@@ -107,10 +107,10 @@ BASE_BOTS = [("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180a
                 ("0x33faef3222e700774af27d0b71076bfa26b8e7c841deb5fb10872a78d1883dba", "SLEEPMINT-1", "Combination", ""),
                 ("0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION", "Combination", ""),
                 ("0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99", "SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH", "Combination", ""),
-                ("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "indexed-nft-sale", "Combination", ""),
-                ("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "nft-sale", "Combination", ""),
-                ("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "nft-sold-above-floor-price", "Combination", ""),
-                ("0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac", "scammer-nft-trader", "Combination", ""),
+                ("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9f", "indexed-nft-sale", "Combination", ""),
+                ("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9f", "nft-sale", "Combination", ""),
+                ("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9f", "nft-sold-above-floor-price", "Combination", ""),
+                ("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9f", "scammer-nft-trader", "Combination", ""),
                 ("0x6aa2012744a3eb210fc4e4b794d9df59684d36d502fd9efe509a867d0efa5127", "IMPERSONATED-TOKEN-DEPLOYMENT", "Combination", ""),
                 ("0x7cfeb792e705a82e984194e1e8d0e9ac3aa48ad8f6530d3017b1e2114d3519ac", "LARGE-PROFIT", "Combination", ""),
                 ("0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad", "NON-MALICIOUS-TOKEN-CONTRACT-CREATION", "Combination", ""),
@@ -196,7 +196,7 @@ MODEL_FEATURES = ['0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b64
        '0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3_UNVERIFIED-CODE-CONTRACT-CREATION',
        '0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3_count',
        '0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3_uniqalertid_count',
-       '0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac_count',
+       '0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac_count', # To be updated
        '0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac_indexed-nft-sale',
        '0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac_nft-possible-phishing-transfer',
        '0x513ea736ece122e1859c1c5a895fb767a8a932b757441eff0cadefa6b8d180ac_nft-sale',
