@@ -11,6 +11,10 @@ from forta_agent import get_alerts, get_json_rpc_url
 import timeit
 
 w3 = Web3Mock()
+# NOTE: Because the bot defaults to Ethereum mainnet,
+# you need to have an ETH mainnet RPC set up in your
+# `forta.config.json` to have the tests behave as expected
+# when they use `real_w3`.
 real_w3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 from persistance import DynamoPersistance
 
@@ -39,7 +43,7 @@ class TestEntityClusterBot:
     def test_add_address_discard(self):
         #  calls address on address with too large of a nonce
         agent = EntityClusterAgent(DynamoPersistance())
-        if agent.is_address_belong_max_transactions(w3, EOA_ADDRESS_LARGE_TX):
+        if agent.is_address_below_max_transactions(w3, EOA_ADDRESS_LARGE_TX):
             agent.add_address(EOA_ADDRESS_LARGE_TX)
 
         assert len(agent.GRAPH.nodes) == 0, "Address shouldnt have been added to graph. Its nonce is too large"
@@ -47,7 +51,7 @@ class TestEntityClusterBot:
     def test_add_address_valid(self):
         #  calls address on address with appropriate nonce
         agent = EntityClusterAgent(DynamoPersistance())
-        if agent.is_address_belong_max_transactions(w3, EOA_ADDRESS_SMALL_TX):
+        if agent.is_address_below_max_transactions(w3, EOA_ADDRESS_SMALL_TX):
             agent.add_address(EOA_ADDRESS_SMALL_TX)
 
         assert len(agent.GRAPH.nodes) == 1, "Address should have been added to graph. Its nonce is within range"
@@ -224,7 +228,7 @@ class TestEntityClusterBot:
 
                 'transaction': {
                     'hash': "0",
-                    'from': EOA_ADDRESS_FUNDER_NEW,
+                    'from': EOA_ADDRESS_FUNDER_OLD,
                     'to': EOA_ADDRESS_FUNDED_NEW,
                     'value': 1000000000000000000
 
@@ -263,6 +267,30 @@ class TestEntityClusterBot:
 
         findings = agent.cluster_entities(w3, native_transfer1)
         assert len(findings) == 0, "No findings should be returned as it old account transfer"
+    
+    def test_finding_bidirectional_initial_funds_new_account_from_new_account_regardless_of_txn_value(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent = EntityClusterAgent(DynamoPersistance())
+
+        native_transfer1 = create_transaction_event({
+
+                'transaction': {
+                    'hash': "0",
+                    'from': EOA_ADDRESS_FUNDER_NEW, # Zero nonce
+                    'to': EOA_ADDRESS_FUNDED_NEW,   # Zero nonce
+                    'value': 5000000000000000000    # Over threshold
+
+                },
+                'block': {
+                    'number': 0,
+                    'timestamp': datetime.now().timestamp(),
+                },
+                'receipt': {
+                    'logs': []}
+            })
+
+        findings = agent.cluster_entities(w3, native_transfer1)
+        assert len(findings) == 1, "Finding should be returned as it is a transfer between two low nonce accounts, despite txn value exceededing threshold"
 
     def test_entity_cluster_perf_test(self):
         TestEntityClusterBot.remove_persistent_state()
@@ -504,11 +532,15 @@ class TestEntityClusterBot:
 
 
 
-    def test_shrading_finding_bidirectional_in_redundacy_env(self):
+    def test_sharding_finding_bidirectional_in_redundancy_env(self):
         TestEntityClusterBot.remove_persistent_state()
 
         right_addr = '0x05f75788d3ec37bc8357c9ba88054c1650dd31f5'
         left_addr = '0xB0e5DDCBAA6c3524896767872797091F04aD0e19'
+        # Because this test is making actual RPC calls on ETH mainnet,
+        # we are using a block number that will return a non-zero value
+        # for the two addresses' `transaction_count`.
+        block_number = 18127797
 
 
         
@@ -524,7 +556,7 @@ class TestEntityClusterBot:
 
                 },
                 'block': {
-                    'number': 0,
+                    'number': block_number,
                     'timestamp': datetime.now().timestamp(),
                 },
                 'receipt': {
@@ -548,7 +580,7 @@ class TestEntityClusterBot:
 
                 },
                 'block': {
-                    'number': 0,
+                    'number': block_number,
                     'timestamp': datetime.now().timestamp(),
                 },
                 'receipt': {
@@ -562,11 +594,15 @@ class TestEntityClusterBot:
         assert len(findings) == 1, "Finding should be returned as it is bidirectional"
 
 
-    def test_shrading_finding_bidirectional(self):
+    def test_sharding_finding_bidirectional(self):
         TestEntityClusterBot.remove_persistent_state()
 
         right_addr = '0x05f75788d3ec37bc8357c9ba88054c1650dd31f5'
         left_addr = '0xB0e5DDCBAA6c3524896767872797091F04aD0e19'
+        # Because this test is making actual RPC calls on ETH mainnet,
+        # we are using a block number that will return a non-zero value
+        # for the two addresses' `transaction_count`.
+        block_number = 18127797
     
         agent1 = EntityClusterAgent(DynamoPersistance())
 
@@ -582,7 +618,7 @@ class TestEntityClusterBot:
 
                 },
                 'block': {
-                    'number': 0,
+                    'number': block_number,
                     'timestamp': datetime.now().timestamp(),
                 },
                 'receipt': {
@@ -602,7 +638,7 @@ class TestEntityClusterBot:
 
                 },
                 'block': {
-                    'number': 0,
+                    'number': block_number,
                     'timestamp': datetime.now().timestamp(),
                 },
                 'receipt': {
