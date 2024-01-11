@@ -50,6 +50,14 @@ def initialize():
         ML_MODEL = load("malicious_non_token_model_02_07_23_exp2.joblib")
     logger.info("Complete loading model")
 
+    if CHAIN_ID != 1:
+        logger.info(f"Chain id is {CHAIN_ID}. We will load also the eth model for backup")
+        global ML_MODEL_BACKUP
+        global MODEL_THRESHOLD_BACKUP
+        ML_MODEL_BACKUP = load("deployed_models/voting_clf_1.joblib")
+        MODEL_THRESHOLD_BACKUP = MODEL_THRESHOLD_DICT.get(str(1), 0.58)
+        logger.info(f"ETH model loaded for backup with threshold {MODEL_THRESHOLD_BACKUP}")
+
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
 
 
@@ -61,6 +69,19 @@ def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     score = None
     features, opcode_addresses = get_features(w3, opcodes, contract_creator)
     score = ML_MODEL.predict_proba([features])[0][1]
+    score = round(score, 4)
+
+    return score, opcode_addresses
+
+
+def exec_model_backup(w3, opcodes: str, contract_creator: str) -> tuple:
+    """
+    this function executes the model to obtain the score for the contract
+    :return: score: float
+    """
+    score = None
+    features, opcode_addresses = get_features(w3, opcodes, contract_creator)
+    score = ML_MODEL_BACKUP.predict_proba([features])[0][1]
     score = round(score, 4)
 
     return score, opcode_addresses
@@ -149,16 +170,34 @@ def detect_malicious_contract(
             function_signatures = get_function_signatures(w3, opcodes)
             logger.info(f"{created_contract_address}: score={model_score}")
 
-            finding = ContractFindings(
-                from_,
-                created_contract_address,
-                set.union(storage_addresses, opcode_addresses),
-                function_signatures,
-                model_score,
-                MODEL_THRESHOLD,
-                error=error,
-            )
-            if model_score is not None:
+            model_score_backup = None
+            finding = None
+            if CHAIN_ID != 1 and model_score < MODEL_THRESHOLD:
+                model_score_backup, opcode_addresses_backup = exec_model_backup(w3, opcodes, from_)
+                logger.info(f"{created_contract_address}: Backup score={model_score_backup}")
+                if model_score_backup >= MODEL_THRESHOLD_BACKUP:
+                    logger.info(f"{created_contract_address}: Backup model triggered")
+                    finding = ContractFindings(
+                        from_,
+                        created_contract_address,
+                        set.union(storage_addresses, opcode_addresses_backup),
+                        function_signatures,
+                        model_score_backup,
+                        MODEL_THRESHOLD_BACKUP,
+                        error=error,
+                    )
+                    finding.metadata["backup"] = 'yes'
+            if finding is None:
+                finding = ContractFindings(
+                    from_,
+                    created_contract_address,
+                    set.union(storage_addresses, opcode_addresses),
+                    function_signatures,
+                    model_score,
+                    MODEL_THRESHOLD,
+                    error=error,
+                )
+            if model_score is not None or model_score_backup is not None:
                 from_label_type = "contract" if is_contract(w3, from_) else "eoa"
                 labels = [
                     {
@@ -199,6 +238,31 @@ def detect_malicious_contract(
                             labels,
                         )
                     )
+                elif model_score_backup is not None:
+                    if model_score_backup >= MODEL_THRESHOLD_BACKUP:
+                        labels.extend(
+                            [
+                                {
+                                    "entity": created_contract_address,
+                                    "entity_type": EntityType.Address,
+                                    "label": "attacker",
+                                    "confidence": model_score_backup,
+                                },
+                                {
+                                    "entity": from_,
+                                    "entity_type": EntityType.Address,
+                                    "label": "attacker",
+                                    "confidence": model_score_backup,
+                                },
+                            ]
+                        )
+
+                        findings.append(
+                            finding.malicious_contract_creation(
+                                CHAIN_ID,
+                                labels,
+                            )
+                        )
                 elif model_score <= SAFE_CONTRACT_THRESHOLD:
                     labels.extend(
                         [
