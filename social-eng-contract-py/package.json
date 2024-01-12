@@ -32,6 +32,6 @@
     "test": "python3 -m pytest"
   },
   "devDependencies": {
-    "forta-bot-cli": "file:forta-bot-cli-0.2.0-1703156036.tgz"
+    "forta-bot-cli": "file:forta-bot-cli-0.2.0.tgz"
   }
 }
