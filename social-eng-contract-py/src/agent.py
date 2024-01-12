@@ -5,7 +5,7 @@ import sys
 import pandas as pd
 import asyncio
 from web3 import AsyncWeb3, Web3
-from forta_bot import scan_base, scan_ethereum, scan_alerts, Finding, FindingSeverity, FindingType, BlockEvent, TransactionEvent, AlertEvent
+from forta_bot import get_chain_id, scan_base, scan_ethereum, scan_alerts, Finding, FindingSeverity, FindingType, BlockEvent, TransactionEvent, AlertEvent
 from hexbytes import HexBytes
 from os import environ
 
@@ -52,14 +52,14 @@ async def calc_contract_address(address, nonce) -> str:
     return Web3.to_checksum_address(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:]).lower()
 
 
-async def append_contract_finding(findings: list, created_contract_address: str, from_: str) -> None:
+def append_contract_finding(findings: list, created_contract_address: str, from_: str, chain_id: int, tx_hash: str) -> None:
     """
         function assesses whether created contract address impersonates an existing contract
     """
     global CONTRACTS_QUEUE
     global ALERTS_CACHE
     logging.info("Contract created: " + created_contract_address)
-    
+
 
     criteria1 = CONTRACTS_QUEUE["first_four_char"] == created_contract_address[2:6]
     criteria2 = CONTRACTS_QUEUE["last_four_char"] == created_contract_address[-4:]
@@ -67,10 +67,10 @@ async def append_contract_finding(findings: list, created_contract_address: str,
     impersonated_contract_address = CONTRACTS_QUEUE[criteria1 & criteria2]["contract_address"]
     if len(impersonated_contract_address) > 0 and impersonated_contract_address.iloc[0] is not None and impersonated_contract_address.iloc[0] != created_contract_address and created_contract_address not in ALERTS_CACHE:
         if impersonated_contract_address.iloc[0] == '0x0000000000000000000000000000000000000000':
-            findings.append(SocialEngContractFindings.social_eng_address_creation(created_contract_address, True, impersonated_contract_address.iloc[0], from_, CHAIN_ID, 'SOCIAL-ENG-CONTRACT-CREATION-NULL-ADDRESS'))
+            findings.append(SocialEngContractFindings.social_eng_address_creation(created_contract_address, True, impersonated_contract_address.iloc[0], from_, chain_id, 'SOCIAL-ENG-CONTRACT-CREATION-NULL-ADDRESS', tx_hash))
             ALERTS_CACHE.add(created_contract_address)
         else:
-            findings.append(SocialEngContractFindings.social_eng_address_creation(created_contract_address, True, impersonated_contract_address.iloc[0], from_, CHAIN_ID, 'SOCIAL-ENG-CONTRACT-CREATION'))
+            findings.append(SocialEngContractFindings.social_eng_address_creation(created_contract_address, True, impersonated_contract_address.iloc[0], from_, chain_id, 'SOCIAL-ENG-CONTRACT-CREATION', tx_hash))
             ALERTS_CACHE.add(created_contract_address)
 
 
@@ -104,11 +104,10 @@ async def detect_social_eng_account_creations(w3, transaction_event: Transaction
     # contract creation - emit finding using non-trace contract creation flow
     if transaction_event.to is None:
         created_contract_address = await calc_contract_address(transaction_event.from_, transaction_event.transaction.nonce)
-        append_contract_finding(findings, created_contract_address, transaction_event.from_)
+        append_contract_finding(findings, created_contract_address, transaction_event.from_, CHAIN_ID, transaction_event.transaction.hash)
     elif transaction_event.from_[2:6] == '0000' and transaction_event.from_[-4:] == '0000' and transaction_event.from_ != '0x0000000000000000000000000000000000000000': #only support null as the check would be too expensive at this point
         if transaction_event.from_ not in ALERTS_CACHE:
-            chain_id = w3.eth.chain_id
-            findings.append(SocialEngContractFindings.social_eng_address_creation(transaction_event.from_, False, '0x0000000000000000000000000000000000000000', "", chain_id, 'SOCIAL-ENG-EOA-CREATION-NULL-ADDRESS'))
+            findings.append(SocialEngContractFindings.social_eng_address_creation(transaction_event.from_, False, '0x0000000000000000000000000000000000000000', "", CHAIN_ID, 'SOCIAL-ENG-EOA-CREATION-NULL-ADDRESS'), transaction_event.transaction.hash)
             ALERTS_CACHE.add(transaction_event.from_)
 
 
@@ -120,7 +119,7 @@ async def detect_social_eng_account_creations(w3, transaction_event: Transaction
                 created_contract_address = calc_contract_address(trace.action.from_, nonce)
 
                 created_contract_addresses.append(created_contract_address.lower())
-                append_contract_finding(findings, created_contract_address, transaction_event.from_)
+                append_contract_finding(findings, created_contract_address, transaction_event.from_, CHAIN_ID, transaction_event.transaction.hash)
 
     while len(ALERTS_CACHE) > 100000:
         ALERTS_CACHE.pop()
@@ -135,9 +134,12 @@ async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb
 
 
 async def main():
-    
+
     global CONTRACTS_QUEUE
     CONTRACTS_QUEUE = pd.concat([CONTRACTS_QUEUE, pd.DataFrame({'contract_address': '0x0000000000000000000000000000000000000000', 'first_four_char': '0000', 'last_four_char': '0000'}, index=[len(CONTRACTS_QUEUE)])])
+
+    global CHAIN_ID
+    CHAIN_ID = get_chain_id()
 
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
@@ -155,6 +157,5 @@ async def main():
         'handle_transaction': handle_transaction
         })
     )
-    
+
 asyncio.run(main())
-  

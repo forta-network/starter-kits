@@ -7,7 +7,7 @@ BOT_ID = "0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8"
 class SocialEngContractFindings:
 
     @staticmethod
-    def social_eng_address_creation(address: str, is_contract: bool, impersonated_contract: str, from_address: str, chain_id: int, alert_id: str) -> Finding:
+    def social_eng_address_creation(address: str, is_contract: bool, impersonated_contract: str, from_address: str, chain_id: int, alert_id: str, hash: str) -> Finding:
         labels = []
         # if from_address is not None and from_address != "":
         #     labels.append({"entity": from_address,
@@ -43,5 +43,9 @@ class SocialEngContractFindings:
             'type': FindingType.Exploit,
             'severity': FindingSeverity.High,
             'metadata': metadata,
-            'labels': labels
+            'labels': labels,
+            'source': {
+                'chains': [{'chainId': chain_id}],
+                'transactions': [{'chainId': chain_id, 'hash': hash}]
+            }
         })
