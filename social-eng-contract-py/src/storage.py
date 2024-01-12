@@ -1,4 +1,4 @@
-import forta_agent
+import forta_bot
 import json
 import requests
 import os
