@@ -38,7 +38,7 @@ async def is_contract(w3, address) -> bool:
     """
     if address is None:
         return True
-    code = w3.eth.get_code(Web3.to_checksum_address(address))
+    code = await w3.eth.get_code(Web3.to_checksum_address(address))
     return code != HexBytes('0x')
 
 
