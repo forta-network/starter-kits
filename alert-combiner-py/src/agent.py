@@ -528,7 +528,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                             new_alert_data = pd.DataFrame([[stage, datetime.strptime(alert_event.alert.created_at[:-4] + 'Z', "%Y-%m-%dT%H:%M:%S.%fZ"), alert_anomaly_score, alert_event.alert_hash, alert_event.bot_id, alert_event.alert.alert_id, alert_event.alert.addresses, alert_event.alert.source.transaction_hash, filter_data]], columns=columns)
                         alert_data_cluster = pd.concat([alert_data_cluster, new_alert_data], ignore_index=True, axis=0).drop_duplicates(subset=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'transaction_hash'], inplace=False)
                         logging.info(f"alert {alert_event.alert_hash} - alert data size for cluster {cluster} now: {len(alert_data_cluster)}")
-                        du.put_alert_data(dynamo, cluster, alert_data_cluster)
+                        du.put_alert_data(dynamo, cluster, alert_data_cluster, stage)
                         alert_data = alert_data_cluster
                         
                         # contains highly precise bot

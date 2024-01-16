@@ -15,7 +15,7 @@ from unittest.mock import Mock, patch
 
 from storage import dynamo_table, get_secrets
 from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS,
-                       ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY)
+                       ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, FUNDING_STAGE_ALERTS_LOOKBACK_WINDOW_IN_HOURS)
 from web3_mock import CONTRACT, EOA_ADDRESS, EOA_ADDRESS_2, Web3Mock
 from L2Cache import VERSION
 from dynamo_utils import DynamoUtils as du, TEST_TAG
@@ -609,7 +609,7 @@ class TestAlertCombiner:
         dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        alert_event.alert.created_at = (datetime.now() - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS + 1)).strftime("%Y-%m-%dT%H:%M:%S.%f123Z")
+        alert_event.alert.created_at = (datetime.now() - timedelta(hours=FUNDING_STAGE_ALERTS_LOOKBACK_WINDOW_IN_HOURS + 1)).strftime("%Y-%m-%dT%H:%M:%S.%f123Z")
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
