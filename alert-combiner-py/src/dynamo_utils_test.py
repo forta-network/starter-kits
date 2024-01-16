@@ -84,27 +84,27 @@ class TestDynamoUtils:
         dynamo.put_item.assert_called_once_with(Item={'itemId': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|alert',
                                                 'sortKey': sortIdHash, 'cluster': cluster, 'dataframe': dataframe_json, 'expiresAt': expiresAt})
         
-        def test_put_alert_data_funding_stage(self):
-            dynamo = Mock()
-            dynamo.put_item.return_value = {
-                'ResponseMetadata': {'HTTPStatusCode': 200}}
-            cluster = 'alert_cluster'
-            dataframe = pd.DataFrame(
-                {'created_at': ['2022-01-01T00:00:00'], 'data': ['test'], 'stage': 'Funding'})
-            dataframe['created_at'] = pd.to_datetime(dataframe['created_at'])
-            first_alert_created_at_str = dataframe['created_at'].iloc[0]
-            first_alert_created_at = first_alert_created_at_str.timestamp()
-            dataframe_json = dataframe.to_json(orient="records")
-            expiry_offset = FUNDING_STAGE_ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
-            expiresAt = int(first_alert_created_at) + int(expiry_offset)
+    def test_put_alert_data_funding_stage(self):
+        dynamo = Mock()
+        dynamo.put_item.return_value = {
+            'ResponseMetadata': {'HTTPStatusCode': 200}}
+        cluster = 'alert_cluster'
+        dataframe = pd.DataFrame(
+            {'created_at': ['2022-01-01T00:00:00'], 'data': ['test'], 'stage': 'Funding'})
+        dataframe['created_at'] = pd.to_datetime(dataframe['created_at'])
+        first_alert_created_at_str = dataframe['created_at'].iloc[0]
+        first_alert_created_at = first_alert_created_at_str.timestamp()
+        dataframe_json = dataframe.to_json(orient="records")
+        expiry_offset = FUNDING_STAGE_ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
+        expiresAt = int(first_alert_created_at) + int(expiry_offset)
 
-            du = DynamoUtils(TEST_TAG, TestDynamoUtils.CHAIN_ID) 
-            du.put_alert_data(dynamo, cluster, dataframe, "Funding")
+        du = DynamoUtils(TEST_TAG, TestDynamoUtils.CHAIN_ID) 
+        du.put_alert_data(dynamo, cluster, dataframe, "Funding")
 
-            sortIdHash = hashlib.sha256(cluster.encode()).hexdigest()
+        sortIdHash = hashlib.sha256(cluster.encode()).hexdigest()
 
-            dynamo.put_item.assert_called_once_with(Item={'itemId': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|alert',
-                                                    'sortKey': sortIdHash, 'cluster': cluster, 'dataframe': dataframe_json, 'expiresAt': expiresAt})
+        dynamo.put_item.assert_called_once_with(Item={'itemId': f'{du.tag}|{TestDynamoUtils.CHAIN_ID}|alert',
+                                                'sortKey': sortIdHash, 'cluster': cluster, 'dataframe': dataframe_json, 'expiresAt': expiresAt})
     
     def test_put_victim(self):
         dynamo = Mock()
