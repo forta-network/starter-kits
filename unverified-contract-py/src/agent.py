@@ -186,15 +186,14 @@ def cache_contract_creation(
                     transaction_event.from_ == trace.action.from_
                     or trace.action.from_ in created_contract_addresses
                 ):
-                    # for contracts creating other contracts, the nonce would be 1
-                    nonce = (
-                        transaction_event.transaction.nonce
-                        if transaction_event.from_ == trace.action.from_
-                        else 1
-                    )
-                    created_contract_address = calc_contract_address(
-                        w3, trace.action.from_, nonce
-                    )
+                    if transaction_event.from_ == trace.action.from_:
+                        nonce = transaction_event.transaction.nonce
+                        created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
+                    else:
+                        # For contracts creating other contracts, get the nonce using Web3
+                        nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                        created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
+
                     logging.info(
                         f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}"
                     )
@@ -280,15 +279,14 @@ def detect_unverified_contract_creation(
                                 transaction_event.from_ == trace.action.from_
                                 or trace.action.from_ in created_contract_addresses
                             ):
-                                # for contracts creating other contracts, the nonce would be 1
-                                nonce = (
-                                    transaction_event.transaction.nonce
-                                    if transaction_event.from_ == trace.action.from_
-                                    else 1
-                                )
-                                calc_created_contract_address = calc_contract_address(
-                                    w3, trace.action.from_, nonce
-                                )
+                                if transaction_event.from_ == trace.action.from_:
+                                    nonce = transaction_event.transaction.nonce
+                                    calc_created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
+                                else:
+                                    # For contracts creating other contracts, get the nonce using Web3
+                                    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                                    calc_created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
+
                                 if (
                                     created_contract_address
                                     == calc_created_contract_address

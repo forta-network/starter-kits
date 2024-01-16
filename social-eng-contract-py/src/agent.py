@@ -129,8 +129,13 @@ def detect_social_eng_account_creations(w3, transaction_event: forta_agent.trans
     for trace in transaction_event.traces:
         if trace.type == 'create':
             if (transaction_event.from_ == trace.action.from_ or trace.action.from_ in created_contract_addresses):
-                nonce = transaction_event.transaction.nonce if transaction_event.from_ == trace.action.from_ else 1  # for contracts creating other contracts, the nonce would be 1
-                created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
+                if transaction_event.from_ == trace.action.from_:
+                    nonce = transaction_event.transaction.nonce
+                    created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
+                else:
+                    # For contracts creating other contracts, get the nonce using Web3
+                    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                    created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
                 created_contract_addresses.append(created_contract_address.lower())
                 append_contract_finding(findings, created_contract_address, transaction_event.from_)
