@@ -1,9 +1,13 @@
 {
   "name": "suspicious-contract-creation",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Detection bot that triggers on suspicious contract creation",
   "chainIds": [
-    1, 137, 56, 42114, 10
+    1,
+    137,
+    56,
+    42114,
+    10
   ],
   "repository": "https://github.com/forta-network/starter-kits",
   "scripts": {
@@ -26,6 +30,6 @@
     "forta-agent": "^0.1.33"
   },
   "devDependencies": {
-    "nodemon": "^2.0.8"
+    "nodemon": "^3.0.2"
   }
 }
