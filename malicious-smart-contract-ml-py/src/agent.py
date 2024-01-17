@@ -50,13 +50,17 @@ def initialize():
         ML_MODEL = load("malicious_non_token_model_02_07_23_exp2.joblib")
     logger.info("Complete loading model")
 
-    if CHAIN_ID != 1:
+    global ML_MODEL_BACKUP
+    global MODEL_THRESHOLD_BACKUP
+    if CHAIN_ID == 1:
+        logger.info(f"Chain id is {CHAIN_ID}. We will load the imbalanced model for improved recall")
+        ML_MODEL_BACKUP = load("deployed_models/lgbm_backmodel.joblib")
+        MODEL_THRESHOLD_BACKUP = 0.5
+    elif CHAIN_ID != 1:
         logger.info(f"Chain id is {CHAIN_ID}. We will load also the eth model for backup")
-        global ML_MODEL_BACKUP
-        global MODEL_THRESHOLD_BACKUP
         ML_MODEL_BACKUP = load("deployed_models/voting_clf_1.joblib")
-        MODEL_THRESHOLD_BACKUP = MODEL_THRESHOLD_DICT.get(str(1), 0.58)
-        logger.info(f"ETH model loaded for backup with threshold {MODEL_THRESHOLD_BACKUP}")
+        MODEL_THRESHOLD_BACKUP = 0.4
+    logger.info(f"Alternative model loaded for backup with threshold {MODEL_THRESHOLD_BACKUP}")
 
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
 
@@ -101,6 +105,9 @@ def detect_malicious_contract_tx(
             )
             error = trace.error if trace.error else None
             logger.info(f"Contract created {created_contract_address}")
+            if created_contract_address is None:
+                logger.info(f"Trace was None")
+                continue
             if error is not None:
                 nonce = (
                     transaction_event.transaction.nonce
@@ -111,7 +118,7 @@ def detect_malicious_contract_tx(
                     w3, trace.action.from_, nonce
                 )
                 logger.warn(
-                    f"Contract {contract_address} creation failed with tx {trace.transactionHash}: {error}"
+                    f"Contract {contract_address} creation failed with tx {trace.transaction_hash}: {error}"
                 )
 
             # creation bytecode contains both initialization and run-time bytecode.
@@ -124,9 +131,14 @@ def detect_malicious_contract_tx(
                 error=error,
             ):
                 if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
+                    if check_funding(trace.action.from_):
+                        logger.info(f"Contract {created_contract_address} was funded by malicious methods.")
+                        finding.metadata["malicious_funding"] = 'yes'
                     malicious_findings.append(finding)
                 else:
                     safe_findings.append(finding)
+                    if check_funding(trace.action.from_):
+                        logger.info(f"Contract {created_contract_address} was funded by malicious methods but the contract was deemed safe")
 
     if transaction_event.to is None:
         nonce = transaction_event.transaction.nonce
@@ -142,9 +154,14 @@ def detect_malicious_contract_tx(
             creation_bytecode,
         ):
             if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
+                if check_funding(transaction_event.from_):
+                    logger.info(f"Contract {created_contract_address} was funded by malicious methods.")
+                    finding.metadata["malicious_funding"] = 'yes'
                 malicious_findings.append(finding)
             else:
                 safe_findings.append(finding)
+                if check_funding(transaction_event.from_):
+                    logger.info(f"Contract {created_contract_address} was funded by malicious methods but the contract was deemed safe")
 
     # Reduce findings to 10 because we cannot return more than 10 findings per request
     return (malicious_findings + safe_findings)[:10]
@@ -172,7 +189,7 @@ def detect_malicious_contract(
 
             model_score_backup = None
             finding = None
-            if CHAIN_ID != 1 and model_score < MODEL_THRESHOLD:
+            if model_score < MODEL_THRESHOLD:
                 model_score_backup, opcode_addresses_backup = exec_model_backup(w3, opcodes, from_)
                 logger.info(f"{created_contract_address}: Backup score={model_score_backup}")
                 if model_score_backup >= MODEL_THRESHOLD_BACKUP:
@@ -308,3 +325,25 @@ def handle_transaction(
     transaction_event: forta_agent.transaction_event.TransactionEvent,
 ):
     return real_handle_transaction(transaction_event)
+
+
+def check_funding(address: str):
+    bots = ['0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400',
+            "0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb", 
+            "0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f",
+            "0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef",
+            "0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46",
+            "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058",
+            "0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e"]
+    query = {
+        "first": 100,
+        "bot_ids": bots,
+        "created_since": 5*24*60*60*1000,
+        "addresses": [address],
+    }
+    alerts = forta_agent.get_alerts(query)
+    logger.info(f"Alerts: {alerts.alerts}")
+    if len(alerts.alerts) > 0:
+        return True
+    else:
+        return False
