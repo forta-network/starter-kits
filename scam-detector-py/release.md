@@ -1,5 +1,6 @@
 # Scam Detector Bot Release Notes
 
+
 ## 2.23.2 (beta2 - 1/11/2024, prod - 1/17/2024)
 
 - Etherscan FP mitigation fix
@@ -16,6 +17,12 @@
 - initial version
 
 ## 2.22.10 (beta2 - 11/29/2023, prod - 12/4/2023)
+
+=======
+## 2.22.11 (beta2 - 11/29/2023, prod - 12/7/2023)
+- fix broken link in documentation
+
+## 2.22.10 (beta2 - 11/29/2023, prod - 12/3/2023)
 
 - fix issue 392
 

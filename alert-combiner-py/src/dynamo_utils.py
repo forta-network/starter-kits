@@ -6,7 +6,7 @@ import botocore
 import hashlib
 import pandas as pd
 
-from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS, DATAFRAME_SIZE_LIMIT
+from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS, DATAFRAME_SIZE_LIMIT, FP_MITIGATION_EXPIRY_IN_HOURS
 from src.utils import Utils
 
 TEST_TAG = "attack-detector-test_v2"
@@ -94,7 +94,10 @@ class DynamoUtils:
         sortId = f"{address}"
         logging.debug(f"sortId: {sortId}")
         sortIdHash = hashlib.sha256(sortId.encode()).hexdigest()
-        expiresAt = self._get_expires_at()
+
+        # Store for a year
+        expiry_offset = FP_MITIGATION_EXPIRY_IN_HOURS * 60 * 60
+        expiresAt = int(time.time()) + int(expiry_offset)
         logging.debug(f"expiresAt: {expiresAt}")
 
         item = {
