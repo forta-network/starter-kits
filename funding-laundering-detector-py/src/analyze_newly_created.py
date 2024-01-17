@@ -1,12 +1,14 @@
 from datetime import datetime, timedelta
 
-from src.config import NEWLY_CREATED_MAX_TRANSACTIONS_AMOUNT, MIN_AGE_IN_DAYS
+from src.config import MIN_AGE_IN_DAYS
 
-def is_newly_created(address, blockexplorer):
+def is_newly_created(address, blockexplorer, timestamp):
     try:
         first_tx = blockexplorer.get_first_tx(address)
 
-        if first_tx > datetime.now() - timedelta(days=MIN_AGE_IN_DAYS):
+        tx_datetime = datetime.fromtimestamp(timestamp)
+
+        if first_tx > tx_datetime - timedelta(days=MIN_AGE_IN_DAYS):
             return True
         else:
             return False

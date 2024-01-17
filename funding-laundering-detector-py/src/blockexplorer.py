@@ -40,7 +40,7 @@ class BlockExplorer:
 
     def get_first_tx(self, address: str) -> datetime:
         url = self.host + \
-            f"/api?module=account&action=txlist&address={address}&startblock=0&endblock=99999999&page=1&offset=10&sort=asc&apikey={self.api_key}"
+            f"/api?module=account&action=txlist&address={address}&startblock=0&endblock=999999999&page=1&offset=10&sort=asc&apikey={self.api_key}"
         response = requests.get(url)
         if (response.status_code == 200):
             data = json.loads(response.text)
