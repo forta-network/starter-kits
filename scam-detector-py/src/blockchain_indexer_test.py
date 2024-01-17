@@ -26,7 +26,7 @@ class TestBlockChainIndexer:
         assert contract_address == "0x728ad672409DA288cA5B9AA85D1A55b803bA97D7", "should be the same contract address"
 
     def test_has_deployed_high_tx_count_contract(self):
-        contract_deployer_address = '0xfc19e4ce0e0a27b09f2011ef0512669a0f76367a' # Binance: Deployer 3
+        contract_deployer_address = '0x41545f8b9472d758bb669ed8eaeeecd7a9c4ec29,0xfc19e4ce0e0a27b09f2011ef0512669a0f76367a' # Random address (Fort Token), Binance: Deployer 3
         has_deployed_high_tx_count_contract = BlockChainIndexer.has_deployed_high_tx_count_contract(contract_deployer_address, 56)
         assert has_deployed_high_tx_count_contract == True, "should be true"
 

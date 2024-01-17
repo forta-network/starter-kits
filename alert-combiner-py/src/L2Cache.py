@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 import pickle
 import requests
 import traceback
@@ -12,22 +13,29 @@ VERSION = "V2"
 L2_VERSION = "V2.1"
 
 class L2Cache:
+    MAX_RETRIES = 3
 
     @staticmethod
     def write(obj: object, chain_id: int, key: str):
         key = f"{L2_VERSION}-{key}" if chain_id in (10, 42161) else f"{VERSION}-{key}"
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
-            try:
-                logging.info(f"Persisting {key} using API")
-                bytes = pickle.dumps(obj)
-                token = forta_agent.fetch_jwt({})
+            attempt = 0  
+            while attempt < L2Cache.MAX_RETRIES:
+                try:
+                    logging.info(f"Persisting {key} using API")
+                    bytes = pickle.dumps(obj)
+                    token = forta_agent.fetch_jwt({})
 
-                headers = {"Authorization": f"Bearer {token}"}
-                res = requests.post(f"{DATABASE}{key}_{chain_id}", data=bytes, headers=headers)
-                logging.info(f"Persisting {key}_{chain_id} to database. Response: {res}")
-            except Exception as e:
-                logging.warn(f"Exception in persist {e}")
-                Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "l2_cache.persist", traceback.format_exc()))
+                    headers = {"Authorization": f"Bearer {token}"}
+                    res = requests.post(f"{DATABASE}{key}_{chain_id}", data=bytes, headers=headers)
+                    logging.info(f"Persisting {key}_{chain_id} to database. Response: {res}")
+                    break
+                except Exception as e:
+                    logging.warn(f"Exception in persist {e}")
+                    attempt += 1 
+                    time.sleep(0.01)
+                    if attempt == L2Cache.MAX_RETRIES:
+                        Utils.ERROR_CACHE.add(Utils.alert_error(str(e), f"l2_cache.write (max retries reached)", traceback.format_exc()))
         else:
             logging.info(f"Persisting {key}_{chain_id} locally")
             pickle.dump(obj, open(key, "wb"))

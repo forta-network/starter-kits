@@ -118,11 +118,13 @@ def detect_suspicious_contract_creations(w3, transaction_event: forta_agent.tran
     for trace in transaction_event.traces:
         if trace.type == 'create':
             if (transaction_event.from_ == trace.action.from_ or trace.action.from_ in created_contract_addresses):
-
-                # for contracts creating other contracts, the nonce would be 1
-                nonce = transaction_event.transaction.nonce if transaction_event.from_ == trace.action.from_ else 1
-                created_contract_address = calc_contract_address(
-                    w3, trace.action.from_, nonce)
+                if transaction_event.from_ == trace.action.from_:
+                    nonce = transaction_event.transaction.nonce
+                    created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
+                else:
+                    # For contracts creating other contracts, get the nonce using Web3
+                    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                    created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
                 # obtain all the addresses contained in the created contract and propagate to the findings
                 storage_addresses = get_storage_addresses(

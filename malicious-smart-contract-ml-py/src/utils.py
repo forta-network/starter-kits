@@ -35,7 +35,7 @@ def get_function_signatures(w3, opcodes) -> set:
     function_signatures = set()
     for i, opcode in enumerate(opcodes):
         opcode_name = opcode.name
-        if opcode_name == "PUSH4":
+        if opcode_name == "PUSH4" or opcode_name == "PUSH3":
             function_signatures.add(f"0x{opcode.operand}")
     return function_signatures
 

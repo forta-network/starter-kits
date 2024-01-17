@@ -1,9 +1,15 @@
 {
   "name": "social-eng-account-creation",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Identifies when a new social engineering contract or EOA is created.",
   "chainIds": [
-    1, 56, 137, 43114, 42161, 10, 250
+    1,
+    56,
+    137,
+    43114,
+    42161,
+    10,
+    250
   ],
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
@@ -25,6 +31,6 @@
     "forta-agent": "^0.1.40"
   },
   "devDependencies": {
-    "nodemon": "^2.0.8"
+    "nodemon": "^3.0.2"
   }
 }
