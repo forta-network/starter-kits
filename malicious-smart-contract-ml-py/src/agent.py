@@ -36,31 +36,38 @@ def initialize():
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
-    global MODEL_THRESHOLD
-    MODEL_THRESHOLD = MODEL_THRESHOLD_DICT.get(str(CHAIN_ID), 0.3)
-    logger.info(f"Model threshold: {MODEL_THRESHOLD}")
+    # global MODEL_THRESHOLD
+    # MODEL_THRESHOLD = MODEL_THRESHOLD_DICT.get(str(CHAIN_ID), 0.3)
+    # logger.info(f"Model threshold: {MODEL_THRESHOLD}")
 
+    # global ML_MODEL
+    # logger.info("Start loading model")
+    # try:
+    #     logger.info(f"Loading model for chain {CHAIN_ID}")
+    #     ML_MODEL = load(f"deployed_models/voting_clf_{CHAIN_ID}.joblib")
+    # except:
+    #     logger.info("Model not found, loading default model")
+    #     ML_MODEL = load("malicious_non_token_model_02_07_23_exp2.joblib")
+    # logger.info("Complete loading model")
+
+    # global ML_MODEL_BACKUP
+    # global MODEL_THRESHOLD_BACKUP
+    # if CHAIN_ID == 1:
+    #     logger.info(f"Chain id is {CHAIN_ID}. We will load the imbalanced model for improved recall")
+    #     ML_MODEL_BACKUP = load("deployed_models/lgbm_backmodel.joblib")
+    #     MODEL_THRESHOLD_BACKUP = 0.5
+    # elif CHAIN_ID != 1:
+    #     logger.info(f"Chain id is {CHAIN_ID}. We will load also the eth model for backup")
+    #     ML_MODEL_BACKUP = load("deployed_models/voting_clf_1.joblib")
+    #     MODEL_THRESHOLD_BACKUP = 0.4
+    # logger.info(f"Alternative model loaded for backup with threshold {MODEL_THRESHOLD_BACKUP}")
     global ML_MODEL
     logger.info("Start loading model")
-    try:
-        logger.info(f"Loading model for chain {CHAIN_ID}")
-        ML_MODEL = load(f"deployed_models/voting_clf_{CHAIN_ID}.joblib")
-    except:
-        logger.info("Model not found, loading default model")
-        ML_MODEL = load("malicious_non_token_model_02_07_23_exp2.joblib")
-    logger.info("Complete loading model")
+    ML_MODEL = load("deployed_models/voting_clf_1.joblib")
 
-    global ML_MODEL_BACKUP
-    global MODEL_THRESHOLD_BACKUP
-    if CHAIN_ID == 1:
-        logger.info(f"Chain id is {CHAIN_ID}. We will load the imbalanced model for improved recall")
-        ML_MODEL_BACKUP = load("deployed_models/lgbm_backmodel.joblib")
-        MODEL_THRESHOLD_BACKUP = 0.5
-    elif CHAIN_ID != 1:
-        logger.info(f"Chain id is {CHAIN_ID}. We will load also the eth model for backup")
-        ML_MODEL_BACKUP = load("deployed_models/voting_clf_1.joblib")
-        MODEL_THRESHOLD_BACKUP = 0.4
-    logger.info(f"Alternative model loaded for backup with threshold {MODEL_THRESHOLD_BACKUP}")
+    global MODEL_THRESHOLD
+    MODEL_THRESHOLD = 0.4
+    logger.info(f"Model threshold: {MODEL_THRESHOLD}. Using eth model for recall")
 
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
 
@@ -78,17 +85,17 @@ def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     return score, opcode_addresses
 
 
-def exec_model_backup(w3, opcodes: str, contract_creator: str) -> tuple:
-    """
-    this function executes the model to obtain the score for the contract
-    :return: score: float
-    """
-    score = None
-    features, opcode_addresses = get_features(w3, opcodes, contract_creator)
-    score = ML_MODEL_BACKUP.predict_proba([features])[0][1]
-    score = round(score, 4)
+# def exec_model_backup(w3, opcodes: str, contract_creator: str) -> tuple:
+#     """
+#     this function executes the model to obtain the score for the contract
+#     :return: score: float
+#     """
+#     score = None
+#     features, opcode_addresses = get_features(w3, opcodes, contract_creator)
+#     score = ML_MODEL_BACKUP.predict_proba([features])[0][1]
+#     score = round(score, 4)
 
-    return score, opcode_addresses
+#     return score, opcode_addresses
 
 
 def detect_malicious_contract_tx(
@@ -131,14 +138,14 @@ def detect_malicious_contract_tx(
                 error=error,
             ):
                 if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
-                    if check_funding(trace.action.from_):
-                        logger.info(f"Contract {created_contract_address} was funded by malicious methods.")
-                        finding.metadata["malicious_funding"] = 'yes'
+                    # if check_funding(trace.action.from_):
+                    #     logger.info(f"Contract {created_contract_address} was funded by malicious methods.")
+                    #     finding.metadata["malicious_funding"] = 'yes'
                     malicious_findings.append(finding)
                 else:
                     safe_findings.append(finding)
-                    if check_funding(trace.action.from_):
-                        logger.info(f"Contract {created_contract_address} was funded by malicious methods but the contract was deemed safe")
+                    # if check_funding(trace.action.from_):
+                    #     logger.info(f"Contract {created_contract_address} was funded by malicious methods but the contract was deemed safe")
 
     if transaction_event.to is None:
         nonce = transaction_event.transaction.nonce
@@ -154,14 +161,14 @@ def detect_malicious_contract_tx(
             creation_bytecode,
         ):
             if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
-                if check_funding(transaction_event.from_):
-                    logger.info(f"Contract {created_contract_address} was funded by malicious methods.")
-                    finding.metadata["malicious_funding"] = 'yes'
+                # if check_funding(transaction_event.from_):
+                #     logger.info(f"Contract {created_contract_address} was funded by malicious methods.")
+                #     finding.metadata["malicious_funding"] = 'yes'
                 malicious_findings.append(finding)
             else:
                 safe_findings.append(finding)
-                if check_funding(transaction_event.from_):
-                    logger.info(f"Contract {created_contract_address} was funded by malicious methods but the contract was deemed safe")
+                # if check_funding(transaction_event.from_):
+                #     logger.info(f"Contract {created_contract_address} was funded by malicious methods but the contract was deemed safe")
 
     # Reduce findings to 10 because we cannot return more than 10 findings per request
     return (malicious_findings + safe_findings)[:10]
@@ -189,21 +196,21 @@ def detect_malicious_contract(
 
             model_score_backup = None
             finding = None
-            if model_score < MODEL_THRESHOLD:
-                model_score_backup, opcode_addresses_backup = exec_model_backup(w3, opcodes, from_)
-                logger.info(f"{created_contract_address}: Backup score={model_score_backup}")
-                if model_score_backup >= MODEL_THRESHOLD_BACKUP:
-                    logger.info(f"{created_contract_address}: Backup model triggered")
-                    finding = ContractFindings(
-                        from_,
-                        created_contract_address,
-                        set.union(storage_addresses, opcode_addresses_backup),
-                        function_signatures,
-                        model_score_backup,
-                        MODEL_THRESHOLD_BACKUP,
-                        error=error,
-                    )
-                    finding.metadata["backup"] = 'yes'
+            # if model_score < MODEL_THRESHOLD:
+            #     model_score_backup, opcode_addresses_backup = exec_model_backup(w3, opcodes, from_)
+            #     logger.info(f"{created_contract_address}: Backup score={model_score_backup}")
+            #     if model_score_backup >= MODEL_THRESHOLD_BACKUP:
+            #         logger.info(f"{created_contract_address}: Backup model triggered")
+            #         finding = ContractFindings(
+            #             from_,
+            #             created_contract_address,
+            #             set.union(storage_addresses, opcode_addresses_backup),
+            #             function_signatures,
+            #             model_score_backup,
+            #             MODEL_THRESHOLD_BACKUP,
+            #             error=error,
+            #         )
+            #         finding.metadata["backup"] = 'yes'
             if finding is None:
                 finding = ContractFindings(
                     from_,
@@ -255,31 +262,31 @@ def detect_malicious_contract(
                             labels,
                         )
                     )
-                elif model_score_backup is not None:
-                    if model_score_backup >= MODEL_THRESHOLD_BACKUP:
-                        labels.extend(
-                            [
-                                {
-                                    "entity": created_contract_address,
-                                    "entity_type": EntityType.Address,
-                                    "label": "attacker",
-                                    "confidence": model_score_backup,
-                                },
-                                {
-                                    "entity": from_,
-                                    "entity_type": EntityType.Address,
-                                    "label": "attacker",
-                                    "confidence": model_score_backup,
-                                },
-                            ]
-                        )
+                # elif model_score_backup is not None:
+                #     if model_score_backup >= MODEL_THRESHOLD_BACKUP:
+                #         labels.extend(
+                #             [
+                #                 {
+                #                     "entity": created_contract_address,
+                #                     "entity_type": EntityType.Address,
+                #                     "label": "attacker",
+                #                     "confidence": model_score_backup,
+                #                 },
+                #                 {
+                #                     "entity": from_,
+                #                     "entity_type": EntityType.Address,
+                #                     "label": "attacker",
+                #                     "confidence": model_score_backup,
+                #                 },
+                #             ]
+                #         )
 
-                        findings.append(
-                            finding.malicious_contract_creation(
-                                CHAIN_ID,
-                                labels,
-                            )
-                        )
+                #         findings.append(
+                #             finding.malicious_contract_creation(
+                #                 CHAIN_ID,
+                #                 labels,
+                #             )
+                #         )
                 elif model_score <= SAFE_CONTRACT_THRESHOLD:
                     labels.extend(
                         [
@@ -327,23 +334,23 @@ def handle_transaction(
     return real_handle_transaction(transaction_event)
 
 
-def check_funding(address: str):
-    bots = ['0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400',
-            "0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb", 
-            "0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f",
-            "0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef",
-            "0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46",
-            "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058",
-            "0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e"]
-    query = {
-        "first": 100,
-        "bot_ids": bots,
-        "created_since": 5*24*60*60*1000,
-        "addresses": [address],
-    }
-    alerts = forta_agent.get_alerts(query)
-    logger.info(f"Alerts: {alerts.alerts}")
-    if len(alerts.alerts) > 0:
-        return True
-    else:
-        return False
+# def check_funding(address: str):
+#     bots = ['0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400',
+#             "0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb", 
+#             "0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f",
+#             "0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef",
+#             "0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46",
+#             "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058",
+#             "0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e"]
+#     query = {
+#         "first": 100,
+#         "bot_ids": bots,
+#         "created_since": 5*24*60*60*1000,
+#         "addresses": [address],
+#     }
+#     alerts = forta_agent.get_alerts(query)
+#     logger.info(f"Alerts: {alerts.alerts}")
+#     if len(alerts.alerts) > 0:
+#         return True
+#     else:
+#         return False

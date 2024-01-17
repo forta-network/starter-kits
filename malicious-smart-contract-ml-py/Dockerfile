@@ -3,7 +3,7 @@ FROM ubuntu:focal as builder
 RUN apt-get update -y && apt-get upgrade -y
 RUN apt-get install -y python3 pip
 # Required for lightgbm
-RUN apt-get install libgomp1  
+# RUN apt-get install libgomp1  
 RUN python3 -m pip install --upgrade pip
 COPY requirements.txt ./
 RUN python3 -m pip install --user -r requirements.txt --no-cache-dir
@@ -15,6 +15,7 @@ RUN apt-get update
 RUN apt-get -y install curl gnupg
 RUN curl -sL https://deb.nodesource.com/setup_14.x  | bash -
 RUN apt-get -y install nodejs
+# RUN apt-get install libgomp1  
 COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local:$PATH
 ENV NODE_ENV=production
