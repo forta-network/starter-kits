@@ -1,6 +1,6 @@
 # Scam Detector Bot Release Notes
 
-## 2.23.2 (beta2 - 1/11/2024)
+## 2.23.2 (beta2 - 1/11/2024, prod - 1/17/2024)
 
 - Etherscan FP mitigation fix
 - add detection logic of future contracts potentially deployed by scammer

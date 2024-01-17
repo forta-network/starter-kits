@@ -1,6 +1,6 @@
 {
-  "name": "scam-detector-feed-beta2",
-  "displayName": "Scam Detector Feed (beta2)",
+  "name": "scam-detector-feed",
+  "displayName": "Scam Detector Feed",
   "version": "2.23.2",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/scam-detector-py",
   "description": "Provides real-time intelligence on scammers engaged in over 10 unique scam types.",
