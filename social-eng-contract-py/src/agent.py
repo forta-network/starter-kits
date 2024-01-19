@@ -5,7 +5,7 @@ import sys
 import pandas as pd
 import asyncio
 from web3 import AsyncWeb3, Web3
-from forta_bot import get_chain_id, scan_base, scan_ethereum, scan_alerts, Finding, FindingSeverity, FindingType, BlockEvent, TransactionEvent, AlertEvent
+from forta_bot import get_chain_id, scan_base, scan_ethereum, scan_alerts, run_health_check, Finding, FindingSeverity, FindingType, BlockEvent, TransactionEvent, AlertEvent
 from hexbytes import HexBytes
 from os import environ
 
@@ -13,7 +13,6 @@ from constants import CONTRACT_QUEUE_SIZE
 from findings import SocialEngContractFindings
 from storage import get_secrets
 
-SECRETS_JSON = get_secrets()
 
 ALERTS_CACHE = set()
 
@@ -134,6 +133,7 @@ async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb
 
 
 async def main():
+    SECRETS_JSON = await get_secrets()
 
     global CONTRACTS_QUEUE
     CONTRACTS_QUEUE = pd.concat([CONTRACTS_QUEUE, pd.DataFrame({'contract_address': '0x0000000000000000000000000000000000000000', 'first_four_char': '0000', 'last_four_char': '0000'}, index=[len(CONTRACTS_QUEUE)])])
@@ -146,16 +146,17 @@ async def main():
     await asyncio.gather(
         scan_ethereum({
         'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-        'rpc_key_id': "e794f002-5f50-4502-8674-32dc21ff815a",
+        'rpc_key_id': "64286df1-4567-405a-a102-1122653022e4",
         'local_rpc_url': "1",
         'handle_transaction': handle_transaction
         }),
         scan_base({
         'rpc_url': "https://base.g.alchemy.com/v2",
-        'rpc_key_id': "e794f002-5f50-4502-8674-32dc21ff815a",
+        'rpc_key_id': "ff890297-bee3-41a6-b985-1e68cdc78f7c",
         'local_rpc_url': "8453",
         'handle_transaction': handle_transaction
-        })
+        }),
+        run_health_check()
     )
 
 asyncio.run(main())
