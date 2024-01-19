@@ -5,8 +5,8 @@ import os
 
 owner_db = "https://research.forta.network/database/owner/"
 
-test_mode = "main" if 'NODE_ENV' in os.environ and 'production' in os.environ.get(
-    'NODE_ENV') else "test"
+test_mode = "main" if 'FORTA_ENV' in os.environ and 'production' in os.environ.get(
+    'FORTA_ENV') else "test"
 
 
 def _token():
