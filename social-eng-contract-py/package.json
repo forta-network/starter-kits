@@ -10,6 +10,10 @@
   "repository": "https://github.com/forta-network/starter-kits/tree/main/social-eng-contract-py",
   "licenseUrl": "https://github.com/forta-network/starter-kits/tree/main/social-eng-contract-py/LICENSE.md",
   "promoUrl": "https://forta.org",
+  "chainIds": [
+    1,
+    8453
+  ],
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
     "start": "npm run start:dev",
