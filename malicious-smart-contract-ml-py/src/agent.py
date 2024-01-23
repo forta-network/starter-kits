@@ -277,7 +277,7 @@ def handle_transaction(
 def check_funding(address: str, n_days: int=30):
     t = time.time()
     # Tornado cash and cex funding with two retries
-    bots = ['0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400', '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb']  # tornado cash
+    bots = ['0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400']  # tornado cash
     query = {
         "first": 100,
         "bot_ids": bots,
@@ -290,6 +290,22 @@ def check_funding(address: str, n_days: int=30):
             alerts = forta_agent.get_alerts(query)
             tc_t = time.time()
             alert_hashes += [alert.hash for alert in alerts.alerts if 'funding' in alert.name.lower()]
+            break
+        except:
+            continue
+    # Funding fixed float
+    bots = ["0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb"]  # Funding fixed float
+    query = {
+        "first": 100,
+        "bot_ids": bots,
+        "created_since": n_days*24*60*60*1000,
+        "addresses": [address],
+    }
+    for _ in range(2):
+        try:
+            alerts = forta_agent.get_alerts(query)
+            ff_t = time.time()
+            alert_hashes += [alert.hash for alert in alerts.alerts if 'funding' in alert.name.lower() and 'fixedfloat' in alert.description.lower()]
             break
         except:
             continue
@@ -311,5 +327,5 @@ def check_funding(address: str, n_days: int=30):
         except:
             continue
     if ENV == 'dev':
-        logger.info(f"Time taken to get alerts: {time.time() - t};tc: {tc_t - t};\tfl:{fl_t - tc_t}\t N_alerts: {len(alert_hashes)};\tAddress: {address}")
+        logger.info(f"Time taken to get alerts: {time.time() - t};tc: {tc_t - t};\tff:{tc_t-ff_t}\tfl:{ff_t - tc_t}\t N_alerts: {len(alert_hashes)};\tAddress: {address}")
     return alert_hashes
