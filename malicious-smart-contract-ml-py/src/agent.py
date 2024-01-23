@@ -1,10 +1,12 @@
 import forta_agent
-from forta_agent import get_json_rpc_url, EntityType
+from forta_agent import get_json_rpc_url, EntityType, FindingSeverity
 from joblib import load
 from evmdasm import EvmBytecode
 from web3 import Web3
 from os import environ
-
+import time
+import os
+import logging
 
 from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
@@ -63,25 +65,33 @@ def initialize():
     # logger.info(f"Alternative model loaded for backup with threshold {MODEL_THRESHOLD_BACKUP}")
     global ML_MODEL
     logger.info("Start loading model")
-    ML_MODEL = load("deployed_models/voting_clf_1.joblib")
+    ML_MODEL = load("deployed_models/just_eth_focus_recall.joblib")
 
     global MODEL_THRESHOLD
-    MODEL_THRESHOLD = 0.4
+    MODEL_THRESHOLD = 0.3
     logger.info(f"Model threshold: {MODEL_THRESHOLD}. Using eth model for recall")
 
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
-
+    global ENV
+    if 'production' in os.environ.get('NODE_ENV', ''):
+        ENV = 'production'
+    else:
+        ENV = 'dev'
 
 def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     """
     this function executes the model to obtain the score for the contract
     :return: score: float
     """
+    t = time.time()
     score = None
     features, opcode_addresses = get_features(w3, opcodes, contract_creator)
+    t1 = time.time()
     score = ML_MODEL.predict_proba([features])[0][1]
+    t2 = time.time()
     score = round(score, 4)
-
+    if ENV == 'dev':
+        logger.info(f"Model Timing:\t Time taken to get features: {t1 - t};\t Time taken to predict: {t2 - t1};\t Total time: {t2 - t}")
     return score, opcode_addresses
 
 
@@ -104,7 +114,7 @@ def detect_malicious_contract_tx(
     malicious_findings = []
     safe_findings = []
 
-
+    previous_contracts = []
     for trace in transaction_event.traces:
         if trace.type == "create":
             created_contract_address = (
@@ -127,7 +137,11 @@ def detect_malicious_contract_tx(
                 logger.warn(
                     f"Contract {contract_address} creation failed with tx {trace.transaction_hash}: {error}"
                 )
-
+            if created_contract_address.lower() in previous_contracts:
+                if ENV == 'dev':
+                    logger.info(f"Contract {created_contract_address} was already created")
+                continue
+            previous_contracts.append(created_contract_address.lower())
             # creation bytecode contains both initialization and run-time bytecode.
             creation_bytecode = trace.action.init
             for finding in detect_malicious_contract(
@@ -138,6 +152,10 @@ def detect_malicious_contract_tx(
                 error=error,
             ):
                 if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
+                    funding_alerts = check_funding(trace.action.from_)
+                    if len(funding_alerts) > 0:
+                        finding.severity = FindingSeverity.Critical
+                        finding.metadata["funding_alerts"] = ','.join(funding_alerts)
                     # if check_funding(trace.action.from_):
                     #     logger.info(f"Contract {created_contract_address} was funded by malicious methods.")
                     #     finding.metadata["malicious_funding"] = 'yes'
@@ -146,29 +164,38 @@ def detect_malicious_contract_tx(
                     safe_findings.append(finding)
                     # if check_funding(trace.action.from_):
                     #     logger.info(f"Contract {created_contract_address} was funded by malicious methods but the contract was deemed safe")
-
-    if transaction_event.to is None:
-        nonce = transaction_event.transaction.nonce
-        created_contract_address = calc_contract_address(
-            w3, transaction_event.from_, nonce
-        )
-        logger.info(f"Contract created {created_contract_address}")
-        creation_bytecode = transaction_event.transaction.data
-        for finding in detect_malicious_contract(
-            w3,
-            transaction_event.from_,
-            created_contract_address,
-            creation_bytecode,
-        ):
-            if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
-                # if check_funding(transaction_event.from_):
-                #     logger.info(f"Contract {created_contract_address} was funded by malicious methods.")
-                #     finding.metadata["malicious_funding"] = 'yes'
-                malicious_findings.append(finding)
-            else:
-                safe_findings.append(finding)
-                # if check_funding(transaction_event.from_):
-                #     logger.info(f"Contract {created_contract_address} was funded by malicious methods but the contract was deemed safe")
+    
+    # Fake loop tp break out if the contract here has already been analyzed
+    for _ in range(1):
+        if transaction_event.to is None:
+            nonce = transaction_event.transaction.nonce
+            created_contract_address = calc_contract_address(
+                w3, transaction_event.from_, nonce
+            )
+            if created_contract_address.lower() in previous_contracts:
+                break
+            logger.info(f"Contract created {created_contract_address}")
+            previous_contracts.append(created_contract_address.lower())
+            creation_bytecode = transaction_event.transaction.data
+            for finding in detect_malicious_contract(
+                w3,
+                transaction_event.from_,
+                created_contract_address,
+                creation_bytecode,
+            ):
+                if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
+                    funding_alerts = check_funding(transaction_event.from_)
+                    if len(funding_alerts) > 0:
+                        finding.severity = FindingSeverity.Critical
+                        finding.metadata["funding_alerts"] = ','.join(funding_alerts)
+                    # if check_funding(transaction_event.from_):
+                    #     logger.info(f"Contract {created_contract_address} was funded by malicious methods.")
+                    #     finding.metadata["malicious_funding"] = 'yes'
+                    malicious_findings.append(finding)
+                else:
+                    safe_findings.append(finding)
+                    # if check_funding(transaction_event.from_):
+                    #     logger.info(f"Contract {created_contract_address} was funded by malicious methods but the contract was deemed safe")
 
     # Reduce findings to 10 because we cannot return more than 10 findings per request
     return (malicious_findings + safe_findings)[:10]
@@ -334,23 +361,69 @@ def handle_transaction(
     return real_handle_transaction(transaction_event)
 
 
-# def check_funding(address: str):
-#     bots = ['0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400',
-#             "0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb", 
-#             "0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f",
-#             "0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef",
-#             "0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46",
-#             "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058",
-#             "0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e"]
-#     query = {
-#         "first": 100,
-#         "bot_ids": bots,
-#         "created_since": 5*24*60*60*1000,
-#         "addresses": [address],
-#     }
-#     alerts = forta_agent.get_alerts(query)
-#     logger.info(f"Alerts: {alerts.alerts}")
-#     if len(alerts.alerts) > 0:
-#         return True
-#     else:
-#         return False
+def check_funding(address: str, n_days: int=30):
+    t = time.time()
+    # bots = ['0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400',  # tornado cash [no high severities]
+    #         "0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb",  # cex funding [no high severities]
+    #         # "0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f",  # no activity
+    #         "0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef",  # az aztec [no high severities]
+    #         "0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46",  # malicious account funding
+    #         "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058",  # Funding laundering
+    #         "0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e"]  # ChangeNow funding [no high severities]
+    # query = {
+    #     "first": 100,
+    #     "bot_ids": bots,
+    #     "created_since": 5*24*60*60*1000,
+    #     "addresses": [address],
+    #     "severities": ["Critical", 'High', 'Medium'],
+    # }
+    # Tornado cash and cex funding with two retries
+    bots = ['0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400', '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb']  # tornado cash
+    query = {
+        "first": 100,
+        "bot_ids": bots,
+        "created_since": n_days*24*60*60*1000,
+        "addresses": [address],
+    }
+    alert_hashes = []
+    for _ in range(2):
+        try:
+            alerts = forta_agent.get_alerts(query)
+            tc_t = time.time()
+            alert_hashes += [alert.hash for alert in alerts.alerts if 'funding' in alert.name.lower()]
+            break
+        except:
+            continue
+    # Funding laundering with two retries
+    bots = ["0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058"]  # Funding laundering
+    query = {
+        "first": 100,
+        "bot_ids": bots,
+        "created_since": n_days*24*60*60*1000,
+        "addresses": [address],
+        "severities": ["Critical", 'High', 'Medium'],
+    }
+    for _ in range(2):
+        try:
+            alerts = forta_agent.get_alerts(query)
+            fl_t = time.time()
+            alert_hashes += [alert.hash for alert in alerts.alerts if 'funding' in alert.name.lower()]
+            break
+        except:
+            continue
+    if ENV == 'dev':
+        logger.info(f"Time taken to get alerts: {time.time() - t};tc: {tc_t - t};\tfl:{fl_t - tc_t}\t N_alerts: {len(alert_hashes)};\tAddress: {address}")
+    return alert_hashes
+    # try:
+    #     alerts = forta_agent.get_alerts(query)
+    #     logger.info(f"Time taken to get alerts: {time.time() - t};\t N_alerts: {len(alerts.alerts)};\tAddress: {address}")
+    #     return [alert.hash for alert in alerts.alerts if 'funding' in alert.name.lower()]
+    # except:
+    #     logger.info(f"Time taken to get alerts: {time.time() - t};\t Alerts broke")
+    #     return []
+    # alerts = [alert for alert in alerts.alerts if 'funding' in alert.name.lower()]
+    # # logger.info(f"Alerts: {alerts.alerts}")
+    # if len(alerts) > 0:
+    #     return True, [alert.hash for alert in alerts]
+    # else:
+    #     return False, []
