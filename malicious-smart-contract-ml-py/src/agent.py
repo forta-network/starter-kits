@@ -38,31 +38,6 @@ def initialize():
     global CHAIN_ID
     CHAIN_ID = web3.eth.chain_id
 
-    # global MODEL_THRESHOLD
-    # MODEL_THRESHOLD = MODEL_THRESHOLD_DICT.get(str(CHAIN_ID), 0.3)
-    # logger.info(f"Model threshold: {MODEL_THRESHOLD}")
-
-    # global ML_MODEL
-    # logger.info("Start loading model")
-    # try:
-    #     logger.info(f"Loading model for chain {CHAIN_ID}")
-    #     ML_MODEL = load(f"deployed_models/voting_clf_{CHAIN_ID}.joblib")
-    # except:
-    #     logger.info("Model not found, loading default model")
-    #     ML_MODEL = load("malicious_non_token_model_02_07_23_exp2.joblib")
-    # logger.info("Complete loading model")
-
-    # global ML_MODEL_BACKUP
-    # global MODEL_THRESHOLD_BACKUP
-    # if CHAIN_ID == 1:
-    #     logger.info(f"Chain id is {CHAIN_ID}. We will load the imbalanced model for improved recall")
-    #     ML_MODEL_BACKUP = load("deployed_models/lgbm_backmodel.joblib")
-    #     MODEL_THRESHOLD_BACKUP = 0.5
-    # elif CHAIN_ID != 1:
-    #     logger.info(f"Chain id is {CHAIN_ID}. We will load also the eth model for backup")
-    #     ML_MODEL_BACKUP = load("deployed_models/voting_clf_1.joblib")
-    #     MODEL_THRESHOLD_BACKUP = 0.4
-    # logger.info(f"Alternative model loaded for backup with threshold {MODEL_THRESHOLD_BACKUP}")
     global ML_MODEL
     logger.info("Start loading model")
     ML_MODEL = load("deployed_models/just_eth_focus_recall.joblib")
@@ -77,6 +52,7 @@ def initialize():
         ENV = 'production'
     else:
         ENV = 'dev'
+
 
 def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     """
@@ -93,19 +69,6 @@ def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     if ENV == 'dev':
         logger.info(f"Model Timing:\t Time taken to get features: {t1 - t};\t Time taken to predict: {t2 - t1};\t Total time: {t2 - t}")
     return score, opcode_addresses
-
-
-# def exec_model_backup(w3, opcodes: str, contract_creator: str) -> tuple:
-#     """
-#     this function executes the model to obtain the score for the contract
-#     :return: score: float
-#     """
-#     score = None
-#     features, opcode_addresses = get_features(w3, opcodes, contract_creator)
-#     score = ML_MODEL_BACKUP.predict_proba([features])[0][1]
-#     score = round(score, 4)
-
-#     return score, opcode_addresses
 
 
 def detect_malicious_contract_tx(
@@ -156,14 +119,9 @@ def detect_malicious_contract_tx(
                     if len(funding_alerts) > 0:
                         finding.severity = FindingSeverity.Critical
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
-                    # if check_funding(trace.action.from_):
-                    #     logger.info(f"Contract {created_contract_address} was funded by malicious methods.")
-                    #     finding.metadata["malicious_funding"] = 'yes'
                     malicious_findings.append(finding)
                 else:
                     safe_findings.append(finding)
-                    # if check_funding(trace.action.from_):
-                    #     logger.info(f"Contract {created_contract_address} was funded by malicious methods but the contract was deemed safe")
     
     # Fake loop tp break out if the contract here has already been analyzed
     for _ in range(1):
@@ -188,14 +146,9 @@ def detect_malicious_contract_tx(
                     if len(funding_alerts) > 0:
                         finding.severity = FindingSeverity.Critical
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
-                    # if check_funding(transaction_event.from_):
-                    #     logger.info(f"Contract {created_contract_address} was funded by malicious methods.")
-                    #     finding.metadata["malicious_funding"] = 'yes'
                     malicious_findings.append(finding)
                 else:
                     safe_findings.append(finding)
-                    # if check_funding(transaction_event.from_):
-                    #     logger.info(f"Contract {created_contract_address} was funded by malicious methods but the contract was deemed safe")
 
     # Reduce findings to 10 because we cannot return more than 10 findings per request
     return (malicious_findings + safe_findings)[:10]
@@ -223,21 +176,6 @@ def detect_malicious_contract(
 
             model_score_backup = None
             finding = None
-            # if model_score < MODEL_THRESHOLD:
-            #     model_score_backup, opcode_addresses_backup = exec_model_backup(w3, opcodes, from_)
-            #     logger.info(f"{created_contract_address}: Backup score={model_score_backup}")
-            #     if model_score_backup >= MODEL_THRESHOLD_BACKUP:
-            #         logger.info(f"{created_contract_address}: Backup model triggered")
-            #         finding = ContractFindings(
-            #             from_,
-            #             created_contract_address,
-            #             set.union(storage_addresses, opcode_addresses_backup),
-            #             function_signatures,
-            #             model_score_backup,
-            #             MODEL_THRESHOLD_BACKUP,
-            #             error=error,
-            #         )
-            #         finding.metadata["backup"] = 'yes'
             if finding is None:
                 finding = ContractFindings(
                     from_,
@@ -289,31 +227,6 @@ def detect_malicious_contract(
                             labels,
                         )
                     )
-                # elif model_score_backup is not None:
-                #     if model_score_backup >= MODEL_THRESHOLD_BACKUP:
-                #         labels.extend(
-                #             [
-                #                 {
-                #                     "entity": created_contract_address,
-                #                     "entity_type": EntityType.Address,
-                #                     "label": "attacker",
-                #                     "confidence": model_score_backup,
-                #                 },
-                #                 {
-                #                     "entity": from_,
-                #                     "entity_type": EntityType.Address,
-                #                     "label": "attacker",
-                #                     "confidence": model_score_backup,
-                #                 },
-                #             ]
-                #         )
-
-                #         findings.append(
-                #             finding.malicious_contract_creation(
-                #                 CHAIN_ID,
-                #                 labels,
-                #             )
-                #         )
                 elif model_score <= SAFE_CONTRACT_THRESHOLD:
                     labels.extend(
                         [
@@ -363,20 +276,6 @@ def handle_transaction(
 
 def check_funding(address: str, n_days: int=30):
     t = time.time()
-    # bots = ['0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400',  # tornado cash [no high severities]
-    #         "0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb",  # cex funding [no high severities]
-    #         # "0xdccd708fc89917168f3a793c605e837572c01a40289c063ea93c2b74182cd15f",  # no activity
-    #         "0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef",  # az aztec [no high severities]
-    #         "0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46",  # malicious account funding
-    #         "0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058",  # Funding laundering
-    #         "0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e"]  # ChangeNow funding [no high severities]
-    # query = {
-    #     "first": 100,
-    #     "bot_ids": bots,
-    #     "created_since": 5*24*60*60*1000,
-    #     "addresses": [address],
-    #     "severities": ["Critical", 'High', 'Medium'],
-    # }
     # Tornado cash and cex funding with two retries
     bots = ['0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400', '0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb']  # tornado cash
     query = {
@@ -414,16 +313,3 @@ def check_funding(address: str, n_days: int=30):
     if ENV == 'dev':
         logger.info(f"Time taken to get alerts: {time.time() - t};tc: {tc_t - t};\tfl:{fl_t - tc_t}\t N_alerts: {len(alert_hashes)};\tAddress: {address}")
     return alert_hashes
-    # try:
-    #     alerts = forta_agent.get_alerts(query)
-    #     logger.info(f"Time taken to get alerts: {time.time() - t};\t N_alerts: {len(alerts.alerts)};\tAddress: {address}")
-    #     return [alert.hash for alert in alerts.alerts if 'funding' in alert.name.lower()]
-    # except:
-    #     logger.info(f"Time taken to get alerts: {time.time() - t};\t Alerts broke")
-    #     return []
-    # alerts = [alert for alert in alerts.alerts if 'funding' in alert.name.lower()]
-    # # logger.info(f"Alerts: {alerts.alerts}")
-    # if len(alerts) > 0:
-    #     return True, [alert.hash for alert in alerts]
-    # else:
-    #     return False, []
