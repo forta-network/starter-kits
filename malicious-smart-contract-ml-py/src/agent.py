@@ -6,7 +6,6 @@ from web3 import Web3
 from os import environ
 import time
 import os
-import logging
 
 from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
@@ -78,6 +77,8 @@ def detect_malicious_contract_tx(
     safe_findings = []
 
     previous_contracts = []
+    all_creation_bytecodes = {}
+    repeated_bytecodes = {}
     for trace in transaction_event.traces:
         if trace.type == "create":
             created_contract_address = (
@@ -107,6 +108,17 @@ def detect_malicious_contract_tx(
             previous_contracts.append(created_contract_address.lower())
             # creation bytecode contains both initialization and run-time bytecode.
             creation_bytecode = trace.action.init
+            if creation_bytecode in all_creation_bytecodes.values():
+                if ENV == 'dev':
+                    logger.info(f"Contract {created_contract_address} was already created")
+                original_contract_address = list(all_creation_bytecodes.keys())[list(all_creation_bytecodes.values()).index(creation_bytecode)]
+                if original_contract_address not in repeated_bytecodes.keys():
+                    repeated_bytecodes[original_contract_address] = {}
+                if trace.action.from_ not in repeated_bytecodes[original_contract_address].keys():
+                    repeated_bytecodes[original_contract_address][trace.action.from_] = []
+                repeated_bytecodes[original_contract_address][trace.action.from_].append(created_contract_address)
+                continue
+            all_creation_bytecodes[created_contract_address] = creation_bytecode
             for finding in detect_malicious_contract(
                 w3,
                 trace.action.from_,
@@ -114,6 +126,7 @@ def detect_malicious_contract_tx(
                 creation_bytecode,
                 error=error,
             ):
+                finding.addresses = [trace.action.from_, created_contract_address]
                 if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
                     funding_alerts = check_funding(trace.action.from_)
                     if len(funding_alerts) > 0:
@@ -122,7 +135,6 @@ def detect_malicious_contract_tx(
                     malicious_findings.append(finding)
                 else:
                     safe_findings.append(finding)
-    
     # Fake loop tp break out if the contract here has already been analyzed
     for _ in range(1):
         if transaction_event.to is None:
@@ -141,6 +153,7 @@ def detect_malicious_contract_tx(
                 created_contract_address,
                 creation_bytecode,
             ):
+                finding.addresses = [trace.action.from_, created_contract_address]
                 if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
                     funding_alerts = check_funding(transaction_event.from_)
                     if len(funding_alerts) > 0:
@@ -150,8 +163,19 @@ def detect_malicious_contract_tx(
                 else:
                     safe_findings.append(finding)
 
+    all_findings = malicious_findings + safe_findings
+    if len(repeated_bytecodes) > 0:
+        if ENV == 'dev':
+            logger.info(f"Repeated bytecodes: {repeated_bytecodes}")
+        for finding in all_findings:
+            finding_contract = finding.description.split(' ')[-1]
+            finding_from = finding.description.split(' ')[0]
+            if finding_contract in repeated_bytecodes.keys():
+                if finding_from in repeated_bytecodes[finding_contract].keys():
+                    finding.description += f" and reused by {', '.join(repeated_bytecodes[finding_contract][finding_from])}"
+                    finding.addresses += repeated_bytecodes[finding_contract][finding_from]
     # Reduce findings to 10 because we cannot return more than 10 findings per request
-    return (malicious_findings + safe_findings)[:10]
+    return all_findings[:10]
 
 
 def detect_malicious_contract(
@@ -274,7 +298,7 @@ def handle_transaction(
     return real_handle_transaction(transaction_event)
 
 
-def check_funding(address: str, n_days: int=30):
+def check_funding(address: str, n_days: int=80):
     t = time.time()
     # Tornado cash and cex funding with two retries
     bots = ['0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400']  # tornado cash
