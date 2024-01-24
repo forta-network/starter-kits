@@ -153,7 +153,7 @@ def detect_malicious_contract_tx(
                 created_contract_address,
                 creation_bytecode,
             ):
-                finding.addresses = [trace.action.from_, created_contract_address]
+                finding.addresses = [transaction_event.from_, created_contract_address]
                 if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
                     funding_alerts = check_funding(transaction_event.from_)
                     if len(funding_alerts) > 0:
