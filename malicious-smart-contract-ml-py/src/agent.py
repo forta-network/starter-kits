@@ -351,5 +351,5 @@ def check_funding(address: str, n_days: int=80):
         except:
             continue
     if ENV == 'dev':
-        logger.info(f"Time taken to get alerts: {time.time() - t};tc: {tc_t - t};\tff:{tc_t-ff_t}\tfl:{ff_t - tc_t}\t N_alerts: {len(alert_hashes)};\tAddress: {address}")
+        logger.info(f"Time taken to get alerts: {time.time() - t};tc: {tc_t - t};\tff:{ff_t - tc_t}\tfl:{fl_t - ff_t}\t N_alerts: {len(alert_hashes)};\tAddress: {address}")
     return alert_hashes
