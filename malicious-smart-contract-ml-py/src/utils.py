@@ -2,7 +2,7 @@ from hexbytes import HexBytes
 import rlp
 import requests
 from web3 import Web3
-
+from time import time
 
 from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID
 from src.logger import logger
@@ -72,15 +72,21 @@ def get_features(w3, opcodes, contract_creator) -> list:
     """
     features = []
     opcode_addresses = set()
-
+    checked_contracts = {}
     for i, opcode in enumerate(opcodes):
         opcode_name = opcode.name
         # treat unique unknown and invalid opcodes as UNKNOWN OR INVALID
         if opcode_name.startswith("UNKNOWN") or opcode_name.startswith("INVALID"):
             opcode_name = opcode.name.split("_")[0]
         features.append(opcode_name)
-        if len(opcode.operand) == 40 and is_contract(w3, opcode.operand):
-            opcode_addresses.add(Web3.toChecksumAddress(f"0x{opcode.operand}"))
+        if len(opcode.operand) == 40:
+            if opcode.operand is not None and opcode.operand in checked_contracts.keys():
+                is_contract_local = checked_contracts[opcode.operand]
+            else:
+                is_contract_local = is_contract(w3, opcode.operand)
+                checked_contracts[opcode.operand] = is_contract_local
+            if is_contract_local:
+                opcode_addresses.add(Web3.toChecksumAddress(f"0x{opcode.operand}"))
 
         if opcode_name in {"PUSH4", "PUSH32"}:
             features.append(opcode.operand)
