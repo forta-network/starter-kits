@@ -1,2 +1,2 @@
-forta_agent>=0.1.17
-setuptools>=61.3.1
+forta_bot-0.2.0.tar.gz
+setuptools==69.0.3
