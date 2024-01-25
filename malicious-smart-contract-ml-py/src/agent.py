@@ -190,7 +190,10 @@ def detect_malicious_contract(
             except Exception as e:
                 logger.warn(f"Error disassembling evm bytecode: {e}")
             # obtain all the addresses contained in the created contract and propagate to the findings
+            env_t = time.time()
             storage_addresses = get_storage_addresses(w3, created_contract_address)
+            if ENV == 'dev':
+                logger.info(f"Time taken to get storage addresses: {time.time() - env_t}")
             (
                 model_score,
                 opcode_addresses,

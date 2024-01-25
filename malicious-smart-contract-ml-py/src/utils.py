@@ -3,6 +3,9 @@ import rlp
 import requests
 from web3 import Web3
 from time import time
+from concurrent.futures import ThreadPoolExecutor
+import functools
+import operator
 
 from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID
 from src.logger import logger
@@ -47,21 +50,19 @@ def get_storage_addresses(w3, address) -> set:
     """
     if address is None:
         return set()
-
-    address_set = set()
-    for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH):
-        mem = w3.eth.get_storage_at(Web3.toChecksumAddress(address), i)
-        if mem != HexBytes(
-            "0x0000000000000000000000000000000000000000000000000000000000000000"
-        ):
-            # looking at both areas of the storage slot as - depending on packing - the address could be at the beginning or the end.
-            addr_on_left = mem[0:20].hex()
-            addr_on_right = mem[12:].hex()
-            if is_contract(w3, addr_on_left):
-                address_set.add(Web3.toChecksumAddress(addr_on_left))
-            if is_contract(w3, addr_on_right):
-                address_set.add(Web3.toChecksumAddress(addr_on_right))
-
+    
+    tp_executor = ThreadPoolExecutor(max_workers=10)
+    checksumed_address = Web3.toChecksumAddress(address)
+    futures = [tp_executor.submit(w3.eth.get_storage_at, checksumed_address, i) for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH)]
+    tp_executor.shutdown(wait=True)
+    futures_result = [f.result() for f in futures]
+    all_addresses = [[result[0:20].hex(), result[12:].hex()] for result in futures_result if result != HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000')]
+    all_addresses = list(set(functools.reduce(operator.iconcat, all_addresses, [])))
+    tp_executor = ThreadPoolExecutor(max_workers=10)
+    futures = [tp_executor.submit(is_contract, w3, address) for address in all_addresses]
+    tp_executor.shutdown(wait=True)
+    address_set = set([Web3.toChecksumAddress(all_addresses[i]) for i, f in enumerate(futures) if f.result()])
+    logger.info(f"Storage addresses: {address_set}")
     return address_set
 
 
