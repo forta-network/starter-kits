@@ -62,7 +62,6 @@ def get_storage_addresses(w3, address) -> set:
     futures = [tp_executor.submit(is_contract, w3, address) for address in all_addresses]
     tp_executor.shutdown(wait=True)
     address_set = set([Web3.toChecksumAddress(all_addresses[i]) for i, f in enumerate(futures) if f.result()])
-    logger.info(f"Storage addresses: {address_set}")
     return address_set
 
 
