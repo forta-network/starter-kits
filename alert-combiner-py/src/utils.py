@@ -213,7 +213,7 @@ class Utils:
         return max_transaction_count
     
     @staticmethod
-    def is_fp(w3, du, dynamo, cluster: str) -> bool:
+    def is_fp_reactive(w3, du, dynamo, cluster: str) -> bool:
         global ERROR_CACHE
     
         etherscan_label = (Utils.get_etherscan_label(cluster)).lower()

@@ -356,7 +356,7 @@ def update_reactive_likely_fps(w3, du, current_date) -> list:
         if REACTIVE_LIKELY_FPS:
             address = next(iter(REACTIVE_LIKELY_FPS), None)
             logging.info(f"Processing address: {address}")
-            if Utils.is_fp(w3, du, dynamo, address):
+            if Utils.is_fp_reactive(w3, du, dynamo, address):
                 logging.info(f"{address} is an FP. Emitting FP finding.")
                 update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, address)
                 findings.append(AlertCombinerFinding.alert_FP(address, REACTIVE_LIKELY_FPS[address]['label'], REACTIVE_LIKELY_FPS[address]['metadata']))
@@ -946,7 +946,7 @@ def provide_handle_block(w3, du):
             logging.info(f"Handle block called. Adding {Utils.ERROR_CACHE.len()} error findings.")
             findings.extend(Utils.ERROR_CACHE.get_all())
         Utils.ERROR_CACHE.clear()
-
+        logging.info(f'logging the event: {block_event}')
         dt = datetime.fromtimestamp(block_event.block.timestamp)
         logging.info(f"handle block called with block timestamp {dt}")
         if dt.minute == 0:  
