@@ -1,0 +1,7 @@
+forta_agent>=0.1.27
+setuptools>=61.3.1
+boto3>=1.26.96
+python-gnupg>=0.5.0
+pandas>=2.0.0
+hexbytes>=0.2.2
+requests>=2.27.1
