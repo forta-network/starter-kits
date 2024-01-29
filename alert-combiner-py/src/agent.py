@@ -946,7 +946,6 @@ def provide_handle_block(w3, du):
             logging.info(f"Handle block called. Adding {Utils.ERROR_CACHE.len()} error findings.")
             findings.extend(Utils.ERROR_CACHE.get_all())
         Utils.ERROR_CACHE.clear()
-        logging.info(f'logging the event: {block_event}')
         dt = datetime.fromtimestamp(block_event.block.timestamp)
         logging.info(f"handle block called with block timestamp {dt}")
         if dt.minute == 0:  
