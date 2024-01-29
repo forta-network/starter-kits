@@ -8,6 +8,7 @@ import json
 import time
 from sklearn.preprocessing import StandardScaler
 from torch_geometric.data import HeteroData
+from concurrent.futures import ThreadPoolExecutor
 
 from src.constants import ZETTABLOCK_FP_MITIGATION_URL
 
@@ -179,19 +180,20 @@ class DownloadData:
         payload_to = {'query': to_query, 'variables': variables}
         payload_tx_from = {'query': tx_from_query, 'variables': variables}
         payload_tx_to = {'query': tx_to_query, 'variables': variables}
+        
+        all_payloads = [payload_from, payload_to, payload_tx_from, payload_tx_to]
+        timeout = 10
+        tp = ThreadPoolExecutor(max_workers=4)
+        post_results = [tp.submit(self.aux_post, self.data_url, payload, self.headers, timeout) for payload in all_payloads]
+        tp.shutdown(wait=True)
 
-        response_from = requests.post(self.data_url, json=payload_from, headers=self.headers)
-        response_to = requests.post(self.data_url, json=payload_to, headers=self.headers)
-        response_tx_from = requests.post(self.data_url, json=payload_tx_from, headers=self.headers)
-        response_tx_to = requests.post(self.data_url, json=payload_tx_to, headers=self.headers)
-
-        all_data = pd.concat([
-            pd.DataFrame(response_from.json()['data']['data']),
-            pd.DataFrame(response_to.json()['data']['data']),
-            pd.DataFrame(response_tx_from.json()['data']['data']),
-            pd.DataFrame(response_tx_to.json()['data']['data'])
-        ])
+        all_results_data = [res.result().json()['data']['data'] for res in post_results]
+        all_data = pd.concat([pd.DataFrame(data) for data in all_results_data])
         return all_data
+
+    @staticmethod
+    def aux_post(url, payload, headers, timeout=10):
+        return requests.post(url, json=payload, headers=headers, timeout=timeout)
 
     def get_data_zettablock(self, central_node):
         column_order = ['from_address', 'to_address', 'tx_from', 'tx_to',
@@ -221,7 +223,6 @@ class DownloadData:
             np.seterr(invalid='ignore')
 
             data_central_node = self.get_data_zettablock(central_node)
-            
             addresses_columns = ['from_address', 'to_address', 'tx_from', 'tx_to']
             column_aggregations = {
                 'sum_eth_transfer_eth': ['sum', 'mean', 'std'],
@@ -252,8 +253,10 @@ class DownloadData:
                 'avg_gas_price_gwei_erc721': ['mean', 'std', 'max'],
                 'range_gas_price_gwei_erc721': ['mean', 'std', 'max', 'min'],
             }
+            # Formatting columns for faster aggregations
+            data_central_node = data_central_node.astype({address_column: 'category' for address_column in addresses_columns})
+            data_central_node = data_central_node.astype({column: 'float' for column in column_aggregations.keys()})
             # Get all the addresses that had interactions
-
             unique_addresses = np.unique(data_central_node[addresses_columns].values)
             if len(unique_addresses) > total_addresses:
                 return None
@@ -263,7 +266,6 @@ class DownloadData:
             for key, item in aggregations_dict.items():
                 temp = data_central_node[data_central_node[key].isin(unique_addresses)]
                 temp.loc[:, ~temp.columns.isin(addresses_columns)] = temp.loc[:, ~temp.columns.isin(addresses_columns)].apply(pd.to_numeric)
-
                 temp_aggregation = {**{column: 'nunique' for column in addresses_columns if column != key}, **column_aggregations}
                 # temp_aggregation = {column: 'nunique' for column in addresses_columns if column != key} | column_aggregations
                 temp = temp.groupby(key).agg(temp_aggregation)
@@ -274,6 +276,8 @@ class DownloadData:
 
             # Get the transactions
             temp = data_central_node.copy().drop_duplicates()
+            # Doing nunique in category is the slowest thing ever invented by humankind
+            temp = temp.astype({address_column: 'object' for address_column in addresses_columns})
             temp_aggregation = {**{'from_address': 'nunique', 'to_address': 'nunique'}, **column_aggregations}
             # temp_aggregation = {'from_address': 'nunique', 'to_address': 'nunique'} | column_aggregations
             transactions_info = temp.groupby(['from_address', 'to_address']).agg(temp_aggregation)
