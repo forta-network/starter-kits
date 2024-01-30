@@ -3,7 +3,8 @@ from web3 import Web3, AsyncWeb3
 import logging
 import sys
 
-from forta_bot import scan_ethereum, scan_base, TransactionEvent, run_health_check
+# Could not import `get_chain_id`, `run_health_check`
+from forta_bot import scan_ethereum, scan_base, TransactionEvent
 from hexbytes import HexBytes
 from functools import lru_cache
 
@@ -105,13 +106,13 @@ async def main():
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
-        scan_base({
-            'rpc_url': "https://base.g.alchemy.com/v2",
-            'rpc_key_id': "06ff4c43-d200-4dec-b09b-930834746f17",
-            'local_rpc_url': "8453",
-            'handle_transaction': handle_transaction
-        }),
-        run_health_check()
+        # scan_base({
+        #     'rpc_url': "https://base.g.alchemy.com/v2",
+        #     'rpc_key_id': "06ff4c43-d200-4dec-b09b-930834746f17",
+        #     'local_rpc_url': "8453",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # run_health_check()
     )
 
-asyncio.run(main())
+# asyncio.run(main())

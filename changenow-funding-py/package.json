@@ -20,10 +20,7 @@
   "repository": "https://github.com/forta-network/starter-kits/tree/main/changenow-funding-py",
   "licenseUrl": "https://github.com/forta-network/starter-kits/tree/main/changenow-funding-py/LICENSE.md",
   "promoUrl": "https://forta.org",
-  "chainIds": [
-    1,
-    8453
-  ],"scripts": {
+  "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
     "start": "npm run start:dev",
     "start:dev": "nodemon --watch src --watch forta.config.json -e py --exec \"python3 ./src/agent.py\"",
