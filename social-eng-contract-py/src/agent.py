@@ -80,7 +80,6 @@ async def detect_social_eng_account_creations(w3, transaction_event: Transaction
     global CONTRACTS_QUEUE
     global ALERTS_CACHE
 
-
     # contract creation - managing queue
     if transaction_event.to is not None:
         to = transaction_event.to.lower()
@@ -106,7 +105,7 @@ async def detect_social_eng_account_creations(w3, transaction_event: Transaction
         append_contract_finding(findings, created_contract_address, transaction_event.from_, CHAIN_ID, transaction_event.transaction.hash)
     elif transaction_event.from_[2:6] == '0000' and transaction_event.from_[-4:] == '0000' and transaction_event.from_ != '0x0000000000000000000000000000000000000000': #only support null as the check would be too expensive at this point
         if transaction_event.from_ not in ALERTS_CACHE:
-            findings.append(SocialEngContractFindings.social_eng_address_creation(transaction_event.from_, False, '0x0000000000000000000000000000000000000000', "", CHAIN_ID, 'SOCIAL-ENG-EOA-CREATION-NULL-ADDRESS'), transaction_event.transaction.hash)
+            findings.append(SocialEngContractFindings.social_eng_address_creation(transaction_event.from_, False, '0x0000000000000000000000000000000000000000', "", CHAIN_ID, 'SOCIAL-ENG-EOA-CREATION-NULL-ADDRESS', transaction_event.transaction.hash))
             ALERTS_CACHE.add(transaction_event.from_)
 
 
@@ -146,13 +145,13 @@ async def main():
     await asyncio.gather(
         scan_ethereum({
         'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-        'rpc_key_id': "64286df1-4567-405a-a102-1122653022e4",
+        'rpc_key_id': "ebbd1b21-4e72-4d80-b4f9-f605fee5eb68",
         'local_rpc_url': "1",
         'handle_transaction': handle_transaction
         }),
         scan_base({
-        'rpc_url': "https://base.g.alchemy.com/v2",
-        'rpc_key_id': "ff890297-bee3-41a6-b985-1e68cdc78f7c",
+        'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
+        'rpc_key_id': "85f8e757-1120-49eb-936a-7ee0aee57659",
         'local_rpc_url': "8453",
         'handle_transaction': handle_transaction
         }),
