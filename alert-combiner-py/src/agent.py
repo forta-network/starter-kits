@@ -717,7 +717,7 @@ def emit_manual_finding(w3, du, test = False) -> list:
 
     content = open('manual_alert_list_test.tsv', 'r').read() if test else open('manual_alert_list.tsv', 'r').read()
     if not test:
-        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/alert-combiner-py/manual_alert_list_test.tsv')
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/alert-combiner-py/manual_alert_list_test.tsv', timeout=3)
         logging.info(f"Manual finding: made request to fetch manual alerts: {res.status_code}")
         content = res.content.decode('utf-8') if res.status_code == 200 else open('manual_alert_list.tsv', 'r').read()
 
@@ -780,7 +780,7 @@ def emit_new_fp_finding() -> list:
     findings = []
 
     try:
-        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/alert-combiner-py/fp_list.csv')
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/alert-combiner-py/fp_list.csv', timeout=3)
         content = res.content.decode('utf-8') if res.status_code == 200 else open('fp_list.csv', 'r').read()
         df_fp = pd.read_csv(io.StringIO(content), sep=',')
         for index, row in df_fp.iterrows():
