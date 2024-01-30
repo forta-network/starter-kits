@@ -55,7 +55,7 @@ def is_contract(w3, address):
 
 
 def is_new_account(w3, address, block_number):
-    return w3.eth.get_transaction_count(Web3.toChecksumAddress(address), block_number) < 3
+    return w3.eth.get_transaction_count(Web3.toChecksumAddress(address), block_number) == 0
 
 
 def detect_railgun_funding(w3, transaction_event):
@@ -102,7 +102,7 @@ def detect_railgun_funding(w3, transaction_event):
     elif CHAIN_ID == 42161:
         weth_transfer_events = transaction_event.filter_log(ERC20_TRANSFER_EVENT_ABI, WRAPPED_NATIVE_TOKEN_ADDRESSES[CHAIN_ID])
 
-        if len(weth_transfer_events) != 1:
+        if len(weth_transfer_events) == 0:
             return []
 
         for transfer in weth_transfer_events:
@@ -111,7 +111,6 @@ def detect_railgun_funding(w3, transaction_event):
                 native_value = transfer['args']['value'] / 1e18
                 break
 
-    print(native_value)
     if native_value == 0:
         return []
 
