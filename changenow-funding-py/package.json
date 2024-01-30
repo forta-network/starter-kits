@@ -6,30 +6,10 @@
     "node": ">=20"
   },
   "description": "Detecting addresses being funded by ChangeNow",
-  "longDescription": "Detecting addresses being funded by ChangeNow",
-  "chainIds": [
-    1,
-    8453
-  ],
+  "longDescription": "Bot that detects addresses being funded by ChangeNow",
   "chainSettings": {
     "1": {
       "shards": 10,
-      "target": 3
-    },
-    "10": {
-      "shards": 5,
-      "target": 3
-    },
-    "56": {
-      "shards": 15,
-      "target": 3
-    },
-    "137": {
-      "shards": 17,
-      "target": 3
-    },
-    "42161": {
-      "shards": 5,
       "target": 3
     },
     "default": {
@@ -59,7 +39,7 @@
     "enable": "forta-bot enable",
     "keyfile": "forta-bot keyfile",
     "stake": "forta-bot stake",
-   "test": "python3 -m pytest"
+    "test": "python3 -m pytest"
   },
   "devDependencies": {
     "forta-bot-cli": "file:forta-bot-cli-0.2.0.tgz"

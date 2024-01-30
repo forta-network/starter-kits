@@ -1,5 +1,5 @@
-from forta_agent import Finding, FindingType, FindingSeverity, EntityType
-from src.constants import *
+from forta_bot import Finding, FindingSeverity, FindingType#, EntityType
+from constants import *
 
 class FundingChangenowFindings:
 
@@ -18,20 +18,20 @@ class FundingChangenowFindings:
                     "receiving address": f"{transaction.to}",
                     "anomaly_score": anomaly_score
                 },
-                'labels': [
-                    {
-                        'entityType': EntityType.Address,
-                        'entity': transaction.to,
-                        'label': "attacker",
-                        'confidence': 0.2
-                    },
-                    {
-                        'entityType': EntityType.Transaction,
-                        'entity': transaction.transaction.hash,
-                        'label': "attacker-funding",
-                        'confidence': 0.2
-                    },
-                ]
+                # 'labels': [
+                #     {
+                #         'entityType': EntityType.Address,
+                #         'entity': transaction.to,
+                #         'label': "attacker",
+                #         'confidence': 0.2
+                #     },
+                #     {
+                #         'entityType': EntityType.Transaction,
+                #         'entity': transaction.transaction.hash,
+                #         'label': "attacker-funding",
+                #         'confidence': 0.2
+                #     },
+                # ]
             })
         else:
             finding = Finding({
@@ -48,19 +48,19 @@ class FundingChangenowFindings:
                     "receiving address": f"{transaction.to}",
                     "anomaly_score": anomaly_score
                 },
-                'labels': [
-                    {
-                        'entityType': EntityType.Address,
-                        'entity': transaction.to,
-                        'label': "attacker",
-                        'confidence': 0.2
-                    },
-                    {
-                        'entityType': EntityType.Transaction,
-                        'entity': transaction.transaction.hash,
-                        'label': "attacker-funding",
-                        'confidence': 0.2
-                    },
-                ]
+                # 'labels': [
+                #     {
+                #         'entityType': EntityType.Address,
+                #         'entity': transaction.to,
+                #         'label': "attacker",
+                #         'confidence': 0.2
+                #     },
+                #     {
+                #         'entityType': EntityType.Transaction,
+                #         'entity': transaction.transaction.hash,
+                #         'label': "attacker-funding",
+                #         'confidence': 0.2
+                #     },
+                # ]
             })
         return finding
