@@ -25,12 +25,9 @@ class SocialEngContractFindings:
 
         metadata = {"impersonated_contract": impersonated_contract}
 
-        if chain_id not in [43114, 10, 250]:
-            metadata['anomaly_score'] = calculate_alert_rate(
-                chain_id,
-                BOT_ID,
-                alert_id,
-                ScanCountType.CONTRACT_CREATION_COUNT)
+        if chain_id not in [43114, 10, 250, 8453]:
+            anomaly_score = calculate_alert_rate(chain_id, BOT_ID, alert_id, ScanCountType.CONTRACT_CREATION_COUNT)
+            metadata['anomaly_score'] = str(anomaly_score)
 
         description = f'{from_address} created contract {address} impersonating {impersonated_contract}'
         if is_contract:
