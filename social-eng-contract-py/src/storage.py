@@ -1,6 +1,7 @@
+import forta_bot
 import json
-import os
 import aiohttp
+import os
 
 import forta_bot
 
@@ -20,11 +21,16 @@ async def _load_json(key: str) -> object:
     else:
         async with aiohttp.ClientSession() as session:
             async with session.get(f"{owner_db}{key}", headers=await _token()) as res:
-                if res.status_code == 200:
-                    return await res.json()
+                if res.status == 200:
+                    try:
+                        # Attempt to parse the response as JSON regardless of the Content-Type
+                        return await res.json(content_type=None)
+                    except json.JSONDecodeError:
+                        raise Exception("Failed to decode JSON response")
                 else:
                     raise Exception(
-                        f"error loading json from owner db: {res.status_code}, {res.text}")
+                        f"error loading json from owner db: {res.status}, {await res.text()}")
+
 
 async def get_secrets():
     return await _load_json("secrets.json")
