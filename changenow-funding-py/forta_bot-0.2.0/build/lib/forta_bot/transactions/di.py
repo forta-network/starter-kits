@@ -1,0 +1,7 @@
+from dependency_injector import containers, providers
+from .create_transaction_event import provide_create_transaction_event
+from .get_transaction_receipt import provide_get_transaction_receipt
+
+class TransactionsContainer(containers.DeclarativeContainer):
+  create_transaction_event = providers.Callable(provide_create_transaction_event)
+  get_transaction_receipt = providers.Callable(provide_get_transaction_receipt)

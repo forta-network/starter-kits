@@ -1,0 +1,6 @@
+jsonc_parser
+web3==6.13.0
+hexbytes
+mmh3==3.0.0
+dependency-injector==4.41.0
+aiohttp==3.9.1
