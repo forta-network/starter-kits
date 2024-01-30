@@ -5,15 +5,15 @@
   "engines": {
     "node": ">=20"
   },
+  "chainIds": [
+    1,
+    8453
+  ],
   "description": "Forta Bot Python starter project",
   "longDescription": "Identifies when a new social engineering contract or EOA is created.",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/social-eng-contract-py",
   "licenseUrl": "https://github.com/forta-network/starter-kits/tree/main/social-eng-contract-py/LICENSE.md",
   "promoUrl": "https://forta.org",
-  "chainIds": [
-    1,
-    8453
-  ],
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
     "start": "npm run start:dev",
