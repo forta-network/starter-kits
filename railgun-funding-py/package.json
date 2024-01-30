@@ -12,24 +12,6 @@
     137,
     42161
   ],
-  "chainSettings": {
-    "1": {
-      "shards": 10,
-      "target": 3
-    },
-    "56": {
-      "shards": 15,
-      "target": 3
-    },
-    "137": {
-      "shards": 17,
-      "target": 3
-    },
-    "default": {
-      "shards": 5,
-      "target": 3
-    }
-  },
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
     "start": "npm run start:dev",
