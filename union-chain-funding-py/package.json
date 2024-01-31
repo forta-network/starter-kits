@@ -2,9 +2,8 @@
   "name": "union-chain-funding",
   "displayName": "Union Chain Funding",
   "version": "0.0.1",
-  "description": "Detecting addresses being funded by Railgun",
-  "longDescription": "Welcome to the Forta Agent JavaScript starter project!\n\nForta Network presents this starter project as an entry point for bot developers who want to integrate with the Forta Network ecosystem. As part of our commitment to empowering developers, this project provides a foundation for building powerful and secure bots that can interact with the Forta platform and take advantage of its cutting-edge capabilities.\n\nThe Forta Agent SDK and CLI tool offer a seamless experience for developers who wish to leverage the decentralized and trustless environment provided by the Forta Network. Whether you're interested in creating DeFi bots, monitoring smart contract transactions, or generating real-time alerts, this starter project sets you on the right path to achieve your goals.\n\nJoin the Forta Network community and learn more about our mission to revolutionize decentralized finance and blockchain analytics: https://forta.org/",
-  "repository": "https://github.com/forta-network/forta-bot-sdk/tree/master/starter-project",
+  "description": "Detecting addresses being funded by Union Chain",
+  "repository": "https://github.com/forta-network/forta-bot-sdk/tree/main/union-chain-funding-py",
   "licenseUrl": "https://github.com/forta-network/forta-bot-sdk/blob/master/starter-project/LICENSE.md",
   "promoUrl": "https://forta.org",
   "chainIds": [
