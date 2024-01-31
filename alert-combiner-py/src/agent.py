@@ -98,6 +98,14 @@ def initialize():
     global CONTRACT_CACHE
     CONTRACT_CACHE = {}
 
+    # This cache can be deleted without any issue, it's just meant to speed up the process of fetching labels
+    global ETHERSCAN_LOCAL_CACHE
+    ETHERSCAN_LOCAL_CACHE = {}
+    
+    # This cache can be deleted without any issue, it's just meant to speed up the process of fetching embeddings
+    global EMBEDDINGS_FP_LOCAL_CACHE
+    EMBEDDINGS_FP_LOCAL_CACHE = {}
+
     global fp_mitigator
     fp_mitigator = FPMitigator(get_secrets(), CHAIN_ID)
     logging.info(f"Initialized FP mitigator successfully.")
@@ -569,7 +577,16 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
 
                                 if CHAIN_ID == 1:
                                     # Etherscan API
-                                    etherscan_labels = block_chain_indexer.get_etherscan_labels(cluster, CHAIN_ID)
+                                    etherscan_called = False
+                                    if cluster in ETHERSCAN_LOCAL_CACHE.keys():
+                                        current_time = time.time()
+                                        # we put a 2h cache on etherscan labels
+                                        if current_time - ETHERSCAN_LOCAL_CACHE[cluster]['time'] < 2 * 3600:
+                                            etherscan_labels = ETHERSCAN_LOCAL_CACHE[cluster]['labels']
+                                            etherscan_called = True
+                                    if not etherscan_called:
+                                        etherscan_labels = block_chain_indexer.get_etherscan_labels(cluster, CHAIN_ID)
+                                        ETHERSCAN_LOCAL_CACHE[cluster] = {'labels': etherscan_labels, 'time': time.time()}
                                     if etherscan_labels and all(
                                         not any(word in label.lower() for word in ['attack', 'phish', 'hack', 'heist', 'drainer', 'exploit', 'scam', 'fraud', '.eth'])
                                         for label in etherscan_labels
@@ -578,7 +595,16 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                         fp_mitigated = True
                                 else:
                                     # Forta API
-                                    etherscan_label = Utils.get_etherscan_label(cluster).lower()
+                                    etherscan_called = False
+                                    if cluster in ETHERSCAN_LOCAL_CACHE.keys():
+                                        current_time = time.time()
+                                        # we put a 2h cache on etherscan labels
+                                        if current_time - ETHERSCAN_LOCAL_CACHE[cluster]['time'] < 2 * 3600:
+                                            etherscan_label = ETHERSCAN_LOCAL_CACHE[cluster]['labels']
+                                            etherscan_called = True
+                                    if not etherscan_called:  
+                                        etherscan_label = Utils.get_etherscan_label(cluster).lower()
+                                        ETHERSCAN_LOCAL_CACHE[cluster] = {'labels': etherscan_label, 'time': time.time()}
                                     if not ('attack' in etherscan_label
                                             or 'phish' in etherscan_label
                                             or 'hack' in etherscan_label
@@ -604,8 +630,18 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                     logging.info(
                                         f"alert {alert_event.alert_hash} - End user attack identified for {cluster}. Downgrade finding")
                                     end_user_attack = True
-                                
-                                is_fp, fp_pred = Utils.is_fp(w3, address_lower, fp_mitigator)
+                                embeddings_called = False
+                                if address_lower in EMBEDDINGS_FP_LOCAL_CACHE:
+                                    current_time = time.time()
+                                    # we put a 4h cache on embeddings
+                                    if current_time - EMBEDDINGS_FP_LOCAL_CACHE[address_lower]['time'] < 4 * 3600:
+                                        logging.info(f"debugdebug - alert {alert_event.alert_hash} - Using cached embeddings for address {address_lower}.")
+                                        is_fp = EMBEDDINGS_FP_LOCAL_CACHE[address_lower]['is_fp']
+                                        fp_pred = EMBEDDINGS_FP_LOCAL_CACHE[address_lower]['fp_pred']
+                                        embeddings_called = True
+                                if not embeddings_called:
+                                    is_fp, fp_pred = Utils.is_fp(w3, address_lower, fp_mitigator)
+                                    EMBEDDINGS_FP_LOCAL_CACHE[address_lower] = {'is_fp': is_fp, 'fp_pred': fp_pred, 'time': time.time()}
                                 if is_fp and Utils.is_beta() and "PYTEST_CURRENT_TEST" not in os.environ:
                                     fp_mitigated = is_fp
                                     if fp_pred is not None and Utils.is_beta():
