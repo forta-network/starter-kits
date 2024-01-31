@@ -469,7 +469,8 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                     bot_sources = set()
                     pot_attacker_addresses = get_pot_attacker_addresses(alert_event)
 
-
+                    fp_mitigation_cluster_cache = du.read_fp_mitigation_clusters(dynamo)
+                    end_user_attack_cluster_cache = du.read_end_user_attack_clusters(dynamo)
                     for address in pot_attacker_addresses:
                         logging.info(f"alert {alert_event.alert_hash} - Analysing address {address}")
                         address_lower = address.lower()
@@ -622,11 +623,11 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                     logging.info(f"alert {alert_event.alert_hash} - {cluster} is polygon validator. Wont raise finding")
                                     fp_mitigated = True
 
-                                if cluster in du.read_fp_mitigation_clusters(dynamo):
+                                if cluster in fp_mitigation_cluster_cache:
                                     logging.info(f"alert {alert_event.alert_hash} - Mitigating FP for {cluster}. Wont raise finding")
                                     fp_mitigated = True
 
-                                if cluster in du.read_end_user_attack_clusters(dynamo):
+                                if cluster in end_user_attack_cluster_cache:
                                     logging.info(
                                         f"alert {alert_event.alert_hash} - End user attack identified for {cluster}. Downgrade finding")
                                     end_user_attack = True
@@ -635,7 +636,7 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                     current_time = time.time()
                                     # we put a 4h cache on embeddings
                                     if current_time - EMBEDDINGS_FP_LOCAL_CACHE[address_lower]['time'] < 4 * 3600:
-                                        logging.info(f"debugdebug - alert {alert_event.alert_hash} - Using cached embeddings for address {address_lower}.")
+                                        logging.info(f"alert {alert_event.alert_hash} - Using cached embeddings for address {address_lower}.")
                                         is_fp = EMBEDDINGS_FP_LOCAL_CACHE[address_lower]['is_fp']
                                         fp_pred = EMBEDDINGS_FP_LOCAL_CACHE[address_lower]['fp_pred']
                                         embeddings_called = True
