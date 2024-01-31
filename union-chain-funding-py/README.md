@@ -10,15 +10,15 @@ This bot detects transactions in the native currency from Union Chain to new EOA
 
 ## Alerts
 
-- FUNDING-RAILGUN-NEW-ACCOUNT
+- FUNDING-UNION-CHAIN-NEW-ACCOUNT
 
-  - Fired when a new EOA address receives funds from Railgun
+  - Fired when a new EOA address receives funds from Union Chain
   - Severity is always set to "low"
   - Type is always set to "info"
   - Metadata includes the amount funded, and the receiving address
 
-- FUNDING-RAILGUN-LOW-AMOUNT
-  - Fired when a transaction from Railgun is under a certain threshold
+- FUNDING-UNION-CHAIN-LOW-AMOUNT
+  - Fired when a transaction from Union Chain is under a certain threshold
   - Severity is always set to "low"
   - Type is always set to "info"
   - Metadata includes the threshold for this bot, the amount funded, and the receiving address

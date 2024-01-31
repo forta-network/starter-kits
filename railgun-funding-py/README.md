@@ -30,5 +30,5 @@ This bot detects transactions in the native currency from Railgun to new EOA add
 
 The bot behaviour can be verified with the following transaction:
 
-- 0xb3b3f7fd107a82196d223cc408255877c5721b79998cc2d1bb7ab13d3235452e (new EOA address, Ethereum)
+- 0xe3ee96ff387fc5721e2667605f3a9562f69835b991f4e9d017a68cc01602536e (new EOA address, Ethereum)
 - 0x39c43bda0c993e07e43891fc5f62d45f45392be93893d698a4bb393340ca14ce (low value, Polygon)
