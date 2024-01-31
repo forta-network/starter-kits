@@ -71,7 +71,6 @@ def detect_union_chain_funding(w3, transaction_event):
     if (native_value > 0 and (native_value < UNION_CHAIN_THRESHOLD or is_new_account(w3, transaction_event.to, transaction_event.block_number)) and not is_contract(w3, transaction_event.to)):
         DENOMINATOR_COUNT += 1
 
-    print(transaction_event.from_ ,UNION_CHAIN_ADDRESS,not is_contract(w3, transaction_event.to) )
     """
     if the transaction is from Union Chain, and not to a contract: check if transaction count is 0,
     else check if value sent is less than the threshold
