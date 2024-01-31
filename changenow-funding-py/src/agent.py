@@ -3,8 +3,7 @@ from web3 import Web3, AsyncWeb3
 import logging
 import sys
 
-# Could not import `get_chain_id`, `run_health_check`
-from forta_bot import scan_ethereum, scan_base, TransactionEvent
+from forta_bot import scan_ethereum, scan_base, TransactionEvent, get_chain_id, run_health_check
 from hexbytes import HexBytes
 from functools import lru_cache
 
@@ -13,7 +12,7 @@ from findings import FundingChangenowFindings
 
 # Initialize web3
 # TODO: Update to not hardcode endpoint
-web3 = Web3(Web3.HTTPProvider(""))
+# web3 = Web3(Web3.HTTPProvider("https://eth-mainnet.g.alchemy.com/v2/cEQP65GkbleRFVuboF2TjF_XkyK8orD-"))
 
 # Logging set up
 root = logging.getLogger()
@@ -42,7 +41,7 @@ def initialize():
     DENOMINATOR_COUNT = 0
 
     global CHAIN_ID
-    CHAIN_ID = web3.eth.chain_id
+    CHAIN_ID = get_chain_id()
 
 
 @lru_cache(maxsize=100000)
@@ -74,21 +73,25 @@ async def detect_changenow_funding(w3, transaction_event):
 
     native_value = transaction_event.transaction.value / 10e17
 
-    if (native_value > 0 and (native_value < changenow_threshold or await is_new_account(w3, transaction_event.to)) and not is_contract(w3, transaction_event.to)):
+    is_new_acc = await is_new_account(w3, transaction_event.to)
+    is_contr = await is_contract(w3, transaction_event.to)
+
+    if (native_value > 0 and (native_value < changenow_threshold or is_new_acc) and not is_contr):
         DENOMINATOR_COUNT += 1
 
     """
     if the transaction is from ChangeNow, and not to a contract: check if transaction count is 0,
     else check if value sent is less than the threshold
     """
-    if (transaction_event.from_ in changenow_addresses and not await is_contract(w3, transaction_event.to)):
-        if await is_new_account(w3, transaction_event.to):
+    if (transaction_event.from_ in changenow_addresses and not is_contr):
+        if is_new_acc:
             NEW_EOA_ALERT_COUNT += 1
-            score = (1.0 * NEW_EOA_ALERT_COUNT) / DENOMINATOR_COUNT
+            score = str((1.0 * NEW_EOA_ALERT_COUNT) / DENOMINATOR_COUNT)
             findings.append(FundingChangenowFindings.funding_changenow(transaction_event, "new-eoa", score, CHAIN_ID))
         elif native_value < changenow_threshold:
             LOW_VOL_ALERT_COUNT += 1
-            score = (1.0 * LOW_VOL_ALERT_COUNT) / DENOMINATOR_COUNT
+            print('burda mi', DENOMINATOR_COUNT, native_value)
+            score = str((1.0 * LOW_VOL_ALERT_COUNT) / DENOMINATOR_COUNT)
             findings.append(FundingChangenowFindings.funding_changenow(transaction_event, "low-amount", score, CHAIN_ID))
     return findings
 
@@ -106,13 +109,13 @@ async def main():
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
-        # scan_base({
-        #     'rpc_url': "https://base.g.alchemy.com/v2",
-        #     'rpc_key_id': "06ff4c43-d200-4dec-b09b-930834746f17",
-        #     'local_rpc_url': "8453",
-        #     'handle_transaction': handle_transaction
-        # }),
-        # run_health_check()
+        scan_base({
+            'rpc_url': "https://base.g.alchemy.com/v2",
+            'rpc_key_id': "06ff4c43-d200-4dec-b09b-930834746f17",
+            'local_rpc_url': "8453",
+            'handle_transaction': handle_transaction
+        }),
+        run_health_check()
     )
 
-# asyncio.run(main())
+asyncio.run(main())
