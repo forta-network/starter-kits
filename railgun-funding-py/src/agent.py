@@ -107,7 +107,6 @@ def detect_railgun_funding(w3, transaction_event):
 
         for transfer in weth_transfer_events:
             if transfer['args']['to'] == ZERO_ADDRESS:
-                print(transfer['args'])
                 native_value = transfer['args']['value'] / 1e18
                 break
 
