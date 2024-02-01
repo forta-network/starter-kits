@@ -110,7 +110,7 @@ async def main():
             'handle_transaction': handle_transaction
         }),
         scan_base({
-            'rpc_url': "https://base.g.alchemy.com/v2",
+            'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
             'rpc_key_id': "06ff4c43-d200-4dec-b09b-930834746f17",
             'local_rpc_url': "8453",
             'handle_transaction': handle_transaction
