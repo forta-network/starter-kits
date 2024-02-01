@@ -10,10 +10,6 @@ from functools import lru_cache
 from constants import *
 from findings import FundingChangenowFindings
 
-# Initialize web3
-# TODO: Update to not hardcode endpoint
-# web3 = Web3(Web3.HTTPProvider("https://eth-mainnet.g.alchemy.com/v2/cEQP65GkbleRFVuboF2TjF_XkyK8orD-"))
-
 # Logging set up
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -105,13 +101,13 @@ async def main():
     await asyncio.gather(
         scan_ethereum({
             'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "52191874-6755-4730-934b-fed0818f06ed",
+            'rpc_key_id': "e698634d-79c2-44fe-adf8-f7dac20dd33c",
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
         scan_base({
             'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "06ff4c43-d200-4dec-b09b-930834746f17",
+            'rpc_key_id': "1d3097d9-6e44-4ca7-a61b-2209a85d262f",
             'local_rpc_url': "8453",
             'handle_transaction': handle_transaction
         }),
