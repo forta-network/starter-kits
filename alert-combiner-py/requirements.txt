@@ -7,3 +7,7 @@ python-dotenv>=0.16.0
 boto3>=1.26.96
 ratelimiter>=1.2.0.post0
 python-gnupg>=0.5.0
+opentelemetry-api==1.22.0
+opentelemetry-exporter-otlp-proto-http==1.22.0
+opentelemetry-sdk==1.22.0
+opentelemetry-semantic-conventions==0.43b0
