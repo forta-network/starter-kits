@@ -18,6 +18,10 @@ class FundingChangenowFindings:
                     "receiving address": f"{transaction.to}",
                     "anomaly_score": anomaly_score
                 },
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': transaction.hash}]
+                },
                 # 'labels': [
                 #     {
                 #         'entityType': EntityType.Address,
@@ -47,6 +51,10 @@ class FundingChangenowFindings:
                     "amount funded": f"{transaction.transaction.value / 10e17} {CURRENCIES[chain_id]}",
                     "receiving address": f"{transaction.to}",
                     "anomaly_score": anomaly_score
+                },
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': transaction.hash}]
                 },
                 # 'labels': [
                 #     {
