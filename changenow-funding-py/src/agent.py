@@ -5,7 +5,7 @@ import sys
 
 from forta_bot import scan_ethereum, scan_base, TransactionEvent, get_chain_id, run_health_check
 from hexbytes import HexBytes
-from functools import lru_cache
+from async_lru import alru_cache
 
 from constants import *
 from findings import FundingChangenowFindings
@@ -40,7 +40,7 @@ def initialize():
     CHAIN_ID = get_chain_id()
 
 
-@lru_cache(maxsize=100000)
+@alru_cache(maxsize=100000)
 async def is_contract(w3, address):
     """
     this function determines whether address is a contract
@@ -88,7 +88,6 @@ async def detect_changenow_funding(w3, transaction_event):
             findings.append(FundingChangenowFindings.funding_changenow(transaction_event, "new-eoa", score, CHAIN_ID))
         elif native_value < changenow_threshold:
             LOW_VOL_ALERT_COUNT += 1
-            print('burda mi', DENOMINATOR_COUNT, native_value)
             score = str((1.0 * LOW_VOL_ALERT_COUNT) / DENOMINATOR_COUNT)
             findings.append(FundingChangenowFindings.funding_changenow(transaction_event, "low-amount", score, CHAIN_ID))
     return findings
