@@ -56,6 +56,7 @@ class TestFLDAgent:
             },
             'block': {
                 'number': 1,
+                'timestamp': 0
             },
             'logs': [
                 transfer_event(BINANCE_ADDRESS, NEW_ADDRESS, 10000000000000,
@@ -66,7 +67,7 @@ class TestFLDAgent:
         assert findings[0].severity == FindingSeverity.High
         assert findings[0].alert_id == "FLD_NEW_FUNDING"
 
-    def test_returns_high_finding_if_the_amount_is_big_erc20_old_address_FLD_FUNDING(self):
+    def test_returns_critical_finding_if_the_amount_is_big_erc20_old_address_FLD_FUNDING(self):
         tx_event = create_transaction_event({
             'transaction': {
                 'from': BINANCE_ADDRESS,
@@ -82,10 +83,10 @@ class TestFLDAgent:
 
         findings = provide_handle_transaction()(tx_event)
         assert len(findings) == 1
-        assert findings[0].severity == FindingSeverity.High
+        assert findings[0].severity == FindingSeverity.Critical
         assert findings[0].alert_id == "FLD_FUNDING"
 
-    def test_returns_low_finding_if_the_amount_is_low_erc20_old_address_FLD_FUNDING(self):
+    def test_returns_medium_finding_if_the_amount_is_medium_erc20_old_address_FLD_FUNDING(self):
         tx_event = create_transaction_event({
             'transaction': {
                 'from': BINANCE_ADDRESS,
@@ -101,7 +102,7 @@ class TestFLDAgent:
 
         findings = provide_handle_transaction()(tx_event)
         assert len(findings) == 1
-        assert findings[0].severity == FindingSeverity.Low
+        assert findings[0].severity == FindingSeverity.Medium
         assert findings[0].alert_id == "FLD_FUNDING"
 
     def test_returns_critical_finding_if_new_address_ETH_FLD_FUNDING(self):
@@ -206,7 +207,7 @@ class TestFLDAgent:
         assert findings[0].severity == FindingSeverity.Critical
         assert findings[0].alert_id == "FLD_Laundering"
 
-    def test_returns_high_finding_if_critical_amount_eth_old_address_FLD_Laundering(self):
+    def test_returns_high_finding_if_high_amount_eth_old_address_FLD_Laundering(self):
         tx_event = create_transaction_event({
             'transaction': {
                 'from': OLD_ADDRESS,
@@ -257,25 +258,6 @@ class TestFLDAgent:
         assert findings[0].severity == FindingSeverity.Low
         assert findings[0].alert_id == "FLD_Laundering"
 
-    def test_returns_low_finding_if_the_amount_is_low_erc20_old_address_FLD_Laundering(self):
-        tx_event = create_transaction_event({
-            'transaction': {
-                'from': OLD_ADDRESS,
-                'to': BINANCE_ADDRESS,
-                'value': 0,
-            },
-            'block': {
-                'number': 1,
-            },
-            'logs': [
-                transfer_event(OLD_ADDRESS, BINANCE_ADDRESS, 100000000000,
-                               "0xdAC17F958D2ee523a2206206994597C13D831ec7")]})
-
-        findings = provide_handle_transaction()(tx_event)
-        assert len(findings) == 1
-        assert findings[0].severity == FindingSeverity.Low
-        assert findings[0].alert_id == "FLD_Laundering"
-
     def test_returns_medium_finding_if_the_amount_is_medium_erc20_old_address_FLD_Laundering(self):
         tx_event = create_transaction_event({
             'transaction': {
@@ -287,7 +269,7 @@ class TestFLDAgent:
                 'number': 1,
             },
             'logs': [
-                transfer_event(OLD_ADDRESS, BINANCE_ADDRESS, 1000000000000,
+                transfer_event(OLD_ADDRESS, BINANCE_ADDRESS, 100000000000,
                                "0xdAC17F958D2ee523a2206206994597C13D831ec7")]})
 
         findings = provide_handle_transaction()(tx_event)
@@ -306,7 +288,7 @@ class TestFLDAgent:
                 'number': 1,
             },
             'logs': [
-                transfer_event(OLD_ADDRESS, BINANCE_ADDRESS, 10000000000000,
+                transfer_event(OLD_ADDRESS, BINANCE_ADDRESS, 1000000000000,
                                "0xdAC17F958D2ee523a2206206994597C13D831ec7")]})
 
         findings = provide_handle_transaction()(tx_event)
@@ -325,7 +307,7 @@ class TestFLDAgent:
                 'number': 1,
             },
             'logs': [
-                transfer_event(OLD_ADDRESS, BINANCE_ADDRESS, 50000000000000,
+                transfer_event(OLD_ADDRESS, BINANCE_ADDRESS, 10000000000000,
                                "0xdAC17F958D2ee523a2206206994597C13D831ec7")]})
 
         findings = provide_handle_transaction()(tx_event)

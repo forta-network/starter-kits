@@ -121,7 +121,7 @@ class BlockChainIndexer:
             # Snowtrace now allows up to a 1M blockrange
             end_block = 99999999 if chain_id != 43114 else start_block + 999999
             transaction_for_address = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={address}&startblock={start_block}&endblock={end_block}&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
-            
+
             success = False
             count = 0
             while not success:
@@ -197,38 +197,39 @@ class BlockChainIndexer:
     
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
-    def has_deployed_high_tx_count_contract(address, chain_id) -> bool:
-        contracts = BlockChainIndexer.get_contracts(address, chain_id)
-        logging.info(f"has_deployed_high_tx_count_contract for address {address} on {chain_id} called.")
+    def has_deployed_high_tx_count_contract(cluster: str, chain_id) -> bool:
+        for address in cluster.split(','):
+            contracts = BlockChainIndexer.get_contracts(address, chain_id)
+            logging.info(f"has_deployed_high_tx_count_contract for address {address} on {chain_id} called.")
 
-        for contract in contracts:
-            start_block = BlockChainIndexer.get_first_block_number(chain_id)
-            # Snowtrace now allows up to a 1M blockrange
-            end_block = 99999999 if chain_id != 43114 else start_block + 999999
+            for contract in contracts:
+                start_block = BlockChainIndexer.get_first_block_number(chain_id)
+                # Snowtrace now allows up to a 1M blockrange
+                end_block = 99999999 if chain_id != 43114 else start_block + 999999
 
-            transactions_for_contract = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={contract}&startblock={start_block}&endblock={end_block}&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
+                transactions_for_contract = f"{BlockChainIndexer.get_etherscan_url(chain_id)}/api?module=account&action=txlist&address={contract}&startblock={start_block}&endblock={end_block}&page=1&offset=10000&sort=asc&apikey={BlockChainIndexer.get_api_key(chain_id)}"
 
-            success = False
-            count = 0
-            while not success:
-                data = requests.get(transactions_for_contract)
-                if data.status_code == 200:
-                    json_data = json.loads(data.content)
-                    success = True
-                    if len(json_data["result"]) > CONTRACTS_TX_COUNT_FILTER_THRESHOLD:
-                        return True                   
-                else:
-                    logging.warning(f"Error getting contract on etherscan for {contract}, {chain_id} {data.status_code} {data.content}")
-                    count += 1
-                    if count > 10:
-                        Utils.ERROR_CACHE.add(Utils.alert_error(f'request etherscan {data.status_code}', "blockchain_indexer_service.get_contracts", ""))
-                        break
-                    time.sleep(1)
+                success = False
+                count = 0
+                while not success:
+                    data = requests.get(transactions_for_contract)
+                    if data.status_code == 200:
+                        json_data = json.loads(data.content)
+                        success = True
+                        if len(json_data["result"]) > CONTRACTS_TX_COUNT_FILTER_THRESHOLD:
+                            return True                   
+                    else:
+                        logging.warning(f"Error getting contract on etherscan for {contract}, {chain_id} {data.status_code} {data.content}")
+                        count += 1
+                        if count > 10:
+                            Utils.ERROR_CACHE.add(Utils.alert_error(f'request etherscan {data.status_code}', "blockchain_indexer_service.get_contracts", ""))
+                            break
+                        time.sleep(1)
         return False
     
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
-    def get_etherscan_labels(addresses):
+    def get_etherscan_labels(addresses) -> dict: #address -> {'labels': ['XXXXX'], 'nametag': 'YYYYYY'}
         address_labels = dict()
 
         try:

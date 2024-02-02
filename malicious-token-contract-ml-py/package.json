@@ -1,6 +1,6 @@
 {
   "name": "malicious-token-contract-ml",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/malicious-token-contract-ml-py",
   "description": "Malicious Token Contract Detection Bot",
   "chainIds": [
@@ -55,6 +55,6 @@
     "forta-agent": "^0.1.33"
   },
   "devDependencies": {
-    "nodemon": "^2.0.8"
+    "nodemon": "^3.0.2"
   }
 }

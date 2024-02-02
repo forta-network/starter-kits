@@ -37,5 +37,6 @@
   },
   "devDependencies": {
     "forta-bot-cli": "file:forta-bot-cli-0.2.0.tgz"
+    "nodemon": "^3.0.2"
   }
 }
