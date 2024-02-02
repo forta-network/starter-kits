@@ -1,25 +1,20 @@
 # Build stage: compile Python dependencies
-FROM ubuntu:focal as builder
-RUN apt-get update -y && apt-get upgrade -y
-RUN apt-get install -y python3 pip
+FROM python:3.10-alpine as builder
+RUN apk update
+RUN apk add alpine-sdk
 RUN python3 -m pip install --upgrade pip
 COPY requirements.txt ./
+COPY forta_bot-0.2.0.tar.gz ./
 RUN python3 -m pip install --user -r requirements.txt
 
-# Final stage: copy over Python dependencies and install production Node dependencies
-FROM ubuntu:focal
-# this python version should match the build stage python version
-RUN apt-get update
-RUN apt-get -y install curl gnupg
-RUN curl -sL https://deb.nodesource.com/setup_14.x  | bash -
-RUN apt-get -y install nodejs
+# Final stage: copy over Python dependencies
+FROM python:3.10-alpine
 COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local:$PATH
-ENV NODE_ENV=production
-# Uncomment the following line to enable agent logging
+ENV FORTA_ENV=production
+# Uncomment the following line to enable logging
 LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
 COPY ./src ./src
-COPY package*.json ./
-RUN npm ci --production
-CMD [ "npm", "run", "start:prod" ]
+COPY LICENSE.md ./
+CMD [ "python3", "./src/agent.py" ]
