@@ -68,6 +68,9 @@ def detect_union_chain_funding(w3, transaction_event):
 
     native_value = transaction_event.transaction.value / 1e18
 
+    if (not transaction_event.to):
+        return findings
+
     if (native_value > 0 and (native_value < UNION_CHAIN_THRESHOLD or is_new_account(w3, transaction_event.to, transaction_event.block_number)) and not is_contract(w3, transaction_event.to)):
         DENOMINATOR_COUNT += 1
 
