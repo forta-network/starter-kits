@@ -89,7 +89,7 @@ class TestRailgunFundingAgent:
         findings = agent.detect_railgun_funding(w3, tx_event)
         assert len(findings) == 1, "This should have triggered a finding"
         assert findings[0].alert_id == "FUNDING-RAILGUN-NEW-ACCOUNT", "This is a tx from Railgun to a new account"
-        assert findings[0].severity == FindingSeverity.Low, "Severity should be low"
+        assert findings[0].severity == FindingSeverity.Medium, "Severity should be medium"
 
 
     def test_low_value_transfer_from_railgun(self):

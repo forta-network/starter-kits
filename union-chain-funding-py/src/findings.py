@@ -10,7 +10,7 @@ class FundingUnionChainFindings:
                 'description': f'{transaction.to} received initial funds from Union Chain',
                 'alert_id': 'FUNDING-UNION-CHAIN-NEW-ACCOUNT',
                 'type': FindingType.Info,
-                'severity': FindingSeverity.Low,
+                'severity': FindingSeverity.Medium,
                 'protocol': PROTOCOLS[chain_id],
                 'addresses': list(transaction.addresses.keys()),
                 'metadata': {

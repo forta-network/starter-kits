@@ -10,7 +10,7 @@ class FundingRailgunFindings:
                 'description': f'{receiver} received initial funds from Railgun',
                 'alert_id': 'FUNDING-RAILGUN-NEW-ACCOUNT',
                 'type': FindingType.Info,
-                'severity': FindingSeverity.Low,
+                'severity': FindingSeverity.Medium,
                 'protocol': PROTOCOLS[chain_id],
                 'addresses': list(transaction.addresses.keys()),
                 'metadata': {

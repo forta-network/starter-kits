@@ -10,7 +10,7 @@ class FundingFixedFloatFindings:
                 'description': f'{transaction.to} received initial funds from Fixed Float',
                 'alert_id': 'FUNDING-FIXED-FLOAT-NEW-ACCOUNT',
                 'type': FindingType.Info,
-                'severity': FindingSeverity.Low,
+                'severity': FindingSeverity.Medium,
                 'protocol': PROTOCOLS[chain_id],
                 'addresses': list(transaction.addresses.keys()),
                 'metadata': {

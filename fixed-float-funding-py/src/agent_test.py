@@ -73,7 +73,7 @@ class TestFixedFloatFundingAgent:
         findings = agent.detect_fixed_float_funding(w3, tx_event)
         assert len(findings) == 1, "This should have triggered a finding"
         assert findings[0].alert_id == "FUNDING-FIXED-FLOAT-NEW-ACCOUNT", "This is a tx from Fixed Float to a new account"
-        assert findings[0].severity == FindingSeverity.Low, "Severity should be low"
+        assert findings[0].severity == FindingSeverity.Medium, "Severity should be medium"
 
 
     def test_low_value_transfer_from_fixed_float(self):
