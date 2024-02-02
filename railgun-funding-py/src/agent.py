@@ -102,12 +102,12 @@ def detect_railgun_funding(w3, transaction_event):
 
         native_value = wrapped_native_token_withdrawal_events[0]['args']['wad'] / 1e18
     elif CHAIN_ID == 42161:
-        weth_transfer_events = transaction_event.filter_log(ERC20_TRANSFER_EVENT_ABI, WRAPPED_NATIVE_TOKEN_ADDRESSES[CHAIN_ID])
+        wrapped_native_token_transfer_events = transaction_event.filter_log(ERC20_TRANSFER_EVENT_ABI, WRAPPED_NATIVE_TOKEN_ADDRESSES[CHAIN_ID])
 
-        if len(weth_transfer_events) == 0:
+        if len(wrapped_native_token_transfer_events) == 0:
             return []
 
-        for transfer in weth_transfer_events:
+        for transfer in wrapped_native_token_transfer_events:
             if transfer['args']['to'] == ZERO_ADDRESS:
                 native_value = transfer['args']['value'] / 1e18
                 break
