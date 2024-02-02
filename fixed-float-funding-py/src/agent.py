@@ -52,7 +52,7 @@ def is_contract(w3, address):
     code = w3.eth.get_code(Web3.toChecksumAddress(address))
     return code != HexBytes('0x')
 
-
+@lru_cache(maxsize=100000)
 def is_new_account(w3, address, block_number):
     return w3.eth.get_transaction_count(Web3.toChecksumAddress(address), block_number) == 0
 
