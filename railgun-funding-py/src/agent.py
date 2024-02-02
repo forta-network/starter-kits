@@ -69,6 +69,8 @@ def detect_railgun_funding(w3, transaction_event):
     if len(relay_function_invocations) == 0:
         return []
 
+    DENOMINATOR_COUNT += 1
+
     contract = w3.eth.contract(abi=[json.loads(TRANSFER_FUNCTION_ABI)])
 
     transfer_calldata = [
@@ -121,8 +123,7 @@ def detect_railgun_funding(w3, transaction_event):
 
     if not is_contract(w3, to_address):
         if is_new_account_flag or native_value < railgun_threshold:
-            DENOMINATOR_COUNT += 1
-
+            
             alert_type = "new-eoa" if is_new_account_flag else "low-amount"
             alert_count = NEW_EOA_ALERT_COUNT if is_new_account_flag else LOW_VOL_ALERT_COUNT
             alert_count += 1
