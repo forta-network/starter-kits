@@ -67,6 +67,9 @@ def detect_fixed_float_funding(w3, transaction_event):
 
     findings = []
 
+    if (not transaction_event.to):
+        return findings
+
     native_value = transaction_event.transaction.value / 10e17
 
     if (native_value > 0 and (native_value < fixed_float_threshold or is_new_account(w3, transaction_event.to, transaction_event.block_number)) and not is_contract(w3, transaction_event.to)):
