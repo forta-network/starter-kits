@@ -14,7 +14,7 @@ class EthMock:
     def __init__(self):
         self.contract = ContractMock()
 
-    def get_transaction_count(self, address:str, block_identifier):
+    async def get_transaction_count(self, address:str, block_identifier):
         if address.lower() == EOA_ADDRESS_NEW.lower():
             return 0
         elif address.lower() == EOA_ADDRESS_OLD.lower():
@@ -35,6 +35,5 @@ class FunctionsMock:
     def __init__(self):
         self.return_value = None
 
-    def call(self, *_, **__):
+    async def call(self, *_, **__):
         return self.return_value
-
