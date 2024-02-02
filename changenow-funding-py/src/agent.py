@@ -53,6 +53,8 @@ async def is_contract(w3, address):
 
 
 async def is_new_account(w3, address):
+    if address is None:
+        return True
     return await w3.eth.get_transaction_count(Web3.to_checksum_address(address)) == 0
 
 
