@@ -17,7 +17,7 @@ This bot detects transactions in the native currency from Fixed Float to new EOA
 - FUNDING-FIXED-FLOAT-NEW-ACCOUNT
 
   - Fired when a new EOA address receives funds from Fixed Float
-  - Severity is always set to "low"
+  - Severity is always set to "Medium"
   - Type is always set to "info"
   - Metadata includes the amount funded, and the receiving address
 
