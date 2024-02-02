@@ -3,7 +3,6 @@ from datetime import datetime
 from forta_bot import create_transaction_event, EntityType
 import pytest
 import agent
-import pandas as pd
 from web3 import Web3
 import rlp
 from constants import CONTRACT_QUEUE_SIZE
