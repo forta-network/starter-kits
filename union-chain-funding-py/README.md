@@ -13,7 +13,7 @@ This bot detects transactions in the native currency from Union Chain to new EOA
 - FUNDING-UNION-CHAIN-NEW-ACCOUNT
 
   - Fired when a new EOA address receives funds from Union Chain
-  - Severity is always set to "low"
+  - Severity is always set to "Medium"
   - Type is always set to "info"
   - Metadata includes the amount funded, and the receiving address
 

@@ -16,7 +16,7 @@ This bot detects transactions in the native currency from Railgun to new EOA add
 - FUNDING-RAILGUN-NEW-ACCOUNT
 
   - Fired when a new EOA address receives funds from Railgun
-  - Severity is always set to "low"
+  - Severity is always set to "Medium"
   - Type is always set to "info"
   - Metadata includes the amount funded, and the receiving address
 
