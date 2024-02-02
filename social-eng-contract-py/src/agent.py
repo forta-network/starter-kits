@@ -4,7 +4,7 @@ import rlp
 import sys
 import pandas as pd
 import asyncio
-from web3 import AsyncWeb3, Web3
+from web3 import AsyncWeb3
 from forta_bot import get_chain_id, scan_base, scan_ethereum, scan_alerts, run_health_check, Finding, FindingSeverity, FindingType, BlockEvent, TransactionEvent, AlertEvent
 from hexbytes import HexBytes
 from os import environ
@@ -28,7 +28,18 @@ handler.setFormatter(formatter)
 root.addHandler(handler)
 
 
+async def initialize():
+    """
+    this function initializes the agent; only used for testing purposes to reset state across test cases
 
+    """
+    global CHAIN_ID
+    CHAIN_ID = 1
+    global CONTRACTS_QUEUE
+    CONTRACTS_QUEUE = pd.concat([CONTRACTS_QUEUE, pd.DataFrame({'contract_address': '0x0000000000000000000000000000000000000000', 'first_four_char': '0000', 'last_four_char': '0000'}, index=[len(CONTRACTS_QUEUE)])])
+
+    SECRETS_JSON = await get_secrets()
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
 async def is_contract(w3, address) -> bool:
     """
@@ -37,7 +48,7 @@ async def is_contract(w3, address) -> bool:
     """
     if address is None:
         return True
-    code = await w3.eth.get_code(Web3.to_checksum_address(address))
+    code = await w3.eth.get_code(AsyncWeb3.to_checksum_address(address))
     return code != HexBytes('0x')
 
 
@@ -48,7 +59,7 @@ async def calc_contract_address(address, nonce) -> str:
     """
 
     address_bytes = bytes.fromhex(address[2:].lower())
-    return Web3.to_checksum_address(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:]).lower()
+    return AsyncWeb3.to_checksum_address(AsyncWeb3.keccak(rlp.encode([address_bytes, nonce]))[-20:]).lower()
 
 
 def append_contract_finding(findings: list, created_contract_address: str, from_: str, chain_id: int, tx_hash: str) -> None:
@@ -158,4 +169,6 @@ async def main():
         run_health_check()
     )
 
-asyncio.run(main())
+
+if __name__ == "__main__":
+    asyncio.run(main())
