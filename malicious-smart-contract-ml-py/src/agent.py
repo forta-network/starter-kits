@@ -301,12 +301,18 @@ def handle_transaction(
     return real_handle_transaction(transaction_event)
 
 
-def check_funding(address: str, n_days: int=80):
+def check_funding(address: str, n_days: int=1):
     t = time.time()
-    # Tornado cash and cex funding with two retries
-    bots = ['0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400']  # tornado cash
+    bots = [
+        '0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400',  # funding tornado cash
+        '0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058',  # funding laundering
+        '0x025251bd9b67b18804249a61a19f8dd45e3dd30caba295ed2cdc9392039f6272',  # funding union chain
+        '0xd2a25c368501ec7f9cd1219858c8a53cc4da7bd64c43633658a90b54bfcc595a',  # funding railgun
+        '0x2d3bb89e9cecc0024d8ae1a9c93ca42664472cb074cc200fa2c0f77f2be34bf3',  # funding fixed float
+        '0xa5a23e3fd7a5401db47008329061bb9dca48fc0199151e043d93376d31adb40d',  # funding squid
+    ]
     query = {
-        "first": 100,
+        "first": 10,
         "bot_ids": bots,
         "created_since": n_days*24*60*60*1000,
         "addresses": [address],
@@ -315,44 +321,10 @@ def check_funding(address: str, n_days: int=80):
     for _ in range(2):
         try:
             alerts = forta_agent.get_alerts(query)
-            tc_t = time.time()
-            alert_hashes += [alert.hash for alert in alerts.alerts if 'funding' in alert.name.lower()]
-            break
-        except:
-            continue
-    # Funding fixed float
-    bots = ["0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb"]  # Funding fixed float
-    query = {
-        "first": 100,
-        "bot_ids": bots,
-        "created_since": n_days*24*60*60*1000,
-        "addresses": [address],
-    }
-    for _ in range(2):
-        try:
-            alerts = forta_agent.get_alerts(query)
-            ff_t = time.time()
-            alert_hashes += [alert.hash for alert in alerts.alerts if 'funding' in alert.name.lower() and 'fixedfloat' in alert.description.lower()]
-            break
-        except:
-            continue
-    # Funding laundering with two retries
-    bots = ["0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058"]  # Funding laundering
-    query = {
-        "first": 100,
-        "bot_ids": bots,
-        "created_since": n_days*24*60*60*1000,
-        "addresses": [address],
-        "severities": ["Critical", 'High', 'Medium'],
-    }
-    for _ in range(2):
-        try:
-            alerts = forta_agent.get_alerts(query)
-            fl_t = time.time()
             alert_hashes += [alert.hash for alert in alerts.alerts if 'funding' in alert.name.lower()]
             break
         except:
             continue
     if ENV == 'dev':
-        logger.info(f"Time taken to get alerts: {time.time() - t};tc: {tc_t - t};\tff:{ff_t - tc_t}\tfl:{fl_t - ff_t}\t N_alerts: {len(alert_hashes)};\tAddress: {address}")
+        logger.info(f"Time taken to get alerts: {time.time() - t};\tN_alerts: {len(alert_hashes)};\tAddress: {address}")
     return alert_hashes
