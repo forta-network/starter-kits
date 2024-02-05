@@ -33,6 +33,7 @@ INITIALIZED = False
 CHAIN_ID = -1
 
 CONTRACT_CACHE = dict()  # address -> is_contract
+ETHERSCAN_LOCAL_CACHE = dict() # cluster -> {labels, time}
 ALERTED_CLUSTERS_STRICT = []  # cluster
 ALERTED_CLUSTERS_LOOSE = []  # cluster
 ALERTED_CLUSTERS_FP_MITIGATED = []  # cluster
@@ -96,6 +97,9 @@ def initialize():
 
     global CONTRACT_CACHE
     CONTRACT_CACHE = {}
+
+    global ETHERSCAN_LOCAL_CACHE
+    ETHERSCAN_LOCAL_CACHE = {}
 
     subscription_json = []
     for bot, alertId, stage in BASE_BOTS:
@@ -481,7 +485,8 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                     bot_sources = set()
                     pot_attacker_addresses = get_pot_attacker_addresses(alert_event)
 
-
+                    fp_mitigation_cluster_cache = du.read_fp_mitigation_clusters(dynamo)
+                    end_user_attack_cluster_cache = du.read_end_user_attack_clusters(dynamo)
                     for address in pot_attacker_addresses:
                         logging.info(f"alert {alert_event.alert_hash} - Analysing address {address}")
                         address_lower = address.lower()
@@ -589,7 +594,16 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
 
                                 if CHAIN_ID == 1:
                                     # Etherscan API
-                                    etherscan_labels = block_chain_indexer.get_etherscan_labels(cluster, CHAIN_ID)
+                                    etherscan_called = False
+                                    if cluster in ETHERSCAN_LOCAL_CACHE.keys():
+                                        current_time = time.time()
+                                        # we put a 2h cache on etherscan labels
+                                        if current_time - ETHERSCAN_LOCAL_CACHE[cluster]['time'] < 2 * 3600:
+                                            etherscan_labels = ETHERSCAN_LOCAL_CACHE[cluster]['labels']
+                                            etherscan_called = True
+                                    if not etherscan_called:
+                                        etherscan_labels = block_chain_indexer.get_etherscan_labels(cluster, CHAIN_ID)
+                                        ETHERSCAN_LOCAL_CACHE[cluster] = {'labels': etherscan_labels, 'time': time.time()}
                                     if etherscan_labels and all(
                                         not any(word in label.lower() for word in ['attack', 'phish', 'hack', 'heist', 'drainer', 'exploit', 'scam', 'fraud', '.eth'])
                                         for label in etherscan_labels
@@ -598,7 +612,16 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                         fp_mitigated = True
                                 else:
                                     # Forta API
-                                    etherscan_label = Utils.get_etherscan_label(cluster).lower()
+                                    etherscan_called = False
+                                    if cluster in ETHERSCAN_LOCAL_CACHE.keys():
+                                        current_time = time.time()
+                                        # we put a 2h cache on etherscan labels
+                                        if current_time - ETHERSCAN_LOCAL_CACHE[cluster]['time'] < 2 * 3600:
+                                            etherscan_label = ETHERSCAN_LOCAL_CACHE[cluster]['labels']
+                                            etherscan_called = True
+                                    if not etherscan_called:  
+                                        etherscan_label = Utils.get_etherscan_label(cluster).lower()
+                                        ETHERSCAN_LOCAL_CACHE[cluster] = {'labels': etherscan_label, 'time': time.time()}
                                     if not ('attack' in etherscan_label
                                             or 'phish' in etherscan_label
                                             or 'hack' in etherscan_label
@@ -616,11 +639,11 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                                     logging.info(f"alert {alert_event.alert_hash} - {cluster} is polygon validator. Wont raise finding")
                                     fp_mitigated = True
 
-                                if cluster in du.read_fp_mitigation_clusters(dynamo):
+                                if cluster in fp_mitigation_cluster_cache:
                                     logging.info(f"alert {alert_event.alert_hash} - Mitigating FP for {cluster}. Wont raise finding")
                                     fp_mitigated = True
 
-                                if cluster in du.read_end_user_attack_clusters(dynamo):
+                                if cluster in end_user_attack_cluster_cache:
                                     logging.info(
                                         f"alert {alert_event.alert_hash} - End user attack identified for {cluster}. Downgrade finding")
                                     end_user_attack = True
