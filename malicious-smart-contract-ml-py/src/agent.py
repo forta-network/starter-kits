@@ -39,10 +39,15 @@ def initialize():
 
     global ML_MODEL
     logger.info("Start loading model")
-    ML_MODEL = load("deployed_models/just_eth_focus_recall.joblib")
+    ML_MODEL = load("deployed_models/imb_recall_precision.joblib")
 
     global MODEL_THRESHOLD
-    MODEL_THRESHOLD = 0.3
+    if CHAIN_ID == 1:
+        MODEL_THRESHOLD = 0.5
+    else:
+        MODEL_THRESHOLD = 0.53
+    global MODEL_PRECISION_THRESHOLD
+    MODEL_PRECISION_THRESHOLD = 0.6  # From this threshold on, the model is very precise
     logger.info(f"Model threshold: {MODEL_THRESHOLD}. Using eth model for recall")
 
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
@@ -132,6 +137,9 @@ def detect_malicious_contract_tx(
                     if len(funding_alerts) > 0:
                         finding.severity = FindingSeverity.Critical
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
+                    if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD and CHAIN_ID == 1:
+                        finding.severity = FindingSeverity.Critical
+                        finding.metadata['high_precision_model'] = True
                     malicious_findings.append(finding)
                 else:
                     safe_findings.append(finding)
@@ -159,6 +167,9 @@ def detect_malicious_contract_tx(
                     if len(funding_alerts) > 0:
                         finding.severity = FindingSeverity.Critical
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
+                    if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD and CHAIN_ID == 1:
+                        finding.severity = FindingSeverity.Critical
+                        finding.metadata['high_precision_model'] = True
                     malicious_findings.append(finding)
                 else:
                     safe_findings.append(finding)
