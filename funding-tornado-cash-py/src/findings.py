@@ -8,16 +8,16 @@ class FundingTornadoCashFindings:
     @staticmethod
     def funding_tornado_cash(to_address: str, type: str, chain_id: int) -> Finding:
         if type == "low":
-            # labels = [Label({
-            #     'entityType': EntityType.Address,
-            #     'label': "attacker",
-            #     'entity': to_address,
-            #     'confidence': 0.3,
-            #     'metadata': {
-            #         'alert_id': 'FUNDING-TORNADO-CASH',
-            #         'chain_id': chain_id
-            #     }
-            # })]
+            labels = [Label({
+                'entityType': EntityType.Address,
+                'label': "attacker",
+                'entity': to_address,
+                'confidence': 0.3,
+                'metadata': {
+                    'alert_id': 'FUNDING-TORNADO-CASH',
+                    'chain_id': chain_id
+                }
+            })]
 
             metadata = {}
 
@@ -36,19 +36,19 @@ class FundingTornadoCashFindings:
                 'type': FindingType.Suspicious,
                 'severity': FindingSeverity.Low,
                 'metadata': metadata,
-                # 'labels': labels
+                'labels': labels
             })
         else:
-            # labels = [Label({
-            #     'entityType': EntityType.Address,
-            #     'label': "benign",
-            #     'entity': to_address,
-            #     'confidence': 0.1,
-            #     'metadata': {
-            #         'alert_id': 'FUNDING-TORNADO-CASH-HIGH',
-            #         'chain_id': chain_id
-            #     }
-            # })]
+            labels = [Label({
+                'entityType': EntityType.Address,
+                'label': "benign",
+                'entity': to_address,
+                'confidence': 0.1,
+                'metadata': {
+                    'alert_id': 'FUNDING-TORNADO-CASH-HIGH',
+                    'chain_id': chain_id
+                }
+            })]
 
             metadata = {}
 
@@ -67,6 +67,6 @@ class FundingTornadoCashFindings:
                 'type': FindingType.Info,
                 'severity': FindingSeverity.Info,
                 'metadata': metadata,
-                # 'labels': labels
+                'labels': labels
             })
         return finding
