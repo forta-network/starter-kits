@@ -9,7 +9,7 @@ import pandas as pd
 from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS, DATAFRAME_SIZE_LIMIT, FP_MITIGATION_EXPIRY_IN_HOURS, FUNDING_STAGE_ALERTS_LOOKBACK_WINDOW_IN_HOURS
 from src.utils import Utils
 
-TEST_TAG = "attack-detector-test_v2"
+TEST_TAG = "attack-detector-test_v3"
 PROD_TAG = "attack-detector-prod"
 
 class DynamoUtils:
