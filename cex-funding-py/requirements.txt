@@ -2,4 +2,4 @@ forta_bot-0.2.0.tar.gz
 setuptools>=61.3.1
 hexbytes>=0.2.2
 bot-alert-rate>=0.0.4
-cachetools
+async-lru==2.0.4

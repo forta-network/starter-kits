@@ -69,6 +69,10 @@ CEXES = {
         "threshold": 20000000000000000000000,
         "exchanges": [("0xf89d7b9c864f589bbF53a82105107622B35EaA40", "Bybit")]
     },
+    8453: {
+        "threshold": 2000000000000000000,
+        "exchanges": [("0x1b1D2149d656F8CA33fB633e6F642b5a2426B53D", "ChangeNOW")]
+    },
     42161: {
         "threshold": 2000000000000000000,
         "exchanges": [
