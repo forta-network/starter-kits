@@ -1,11 +1,9 @@
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 from forta_bot import Finding, FindingSeverity, FindingType, EntityType, Label
 
-# Prod botId
-# BOT_ID = "0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb"
+BOT_ID = "0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb"
 
-# Test botId
-BOT_ID = "0x8a208d9bd5bcbb81804f7ee68bee912ca168e3b4764d6537d78c49f8af9c4bed"
+# BOT_ID = "0x8a208d9bd5bcbb81804f7ee68bee912ca168e3b4764d6537d78c49f8af9c4bed"
 
 
 class CEXFundingFinding:
