@@ -1,21 +1,18 @@
 import logging
 import sys
+import aiohttp
+import asyncio
+
 from os import environ
-
 from functools import lru_cache
-import forta_agent
-from forta_agent import get_json_rpc_url
-import requests
-from web3 import Web3
-
-from src.findings import MaliciousAccountFundingFinding
-from src.storage import get_secrets
-
-SECRETS_JSON = get_secrets()
+from web3 import AsyncWeb3
+from forta_bot import get_chain_id, scan_ethereum, scan_polygon, scan_fantom, run_health_check, TransactionEvent
+from findings import MaliciousAccountFundingFinding
+from storage import get_secrets
 
 BOT_ID = "0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46"
 
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
+web3 = AsyncWeb3.AsyncHTTPProvider
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -35,52 +32,45 @@ CHAIN_SOURCE_IDS_MAPPING = {
 }
 
 
-def initialize():
+async def initialize():
+    print("Initializing")
+    SECRETS_JSON = await get_secrets()
+
     global CHAIN_ID
-    CHAIN_ID = web3.eth.chain_id
+    CHAIN_ID = get_chain_id()
+    print(f"Chain ID: {CHAIN_ID}")
 
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
 
-@lru_cache(maxsize=1_000_000)
-def is_malicious_account(chain_id: int, address: str) -> str:
+# @lru_cache(maxsize=1_000_000)
+async def is_malicious_account(chain_id: int, address: str) -> str:
     source_ids = CHAIN_SOURCE_IDS_MAPPING[chain_id]
     wallet_tag = None
 
-    for source_id in source_ids:
-        labels_url = f"https://api.forta.network/labels/state?entities={address}&sourceIds={source_id}&labels=*xploit*,*hish*,*heist*&limit=1"
-        try:
-            result = requests.get(labels_url).json()
-            if isinstance(result["events"], list) and len(result["events"]) == 1:
-                wallet_tag = result["events"][0]["label"]["label"]
-        except Exception as err:
-            logging.error(f"Error obtaining malicious accounts: {err}")
+    async with aiohttp.ClientSession() as session:
+        for source_id in source_ids:
+            labels_url = f"https://api.forta.network/labels/state?entities={address}&sourceIds={source_id}&labels=*xploit*,*hish*,*heist*&limit=1"
+            try:
+                async with session.get(labels_url) as response:
+                    result = await response.json()
+                    if isinstance(result.get("events"), list) and len(result["events"]) == 1:
+                        wallet_tag = result["events"][0]["label"]["label"]
+                        break  # Exit the loop if a tag is found
+            except Exception as err:
+                logging.error(f"Error obtaining malicious accounts: {err}")
+                continue
 
     return wallet_tag
 
 
-
-def alert_count(chain_id) -> int:
-    alert_stats_url = (
-        f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
-    )
-    alert_count = 0
-    try:
-        result = requests.get(alert_stats_url).json()
-        alert_count = result["total"]["count"]
-    except Exception as err:
-        logging.error(f"Error obtaining alert counts: {err}")
-
-    return alert_count
-
-
-def detect_funding(
-    w3, transaction_event: forta_agent.transaction_event.TransactionEvent
+async def detect_funding(
+    transaction_event: TransactionEvent
 ) -> list:
     findings = []
 
     from_ = transaction_event.transaction.from_.lower()
-    malicious_account = is_malicious_account(w3.eth.chain_id, from_)
+    malicious_account = await is_malicious_account(CHAIN_ID, from_)
 
     if transaction_event.transaction.value > 0 and malicious_account is not None:
         findings.append(
@@ -97,19 +87,26 @@ def detect_funding(
     return findings
 
 
-def provide_handle_transaction(w3):
-    def handle_transaction(
-        transaction_event: forta_agent.transaction_event.TransactionEvent,
-    ) -> list:
-        return detect_funding(w3, transaction_event)
-
-    return handle_transaction
-
-
-real_handle_transaction = provide_handle_transaction(web3)
-
-
-def handle_transaction(
-    transaction_event: forta_agent.transaction_event.TransactionEvent,
+async def handle_transaction(
+    transaction_event: TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider
 ):
-    return real_handle_transaction(transaction_event)
+    return await detect_funding(transaction_event)
+
+async def main():
+    print("Starting")
+    await initialize()
+
+    await asyncio.gather(
+        scan_ethereum({
+        'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
+        'rpc_key_id': "ebbd1b21-4e72-4d80-b4f9-f605fee5eb68",
+        'local_rpc_url': "1",
+        'handle_transaction': handle_transaction
+        }),
+
+        run_health_check()
+    )
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
