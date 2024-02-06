@@ -70,14 +70,14 @@ def detect_malicious_token_contract_tx(
                 error = trace.error if trace.error else None
                 logger.info(f"Contract created {created_contract_address}")
                 if error is not None:
-                    nonce = (
-                        transaction_event.transaction.nonce
-                        if transaction_event.from_ == trace.action.from_
-                        else 1
-                    )  # for contracts creating other contracts, the nonce would be 1. WARN: this doesn't handle create2 tx
-                    contract_address = calc_contract_address(
-                        w3, trace.action.from_, nonce
-                    )
+                    if transaction_event.from_ == trace.action.from_:
+                        nonce = transaction_event.transaction.nonce
+                        contract_address = calc_contract_address(w3, trace.action.from_, nonce)
+                    else:
+                        # For contracts creating other contracts, get the nonce using Web3
+                        nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                        contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
+
                     logger.warn(
                         f"Contract {contract_address} creation failed with tx {trace.transactionHash}: {error}"
                     )

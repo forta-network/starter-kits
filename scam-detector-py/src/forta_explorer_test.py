@@ -1,8 +1,8 @@
 import pandas as pd
 from datetime import datetime
 
-from src.forta_explorer import FortaExplorer
-from src.web3_mock import EOA_ADDRESS_SMALL_TX
+from forta_explorer import FortaExplorer
+from web3_mock import EOA_ADDRESS_SMALL_TX
 
 
 class TestFortaExplorer:

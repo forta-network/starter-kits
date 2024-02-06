@@ -1,0 +1,84 @@
+{
+  "name": "scammer-nft-trader",
+  "displayName": "Scammer NFT Trader",
+  "version": "1.1.0",
+  "description": "Index NFT trades and detect scammer accounts. Supports OpenSea, LooksRare and Blur",
+  "repository": "https://github.com/forta-network/starter-kits/scammer-nft-trader",
+  "chainIds": [
+    1,
+    10,
+    56,
+    137,
+    42161,
+    43114
+  ],
+  "chainSettings": {
+    "1": {
+      "shards": 2,
+      "target": 2
+    },
+    "56": {
+      "shards": 4,
+      "target": 1
+    },
+    "137": {
+      "shards": 3,
+      "target": 2
+    },
+    "default": {
+      "shards": 1,
+      "target": 1
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run start:dev",
+    "start:dev": "nodemon --watch src --watch forta.config.json -e js,ts,json  --exec \"npm run build && forta-agent run\"",
+    "start:prod": "forta-agent run --prod",
+    "tx": "npm run build && forta-agent run --tx",
+    "bsctx": "npm run build && forta-agent run --config bsc.config.json --tx",
+    "polytx": "npm run build && forta-agent run --config poly.config.json --tx",
+    "block": "npm run build && forta-agent run --block",
+    "range": "npm run build && forta-agent run --range",
+    "alert": "npm run build && forta-agent run --alert",
+    "sequence": "npm run build && forta-agent run --sequence",
+    "file": "npm run build && forta-agent run --file",
+    "publish": "forta-agent publish",
+    "info": "forta-agent info",
+    "logs": "forta-agent logs",
+    "push": "forta-agent push",
+    "disable": "forta-agent disable",
+    "enable": "forta-agent enable",
+    "stake": "forta-agent stake",
+    "keyfile": "forta-agent keyfile",
+    "test": "jest --detectOpenHandles"
+  },
+  "dependencies": {
+    "alchemy-sdk": "^2.6.2",
+    "async-retry": "^1.3.3",
+    "dotenv": "^16.3.1",
+    "ethers": "^6.3.0",
+    "forta-agent": "^0.1.48",
+    "lru-cache": "^10.0.0",
+    "node-fetch": "^3.3.1",
+    "sqlite3": "^5.1.6",
+    "web3-eth-abi": "^1.9.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.21.5",
+    "@babel/preset-typescript": "^7.21.5",
+    "@types/async-retry": "^1.4.5",
+    "@types/jest": "^27.0.1",
+    "@types/lodash": "^4.14.191",
+    "@types/nodemon": "^1.19.0",
+    "@types/sqlite3": "^3.1.8",
+    "babel-jest": "^29.5.10",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5"
+  },
+  "overrides": {
+    "semver": "^7.5.3"
+  }
+}

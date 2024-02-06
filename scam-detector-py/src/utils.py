@@ -22,6 +22,7 @@ from src.constants import TX_COUNT_FILTER_THRESHOLD, CONFIDENCE_MAPPINGS
 from src.error_cache import ErrorCache
 from src.storage import get_secrets
 
+
 class Utils:
     ERROR_CACHE = ErrorCache
 
@@ -197,24 +198,6 @@ class Utils:
         return is_address
 
     @staticmethod
-    def get_etherscan_label(cluster: str) -> list:
-        if cluster is None:
-            return ""
-
-        labels_str = []
-
-        response = get_labels({'entities': [cluster],
-                    'sourceIds': Utils.ETHERSCAN_LABEL_SOURCE_IDS,
-                    'state': True})
-        labels = response.labels
-        for label in labels:
-            if label.source.bot is None or label.source.bot.id in Utils.ETHERSCAN_LABEL_SOURCE_IDS:
-                logging.info(f"retreived label for {cluster}: {label.label}")
-                labels_str.append(label.label)
-        
-        return labels_str
-
-    @staticmethod
     def get_max_tx_count(w3, cluster: str) -> int:
         max_transaction_count = 0
         for address in cluster.split(','):
@@ -264,11 +247,27 @@ class Utils:
         })
 
     @staticmethod
-    def is_fp(w3, cluster: str, chain_id, is_address: bool = True) -> bool:
+    def is_fp(w3, cluster: str, chain_id, findings_cache_alert: list = None, is_address: bool = True) -> bool:
         global ERROR_CACHE
 
+        # Fire an alert for likely false positives in the beta version 
+        def append_fp_finding(address: str, etherscan_labels: str = "", etherscan_nametag: str = ""):
+            if findings_cache_alert is not None:
+                from src.findings import ScamDetectorFinding
+                likely_fp_finding = ScamDetectorFinding.alert_likely_FP(address, etherscan_labels, etherscan_nametag)
+                findings_cache_alert.append(likely_fp_finding)
+
         if is_address: # if it's not a URL
-            etherscan_label = ','.join(Utils.get_etherscan_label(cluster)).lower()
+            from src.blockchain_indexer_service import BlockChainIndexer
+            block_chain_indexer = BlockChainIndexer()
+            labels_dict = block_chain_indexer.get_etherscan_labels(cluster.split(',')) # dict_values([{'labels': ['Proposer Fee Recipient'], 'nametag': 'Fee Recipient: 0xF4...A38'}])
+            labels = []
+            for item in labels_dict.values():
+                if 'labels' in item.keys():
+                    labels.extend(item['labels'])
+                if 'nametag' in item.keys():
+                    labels.append(item['nametag'])
+            etherscan_label = ','.join(labels).lower()
             if not ('attack' in etherscan_label
                     or 'phish' in etherscan_label
                     or 'hack' in etherscan_label
@@ -280,6 +279,9 @@ class Utils:
                     or '.eth' in etherscan_label
                     or etherscan_label == ''):
                 logging.info(f"Cluster {cluster} etherscan label: {etherscan_label}")
+                if Utils.is_beta() or Utils.is_beta_alt():
+                    for address, item in labels_dict.items():        
+                            append_fp_finding(address, item['labels'], item['nametag'])
                 return True
 
             tx_count = 0
@@ -294,6 +296,8 @@ class Utils:
 
             if tx_count > TX_COUNT_FILTER_THRESHOLD:
                 logging.info(f"Cluster {cluster} transacton count: {tx_count}")
+                if Utils.is_beta() or Utils.is_beta_alt():
+                    append_fp_finding(cluster)
                 return True
             
             if not has_zero_nonce:
@@ -302,6 +306,8 @@ class Utils:
                     block_chain_indexer = BlockChainIndexer()
                     if block_chain_indexer.has_deployed_high_tx_count_contract(cluster, chain_id):
                         logging.info(f"Cluster {cluster} has deployed a high tx count contract")
+                        if Utils.is_beta() or Utils.is_beta_alt():
+                            append_fp_finding(cluster)
                         return True
                     else:
                         logging.info(f"Cluster {cluster} has not deployed a high tx count contract")
@@ -313,69 +319,11 @@ class Utils:
                     return False
 
         if Utils.is_in_fp_mitigation_list(cluster):
-            logging.info(f"Cluster {cluster} is in fp mitigation list")
+            if Utils.is_beta() or Utils.is_beta_alt():
+                append_fp_finding(cluster)
             return True
 
         return False
-
-    @staticmethod
-    def filter_out_likely_fps(FINDINGS_CACHE_ALERT):
-        # Create a dictionary to map addresses to a list of findings
-        address_to_findings = dict()
-
-        for finding in FINDINGS_CACHE_ALERT:
-            if finding is not None:
-                if 'scammer_addresses' in finding.metadata:
-                    addresses = finding.metadata['scammer_addresses']
-                    if ',' in addresses:
-                        addresses_list = addresses.split(',')
-                    else:
-                        addresses_list = [addresses]
-
-                    # Store the finding(s) for each address in the dictionary
-                    for address in addresses_list:
-                        if address not in address_to_findings:
-                            address_to_findings[address] = []
-                        address_to_findings[address].append(finding)
-                elif 'scammer_address' in finding.metadata:
-                    address = finding.metadata['scammer_address']
-
-                    # Store the finding for the single address in the dictionary
-                    if address not in address_to_findings:
-                        address_to_findings[address] = [finding]
-                    else:
-                        address_to_findings[address].append(finding)
-
-        # Get Etherscan labels for all unique addresses
-        unique_addresses = list(address_to_findings.keys())
-
-        from src.blockchain_indexer_service import BlockChainIndexer
-        block_chain_indexer = BlockChainIndexer()
-        labels = block_chain_indexer.get_etherscan_labels(unique_addresses)
-
-        # Iterate through the addresses and check if they should be removed
-        for address in address_to_findings.keys():
-            if address in labels:
-                address_data = labels[address]
-                labels_list = address_data.get("labels")
-                nametag = address_data.get("nametag", "")
-
-                # Combine labels and nametag for keyword checking
-                keywords_to_check = labels_list + [nametag]
-                
-                has_keyword = any(any(word in keyword.lower() for word in ["phish", "hack", "heist", "scam", "drainer", "exploit", "fraud", ".eth"]) for keyword in keywords_to_check)
-        
-                if not has_keyword:
-                    # Emit a likely false positive alert for each address in the beta version of Scam Detector
-                    if Utils.is_beta() or Utils.is_beta_alt():
-                        from src.findings import ScamDetectorFinding
-                        likely_fp_finding = ScamDetectorFinding.alert_etherscan_likely_FP(address, labels_list, nametag)
-                        FINDINGS_CACHE_ALERT.append(likely_fp_finding)
-
-                    for finding in address_to_findings[address]:
-                        FINDINGS_CACHE_ALERT.remove(finding)        
-
-        return FINDINGS_CACHE_ALERT
 
     @staticmethod
     def is_in_fp_mitigation_list(cluster: str) -> bool:

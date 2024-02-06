@@ -98,6 +98,8 @@ def initialize(test = False):
     try:
         reinitialize()
 
+        Utils.update_fp_list(CHAIN_ID)
+
         global ALERTED_ENTITIES_ML
         alerted_entities_ml = load(CHAIN_ID, ALERTED_ENTITIES_ML_KEY)
         ALERTED_ENTITIES_ML = OrderedDict() if alerted_entities_ml is None else OrderedDict(alerted_entities_ml)
@@ -497,6 +499,12 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got base bot alert (combination); extracted {len(scammer_addresses_dict.keys())} scammer addresses. Processing took {time.time() - start_time} seconds.")
     for scammer_address in scammer_addresses_dict.keys():
         scammer_address_lower = scammer_address.lower()
+
+        # Check if the address is in the manual FP list
+        if Utils.is_in_fp_mitigation_list(scammer_address_lower):
+            logging.info(f"Skipped alert for {scammer_address_lower} as it is in the manual FP list.")
+            continue
+
         scammer_contract_addresses = scammer_addresses_dict[scammer_address]['scammer-contracts'] if 'scammer-contracts' in scammer_addresses_dict[scammer_address] else set()
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got scammer address {scammer_address_lower}")
         cluster = scammer_address_lower
@@ -527,7 +535,7 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
         logging.info(f"{BOT_VERSION}: model threshold {model_threshold}.")
         if score>model_threshold:
             #since this is a expensive function, will only check if we are about to raise an alert
-            if Utils.is_fp(w3, cluster, CHAIN_ID):
+            if Utils.is_fp(w3, cluster, CHAIN_ID, FINDINGS_CACHE_ALERT):
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} identified as FP; skipping")
                 continue
 
@@ -560,6 +568,12 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got base bot alert (passthrough); extracted {len(scammer_addresses_dict.keys())} scammer addresses.")
     for scammer_address in scammer_addresses_dict.keys():
         scammer_address_lower = scammer_address.lower()
+
+        # Check if the address is in the manual FP list
+        if Utils.is_in_fp_mitigation_list(scammer_address_lower):
+            logging.info(f"Skipped alert for {scammer_address_lower} as it is in the manual FP list.")
+            continue
+
         scammer_contract_addresses = scammer_addresses_dict[scammer_address]['scammer-contracts'] if 'scammer-contracts' in scammer_addresses_dict[scammer_address] else set()
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got scammer address {scammer_address_lower}")
         cluster = scammer_address_lower
@@ -578,7 +592,7 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} already alerted on for {alert_id}; skipping")
             continue
 
-        if Utils.is_fp(w3, cluster, CHAIN_ID):
+        if Utils.is_fp(w3, cluster, CHAIN_ID, FINDINGS_CACHE_ALERT):
             logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} identified as FP; skipping")
             continue
 
@@ -600,7 +614,7 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - url {scammer_url} already alerted on for {alert_id}; skipping")
                 continue
 
-            if Utils.is_fp(w3, scammer_url, CHAIN_ID, False):
+            if Utils.is_fp(w3, scammer_url, CHAIN_ID, FINDINGS_CACHE_ALERT, False):
                 logging.info(f"alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - url {scammer_url} identified as FP; skipping")
                 continue
 
@@ -626,13 +640,18 @@ def emit_contract_similarity_finding(w3, alert_event: forta_agent.alert_event.Al
     scammer_addresses_lower = BaseBotParser.get_scammer_addresses(w3, alert_event)
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got contract similarity bot alert; got {len(scammer_addresses_lower)} scammer addresses.")
     for scammer_address_lower in scammer_addresses_lower:
+        # Check if the address is in the manual FP list
+        if Utils.is_in_fp_mitigation_list(scammer_address_lower):
+            logging.info(f"Skipped alert for {scammer_address_lower} as it is in the manual FP list.")
+            continue
+
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - processing contract similarity bot address {scammer_address_lower}")
 
         similarity_score = float(alert_event.alert.metadata['similarity_score']) if 'similarity_score' in alert_event.alert.metadata else float(alert_event.alert.metadata['similarityScore'])
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - {scammer_address_lower} similarity score {similarity_score}")
         if similarity_score > CONTRACT_SIMILARITY_BOT_THRESHOLDS[0]:
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - similarity score {similarity_score} is above threshold {CONTRACT_SIMILARITY_BOT_THRESHOLDS[0]}")
-            if not Utils.is_fp(w3, scammer_address_lower, CHAIN_ID):
+            if not Utils.is_fp(w3, scammer_address_lower, CHAIN_ID, FINDINGS_CACHE_ALERT):
                 
                 if not already_alerted(scammer_address_lower, "SCAM-DETECTOR-SIMILAR-CONTRACT", "similar_contract"):
                     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower}; emitting finding")
@@ -659,13 +678,18 @@ def emit_eoa_association_finding(w3, alert_event: forta_agent.alert_event.AlertE
     scammer_addresses_lower = BaseBotParser.get_scammer_addresses(w3, alert_event)
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got eoa association bot alert; got {len(scammer_addresses_lower)} scammer addresses.")
     for scammer_address_lower in scammer_addresses_lower:
+        # Check if the address is in the manual FP list
+        if Utils.is_in_fp_mitigation_list(scammer_address_lower):
+            logging.info(f"Skipped alert for {scammer_address_lower} as it is in the manual FP list.")
+            continue
+
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - processing eoa association bot address {scammer_address_lower}")
 
         model_confidence = float(alert_event.alert.metadata['model_confidence']) if 'model_confidence' in alert_event.alert.metadata else float(alert_event.alert.metadata['modelConfidence'])
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - {scammer_address_lower} model confidence {model_confidence}")
         if model_confidence > EOA_ASSOCIATION_BOT_THRESHOLDS[0]:
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - model confidence {model_confidence} is above threshold {EOA_ASSOCIATION_BOT_THRESHOLDS[0]}")
-            if not Utils.is_fp(w3, scammer_address_lower, CHAIN_ID):
+            if not Utils.is_fp(w3, scammer_address_lower, CHAIN_ID, FINDINGS_CACHE_ALERT):
                 if not already_alerted(scammer_address_lower, "SCAM-DETECTOR-SCAMMER-ASSOCIATION", "scammer_association"):
                     update_list(ALERTED_ENTITIES_SCAMMER_ASSOCIATION, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE, scammer_address_lower, "SCAM-DETECTOR-SCAMMER-ASSOCIATION", "ALERTED_ENTITIES_SCAMMER_ASSOCIATION", "scammer_association")
                     #"central_node":"0x13549e22de184a881fe3d164612ef15f99f6d4b3",
@@ -763,6 +787,12 @@ def emit_manual_finding(w3, test = False) -> list:
                 entity_type = row['EntityType']
                 if entity_type == "Address":
                     scammer_address_lower = row['Entity'].lower().strip()
+
+                    # Check if the address is in the manual FP list
+                    if Utils.is_in_fp_mitigation_list(scammer_address_lower):
+                        logging.info(f"Skipped alert for {scammer_address_lower} as it is in the manual FP list.")
+                        continue
+
                     cluster = scammer_address_lower
                     logging.info(f"Manual finding: Have manual entry for {scammer_address_lower}")
                     entity_clusters = read_entity_clusters(scammer_address_lower)
@@ -1113,6 +1143,7 @@ def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_e
 
         if Utils.is_contract(w3, address):
             forta_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity=address)
+            forta_labels = forta_labels[forta_labels['chainId'] == chain_id]
             logging.info(f"{BOT_VERSION}: {starting_address} processing contract {address}. Obtained {len(forta_labels)} labels")
             for index, row in forta_labels.iterrows():
                 logging.info(f"{BOT_VERSION}: {starting_address} processing contract {address}. Label {row['labelstr']}")
@@ -1140,6 +1171,7 @@ def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_e
 
         else:
             forta_labels = forta_explorer.get_labels(source_id, datetime(2023,1,1), datetime.now(), entity=address)
+            forta_labels = forta_labels[forta_labels['chainId'] == chain_id]
             logging.info(f"{BOT_VERSION}: {starting_address} processing EOA {address}. Obtained {len(forta_labels)} labels")
             for index, row in forta_labels.iterrows():
                 logging.info(f"{BOT_VERSION}: {starting_address} processing EOA {address}. Label {row['labelstr']}")
@@ -1204,7 +1236,7 @@ def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transact
             logging.info(f"{BOT_VERSION}: {transaction_event.from_} created contract {created_contract_address}")
             original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
             if original_threat_category != "":
-                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
+                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID, []))
 
             code = Utils.get_code(w3, created_contract_address)
             for index, row in DF_CONTRACT_SIGNATURES.iterrows():
@@ -1226,21 +1258,33 @@ def detect_scammer_contract_creation(w3, transaction_event: forta_agent.transact
                             logging.info(f"Manual finding: Emitting manual finding for {transaction_event.from_}")
                             findings.append(finding)
                     break
-
+        elif len(transaction_event.traces) > 0:
+            for trace in transaction_event.traces:
+                if trace.type == "create" and trace.error is None:
+                    created_contract_address = (
+                        trace.result.address if trace.result else None
+                    )
+                    logging.info(f"Contract created {created_contract_address}")
+                    # Subtract 1 from nonce as the nonce is set to 1 at the time of deployment
+                    contract_nonce = w3.eth.get_transaction_count(Web3.toChecksumAddress(trace.action.from_), block_identifier=transaction_event.block_number) - 1
+                    original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
+                    if original_threat_category != "":
+                        future_contract_addresses = [] if contract_nonce < 1 else [Utils.calc_contract_address(w3, trace.action.from_, n).lower() for n in range(contract_nonce + 1, contract_nonce + 11)]
+                        findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID, future_contract_addresses))      
             
         pair_created_events = transaction_event.filter_log(PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES[CHAIN_ID].lower())
         for event in pair_created_events:
             original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
             if original_threat_category != "":
                 created_contract_address = event['args']['pair']
-                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
+                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID, []))
 
         pool_created_events = transaction_event.filter_log(POOLCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES[CHAIN_ID].lower())
         for event in pool_created_events:
             original_threat_category, original_alert_hash = get_original_threat_category_alert_hash(transaction_event.from_)
             if original_threat_category != "":
                 created_contract_address = event['args']['pool']
-                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID))
+                findings.append(ScamDetectorFinding.scammer_contract_deployment(transaction_event.from_, created_contract_address.lower(), original_threat_category, original_alert_hash, CHAIN_ID, []))
     except BaseException as e:
         logging.warning(f"{BOT_VERSION}: transaction {transaction_event.hash} - Exception in detect_scammer_contract_creation {transaction_event.hash}: {e} - {traceback.format_exc()}")
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV') and not Utils.is_beta() and not Utils.is_beta_alt():
@@ -1268,6 +1312,8 @@ def clear_state():
     
     Utils.FP_MITIGATION_ADDRESSES = set()
     Utils.CONTRACT_CACHE = OrderedDict()
+    Utils.IS_BETA_ALT = None
+    Utils.IS_BETA = None
 
 def persist_state():    
     global ALERTED_ENTITIES_ML
@@ -1392,21 +1438,11 @@ def provide_handle_alert(w3):
         if not ('NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV')):
             persist_state()
             logging.info(f"{BOT_VERSION}: Persisted state")
-
-        # To prevent exceeding call rate limits, Etherscan labels are checked for likely false positives only on the Ethereum chain.
-        # The FP mitigation process occurs here, batching Etherscan API calls, rather than during finding creation.            
-        if CHAIN_ID == 1:
-            if len(FINDINGS_CACHE_ALERT) >= 5:
-                FINDINGS_CACHE_ALERT = Utils.filter_out_likely_fps(FINDINGS_CACHE_ALERT)
-                for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
-                    if finding is not None:
-                        findings.append(finding)
-                FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
-        else:
-            for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
-                if finding is not None:
-                    findings.append(finding)
-            FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
+       
+        for finding in FINDINGS_CACHE_ALERT[0:10]:  # 10 findings per handle alert due to size limitation
+            if finding is not None:
+                findings.append(finding)
+        FINDINGS_CACHE_ALERT = FINDINGS_CACHE_ALERT[10:]
 
         logging.info(f"{BOT_VERSION}: Return {len(findings)} finding(s) to handleAlert.") 
 

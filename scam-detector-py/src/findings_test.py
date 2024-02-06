@@ -1,13 +1,13 @@
 from datetime import datetime
-from web3_mock import EOA_ADDRESS_LARGE_TX, EOA_ADDRESS_SMALL_TX, CONTRACT, Web3Mock, CONTRACT2
+from web3_mock import EOA_ADDRESS_LARGE_TX, EOA_ADDRESS_SMALL_TX, CONTRACT, FUTURE_CONTRACT_TO_BE_DEPLOYED_BY_EOA_LARGE_TX, Web3Mock, CONTRACT2
 from forta_agent import FindingSeverity, FindingType, EntityType
 from blockchain_indexer_mock import BlockChainIndexerMock
 from forta_explorer_mock import FortaExplorerMock
 import pandas as pd
 import hashlib
 
-from src.findings import ScamDetectorFinding
-from src.utils import Utils
+from findings import ScamDetectorFinding
+from utils import Utils
 
 
 forta_explorer = FortaExplorerMock()
@@ -281,12 +281,12 @@ class TestScamFindings:
 
 
     def test_scammer_contract_deployment(self):
-        finding = ScamDetectorFinding.scammer_contract_deployment(EOA_ADDRESS_LARGE_TX, CONTRACT, "native-ice-phishing-social-engineering", "0xabc", 1)
+        finding = ScamDetectorFinding.scammer_contract_deployment(EOA_ADDRESS_LARGE_TX, CONTRACT, "native-ice-phishing-social-engineering", "0xabc", 1, [FUTURE_CONTRACT_TO_BE_DEPLOYED_BY_EOA_LARGE_TX])
 
         assert finding is not None
         assert finding.alert_id == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT", "should be SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT"
         assert finding.description == f'{EOA_ADDRESS_LARGE_TX} deployed a contract {CONTRACT} (SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT, propagation)'
-        assert len(finding.labels) == 1, "should be 1; only the contract as the scammer already exists"  
+        assert len(finding.labels) == 2, "should be 2; only the deployed and the future contract as the scammer already exists"  
         assert finding.labels[0].entity == CONTRACT, "should be CONTRACT"
         assert finding.labels[0].metadata['associated_scammer'] == EOA_ADDRESS_LARGE_TX
         assert finding.labels[0].metadata['associated_scammer_threat_categories'] ==  "native-ice-phishing-social-engineering"
@@ -296,6 +296,15 @@ class TestScamFindings:
         assert finding.labels[0].metadata["address_type"] == "contract"
         assert finding.labels[0].metadata["logic"] == "propagation"
         assert finding.labels[0].metadata["threat_category"] == "scammer-deployed-contract"
+        assert finding.labels[1].entity == FUTURE_CONTRACT_TO_BE_DEPLOYED_BY_EOA_LARGE_TX, "should be FUTURE_CONTRACT_TO_BE_DEPLOYED_BY_EOA_LARGE_TX"
+        assert finding.labels[1].metadata['associated_scammer'] == EOA_ADDRESS_LARGE_TX
+        assert finding.labels[1].metadata['associated_scammer_threat_categories'] ==  "native-ice-phishing-social-engineering"
+        assert finding.labels[1].metadata['associated_scammer_alert_hashes'] == "0xabc"
+        assert finding.labels[1].metadata['deployer_info'] == f"Deployer {EOA_ADDRESS_LARGE_TX} involved in native-ice-phishing-social-engineering scam; this contract may or may not be deployed and may or may not be related to this particular scam, but would be created by the scammer."
+        assert finding.labels[1].label == "scammer", "should be scammer"
+        assert finding.labels[1].metadata["address_type"] == "contract"
+        assert finding.labels[1].metadata["logic"] == "propagation"
+        assert finding.labels[1].metadata["threat_category"] == "scammer-deployed-contract"
 
 
 
