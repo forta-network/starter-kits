@@ -48,7 +48,7 @@ async def detect_cex_funding(w3, transaction_event: TransactionEvent) -> list:
                     if address.lower() == transaction_event.transaction.from_ and value < threshold:
                         findings.append(
                             CEXFundingFinding(
-                                name, transaction_event.transaction.to, value, chainId
+                                name, transaction_event.transaction.to, value, chainId, transaction_event.hash
                             ).emit_finding()
                         )
                         break
