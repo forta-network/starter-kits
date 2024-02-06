@@ -45,14 +45,13 @@ async def detect_funding(w3, transaction_event: TransactionEvent) -> list:
     global CHAIN_ID
     logging.info(
         f"Analyzing transaction {transaction_event.hash} on chain {CHAIN_ID}")
-
     findings = []
 
     for log in transaction_event.logs:
         if (log.address.lower() in TORNADO_CASH_ADDRESSES[CHAIN_ID] and TORNADO_CASH_WITHDRAW_TOPIC in log.topics):
             #  0x000000000000000000000000a1b4355ae6b39bb403be1003b7d0330c811747db1bc589946f7bfca3950776b499ff5d952768ad0b644c71c5c4a209c04ec2b2a2000000000000000000000000000000000000000000000000003ce4ceb6836660
             to_address = w3.to_checksum_address(log.data[26:66])
-            transaction_count = await w3.eth.get_transaction_count(to_address, block_identifier=transaction_event.block['number'])
+            transaction_count = await w3.eth.get_transaction_count(to_address, block_identifier=transaction_event.block_number)
 
             if (transaction_count == 0):
                 logging.info(
@@ -67,7 +66,7 @@ async def detect_funding(w3, transaction_event: TransactionEvent) -> list:
         if (log.address.lower() in TORNADO_CASH_ADDRESSES_HIGH[CHAIN_ID] and TORNADO_CASH_WITHDRAW_TOPIC in log.topics):
             #  0x000000000000000000000000a1b4355ae6b39bb403be1003b7d0330c811747db1bc589946f7bfca3950776b499ff5d952768ad0b644c71c5c4a209c04ec2b2a2000000000000000000000000000000000000000000000000003ce4ceb6836660
             to_address = w3.to_checksum_address(log.data[26:66])
-            transaction_count = await w3.eth.get_transaction_count(to_address, block_identifier=transaction_event.block['number'])
+            transaction_count = await w3.eth.get_transaction_count(to_address, block_identifier=transaction_event.block_number)
 
             if (transaction_count < 500):
                 logging.info(
