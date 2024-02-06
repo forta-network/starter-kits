@@ -58,7 +58,7 @@ async def detect_funding(w3, transaction_event: TransactionEvent) -> list:
                     f"Identified new account {to_address} on chain {CHAIN_ID}")
 
                 findings.append(FundingTornadoCashFindings.funding_tornado_cash(
-                    to_address, "low", CHAIN_ID))
+                    to_address, "low", CHAIN_ID, transaction_event.hash))
             else:
                 logging.info(
                     f"Identified existing account {to_address} on chain {CHAIN_ID}. Wont emit finding.")
@@ -73,7 +73,7 @@ async def detect_funding(w3, transaction_event: TransactionEvent) -> list:
                     f"Identified new account {to_address} on chain {CHAIN_ID}")
 
                 findings.append(FundingTornadoCashFindings.funding_tornado_cash(
-                    to_address, "high", CHAIN_ID))
+                    to_address, "high", CHAIN_ID, transaction_event.hash))
             else:
                 logging.info(
                     f"Identified older account {to_address} on chain {CHAIN_ID}. Wont emit finding.")

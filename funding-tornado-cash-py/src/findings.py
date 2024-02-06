@@ -6,7 +6,7 @@ BOT_ID = "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"
 class FundingTornadoCashFindings:
 
     @staticmethod
-    def funding_tornado_cash(to_address: str, type: str, chain_id: int) -> Finding:
+    def funding_tornado_cash(to_address: str, type: str, chain_id: int, hash: str) -> Finding:
         if type == "low":
             labels = [Label({
                 'entityType': EntityType.Address,
@@ -36,7 +36,11 @@ class FundingTornadoCashFindings:
                 'type': FindingType.Suspicious,
                 'severity': FindingSeverity.Low,
                 'metadata': metadata,
-                'labels': labels
+                'labels': labels,
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': hash}]
+                }
             })
         else:
             labels = [Label({
@@ -67,6 +71,10 @@ class FundingTornadoCashFindings:
                 'type': FindingType.Info,
                 'severity': FindingSeverity.Info,
                 'metadata': metadata,
-                'labels': labels
+                'labels': labels,
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': hash}]
+                }
             })
         return finding
