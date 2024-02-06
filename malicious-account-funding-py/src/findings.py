@@ -38,6 +38,10 @@ class MaliciousAccountFundingFinding:
                 "severity": FindingSeverity.High,
                 "metadata": metadata,
                 "labels": labels,
+                "source": {
+                    "chains": [{"chainId": chain_id}],
+                    "transactions": [{"chainId": chain_id, "hash": tx_hash}]
+                }
             }
         )
 
