@@ -2,3 +2,4 @@ forta_bot-0.2.0.tar.gz
 setuptools>=61.3.1
 expiring-dict>=1.1.0
 bot-alert-rate>=0.0.4
+async-lru==2.0.4

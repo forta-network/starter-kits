@@ -4,11 +4,11 @@ import aiohttp
 import asyncio
 
 from os import environ
-from functools import lru_cache
 from web3 import AsyncWeb3
 from forta_bot import get_chain_id, scan_ethereum, scan_polygon, scan_fantom, run_health_check, TransactionEvent
 from findings import MaliciousAccountFundingFinding
 from storage import get_secrets
+from async_lru import alru_cache
 
 BOT_ID = "0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46"
 
@@ -43,7 +43,7 @@ async def initialize():
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
 
-# @lru_cache(maxsize=1_000_000)
+@alru_cache(maxsize=1_000_000)
 async def is_malicious_account(chain_id: int, address: str) -> str:
     source_ids = CHAIN_SOURCE_IDS_MAPPING[chain_id]
     wallet_tag = None
