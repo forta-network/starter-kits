@@ -1,4 +1,4 @@
-from forta_agent import Finding, FindingType, FindingSeverity, EntityType
+from forta_bot import Finding, FindingType, FindingSeverity, EntityType
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
 
@@ -22,12 +22,12 @@ class MaliciousAccountFundingFinding:
         }
 
         if chain_id not in [43114, 10, 250]:
-            metadata['anomaly_score'] = calculate_alert_rate(
+            metadata['anomaly_score'] = str(calculate_alert_rate(
                 chain_id,
                 bot_id,
                 "MALICIOUS-ACCOUNT-FUNDING",
                 ScanCountType.TRANSFER_COUNT,
-            )
+            ))
 
         finding = Finding(
             {
