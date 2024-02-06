@@ -137,20 +137,20 @@ class TestSocialEngContractAgent:
         assert len(findings) == 1, "should have 1 finding"
         assert findings[0].alert_id == 'SOCIAL-ENG-CONTRACT-CREATION'
         assert "anomaly_score" in findings[0].metadata
-        # assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
-        # assert findings[0].labels[0].toDict()["entity"] == EOA_ADDRESS, "should have EOA address as label"
-        # assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
-        # assert findings[0].labels[0].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[0].label == 'attacker', "should have attacker as label"
+        assert findings[0].labels[0].entity.lower() == EOA_ADDRESS.lower(), "should have EOA address as label"
+        assert findings[0].labels[0].entity_type == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[0].confidence == 0.6, "should have 0.3 as label confidence"
 
-        # assert findings[0].labels[1].toDict()["label"] == 'attacker_contract', "should have attacker as label"
-        # assert findings[0].labels[1].toDict()["entity"] == '0x728ad672409da288ca5b9aa85d1a55b803ba97d7', "should have contract address as label"
-        # assert findings[0].labels[1].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
-        # assert findings[0].labels[1].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[1].label == 'attacker_contract', "should have attacker as label"
+        assert findings[0].labels[1].entity == '0x728ad672409da288ca5b9aa85d1a55b803ba97d7', "should have contract address as label"
+        assert findings[0].labels[1].entity_type == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[1].confidence == 0.6, "should have 0.3 as label confidence"
 
-        # assert findings[0].labels[2].toDict()["label"] == 'victim', "should have attacker as label"
-        # assert findings[0].labels[2].toDict()["entity"] == '0x728aeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee97d7', "should have contract address as label"
-        # assert findings[0].labels[2].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
-        # assert findings[0].labels[2].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[2].label == 'victim', "should have attacker as label"
+        assert findings[0].labels[2].entity == '0x728aeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee97d7', "should have contract address as label"
+        assert findings[0].labels[2].entity_type == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[2].confidence == 0.6, "should have 0.3 as label confidence"
 
 
     @pytest.mark.asyncio
@@ -234,20 +234,20 @@ class TestSocialEngContractAgent:
         assert len(findings) == 1, "should have 1 finding"
         assert "anomaly_score" in findings[0].metadata
         assert findings[0].alert_id == 'SOCIAL-ENG-CONTRACT-CREATION-NULL-ADDRESS'
-        # assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
-        # assert findings[0].labels[0].toDict()["entity"] == "0x425df6cf518cd4fc42f382b2f81baea0ff0b0ce7", "should have EOA address as label"
-        # assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
-        # assert findings[0].labels[0].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[0].label == 'attacker', "should have attacker as label"
+        assert findings[0].labels[0].entity == "0x425df6cf518cd4fc42f382b2f81baea0ff0b0ce7", "should have EOA address as label"
+        assert findings[0].labels[0].entity_type == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[0].confidence == 0.6, "should have 0.3 as label confidence"
 
-        # assert findings[0].labels[1].toDict()["label"] == 'attacker_contract', "should have attacker as label"
-        # assert findings[0].labels[1].toDict()["entity"] == '0x00002d618fcb99cfe7af0c6505508b33fc620000', "should have contract address as label"
-        # assert findings[0].labels[1].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
-        # assert findings[0].labels[1].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[1].label == 'attacker_contract', "should have attacker as label"
+        assert findings[0].labels[1].entity == '0x00002d618fcb99cfe7af0c6505508b33fc620000', "should have contract address as label"
+        assert findings[0].labels[1].confidence == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[1].entity_type == EntityType.Address, "should have label_type address"
 
-        # assert findings[0].labels[2].toDict()["label"] == 'victim', "should have attacker as label"
-        # assert findings[0].labels[2].toDict()["entity"] == '0x0000000000000000000000000000000000000000', "should have contract address as label"
-        # assert findings[0].labels[2].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
-        # assert findings[0].labels[2].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[2].label == 'victim', "should have attacker as label"
+        assert findings[0].labels[2].entity == '0x0000000000000000000000000000000000000000', "should have contract address as label"
+        assert findings[0].labels[2].confidence == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[2].entity_type == EntityType.Address, "should have label_type address"
 
 
     @pytest.mark.asyncio
@@ -275,12 +275,12 @@ class TestSocialEngContractAgent:
         assert len(findings) == 1, "should have 1 finding"
         assert findings[0].alert_id == 'SOCIAL-ENG-EOA-CREATION-NULL-ADDRESS'
         assert "anomaly_score" in findings[0].metadata
-        # assert findings[0].labels[0].toDict()["label"] == 'attacker', "should have attacker as label"
-        # assert findings[0].labels[0].toDict()["entity"] == '0x0000d672409da288ca5b9aa85d1a55b803ba0000', "should have EOA address as label"
-        # assert findings[0].labels[0].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
-        # assert findings[0].labels[0].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[0].label == 'attacker', "should have attacker as label"
+        assert findings[0].labels[0].entity == '0x0000d672409da288ca5b9aa85d1a55b803ba0000', "should have EOA address as label"
+        assert findings[0].labels[0].entity_type == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[0].confidence == 0.6, "should have 0.3 as label confidence"
 
-        # assert findings[0].labels[1].toDict()["label"] == 'victim', "should have attacker as label"
-        # assert findings[0].labels[1].toDict()["entity"] == '0x0000000000000000000000000000000000000000', "should have contract address as label"
-        # assert findings[0].labels[1].toDict()["confidence"] == 0.6, "should have 0.3 as label confidence"
-        # assert findings[0].labels[1].toDict()["entity_type"] == EntityType.Address, "should have label_type address"
+        assert findings[0].labels[1].label == 'victim', "should have attacker as label"
+        assert findings[0].labels[1].entity == '0x0000000000000000000000000000000000000000', "should have contract address as label"
+        assert findings[0].labels[1].confidence == 0.6, "should have 0.3 as label confidence"
+        assert findings[0].labels[1].entity_type == EntityType.Address, "should have label_type address"
