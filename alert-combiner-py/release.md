@@ -1,60 +1,86 @@
 # Attack Detector Bot Release Notes
 
+## v3.53.0 (Feb 2nd 2024: beta2)
+
+- Funding stage alert expiry time extension
+- New funding bots integration (Union Chain, Railgun, Fixed Float, Squid)
+- Performance Optimizations
+
+## v3.52.6 (Feb 2nd 2024: prod)
+
+- Remove Funding & Laundering Detection bot
+
 ## v3.52.5 (Dec 18th 2023: beta2, Dec 18th 2023:prod)
+
 - After rebase
 
 ## v3.52.5 (Dec 15th 2023: beta2)
+
 - Added decryption of blocksec alerts
 
 ## v3.52.3 (Dec 1st 2023: beta2)
+
 - Added consensus mechanism
 
 ## v3.52.2 (Dec 1st 2023: beta2)
+
 - Reactive FP mitigation
 
 ## v3.52.1 (Nov 29 2023: beta2)
+
 - Fix bug 372
 
 ## v3.52.0 (Nov 15 2023: beta2)
+
 - Added new MEV bot for FP mitigation
 
 ## v3.51.7 (Dec 6 2023: prod)
+
 - updated documentation
 
 ## v3.51.6 (Nov 17 2023: beta2, Nov 17 2023: prod)
+
 - updated promo URL
 
 ## v3.51.5 (Nov 14 2023: beta2, Nov 14 2023: prod)
+
 - update to sdk 0.1.45
 
 ## v3.51.4 (Nov 3 2023: beta2, Nov 6 2023: prod)
+
 - redeploy
 
 ## v3.51.4 (Oct 31 2023: beta2)
+
 - etherscan label FP mitigation
 - addition of error log findings
-- new alert ID firing on funding/preparation 
+- new alert ID firing on funding/preparation
 - bug fixes
 
 ## v3.51.3 (Oct 25 2023: beta2)
+
 - integrate blocksec bot by introducing passthrough alertID (ATTACK-DETECTOR-7)
 - update to sdk 0.1.43
 
 ## v3.50.4 (Sept 25 2023: beta)
+
 - integrated ownership transfer bot
 - added POSITIVE-REPUTATION-2 FP mitigation
 - update to sdk 0.1.41
 
 ## v3.50.3 (Seot 12 2023: beta, Sept 19 2023: prod)
+
 - update to sdk 0.1.40/0.1.21
 - updated long description
 
 ## v3.50.1 (August 21 2023: beta)
+
 - add unique_key to finding to reduce duplicate alerts
 - fixed bug of dynamo pointing to test tag
 - update to sdk 0.1.38/0.1.20
 
 ## v3.50.0 (August 8 2023: beta)
+
 - add more bridge balance monitoring bots
 - add fp_list and manual_alert_list
 - introduce prod and test dynamo DB item prefix
@@ -62,6 +88,7 @@
 - dynamo DB persistence and sharding
 
 ## v3.46.3 (August 4 2023: beta, August 7 2023: prod)
+
 - updated package.json with new fields
 - update SDK to 0.1.34
 

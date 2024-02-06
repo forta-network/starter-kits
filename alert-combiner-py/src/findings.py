@@ -80,6 +80,9 @@ class AlertCombinerFinding:
             }))
 
             try:
+                if len(addresses.split(",")) > 30:
+                    logging.info(f"Too many addresses in cluster, skipping contract lookup")
+                    continue
                 contracts = block_chain_indexer.get_contracts(address, chain_id)
                 for contract in contracts:
                     labels.append(Label({
@@ -179,7 +182,9 @@ class AlertCombinerFinding:
                     'reported_by': reported_by,
                 }
             }))
-
+            if len(attacker_cluster.split(",")) > 30:
+                logging.info(f"Too many addresses in cluster, skipping contract lookup")
+                continue
             contracts = block_chain_indexer.get_contracts(attacker_cluster, chain_id)
             for contract in contracts:
                 labels.append(Label({

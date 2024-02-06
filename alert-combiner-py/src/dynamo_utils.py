@@ -6,10 +6,10 @@ import botocore
 import hashlib
 import pandas as pd
 
-from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS, DATAFRAME_SIZE_LIMIT, FP_MITIGATION_EXPIRY_IN_HOURS
+from src.constants import ALERTS_LOOKBACK_WINDOW_IN_HOURS, DATAFRAME_SIZE_LIMIT, FP_MITIGATION_EXPIRY_IN_HOURS, FUNDING_STAGE_ALERTS_LOOKBACK_WINDOW_IN_HOURS
 from src.utils import Utils
 
-TEST_TAG = "attack-detector-test_v2"
+TEST_TAG = "attack-detector-test_v3"
 PROD_TAG = "attack-detector-prod"
 
 class DynamoUtils:
@@ -20,15 +20,22 @@ class DynamoUtils:
         self.tag = tag
         logging.debug(f"Set chain ID = {self.chain_id} and tag = {self.tag} to the DynamoUtils class")
      
-    def _get_expiry_offset(self):
-        return ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
+    def _get_expiry_offset(self, stage=None):
+            return FUNDING_STAGE_ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60 if stage == "Funding" else ALERTS_LOOKBACK_WINDOW_IN_HOURS * 60 * 60
 
-    def _get_expires_at(self, alert_created_at=None):
-        expiry_offset = self._get_expiry_offset()
+
+    def _get_expires_at(self, alert_created_at=None, stage=None):
+        expiry_offset = self._get_expiry_offset(stage)
         if alert_created_at:
             return int(alert_created_at) + int(expiry_offset)
         else:
             return int(time.time()) + int(expiry_offset)
+        
+    def compute_expiry_offset(self, row):
+            if row['stage'] == 'Funding':
+                return pd.Timedelta(seconds=self._get_expiry_offset("Funding"))
+            else:
+                return pd.Timedelta(seconds=self._get_expiry_offset())
 
     def _put_item(self, dynamo, item):
         response = None
@@ -128,7 +135,7 @@ class DynamoUtils:
 
         self._put_item(dynamo, item)
 
-    def put_alert_data(self, dynamo, cluster: str, dataframe: pd.DataFrame):
+    def put_alert_data(self, dynamo, cluster: str, dataframe: pd.DataFrame, stage: str = None):
         logging.debug(f"Putting alert data for cluster {cluster} in DynamoDB")
         last_alert_created_at = dataframe["created_at"].iloc[-1].timestamp()
         logging.debug(f"alert_created_at: {last_alert_created_at}")
@@ -137,11 +144,12 @@ class DynamoUtils:
         sortId = f"{cluster}"
         logging.debug(f"sortId: {sortId}")
         sortIdHash = hashlib.sha256(sortId.encode()).hexdigest()
-        expiresAt = self._get_expires_at(last_alert_created_at)
+        expiresAt = self._get_expires_at(last_alert_created_at, stage)
         logging.debug(f"expiresAt: {expiresAt}")    
         logging.debug(f"Dataframe length before filtering: {len(dataframe)}")
-        expiry_offset = pd.Timedelta(seconds=self._get_expiry_offset())
-        dataframe = dataframe[dataframe["created_at"] > (pd.to_datetime(last_alert_created_at, unit='s') - expiry_offset)]
+        dataframe['expiry_offset'] = dataframe.apply(self.compute_expiry_offset, axis=1)
+        dataframe = dataframe[dataframe["created_at"] > (pd.to_datetime(last_alert_created_at, unit='s') - dataframe['expiry_offset'])]
+        dataframe = dataframe.drop('expiry_offset', axis=1)
         logging.debug(f"Dataframe length after filtering: {len(dataframe)}")
         dataframe_json = dataframe.to_json(orient="records")
         dataframe_json_size = len(json.dumps(dataframe_json))
