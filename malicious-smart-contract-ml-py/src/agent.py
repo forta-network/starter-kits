@@ -316,7 +316,7 @@ def check_funding(address: str, n_days: int=1):
     t = time.time()
     bots = [
         '0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400',  # funding tornado cash
-        '0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058',  # funding laundering
+        # '0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058',  # funding laundering
         '0x025251bd9b67b18804249a61a19f8dd45e3dd30caba295ed2cdc9392039f6272',  # funding union chain
         '0xd2a25c368501ec7f9cd1219858c8a53cc4da7bd64c43633658a90b54bfcc595a',  # funding railgun
         '0x2d3bb89e9cecc0024d8ae1a9c93ca42664472cb074cc200fa2c0f77f2be34bf3',  # funding fixed float
