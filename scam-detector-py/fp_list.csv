@@ -233,3 +233,5 @@ address,chain_id,comment
 0xbfb2b6870501a6ff17121d676a0a45a38c9eed1e,1, FP
 0x70ad6a24abd247fce9b87b2e85972049cc0170ad,1, FP
 0x2E05A304d3040f1399c8C20D2a9F659AE7521058,1, FP - Luno Deployer
+0xf07c30e4cd6cfff525791b4b601bd345bded7f47,56, FP binance deployer
+0xdcfae11c70f1575fab9d6bd389a6188ae5524a56,137, FP Polygon deployer
