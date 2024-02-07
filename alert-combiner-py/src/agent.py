@@ -247,7 +247,7 @@ def is_polygon_validator(w3, cluster: str, tx_hash: str) -> bool:
                 if len(log['topics']) > 3:
                     if log['topics'][0] == HexBytes('0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63'):  # logfeetransfer event
                         validator = log['topics'][3].hex()[-40:]  # validator in 3rd pos
-                        if validator in cluster:
+                        if validator.lower() in cluster.lower():
                             return True
         except Exception as e:
             logging.error(f"Error fetching transaction receipt: {e}")
