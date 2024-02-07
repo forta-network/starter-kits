@@ -97,9 +97,9 @@ class TestTornadoCashFunding:
         # so our target for polygon is 1 tx with a tc funding and 49 without tc funding and 50% are no funding
 
         processing_runs = 10
-        processing_time_normal_funding_avg_ms = await async_timeit(agent.detect_funding, real_w3, normal_funding_tx_event) * 1000 / processing_runs
-        processing_time_no_funding_avg_ms = await async_timeit(agent.detect_funding, real_w3, normal_funding_tx_event) * 1000 / processing_runs
-        processing_time_tc_funding_avg_ms = await async_timeit(agent.detect_funding, real_w3, normal_funding_tx_event) * 1000 / processing_runs
+        processing_time_normal_funding_avg_ms = await async_timeit(agent.detect_funding, real_w3, normal_funding_tx_event) / processing_runs
+        processing_time_no_funding_avg_ms = await async_timeit(agent.detect_funding, real_w3, normal_funding_tx_event) / processing_runs
+        processing_time_tc_funding_avg_ms = await async_timeit(agent.detect_funding, real_w3, normal_funding_tx_event) / processing_runs
         assert (processing_time_normal_funding_avg_ms * 0.49 + processing_time_no_funding_avg_ms * 0.50 + processing_time_tc_funding_avg_ms * 0.01)/2 < 125, f"processing time should be less than 125ms based on the existing sharding config, but is {(processing_time_normal_funding_avg_ms * 0.49 + processing_time_no_funding_avg_ms * 0.50 + processing_time_tc_funding_avg_ms * 0.01)/2}, normal: {processing_time_normal_funding_avg_ms}, tc: {processing_time_tc_funding_avg_ms}, no funding: {processing_time_no_funding_avg_ms} If not, this bot is unlikely to keep up with fast chains, like Polygon"
 
     @pytest.mark.asyncio
