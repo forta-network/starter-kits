@@ -3,14 +3,13 @@ from unittest.mock import patch
 import agent
 import pytest
 import time
-from forta_agent import Label, get_json_rpc_url
 from constants import TORNADO_CASH_ADDRESSES, TORNADO_CASH_WITHDRAW_TOPIC, TORNADO_CASH_ADDRESSES_HIGH
 from web3_mock import EOA_ADDRESS_TC,EOA_ADDRESS_NEW, EOA_ADDRESS_OLD, Web3Mock
-from web3 import Web3
+from web3 import Web3, AsyncWeb3
 
 w3 = Web3Mock()
 w3.to_checksum_address = Web3.to_checksum_address
-real_w3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
+real_w3 = AsyncWeb3.AsyncHTTPProvider
 
 async def async_timeit(func, *args, **kwargs):
     start_time = time.time()
