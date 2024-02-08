@@ -10,7 +10,7 @@ from findings import MaliciousAccountFundingFinding
 from storage import get_secrets
 from async_lru import alru_cache
 
-BOT_ID = "0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46"
+BOT_ID = "0x9091c581c6e3c11f5485754d2bf0f01a7d6297467c2363f3084ab000274b86c2"
 
 web3 = AsyncWeb3.AsyncHTTPProvider
 
