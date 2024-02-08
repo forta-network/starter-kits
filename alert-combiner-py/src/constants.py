@@ -223,8 +223,10 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0x127e62dffbe1a9fa47448c29c3ef4e34f515745cb5df4d9324c2a0adae59eeef", "AK-AZTEC-PROTOCOL-FUNDING", "Funding"),  # Aztec funding
              ("0xaf9ac4c204eabdd39e9b00f91c8383dc01ef1783e010763cad05cc39e82643bb", "LARGE-TRANSFER-OUT", "MoneyLaundering"),  # large native transfer out
              ("0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46", "MALICIOUS-ACCOUNT-FUNDING", "Funding"),  # Malicious Account Funding
-             ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_NEW_FUNDING", "Funding"),  # New Account Funding
-             ("0x186f424224eac9f0dc178e32d1af7be39506333783eec9463edd247dc8df8058", "FLD_Laundering", "MoneyLaundering"),  # Laundering
+             ("0x025251bd9b67b18804249a61a19f8dd45e3dd30caba295ed2cdc9392039f6272", "FUNDING-UNION-CHAIN-NEW-ACCOUNT", "Funding"), # Union Chain Funding
+             ("0xd2a25c368501ec7f9cd1219858c8a53cc4da7bd64c43633658a90b54bfcc595a", "FUNDING-RAILGUN-NEW-ACCOUNT", "Funding"), # Railgun Funding
+             ("0x2d3bb89e9cecc0024d8ae1a9c93ca42664472cb074cc200fa2c0f77f2be34bf3", "FUNDING-FIXED-FLOAT-NEW-ACCOUNT", "Funding"), # Fixed Float Funding
+             ("0xa5a23e3fd7a5401db47008329061bb9dca48fc0199151e043d93376d31adb40d", "FUNDING-SQUID-NEW-ACCOUNT", "Funding"), # Squid Funding 
              ("0x3858be37e155f84e8e0d6212db1b47d4e83b1d41e8a2bebecb902651ed1125d6", "NETHFORTA-1", "Exploitation"),  # high gas
              ("0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d", "NEGATIVE-ANGER-TEXT-MESSAGE", "MoneyLaundering"),  # txt msg sentiment analysis
              ("0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d", "NEGATIVE-DISGUST-TEXT-MESSAGE", "MoneyLaundering"),  # txt msg sentiment analysis
