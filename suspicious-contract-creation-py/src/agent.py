@@ -1,7 +1,6 @@
-import forta_agent
 import rlp
 import asyncio
-from forta_bot import get_chain_id, scan_base, scan_ethereum, run_health_check
+from forta_bot import get_chain_id, scan_base, scan_ethereum, run_health_check, TransactionEvent
 from hexbytes import HexBytes
 from pyevmasm import disassemble_hex
 from web3 import AsyncWeb3
@@ -89,7 +88,7 @@ async def get_opcode_addresses(w3, address) -> set:
     return address_set
 
 
-async def detect_suspicious_contract_creations(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
+async def detect_suspicious_contract_creations(w3, transaction_event: TransactionEvent) -> list:
     global TORNADO_CASH_FUNDED_ACCOUNTS
 
     findings = []
@@ -163,7 +162,7 @@ async def calc_contract_address(w3, address, nonce) -> str:
     return w3.to_checksum_address(w3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
-async def update_tornado_cash_funded_accounts(w3, transaction_event: forta_agent.transaction_event.TransactionEvent):
+async def update_tornado_cash_funded_accounts(w3, transaction_event: TransactionEvent):
     """
     this function maintains a list of tornado cash funded accounts; holds up to TORNADO_CASH_FUNDED_ACCOUNTS_QUEUE_SIZE in memory
     :return: None
@@ -179,7 +178,7 @@ async def update_tornado_cash_funded_accounts(w3, transaction_event: forta_agent
                 TORNADO_CASH_FUNDED_ACCOUNTS.pop(0)
 
 
-async def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider) -> list:
+async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider) -> list:
     return await detect_suspicious_contract_creations(web3, transaction_event)
 
 async def main():
