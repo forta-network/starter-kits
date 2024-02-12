@@ -446,6 +446,11 @@ def analyze_address(address, timestamp):
     :return: (bool, bool)
     """
     eoa = is_eoa(address)
+
+    # If the address is not an EOA, return False for newly_created without calling is_newly_created
+    if not eoa:
+        return False, False
+    
     newly_created = is_newly_created(address, blockexplorer, timestamp)
 
     return eoa, newly_created
