@@ -1,13 +1,13 @@
-from forta_agent import Finding, FindingType, FindingSeverity, EntityType
+from forta_bot import Finding, FindingType, FindingSeverity, EntityType
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
-BOT_ID = "0x457aa09ca38d60410c8ffa1761f535f23959195a56c9b82e0207801e86b34d99"
+BOT_ID = "0x64df42068faa19d842c8df94156b8ec0f28758d6775ee912b0733c89c57e2486"
 
 
 class SuspiciousContractFindings:
 
     @staticmethod
-    def suspicious_contract_creation_tornado_cash(from_address: str, contract_address: str, contained_addresses: set, chain_id: int) -> Finding:
+    def suspicious_contract_creation_tornado_cash(from_address: str, contract_address: str, contained_addresses: set, chain_id: int, tx_hash: str) -> Finding:
         labels = [{"entity": from_address,
                    "entityType": EntityType.Address,
                    "label": "attacker",
@@ -21,12 +21,12 @@ class SuspiciousContractFindings:
                      str(i): address for i, address in enumerate(contained_addresses, 1)}
         metadata = {**addresses}
 
-        if chain_id not in [43114, 10, 250]:
-            metadata['anomaly_score'] = calculate_alert_rate(
+        if chain_id not in [43114, 10, 250, 8453]:
+            metadata['anomaly_score'] = str(calculate_alert_rate(
                 chain_id,
                 BOT_ID,
                 'SUSPICIOUS-CONTRACT-CREATION-TORNADO-CASH',
-                ScanCountType.CONTRACT_CREATION_COUNT)
+                ScanCountType.CONTRACT_CREATION_COUNT))
 
         return Finding({
             'name': 'Suspicious Contract Creation by Tornado Cash funded account',
@@ -36,10 +36,14 @@ class SuspiciousContractFindings:
             'severity': FindingSeverity.High,
             'metadata': metadata,
             'labels': labels,
+            'source': {
+                'chains': [{'chainId': chain_id}],
+                'transactions': [{'chainId': chain_id, 'hash': tx_hash}]
+            }
         })
 
     @staticmethod
-    def suspicious_contract_creation(from_address: str, contract_address: str, contained_addresses: set, chain_id: int) -> Finding:
+    def suspicious_contract_creation(from_address: str, contract_address: str, contained_addresses: set, chain_id: int, tx_hash: str) -> Finding:
         labels = [{"entity": from_address,
                    "entityType": EntityType.Address,
                    "label": "attacker",
@@ -54,12 +58,12 @@ class SuspiciousContractFindings:
 
         metadata = {**addresses}
 
-        if chain_id not in [43114, 10, 250]:
-            metadata['anomaly_score'] = calculate_alert_rate(
+        if chain_id not in [43114, 10, 250, 8453]:
+            metadata['anomaly_score'] = str(calculate_alert_rate(
                 chain_id,
                 BOT_ID,
                 'SUSPICIOUS-CONTRACT-CREATION',
-                ScanCountType.CONTRACT_CREATION_COUNT)
+                ScanCountType.CONTRACT_CREATION_COUNT))
 
         return Finding({
             'name': 'Suspicious Contract Creation',
@@ -68,5 +72,9 @@ class SuspiciousContractFindings:
             'type': FindingType.Suspicious,
             'severity': FindingSeverity.Low,
             'metadata': metadata,
-            'labels': labels
+            'labels': labels,
+            'source': {
+                'chains': [{'chainId': chain_id}],
+                'transactions': [{'chainId': chain_id, 'hash': tx_hash}]
+            }
         })
