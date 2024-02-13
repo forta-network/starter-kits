@@ -86,7 +86,7 @@ def put_first_tx(address: str, first_tx_datetime: datetime):
         logging.info(f"Successfully put first tx in dynamoDB: {response}")
         return
 
-@lru_cache(maxsize=12800)
+@lru_cache(maxsize=64000)
 def read_first_tx(address: str):
     global CHAIN_ID
 
