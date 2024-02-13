@@ -217,7 +217,7 @@ def detect_unverified_contract_creation(
                 for (
                     created_contract_address,
                     transaction_event,
-                ) in CREATED_CONTRACTS.items():
+                ) in CREATED_CONTRACTS.copy().items():
                     logging.info(
                         f"Evaluating contract {created_contract_address} from cache."
                     )
