@@ -6,4 +6,4 @@ BYTE_CODE_LENGTH_THRESHOLD = (
     60  # ignore contracts with byte code length below this threshold
 )
 MASK = "0xffffffffffffffffffffffffffffffffffffffff"
-BOT_ID = "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c"
+BOT_ID = "0xf05b538e3f509118249e8e1b09e43bc0cd8f3d2bcd7a2a1c7f8181251fe49105"
