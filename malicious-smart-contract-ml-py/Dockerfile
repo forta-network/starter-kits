@@ -15,6 +15,7 @@ ENV FORTA_ENV=production
 # Uncomment the following line to enable logging
 LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
+COPY malicious_non_token_model_02_07_23_exp2.joblib ./
 COPY ./src ./src
 COPY LICENSE.md ./
 CMD [ "python3", "./src/agent.py" ]
