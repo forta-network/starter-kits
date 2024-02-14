@@ -331,7 +331,7 @@ def detect_unverified_contract_creation(
                                                 )
                                             )
                                             CREATED_CONTRACTS.pop(
-                                                created_contract_address
+                                                created_contract_address, None
                                             )
                                         else:
                                             logging.info(
