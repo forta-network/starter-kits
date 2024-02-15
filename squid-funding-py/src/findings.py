@@ -1,5 +1,5 @@
 from forta_agent import Finding, FindingType, FindingSeverity, EntityType
-from src.constants import *
+from constants import *
 
 class FundingSquidFindings:
 
@@ -31,7 +31,11 @@ class FundingSquidFindings:
                         'label': "attacker-funding",
                         'confidence': 0.2
                     },
-                ]
+                ],
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': transaction.transaction.hash}]
+                }
             })
         else:
             finding = Finding({
@@ -61,6 +65,10 @@ class FundingSquidFindings:
                         'label': "attacker-funding",
                         'confidence': 0.2
                     },
-                ]
+                ],
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': transaction.transaction.hash}]
+                }
             })
         return finding
