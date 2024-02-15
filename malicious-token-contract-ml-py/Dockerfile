@@ -25,7 +25,7 @@ ENV FORTA_ENV=production
 ENV PYTHONUNBUFFERED=1
 LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
-COPY malicious_non_token_model_02_07_23_exp6.joblib ./
+COPY malicious_token_model_02_07_23_exp6.joblib ./
 COPY LICENSE.md ./
 COPY ./src ./src
 CMD ["python3.10", "./src/agent.py"]
