@@ -1,4 +1,4 @@
-from forta_agent import Finding, FindingType, FindingSeverity, EntityType
+from forta_bot import Finding, FindingType, FindingSeverity, EntityType
 from constants import *
 
 class FundingSquidFindings:
