@@ -13,6 +13,7 @@ This bot detects transactions in the native currency from Squid to new EOA addre
 - Optimism
 - Fantom
 - Avalanche
+- Base
 
 ## Alerts
 
