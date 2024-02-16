@@ -194,11 +194,12 @@ def cache_contract_creation(
                         nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
                         created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
-                    logging.info(
-                        f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}"
-                    )
+                    if created_contract_address not in CREATED_CONTRACTS:
+                        logging.info(
+                            f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}"
+                        )
 
-                    CREATED_CONTRACTS[created_contract_address] = transaction_event
+                        CREATED_CONTRACTS[created_contract_address] = transaction_event
 
     contracts_count = len(CREATED_CONTRACTS.items())
     logging.info(f"Created Contracts Count = {contracts_count}")
@@ -216,7 +217,7 @@ def detect_unverified_contract_creation(
                 for (
                     created_contract_address,
                     transaction_event,
-                ) in CREATED_CONTRACTS.items():
+                ) in CREATED_CONTRACTS.copy().items():
                     logging.info(
                         f"Evaluating contract {created_contract_address} from cache."
                     )
@@ -330,13 +331,13 @@ def detect_unverified_contract_creation(
                                                 )
                                             )
                                             CREATED_CONTRACTS.pop(
-                                                created_contract_address
+                                                created_contract_address, None
                                             )
                                         else:
                                             logging.info(
                                                 f"Identified verified contract: {created_contract_address}"
                                             )
-                                            CREATED_CONTRACTS.pop(created_contract_address)
+                                            CREATED_CONTRACTS.pop(created_contract_address, None)
             if not infinite:
                 break
 

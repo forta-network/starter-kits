@@ -63,6 +63,9 @@ async def analyze_transaction(transaction_event: forta_agent.transaction_event.T
     block = int(transaction_event.block_number)
     confirmed_targets_keys = confirmed_targets.keys()
 
+    if transaction_event.to is None:
+        return findings
+
     # means the amount of transferred native token (ETH for 1 chain id etc.)
     if transaction_event.transaction.value > 0:
         from_ = transaction_event.from_.lower()  # transaction's initiator
@@ -446,6 +449,11 @@ def analyze_address(address, timestamp):
     :return: (bool, bool)
     """
     eoa = is_eoa(address)
+
+    # If the address is not an EOA, return False for newly_created without calling is_newly_created
+    if not eoa:
+        return False, False
+    
     newly_created = is_newly_created(address, blockexplorer, timestamp)
 
     return eoa, newly_created

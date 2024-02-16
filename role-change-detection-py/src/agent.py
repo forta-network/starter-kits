@@ -3,6 +3,7 @@ import sys
 
 from forta_agent import get_json_rpc_url, Web3, Finding, FindingSeverity, FindingType, EntityType
 from hexbytes import HexBytes
+from functools import lru_cache
 from src.constants import *
 from src.blockexplorer import *
 
@@ -36,6 +37,7 @@ def initialize():
     ALERT_COUNT = 0
 
 
+@lru_cache(maxsize=128000)
 def is_contract(w3, address):
     """
     this function determines whether address is a contract
@@ -57,23 +59,25 @@ def detect_role_change(w3, blockexplorer, transaction_event):
 
     findings = []
 
+    if transaction_event.to is None:
+        return findings
+
     if is_contract(w3, transaction_event.to):
         DENOMINATOR_COUNT += 1
         try:
             abi = blockexplorer.get_abi(transaction_event.to)
             if abi == None:
-                logging.warn(f"Unable to retrieve ABI for {transaction_event.to}")
+                logging.warning(f"Unable to retrieve ABI for {transaction_event.to}")
                 return findings
         except Exception:
-            logging.warn(f"Unable to retrieve ABI for {transaction_event.to}")
+            logging.warning(f"Unable to retrieve ABI for {transaction_event.to}")
             return findings
         contract = w3.eth.contract(address=Web3.toChecksumAddress(transaction_event.to), abi=abi)
-        transaction = w3.eth.get_transaction(transaction_event.hash)
         try:
-            transaction_data = contract.decode_function_input(transaction.input)
+            transaction_data = contract.decode_function_input(transaction_event.transaction.data)
             function_call = str(transaction_data[0])[10:-1]
         except Exception as e:
-            logging.warn(f"Failed to decode tx input: {e}")
+            logging.warning(f"Failed to decode tx input: {e}")
             return findings
         matching_keywords = []
         for keyword in ROLE_CHANGE_KEYWORDS:

@@ -1,7 +1,7 @@
 {
   "name": "address-poisoning-detector",
   "displayName": "Address Poisoning Detector",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Bot detecting address poisoning - zero value, low value, and fake token phishing transfers",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/address-poisoning-py",
   "chainIds": [
@@ -15,15 +15,15 @@
   ],
   "chainSettings": {
     "1": {
-      "shards": 15,
-      "target": 3
-    },
-    "137": {
-      "shards": 30,
+      "shards": 10,
       "target": 3
     },
     "56": {
       "shards": 28,
+      "target": 3
+    },
+    "137": {
+      "shards": 30,
       "target": 3
     },
     "default": {
