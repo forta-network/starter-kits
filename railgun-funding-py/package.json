@@ -11,14 +11,14 @@
   "promoUrl": "https://forta.org",
   "chainIds": [
     1,
-    8453
+    137
   ],
   "chainSettings": {
     "1": {
       "shards": 10,
       "target": 3
     },
-    "8453": {
+    "137": {
       "shards": 20,
       "target": 3
     },

@@ -1,16 +1,15 @@
 import json
 import logging
 import sys
+import asyncio
+from web3 import Web3, AsyncWeb3
 
-from forta_agent import get_json_rpc_url, Web3
+from forta_bot import scan_ethereum, scan_polygon, TransactionEvent, get_chain_id, run_health_check
 from hexbytes import HexBytes
-from functools import lru_cache
+from async_lru import alru_cache
 
-from src.constants import *
-from src.findings import FundingRailgunFindings
-
-# Initialize web3
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
+from constants import *
+from findings import FundingRailgunFindings
 
 # Logging set up
 root = logging.getLogger()
@@ -39,32 +38,33 @@ def initialize():
     DENOMINATOR_COUNT = 0
 
     global CHAIN_ID
-    CHAIN_ID = web3.eth.chain_id
+    CHAIN_ID = get_chain_id()
 
-
-@lru_cache(maxsize=100000)
-def is_contract(w3, address):
+@alru_cache(maxsize=100000)
+async def is_contract(w3, address):
     """
     this function determines whether address is a contract
     :return: is_contract: bool
     """
     if address is None:
         return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
+    code = await w3.eth.get_code(Web3.to_checksum_address(address))
     return code != HexBytes('0x')
 
-@lru_cache(maxsize=100000)
-def is_new_account(w3, address, block_number):
-    return w3.eth.get_transaction_count(Web3.toChecksumAddress(address), block_number) == 0
+@alru_cache(maxsize=100000)
+async def is_new_account(w3, address, block_number):
+    if address is None:
+        return True
+    return await w3.eth.get_transaction_count(Web3.to_checksum_address(address), block_number) == 0
 
 
-def detect_railgun_funding(w3, transaction_event):
+async def detect_railgun_funding(w3, transaction_event):
     global LOW_VOL_ALERT_COUNT
     global NEW_EOA_ALERT_COUNT
     global DENOMINATOR_COUNT
     global CHAIN_ID
     
-    relay_function_invocations = transaction_event.filter_function(RELAY_FUNCTION_ABI, RAILGUN_ADDRESS[CHAIN_ID])
+    relay_function_invocations = transaction_event.filter_function(RELAY_FUNCTION_ABI, RAILGUN_ADDRESSES[CHAIN_ID])
 
     if len(relay_function_invocations) == 0:
         return []
@@ -119,29 +119,43 @@ def detect_railgun_funding(w3, transaction_event):
 
     findings = []
 
-    is_new_account_flag = is_new_account(w3, to_address, transaction_event.block_number)
+    is_new_account_flag = await is_new_account(w3, to_address, transaction_event.block_number)
+    is_contr = await is_contract(w3, transaction_event.to)
 
-    if not is_contract(w3, to_address):
+    if not is_contr:
         if is_new_account_flag or native_value < railgun_threshold:
             
             alert_type = "new-eoa" if is_new_account_flag else "low-amount"
             alert_count = NEW_EOA_ALERT_COUNT if is_new_account_flag else LOW_VOL_ALERT_COUNT
             alert_count += 1
 
-            score = (1.0 * alert_count) / DENOMINATOR_COUNT
+            score = str((1.0 * alert_count) / DENOMINATOR_COUNT)
             findings.append(FundingRailgunFindings.funding_railgun(transaction_event, native_value, to_address, alert_type, score, CHAIN_ID))
 
     return findings
 
-def provide_handle_transaction(w3):
-    def handle_transaction(transaction_event):
-        return detect_railgun_funding(w3, transaction_event)
 
-    return handle_transaction
+async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider):
+    return await detect_railgun_funding(web3, transaction_event)
 
+async def main():
+    initialize()
+    
+    await asyncio.gather(
+        scan_ethereum({
+            'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "e698634d-79c2-44fe-adf8-f7dac20dd33c",
+            'local_rpc_url': "1",
+            'handle_transaction': handle_transaction
+        }),
+        scan_polygon({
+            'rpc_url': "https://polygon-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "b9017deb-b785-48f8-bfb3-771f31190845",
+            'local_rpc_url': "137",
+            'handle_transaction': handle_transaction
+        }),
+        run_health_check()
+    )
 
-real_handle_transaction = provide_handle_transaction(web3)
-
-
-def handle_transaction(transaction_event):
-    return real_handle_transaction(transaction_event)
+if __name__ == "__main__":
+    asyncio.run(main())
