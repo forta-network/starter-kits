@@ -65,9 +65,8 @@ async def detect_squid_funding(w3, transaction_event):
     global NEW_EOA_ALERT_COUNT
     global DENOMINATOR_COUNT
     global CHAIN_ID
-    print("Detecting Squid Funding")
     express_execute_with_token_function_invocations = transaction_event.filter_function(EXPRESS_EXECUTE_WITH_TOKEN_FUNCTION_ABI, SQUID_ROUTER_ADDRESS)
-    print("ea;sdfksa;lf")
+
     if len(express_execute_with_token_function_invocations) != 1 or transaction_event.from_ != SQUID_RELAYER:
         return []
 
