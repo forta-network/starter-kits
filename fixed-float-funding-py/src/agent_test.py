@@ -125,3 +125,4 @@ class TestFixedFloatFundingAgent:
 
         findings = await agent.detect_fixed_float_funding(w3, tx_event)
         assert len(findings) == 0, "This should not have triggered a finding - It is to an address that has sent a transaction and is over the threshold."
+

@@ -1,14 +1,18 @@
 import logging
 import sys
 
+from forta_agent import get_json_rpc_url, Web3
 from forta_bot import scan_ethereum, scan_polygon, TransactionEvent, get_chain_id, run_health_check
 from hexbytes import HexBytes
 from async_lru import alru_cache
 import asyncio
 from web3 import Web3, AsyncWeb3
 
-from constants import *
+from src.constants import *
 from findings import FundingFixedFloatFindings
+
+# Initialize web3
+web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 # Logging set up
 root = logging.getLogger()
