@@ -1,5 +1,5 @@
 from forta_bot import Finding, FindingSeverity, FindingType, EntityType
-from src.constants import *
+from constants import *
 
 class FundingFixedFloatFindings:
 
