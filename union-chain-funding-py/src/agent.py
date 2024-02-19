@@ -103,7 +103,7 @@ async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb
 
 
 async def main():
-    await initialize()
+    initialize()
     
     await asyncio.gather(
         scan_ethereum({
