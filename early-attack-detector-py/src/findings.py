@@ -52,7 +52,7 @@ class ContractFindings:
             {
                 "name": "Suspicious Contract Creation",
                 "description": self.description,
-                "alert_id": "SUSPICIOUS-CONTRACT-CREATION",
+                "alert_id": "EARLY-ATTACK-DETECTOR-1",
                 "type": FindingType.Suspicious,
                 "severity": FindingSeverity.High,
                 "metadata": self.metadata,

@@ -133,17 +133,16 @@ def detect_malicious_contract_tx(
                 error=error,
             ):
                 finding.addresses = [trace.action.from_, created_contract_address]
-                if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
-                    funding_alerts = check_funding(trace.action.from_)
-                    if len(funding_alerts) > 0:
-                        finding.severity = FindingSeverity.Critical
-                        finding.metadata["funding_alerts"] = ','.join(funding_alerts)
-                    if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD and CHAIN_ID == 1:
-                        finding.severity = FindingSeverity.Critical
-                        finding.metadata['high_precision_model'] = True
-                    if finding.severity == FindingSeverity.Critical:
-                        # only raise alerts for critical findings
-                        malicious_findings.append(finding)
+                funding_alerts = check_funding(trace.action.from_)
+                if len(funding_alerts) > 0:
+                    finding.severity = FindingSeverity.Critical
+                    finding.metadata["funding_alerts"] = ','.join(funding_alerts)
+                if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD and CHAIN_ID == 1:
+                    finding.severity = FindingSeverity.Critical
+                    finding.metadata['high_precision_model'] = True
+                if finding.severity == FindingSeverity.Critical:
+                    # only raise alerts for critical findings
+                    malicious_findings.append(finding)
     # Fake loop tp break out if the contract here has already been analyzed
     for _ in range(1):
         if transaction_event.to is None:
@@ -163,17 +162,16 @@ def detect_malicious_contract_tx(
                 creation_bytecode,
             ):
                 finding.addresses = [transaction_event.from_, created_contract_address]
-                if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
-                    funding_alerts = check_funding(transaction_event.from_)
-                    if len(funding_alerts) > 0:
-                        finding.severity = FindingSeverity.Critical
-                        finding.metadata["funding_alerts"] = ','.join(funding_alerts)
-                    if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD and CHAIN_ID == 1:
-                        finding.severity = FindingSeverity.Critical
-                        finding.metadata['high_precision_model'] = True
-                    if finding.severity == FindingSeverity.Critical:
-                        # only raise alerts for critical findings
-                        malicious_findings.append(finding)
+                funding_alerts = check_funding(transaction_event.from_)
+                if len(funding_alerts) > 0:
+                    finding.severity = FindingSeverity.Critical
+                    finding.metadata["funding_alerts"] = ','.join(funding_alerts)
+                if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD and CHAIN_ID == 1:
+                    finding.severity = FindingSeverity.Critical
+                    finding.metadata['high_precision_model'] = True
+                if finding.severity == FindingSeverity.Critical:
+                    # only raise alerts for critical findings
+                    malicious_findings.append(finding)
 
     all_findings = malicious_findings
     if len(repeated_bytecodes) > 0:
@@ -213,19 +211,21 @@ def detect_malicious_contract(
             function_signatures = get_function_signatures(w3, opcodes)
             logger.info(f"{created_contract_address}: score={model_score}")
 
-            model_score_backup = None
-            finding = None
-            if finding is None:
-                finding = ContractFindings(
-                    from_,
-                    created_contract_address,
-                    set.union(storage_addresses, opcode_addresses),
-                    function_signatures,
-                    model_score,
-                    MODEL_THRESHOLD,
-                    error=error,
-                )
-            if model_score is not None or model_score_backup is not None:
+            if model_score is None or model_score < MODEL_THRESHOLD:
+                if ENV == 'dev':
+                    logger.info(f"Score is less than threshold: {model_score} < {MODEL_THRESHOLD}. Not creating alert.")
+                return []
+            
+            finding = ContractFindings(
+                from_,
+                created_contract_address,
+                set.union(storage_addresses, opcode_addresses),
+                function_signatures,
+                model_score,
+                MODEL_THRESHOLD,
+                error=error,
+            )
+            if model_score is not None:
                 from_label_type = "contract" if is_contract(w3, from_) else "eoa"
                 labels = [
                     {
