@@ -33,9 +33,9 @@ class BlockExplorer:
         elif self.chain_id == 8453:
             self.host = "https://api.basescan.org"
 
-    async def set_api_key(self):
+    def set_api_key(self):
         if BlockExplorer.SECRETS_JSON is None:
-            BlockExplorer.SECRETS_JSON = await get_secrets()
+            BlockExplorer.SECRETS_JSON = get_secrets()
 
         if self.chain_id == 1:
             self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['ETHERSCAN_TOKEN']
