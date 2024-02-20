@@ -38,15 +38,6 @@ class ContractFindings:
         chain_id: int,
         labels: list,
     ) -> Finding:
-        if chain_id not in [43114, 10, 250]:
-            self.metadata["anomaly_score"] = (
-                calculate_alert_rate(
-                    chain_id,
-                    BOT_ID,
-                    "SUSPICIOUS-CONTRACT-CREATION",
-                    ScanCountType.CONTRACT_CREATION_COUNT,
-                ),
-            )
         self.label = labels
         return Finding(
             {
