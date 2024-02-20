@@ -1,3 +1,4 @@
 forta_bot-0.2.0.tar.gz
 setuptools>=61.3.1
 async-lru==2.0.4
+jsonpickle==3.0.3

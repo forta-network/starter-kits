@@ -1,18 +1,17 @@
+import asyncio
+from web3 import Web3, AsyncWeb3
 import logging
 import sys
 
-from forta_agent import get_json_rpc_url, Web3
 from forta_bot import scan_ethereum, TransactionEvent, get_chain_id, run_health_check
 from hexbytes import HexBytes
 from async_lru import alru_cache
-import asyncio
-from web3 import Web3, AsyncWeb3
 
 from constants import *
 from findings import FundingUnionChainFindings
 
-# Initialize web3
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
+# For debugging
+import jsonpickle
 
 # Logging set up
 root = logging.getLogger()
@@ -55,7 +54,6 @@ async def is_contract(w3, address):
     code = await w3.eth.get_code(Web3.to_checksum_address(address))
     return code != HexBytes('0x')
 
-@alru_cache(maxsize=100000)
 async def is_new_account(w3, address, block_number):
     if address is None:
         return True
@@ -68,6 +66,7 @@ async def detect_union_chain_funding(w3, transaction_event):
     global DENOMINATOR_COUNT
     global CHAIN_ID
 
+    print(f"Transaction hash: {transaction_event.hash}")
 
     findings = []
 
@@ -95,6 +94,8 @@ async def detect_union_chain_funding(w3, transaction_event):
             LOW_VOL_ALERT_COUNT += 1
             score = str((1.0 * LOW_VOL_ALERT_COUNT) / DENOMINATOR_COUNT)
             findings.append(FundingUnionChainFindings.funding_union_chain(transaction_event, "low-amount", score, CHAIN_ID))
+    if len(findings) > 0:
+        print(f"findings: {jsonpickle.encode(findings)}")
     return findings
 
 
