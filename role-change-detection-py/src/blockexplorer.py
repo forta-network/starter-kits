@@ -2,6 +2,7 @@ import json
 import logging
 import requests
 import aiohttp
+from async_lru import alru_cache
 
 from storage import get_secrets
 
@@ -54,6 +55,7 @@ class BlockExplorer:
             self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['BASESCAN_TOKEN']
 
 
+    @alru_cache(maxsize=128000)
     async def get_abi(self, address):
         url = self.host + "/api?module=contract&action=getabi&address=" + address + "&apikey=" + self.api_key
         response = requests.get(url)

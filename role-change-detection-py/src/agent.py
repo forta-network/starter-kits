@@ -6,6 +6,7 @@ import sys
 from forta_bot import scan_ethereum, scan_base, TransactionEvent, get_chain_id, run_health_check, Finding, FindingSeverity, FindingType, EntityType
 from web3 import Web3, AsyncWeb3
 from hexbytes import HexBytes
+from async_lru import alru_cache
 from constants import *
 from blockexplorer import *
 
@@ -40,7 +41,7 @@ async def initialize():
 
     await blockexplorer.set_api_key()
 
-
+@alru_cache(maxsize=128000)
 async def is_contract(w3, address):
     """
     this function determines whether address is a contract
@@ -62,6 +63,9 @@ async def detect_role_change(w3, blockexplorer, transaction_event):
 
     findings = []
 
+    if transaction_event.to is None:
+        return findings
+
     if await is_contract(w3, transaction_event.to):
         DENOMINATOR_COUNT += 1
         try:
@@ -70,23 +74,29 @@ async def detect_role_change(w3, blockexplorer, transaction_event):
                 logging.warning(f"Unable to retrieve ABI for {transaction_event.to}")
                 return findings
         except Exception:
-            logging.warn(f"Unable to retrieve ABI for {transaction_event.to}")
+            logging.warning(f"Unable to retrieve ABI for {transaction_event.to}")
             return findings
         contract = w3.eth.contract(address=Web3.to_checksum_address(transaction_event.to), abi=abi)
-        transaction = await w3.eth.get_transaction(transaction_event.hash)
-        print(f"transaction: {transaction}")
         try:
-            transaction_data = contract.decode_function_input(transaction.input)
+            transaction_data = contract.decode_function_input(transaction_event.transaction.data)
             print(f"transaction_data: {transaction_data}")
             function_call = str(transaction_data[0])[10:-1]
         except Exception as e:
             logging.warning(f"Failed to decode tx input: {e}")
             return findings
-        matching_keywords = []
+        matching_keywords = [
+                keyword for keyword in ROLE_CHANGE_KEYWORDS
+                if keyword in function_call.lower() and not (keyword == 'own' and 'down' in function_call.lower())
+            ]
         for keyword in ROLE_CHANGE_KEYWORDS:
             if keyword in function_call.lower():
                 matching_keywords.append(keyword)
         if len(matching_keywords) > 0:
+            function_params = transaction_data[1]
+            addresses_in_function_params = [
+                function_params[keyword].lower() for keyword in FUNCTION_PARAMETER_KEYWORDS
+                if keyword in function_params and str(function_params[keyword]).startswith('0x')
+            ]
             ALERT_COUNT += 1
             findings.append(Finding(
                 {
@@ -113,6 +123,14 @@ async def detect_role_change(w3, blockexplorer, transaction_event):
                             "label": "attacker",
                             "confidence": 0.3
                         },
+                        *[
+                            {
+                                "entity_type": EntityType.Address,
+                                "entity": address,
+                                "label": "attacker",
+                                "confidence": 0.3
+                            } for address in addresses_in_function_params
+                        ],
                         {
                             "entity_type": EntityType.Transaction,
                             "entity": transaction_event.transaction.hash,
