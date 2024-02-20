@@ -2,17 +2,12 @@ import asyncio
 import logging
 import sys
 
-# from forta_agent import get_json_rpc_url, Web3, Finding, FindingSeverity, FindingType, EntityType
 from forta_bot import scan_ethereum, scan_base, TransactionEvent, get_chain_id, run_health_check, Finding, FindingSeverity, FindingType, EntityType
 from web3 import Web3, AsyncWeb3
 from hexbytes import HexBytes
 from async_lru import alru_cache
 from constants import *
 from blockexplorer import *
-
-
-# Initialize web3
-# web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 # Replace with blockexplorer instance
 blockexplorer = BlockExplorer(get_chain_id())
