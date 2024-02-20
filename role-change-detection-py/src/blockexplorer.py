@@ -58,7 +58,6 @@ class BlockExplorer:
     @alru_cache(maxsize=128000)
     async def get_abi(self, address):
         url = self.host + "/api?module=contract&action=getabi&address=" + address + "&apikey=" + self.api_key
-        response = requests.get(url)
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as res:
                 if res.status == 200:

@@ -8,3 +8,5 @@ ROLE_CHANGE_KEYWORDS = [
     # 'user',
     'member'
 ]
+
+FUNCTION_PARAMETER_KEYWORDS = ['to', 'newOwner', '_newOwner', 'account', 'newAdmin']

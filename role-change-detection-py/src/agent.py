@@ -74,7 +74,6 @@ async def detect_role_change(w3, blockexplorer, transaction_event):
         contract = w3.eth.contract(address=Web3.to_checksum_address(transaction_event.to), abi=abi)
         try:
             transaction_data = contract.decode_function_input(transaction_event.transaction.data)
-            print(f"transaction_data: {transaction_data}")
             function_call = str(transaction_data[0])[10:-1]
         except Exception as e:
             logging.warning(f"Failed to decode tx input: {e}")
@@ -83,9 +82,6 @@ async def detect_role_change(w3, blockexplorer, transaction_event):
                 keyword for keyword in ROLE_CHANGE_KEYWORDS
                 if keyword in function_call.lower() and not (keyword == 'own' and 'down' in function_call.lower())
             ]
-        for keyword in ROLE_CHANGE_KEYWORDS:
-            if keyword in function_call.lower():
-                matching_keywords.append(keyword)
         if len(matching_keywords) > 0:
             function_params = transaction_data[1]
             addresses_in_function_params = [
@@ -93,6 +89,7 @@ async def detect_role_change(w3, blockexplorer, transaction_event):
                 if keyword in function_params and str(function_params[keyword]).startswith('0x')
             ]
             ALERT_COUNT += 1
+            print(type(matching_keywords))
             findings.append(Finding(
                 {
                     "name": "Possible Role Change",
@@ -101,7 +98,7 @@ async def detect_role_change(w3, blockexplorer, transaction_event):
                     "type": FindingType.Suspicious,
                     "severity": FindingSeverity.Medium,
                     "metadata": {
-                        "matching keywords": matching_keywords,
+                        "matching keywords": ', '.join(matching_keywords),
                         "function signature": str(transaction_data[0])[10:-1],
                         "anomaly_score": str((1.0 * ALERT_COUNT) / DENOMINATOR_COUNT)
                     },
