@@ -11,15 +11,11 @@
   "licenseUrl": "https://github.com/forta-network/starter-kits/tree/main/role-change-detection-py/LICENSE.md",
   "promoUrl": "https://forta.org",
   "chainIds": [
-    1, 8453
+    1
   ],
   "chainSettings": {
     "1": {
       "shards": 15,
-      "target": 3
-    },
-    "8453": {
-      "shards": 28,
       "target": 3
     },
     "default": {
