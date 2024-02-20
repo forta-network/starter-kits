@@ -1,7 +1,7 @@
 {
   "name": "role-change-detection",
   "displayName": "Role Change Detection",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Detecting role changes in smart contracts",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/role-change-detection-py",
   "chainIds": [
