@@ -79,11 +79,16 @@ def detect_role_change(w3, blockexplorer, transaction_event):
         except Exception as e:
             logging.warning(f"Failed to decode tx input: {e}")
             return findings
-        matching_keywords = []
-        for keyword in ROLE_CHANGE_KEYWORDS:
-            if keyword in function_call.lower():
-                matching_keywords.append(keyword)
+        matching_keywords = [
+                keyword for keyword in ROLE_CHANGE_KEYWORDS
+                if keyword in function_call.lower() and not (keyword == 'own' and 'down' in function_call.lower())
+            ]
         if len(matching_keywords) > 0:
+            function_params = transaction_data[1]
+            addresses_in_function_params = [
+                function_params[keyword].lower() for keyword in FUNCTION_PARAMETER_KEYWORDS
+                if keyword in function_params and str(function_params[keyword]).startswith('0x')
+            ]
             ALERT_COUNT += 1
             findings.append(Finding(
                 {
@@ -110,6 +115,14 @@ def detect_role_change(w3, blockexplorer, transaction_event):
                             "label": "attacker",
                             "confidence": 0.3
                         },
+                        *[
+                            {
+                                "entity_type": EntityType.Address,
+                                "entity": address,
+                                "label": "attacker",
+                                "confidence": 0.3
+                            } for address in addresses_in_function_params
+                        ],
                         {
                             "entity_type": EntityType.Transaction,
                             "entity": transaction_event.transaction.hash,
