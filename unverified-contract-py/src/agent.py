@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 import threading
@@ -6,23 +7,22 @@ from os import environ
 import concurrent.futures
 from functools import lru_cache
 
-import forta_agent
+from forta_bot import scan_ethereum, TransactionEvent, get_chain_id, run_health_check
+from web3 import Web3, AsyncWeb3
 import rlp
-from forta_agent import get_json_rpc_url
 from hexbytes import HexBytes
 from pyevmasm import disassemble_hex
 from web3 import Web3
 import time
 
-from src.blockexplorer import BlockExplorer
-from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, WAIT_TIME, CONCURRENT_SIZE
-from src.findings import UnverifiedCodeContractFindings
-from src.storage import get_secrets
+from blockexplorer import BlockExplorer
+from constants import CONTRACT_SLOT_ANALYSIS_DEPTH, WAIT_TIME, CONCURRENT_SIZE
+from findings import UnverifiedCodeContractFindings
+from storage import get_secrets
 
-SECRETS_JSON = get_secrets()
+SECRETS_JSON = {}
 
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
-blockexplorer = BlockExplorer(web3.eth.chain_id)
+blockexplorer = BlockExplorer(get_chain_id())
 
 FINDINGS_CACHE = []
 THREAD_STARTED = False
@@ -39,7 +39,7 @@ handler.setFormatter(formatter)
 root.addHandler(handler)
 
 
-def initialize():
+async def initialize():
     """
     this function initializes the state variables that are tracked across tx and blocks
     it is called from test to reset state between tests
@@ -54,9 +54,14 @@ def initialize():
     CREATED_CONTRACTS = {}
 
     global CHAIN_ID
-    CHAIN_ID = web3.eth.chain_id
+    CHAIN_ID = get_chain_id()
+
+    global SECRETS_JSON
+    SECRETS_JSON = await get_secrets()
 
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
+
+    await blockexplorer.set_api_key()
 
 
 def calc_contract_address(w3, address, nonce) -> str:
@@ -66,7 +71,7 @@ def calc_contract_address(w3, address, nonce) -> str:
     """
 
     address_bytes = bytes.fromhex(address[2:].lower())
-    return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
+    return Web3.to_checksum_address(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
 @lru_cache(maxsize=12800)
@@ -158,7 +163,7 @@ def get_opcode_addresses(w3, address) -> set:
 
 
 def cache_contract_creation(
-    w3, transaction_event: forta_agent.transaction_event.TransactionEvent
+    w3, transaction_event: TransactionEvent
 ):
     global CREATED_CONTRACTS
 
@@ -191,7 +196,7 @@ def cache_contract_creation(
                         created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
                     else:
                         # For contracts creating other contracts, get the nonce using Web3
-                        nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                        nonce = w3.eth.getTransactionCount(Web3.to_checksum_address(trace.action.from_), transaction_event.block_number)
                         created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
                     logging.info(
@@ -344,9 +349,11 @@ def detect_unverified_contract_creation(
         logging.warning(f"Exception: {e}")
 
 
-def provide_handle_transaction(w3, blockexplorer):
-    def handle_transaction(
-        transaction_event: forta_agent.transaction_event.TransactionEvent,
+async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider):
+    async def provide_handle_transaction(
+        w3,
+        blockexplorer,
+        transaction_event
     ) -> list:
         global FINDINGS_CACHE
         global THREAD_STARTED
@@ -367,13 +374,21 @@ def provide_handle_transaction(w3, blockexplorer):
         FINDINGS_CACHE = []
         return findings
 
-    return handle_transaction
+    return await provide_handle_transaction(web3, blockexplorer, transaction_event)
 
 
-real_handle_transaction = provide_handle_transaction(web3, blockexplorer)
+async def main():
+    await initialize()
+    
+    await asyncio.gather(
+        scan_ethereum({
+            'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "e698634d-79c2-44fe-adf8-f7dac20dd33c",
+            'local_rpc_url': "1",
+            'handle_transaction': handle_transaction
+        }),
+        run_health_check()
+    )
 
-
-def handle_transaction(
-    transaction_event: forta_agent.transaction_event.TransactionEvent,
-):
-    return real_handle_transaction(transaction_event)
+if __name__ == "__main__":
+    asyncio.run(main())
