@@ -24,7 +24,7 @@ root.addHandler(handler)
 DENOMINATOR_COUNT = 0
 ALERT_COUNT = 0
 
-def initialize():
+async def initialize():
     """
     Initialize variables for anomaly score.
     """
@@ -34,7 +34,7 @@ def initialize():
     global ALERT_COUNT
     ALERT_COUNT = 0
 
-    blockexplorer.set_api_key()
+    await blockexplorer.set_api_key()
 
 @alru_cache(maxsize=128000)
 async def is_contract(w3, address):
@@ -140,7 +140,7 @@ async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb
     return await detect_role_change(web3, blockexplorer, transaction_event)
 
 async def main():
-    initialize()
+    await initialize()
     
     await asyncio.gather(
         scan_ethereum({

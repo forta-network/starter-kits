@@ -27,7 +27,7 @@ class TestRoleChangeAgent:
     async def test_agent_latency(self, mocker):
 
         global real_w3
-        agent.initialize()
+        await agent.initialize()
 
         # Chain: Blocktime, Number of Tx -> Avg processing time in ms target
         # Ethereum: 12s, 150 -> 80ms
@@ -102,7 +102,7 @@ class TestRoleChangeAgent:
     @pytest.mark.asyncio
     @patch('agent.get_chain_id', return_value=1)
     async def test_transfer_without_role_change(self, mocker):
-        agent.initialize()
+        await agent.initialize()
 
         tx_event = create_transaction_event(
             transaction = {
@@ -124,7 +124,7 @@ class TestRoleChangeAgent:
     @pytest.mark.asyncio
     @patch('agent.get_chain_id', return_value=1)
     async def test_transfer_to_eoa(self, mocker):
-        agent.initialize()
+        await agent.initialize()
 
         tx_event = create_transaction_event(
             transaction = {
