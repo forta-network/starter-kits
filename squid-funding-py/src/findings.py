@@ -16,7 +16,7 @@ class FundingSquidFindings:
                 'metadata': {
                     "amount_funded": f"{value} {CURRENCIES[chain_id]}",
                     "receiving_address": f"{receiver}",
-                    "anomaly_score": anomaly_score
+                    "anomaly_score": str(anomaly_score)
                 },
                 'labels': [
                     {
@@ -50,7 +50,7 @@ class FundingSquidFindings:
                     "threshold": f"{SQUID_THRESHOLDS[chain_id]} {CURRENCIES[chain_id]}",
                     "amount_funded": f"{value} {CURRENCIES[chain_id]}",
                     "receiving_address": receiver,
-                    "anomaly_score": anomaly_score
+                    "anomaly_score": str(anomaly_score)
                 },
                 'labels': [
                     {
