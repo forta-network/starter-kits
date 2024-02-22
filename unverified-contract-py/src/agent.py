@@ -5,7 +5,7 @@ import threading
 from datetime import datetime, timedelta
 from os import environ
 import concurrent.futures
-from functools import lru_cache
+from async_lru import alru_cache
 
 from forta_bot import scan_ethereum, TransactionEvent, get_chain_id, run_health_check
 from web3 import Web3, AsyncWeb3
@@ -74,8 +74,8 @@ def calc_contract_address(w3, address, nonce) -> str:
     return Web3.to_checksum_address(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
-@lru_cache(maxsize=12800)
-def is_contract(w3, address) -> bool:
+@alru_cache(maxsize=12800)
+async def is_contract(w3, address) -> bool:
     """
     this function determines whether address is a contract
     :return: is_contract: bool
@@ -83,14 +83,14 @@ def is_contract(w3, address) -> bool:
     if address is None:
         return True
     try:
-        code = w3.eth.get_code(Web3.toChecksumAddress(address))
+        code = await w3.eth.get_code(Web3.to_checksum_address(address))
         return code != HexBytes("0x")
     except Exception as e:
         logging.warn(f"Web3 error for is_contract method", {address: address, e: e})
         return False
 
-@lru_cache(maxsize=12800)
-def get_storage_addresses(w3, address) -> set:
+@alru_cache(maxsize=12800)
+async def get_storage_addresses(w3, address) -> set:
     """
     this function returns the addresses that are references in the storage of a contract (first CONTRACT_SLOT_ANALYSIS_DEPTH slots)
     :return: address_list: list (only returning contract addresses)
@@ -102,18 +102,21 @@ def get_storage_addresses(w3, address) -> set:
 
     address_set = set()
 
-    def get_storage_at_slot(size):
+    async def get_storage_at_slot(size):
         for i in size:
             try:
-                mem = w3.eth.get_storage_at(Web3.toChecksumAddress(address), i)
+                mem = await w3.eth.get_storage_at(Web3.to_checksum_address(address), i)
                 if mem != HexBytes(
                     "0x0000000000000000000000000000000000000000000000000000000000000000"
                 ):
                     # looking at both areas of the storage slot as - depending on packing - the address could be at the beginning or the end.
-                    if is_contract(w3, mem[0:20]):
-                        address_set.add(Web3.toChecksumAddress(mem[0:20].hex()))
-                    if is_contract(w3, mem[12:]):
-                        address_set.add(Web3.toChecksumAddress(mem[12:].hex()))
+                    is_contract_first_half_contract = await is_contract(w3, mem[0:20])
+                    is_contract_second_half_contract = await is_contract(w3, mem[12:])
+
+                    if is_contract_first_half_contract:
+                        address_set.add(Web3.to_checksum_address(mem[0:20].hex()))
+                    if is_contract_second_half_contract:
+                        address_set.add(Web3.to_checksum_address(mem[12:].hex()))
             except Exception as e:
                 logging.warning(
                     f"Web3 Error at get_storage_at method", {address: address, e: e}
@@ -134,8 +137,8 @@ def get_storage_addresses(w3, address) -> set:
     return address_set
 
 
-@lru_cache(maxsize=12800)
-def get_opcode_addresses(w3, address) -> set:
+@alru_cache(maxsize=12800)
+async def get_opcode_addresses(w3, address) -> set:
     """
     this function returns the addresses that are references in the opcodes of a contract
     :return: address_list: list (only returning contract addresses)
@@ -145,15 +148,15 @@ def get_opcode_addresses(w3, address) -> set:
     if address is None:
         return set()
 
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
+    code = await w3.eth.get_code(Web3.to_checksum_address(address))
     opcode = disassemble_hex(code.hex())
 
     address_set = set()
     for op in opcode.splitlines():
         for param in op.split(" "):
             if param.startswith("0x") and len(param) == 42:
-                if is_contract(w3, param):
-                    address_set.add(Web3.toChecksumAddress(param))
+                if await is_contract(w3, param):
+                    address_set.add(Web3.to_checksum_address(param))
 
     end_time = time.time()
 
@@ -209,7 +212,7 @@ def cache_contract_creation(
     logging.info(f"Created Contracts Count = {contracts_count}")
 
 
-def detect_unverified_contract_creation(
+async def detect_unverified_contract_creation(
     w3, blockexplorer, wait_time=WAIT_TIME, infinite=True
 ):
     global CREATED_CONTRACTS
@@ -241,16 +244,17 @@ def detect_unverified_contract_creation(
                             logging.info(
                                 f"Evaluating contract {created_contract_address} from cache. Is old enough."
                             )
-                            if not blockexplorer.is_verified(created_contract_address):
+                            is_contract_verified = await blockexplorer.is_verified(created_contract_address)
+                            if not is_contract_verified:
                                 logging.info(
                                     f"Identified unverified contract: {created_contract_address}"
                                 )
 
-                                storage_addresses = get_storage_addresses(
+                                storage_addresses = await get_storage_addresses(
                                     w3, created_contract_address
                                 )
 
-                                opcode_addresses = get_opcode_addresses(
+                                opcode_addresses = await get_opcode_addresses(
                                     w3, created_contract_address
                                 )
 
@@ -264,6 +268,7 @@ def detect_unverified_contract_creation(
                                         created_contract_address,
                                         CHAIN_ID,
                                         set.union(storage_addresses, opcode_addresses),
+                                        transaction_event.hash
                                     )
                                 )
 
@@ -289,7 +294,7 @@ def detect_unverified_contract_creation(
                                     calc_created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
                                 else:
                                     # For contracts creating other contracts, get the nonce using Web3
-                                    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                                    nonce = w3.eth.getTransactionCount(Web3.to_checksum_address(trace.action.from_), transaction_event.block_number)
                                     calc_created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
                                 if (

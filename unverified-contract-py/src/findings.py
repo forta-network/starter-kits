@@ -1,4 +1,4 @@
-from forta_agent import Finding, FindingSeverity, FindingType, EntityType
+from forta_bot import Finding, FindingSeverity, FindingType, EntityType
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
 BOT_ID = "0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3"
@@ -7,7 +7,7 @@ BOT_ID = "0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3"
 class UnverifiedCodeContractFindings:
 
     @staticmethod
-    def unverified_code(from_address: str, contract_address: str, chain_id: int, contained_addresses: set) -> Finding:
+    def unverified_code(from_address: str, contract_address: str, chain_id: int, contained_addresses: set, transaction_hash: str) -> Finding:
 
         labels = [{"entity": from_address,
                    "entity_type": EntityType.Address,
@@ -36,5 +36,9 @@ class UnverifiedCodeContractFindings:
             'type': FindingType.Suspicious,
             'severity': FindingSeverity.Medium,
             'metadata': metadata,
+            'source': {
+                'chains': [{'chainId': chain_id}],
+                'transactions': [{'chainId': chain_id, 'hash': transaction_hash}]
+            },
             'labels': labels
         })
