@@ -226,6 +226,8 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0xd2a25c368501ec7f9cd1219858c8a53cc4da7bd64c43633658a90b54bfcc595a", "FUNDING-RAILGUN-NEW-ACCOUNT", "Funding"), # Railgun Funding
              ("0x2d3bb89e9cecc0024d8ae1a9c93ca42664472cb074cc200fa2c0f77f2be34bf3", "FUNDING-FIXED-FLOAT-NEW-ACCOUNT", "Funding"), # Fixed Float Funding
              ("0xa5a23e3fd7a5401db47008329061bb9dca48fc0199151e043d93376d31adb40d", "FUNDING-SQUID-NEW-ACCOUNT", "Funding"), # Squid Funding 
+             ("0xf2ee3554a13ee126dae179918e89010afc1bfc1ffabd3a381b529632ebf7497a", "FUNDING-THORCHAIN-NEW-ACCOUNT", "Funding"), # Thorchain Funding
+             ("0x29daabf74506f2aa4feb93fa8ec0f4ac61c4e9ba3f3190072bc680bc70e71bd7", "FUNDING-EXCH-NEW-ACCOUNT", "Funding"), # Exch Funding
              ("0x3858be37e155f84e8e0d6212db1b47d4e83b1d41e8a2bebecb902651ed1125d6", "NETHFORTA-1", "Exploitation"),  # high gas
              ("0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d", "NEGATIVE-ANGER-TEXT-MESSAGE", "MoneyLaundering"),  # txt msg sentiment analysis
              ("0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d", "NEGATIVE-DISGUST-TEXT-MESSAGE", "MoneyLaundering"),  # txt msg sentiment analysis
