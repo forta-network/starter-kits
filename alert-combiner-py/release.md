@@ -1,5 +1,9 @@
 # Attack Detector Bot Release Notes
 
+## v3.53.2 (Feb 22th 2024: beta2)
+
+- New funding bots integration (Thorchain, eXch)
+
 ## v3.53.1 (Feb 9th 2024: beta2)
 
 - Polygon validators FP fix
