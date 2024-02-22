@@ -183,7 +183,7 @@ def get_pot_attacker_addresses(alert_event: forta_agent.alert_event.AlertEvent) 
     pot_attacker_addresses = []
     try:
         for label in alert_event.alert.labels:
-            if label.label is not None and ('attack' in label.label.lower() or 'exploit' in label.label.lower() or 'scam' in label.label.lower() or 'suspicious_address' in label.label.lower()):
+            if label.label is not None and ('attack' in label.label.lower() or 'exploit' in label.label.lower() or 'scam' in label.label.lower() or 'suspicious_address' in label.label.lower()) and len(label.entity) == 42:
                 pot_attacker_addresses.append(label.entity)
         logging.info(f"alert {alert_event.alert_hash} {alert_event.alert_id} - Analysing {len(pot_attacker_addresses)} pot attacker addresses obtained from labels")
 
