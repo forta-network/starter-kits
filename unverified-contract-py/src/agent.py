@@ -4,7 +4,6 @@ import sys
 import threading
 from datetime import datetime, timedelta
 from os import environ
-import concurrent.futures
 from async_lru import alru_cache
 
 from forta_bot import scan_ethereum, TransactionEvent, get_chain_id, run_health_check
@@ -127,8 +126,8 @@ async def get_storage_addresses(w3, address) -> set:
         for i in range(0, CONTRACT_SLOT_ANALYSIS_DEPTH, CONCURRENT_SIZE)
     ]
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.map(get_storage_at_slot, concurrent_sizes)
+    tasks = [get_storage_at_slot(size) for size in concurrent_sizes]
+    await asyncio.gather(*tasks)
 
     end_time = time.time()
 
@@ -310,17 +309,16 @@ async def detect_unverified_contract_creation(
                                         logging.info(
                                             f"Evaluating contract {created_contract_address} from cache. Is old enough."
                                         )
-                                        if not blockexplorer.is_verified(
-                                            created_contract_address
-                                        ):
+                                        is_verified = await blockexplorer.is_verified(created_contract_address)
+                                        if not is_verified:
                                             logging.info(
                                                 f"Identified unverified contract: {created_contract_address}"
                                             )
-                                            storage_addresses = get_storage_addresses(
+                                            storage_addresses = await get_storage_addresses(
                                                 w3, created_contract_address
                                             )
 
-                                            opcode_addresses = get_opcode_addresses(
+                                            opcode_addresses = await get_opcode_addresses(
                                                 w3, created_contract_address
                                             )
 
@@ -337,6 +335,7 @@ async def detect_unverified_contract_creation(
                                                         storage_addresses,
                                                         opcode_addresses,
                                                     ),
+                                                    trace.transaction_hash
                                                 )
                                             )
                                             CREATED_CONTRACTS.pop(
