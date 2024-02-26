@@ -2,7 +2,16 @@
   "name": "exch-funding-beta",
   "displayName": "eXch Funding (beta)",
   "version": "0.1.0",
+  "engines": {
+    "node": ">=20"
+  },
   "description": "Detecting addresses being funded by eXch",
+  "chainSettings": {
+    "1": {
+      "shards": 4,
+      "target": 3
+    }
+  },
   "repository": "https://github.com/forta-network/forta-bot-sdk/tree/main/exch-funding-py",
   "licenseUrl": "https://github.com/forta-network/forta-bot-sdk/blob/master/starter-project/LICENSE.md",
   "promoUrl": "https://forta.org",
