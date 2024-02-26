@@ -7,14 +7,10 @@
   "repository": "https://github.com/forta-network/starter-kits/tree/main/unverified-contract-py",
   "chainIds": [
     1,
-    8453
+    137
   ],
   "chainSettings": {
     "1": {
-      "shards": 6,
-      "target": 3
-    },
-    "8453": {
       "shards": 6,
       "target": 3
     },

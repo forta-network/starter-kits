@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from os import environ
 from async_lru import alru_cache
 
-from forta_bot import scan_ethereum, TransactionEvent, get_chain_id, run_health_check
+from forta_bot import scan_ethereum, scan_polygon, TransactionEvent, get_chain_id, run_health_check
 from web3 import Web3, AsyncWeb3
 import rlp
 from hexbytes import HexBytes
@@ -17,9 +17,8 @@ import time
 from blockexplorer import BlockExplorer
 from constants import CONTRACT_SLOT_ANALYSIS_DEPTH, WAIT_TIME, CONCURRENT_SIZE
 from findings import UnverifiedCodeContractFindings
-from storage import get_secrets
 
-SECRETS_JSON = {}
+SECRETS_JSON = None
 
 blockexplorer = BlockExplorer(get_chain_id())
 
@@ -55,12 +54,15 @@ async def initialize():
     global CHAIN_ID
     CHAIN_ID = get_chain_id()
 
-    global SECRETS_JSON
-    SECRETS_JSON = await get_secrets()
-
-    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
-
     await blockexplorer.set_api_key()
+
+    global SECRETS_JSON
+    SECRETS_JSON = blockexplorer.get_secrets()
+
+    # For Prod
+    # environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
+    # For Testing from NM Deployer - 'secrets.json' is different for NM & Forta
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["generalApiKeys"]["ZETTABLOCK"][0]
 
 
 def calc_contract_address(w3, address, nonce) -> str:
@@ -365,7 +367,7 @@ async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb
         if not THREAD_STARTED:
             THREAD_STARTED = True
             thread = threading.Thread(
-                target=detect_unverified_contract_creation, args=(w3, blockexplorer)
+                target=lambda: asyncio.run(detect_unverified_contract_creation(w3, blockexplorer))
             )
             thread.start()
 
@@ -389,6 +391,12 @@ async def main():
             'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
             'rpc_key_id': "e698634d-79c2-44fe-adf8-f7dac20dd33c",
             'local_rpc_url': "1",
+            'handle_transaction': handle_transaction
+        }),
+        scan_polygon({
+            'rpc_url': "https://polygon-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "b9017deb-b785-48f8-bfb3-771f31190845",
+            'local_rpc_url': "137",
             'handle_transaction': handle_transaction
         }),
         run_health_check()

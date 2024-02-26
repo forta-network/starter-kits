@@ -62,3 +62,6 @@ class BlockExplorer:
                 else:
                     logging.warn("Unable to retrieve ABI. Etherscan returned status code " + str(res.status))
                     pass
+    
+    def get_secrets(self):
+        return self.SECRETS_JSON
