@@ -1,15 +1,14 @@
+import asyncio
+from web3 import Web3, AsyncWeb3
 import logging
 import sys
 
-from forta_agent import get_json_rpc_url, Web3
+from forta_bot import scan_ethereum, TransactionEvent, get_chain_id, run_health_check
 from hexbytes import HexBytes
-from functools import lru_cache
+from async_lru import alru_cache
 
-from src.constants import *
-from src.findings import FundingThorchainFindings
-
-# Initialize web3
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
+from constants import *
+from findings import FundingThorchainFindings
 
 # Logging set up
 root = logging.getLogger()
@@ -38,26 +37,28 @@ def initialize():
     DENOMINATOR_COUNT = 0
 
     global CHAIN_ID
-    CHAIN_ID = web3.eth.chain_id
+    CHAIN_ID = get_chain_id()
 
 
-@lru_cache(maxsize=100000)
-def is_contract(w3, address):
+@alru_cache(maxsize=100000)
+async def is_contract(w3, address):
     """
     this function determines whether address is a contract
     :return: is_contract: bool
     """
     if address is None:
         return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
+    code = await w3.eth.get_code(Web3.to_checksum_address(address))
     return code != HexBytes('0x')
 
 
-def is_new_account(w3, address, block_number):
-    return w3.eth.get_transaction_count(Web3.toChecksumAddress(address), block_number) == 0
+async def is_new_account(w3, address, block_number):
+    if address is None:
+        return True
+    return await w3.eth.get_transaction_count(Web3.to_checksum_address(address), block_number) == 0
 
 
-def detect_thorchain_funding(w3, transaction_event):
+async def detect_thorchain_funding(w3, transaction_event):
     global LOW_VOL_ALERT_COUNT
     global NEW_EOA_ALERT_COUNT
     global DENOMINATOR_COUNT
@@ -81,35 +82,43 @@ def detect_thorchain_funding(w3, transaction_event):
     else:
         return findings
 
+    is_new_acc = await is_new_account(w3, recipient, transaction_event.block_number)
+    is_contr = await is_contract(w3, recipient)
 
-    if (native_value > 0 and (native_value < THORCHAIN_THRESHOLDS[CHAIN_ID] or is_new_account(w3, recipient, transaction_event.block_number)) and not is_contract(w3, recipient)):
+    if (native_value > 0 and (native_value < THORCHAIN_THRESHOLDS[CHAIN_ID] or is_new_acc) and not is_contr):
         DENOMINATOR_COUNT += 1
 
     """
     if the transaction is from Thorchain, and not to a contract: check if transaction count is 0,
     else check if value sent is less than the threshold
     """
-    if (not is_contract(w3, recipient)):
-        if is_new_account(w3, recipient, transaction_event.block_number):
+    if (not is_contr):
+        if is_new_acc:
             NEW_EOA_ALERT_COUNT += 1
-            score = (1.0 * NEW_EOA_ALERT_COUNT) / DENOMINATOR_COUNT
+            score = str((1.0 * NEW_EOA_ALERT_COUNT) / DENOMINATOR_COUNT)
             findings.append(FundingThorchainFindings.funding_thorchain(transaction_event, recipient, "new-eoa", score, CHAIN_ID))
         elif native_value < THORCHAIN_THRESHOLDS[CHAIN_ID]:
             LOW_VOL_ALERT_COUNT += 1
-            score = (1.0 * LOW_VOL_ALERT_COUNT) / DENOMINATOR_COUNT
+            score = str((1.0 * LOW_VOL_ALERT_COUNT) / DENOMINATOR_COUNT)
             findings.append(FundingThorchainFindings.funding_thorchain(transaction_event, recipient, "low-amount", score, CHAIN_ID))
     return findings
 
 
-def provide_handle_transaction(w3):
-    def handle_transaction(transaction_event):
-        return detect_thorchain_funding(w3, transaction_event)
+async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider):
+    return await detect_thorchain_funding(web3, transaction_event)
 
-    return handle_transaction
+async def main():
+    initialize()
+    
+    await asyncio.gather(
+        scan_ethereum({
+            'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "e698634d-79c2-44fe-adf8-f7dac20dd33c",
+            'local_rpc_url': "1",
+            'handle_transaction': handle_transaction
+        }),
+        run_health_check()
+    )
 
-
-real_handle_transaction = provide_handle_transaction(web3)
-
-
-def handle_transaction(transaction_event):
-    return real_handle_transaction(transaction_event)
+if __name__ == "__main__":
+    asyncio.run(main())
