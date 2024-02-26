@@ -9,7 +9,7 @@ import os
 
 from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
-    MODEL_THRESHOLD_DICT,
+    FUNDING_BOTS,
     SAFE_CONTRACT_THRESHOLD,
 )
 from src.findings import ContractFindings
@@ -133,7 +133,7 @@ def detect_malicious_contract_tx(
             ):
                 finding.addresses = [trace.action.from_, created_contract_address]
                 if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
-                    funding_alerts = check_funding(trace.action.from_)
+                    funding_alerts = check_funding_labels(trace.action.from_)
                     if len(funding_alerts) > 0:
                         finding.severity = FindingSeverity.Critical
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
@@ -163,7 +163,7 @@ def detect_malicious_contract_tx(
             ):
                 finding.addresses = [transaction_event.from_, created_contract_address]
                 if finding.alert_id == "SUSPICIOUS-CONTRACT-CREATION":
-                    funding_alerts = check_funding(transaction_event.from_)
+                    funding_alerts = check_funding_labels(transaction_event.from_)
                     if len(funding_alerts) > 0:
                         finding.severity = FindingSeverity.Critical
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
@@ -314,16 +314,7 @@ def handle_transaction(
 
 def check_funding(address: str, n_days: int=1):
     t = time.time()
-    bots = [
-        '0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400',  # funding tornado cash
-        '0x025251bd9b67b18804249a61a19f8dd45e3dd30caba295ed2cdc9392039f6272',  # funding union chain
-        '0xd2a25c368501ec7f9cd1219858c8a53cc4da7bd64c43633658a90b54bfcc595a',  # funding railgun
-        '0x2d3bb89e9cecc0024d8ae1a9c93ca42664472cb074cc200fa2c0f77f2be34bf3',  # funding fixed float
-        '0xa5a23e3fd7a5401db47008329061bb9dca48fc0199151e043d93376d31adb40d',  # funding squid
-        '0xf2ee3554a13ee126dae179918e89010afc1bfc1ffabd3a381b529632ebf7497a',  # funding thorchain
-        '0x29daabf74506f2aa4feb93fa8ec0f4ac61c4e9ba3f3190072bc680bc70e71bd7',  # funding eXch
-        '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e',  # funding ChangeNow
-    ]
+    bots = FUNDING_BOTS
     query = {
         "first": 10,
         "bot_ids": bots,
@@ -342,3 +333,25 @@ def check_funding(address: str, n_days: int=1):
     if ENV == 'dev':
         logger.info(f"Time taken to get alerts: {time.time() - t};\tN_alerts: {len(alert_hashes)};\tAddress: {address}")
     return alert_hashes
+
+
+def check_funding_labels(address: str, n_days: int=365):
+    t = time.time()
+    bots = FUNDING_BOTS
+    query = {
+        "first": 5,
+        "source_ids": bots,
+        "created_since": n_days*24*60*60*1000,
+        "entities": [address],
+    }
+    labels_hashes = []
+    for _ in range(2):
+        try:
+            labels = forta_agent.get_labels(query)
+            labels_hashes += [label.source.alert_hash for label in labels.labels if 'attacker' in label.label]
+            break
+        except:
+            continue
+    if ENV == 'dev':
+        logger.info(f"Time taken to get labels: {time.time() - t};\tN_labels: {len(labels_hashes)};\tAddress: {address}")
+    return labels_hashes
