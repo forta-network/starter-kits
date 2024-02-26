@@ -113,7 +113,7 @@ async def main():
     await asyncio.gather(
         scan_ethereum({
             'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "e698634d-79c2-44fe-adf8-f7dac20dd33c",
+            'rpc_key_id': "420b57cc-c2cc-442c-8fd8-901d70a835a5",
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
