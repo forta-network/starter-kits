@@ -80,11 +80,13 @@ def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
 def detect_malicious_contract_tx(
     w3, transaction_event: forta_agent.transaction_event.TransactionEvent
 ) -> list:
+    t0 = time.time()
     malicious_findings = []
 
     previous_contracts = []
     all_creation_bytecodes = {}
     repeated_bytecodes = {}
+    created_contract_address = None
     for trace in transaction_event.traces:
         if trace.type == "create":
             created_contract_address = (
@@ -133,7 +135,7 @@ def detect_malicious_contract_tx(
                 error=error,
             ):
                 finding.addresses = [trace.action.from_, created_contract_address]
-                funding_alerts = check_funding(trace.action.from_)
+                funding_alerts = check_funding_labels(trace.action.from_)
                 if len(funding_alerts) > 0:
                     finding.severity = FindingSeverity.Critical
                     finding.metadata["funding_alerts"] = ','.join(funding_alerts)
@@ -162,7 +164,7 @@ def detect_malicious_contract_tx(
                 creation_bytecode,
             ):
                 finding.addresses = [transaction_event.from_, created_contract_address]
-                funding_alerts = check_funding(transaction_event.from_)
+                funding_alerts = check_funding_labels(transaction_event.from_)
                 if len(funding_alerts) > 0:
                     finding.severity = FindingSeverity.Critical
                     finding.metadata["funding_alerts"] = ','.join(funding_alerts)
@@ -184,6 +186,8 @@ def detect_malicious_contract_tx(
                 if finding_from in repeated_bytecodes[finding_contract].keys():
                     finding.description += f" and reused by {', '.join(repeated_bytecodes[finding_contract][finding_from])}"
                     finding.addresses += repeated_bytecodes[finding_contract][finding_from]
+    if ENV == 'dev' and created_contract_address:
+        logger.info(f"Time taken to complete process: {time.time() - t0}")
     # Reduce findings to 10 because we cannot return more than 10 findings per request
     return all_findings[:10]
 
@@ -308,3 +312,25 @@ def check_funding(address: str, n_days: int=1):
     if ENV == 'dev':
         logger.info(f"Time taken to get alerts: {time.time() - t};\tN_alerts: {len(alert_hashes)};\tAddress: {address}")
     return alert_hashes
+
+
+def check_funding_labels(address: str, n_days: int=365):
+    t = time.time()
+    bots = FUNDING_BOTS
+    query = {
+        "first": 5,
+        "source_ids": bots,
+        "created_since": n_days*24*60*60*1000,
+        "entities": [address],
+    }
+    labels_hashes = []
+    for _ in range(2):
+        try:
+            labels = forta_agent.get_labels(query)
+            labels_hashes += [label.source.alert_hash for label in labels.labels if 'attacker' in label.label]
+            break
+        except:
+            continue
+    if ENV == 'dev':
+        logger.info(f"Time taken to get labels: {time.time() - t};\tN_labels: {len(labels_hashes)};\tAddress: {address}")
+    return labels_hashes
