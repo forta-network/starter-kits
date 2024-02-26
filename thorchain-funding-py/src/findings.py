@@ -52,6 +52,10 @@ class FundingThorchainFindings:
                     "receiving_address": f"{recipient}",
                     "anomaly_score": anomaly_score
                 },
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': transaction.hash}]
+                },
                 'labels': [
                     {
                         'entityType': EntityType.Address,
