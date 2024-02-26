@@ -203,11 +203,7 @@ def detect_malicious_contract(
                 opcodes = EvmBytecode(code).disassemble()
             except Exception as e:
                 logger.warn(f"Error disassembling evm bytecode: {e}")
-            # obtain all the addresses contained in the created contract and propagate to the findings
-            env_t = time.time()
-            storage_addresses = get_storage_addresses(w3, created_contract_address)
-            if ENV == 'dev':
-                logger.info(f"Time taken to get storage addresses: {time.time() - env_t}")
+
             (
                 model_score,
                 opcode_addresses,
@@ -219,7 +215,12 @@ def detect_malicious_contract(
                 if ENV == 'dev':
                     logger.info(f"Score is less than threshold: {model_score} < {MODEL_THRESHOLD}. Not creating alert.")
                 return []
-            
+            # obtain all the addresses contained in the created contract and propagate to the findings
+            # We only do it if the model score is above the threshold
+            env_t = time.time()
+            storage_addresses = get_storage_addresses(w3, created_contract_address)
+            if ENV == 'dev':
+                logger.info(f"Time taken to get storage addresses: {time.time() - env_t}")            
             finding = ContractFindings(
                 from_,
                 created_contract_address,
