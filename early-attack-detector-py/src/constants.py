@@ -1,4 +1,4 @@
-CONTRACT_SLOT_ANALYSIS_DEPTH = 20  # how many slots should be read to extract contract addresses from created contract
+CONTRACT_SLOT_ANALYSIS_DEPTH = 10  # how many slots should be read to extract contract addresses from created contract
 
 BYTE_CODE_LENGTH_THRESHOLD = (
     60  # ignore contracts with byte code length below this threshold
@@ -17,4 +17,5 @@ FUNDING_BOTS = [
         '0xa5a23e3fd7a5401db47008329061bb9dca48fc0199151e043d93376d31adb40d',  # funding squid
         '0xf2ee3554a13ee126dae179918e89010afc1bfc1ffabd3a381b529632ebf7497a',  # funding thorchain
         '0x29daabf74506f2aa4feb93fa8ec0f4ac61c4e9ba3f3190072bc680bc70e71bd7',  # funding eXch
+        '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e',  # funding ChangeNow
     ]
