@@ -331,6 +331,12 @@ class ScamDetectorFinding:
                         try:
                             contracts = block_chain_indexer.get_contracts(scammer_address, chain_id)
                             logging.info(f"Got {len(contracts)} contracts for scammer address {scammer_address}")
+                            is_zero_nonce_alert = False
+                            if (len(involved_alert_ids_dict) == 1):
+                                first_value = next(iter(involved_alert_ids_dict.values()))
+                                if 'ZERO-NONCE' in first_value or 'NIP-9' in first_value:
+                                    contracts.update(scammer_contract_addresses)
+                                    is_zero_nonce_alert = True
                             for contract in contracts:
                                 label_unique_key = hashlib.sha256(f'{contract},{alert_id},{chain_id}'.encode()).hexdigest()
                                 logging.info(f'Unique key of {contract},{alert_id},{chain_id}: {label_unique_key}')
@@ -346,7 +352,7 @@ class ScamDetectorFinding:
                                             'chain_id': chain_id,
                                             'base_bot_alert_ids': ','.join(sorted(list(involved_alert_ids))),
                                             'base_bot_alert_hashes': ','.join(sorted(list(involved_alert_hashes))),
-                                            'deployer_info': f"Deployer {scammer_address} involved in {alert_id} scam; this contract has been associated with this scam.",
+                                            'deployer_info': f"Deployer {scammer_address if not is_zero_nonce_alert else (metadata['attacker1'] if ('NIP-9' in list(involved_alert_ids)) else metadata['attacker2'])} involved in {alert_id} scam; this contract has been associated with this scam.",
                                             'threat_category': threat_category,
                                             'threat_description_url': ScamDetectorFinding.get_threat_description_url(alert_id),
                                             'bot_version': Utils.get_bot_version(),
