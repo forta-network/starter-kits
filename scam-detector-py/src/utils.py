@@ -29,6 +29,7 @@ class Utils:
     ETHERSCAN_LABEL_SOURCE_IDS = ['etherscan','0x6f022d4a65f397dffd059e269e1c2b5004d822f905674dbf518d968f744c2ede']
     FP_MITIGATION_ADDRESSES = set()
     CONTRACT_CACHE = dict()
+    ETHERSCAN_LOCAL_CACHE = dict()
     BOT_VERSION = None
     TOTAL_SHARDS = None
     IS_BETA = None
@@ -258,16 +259,26 @@ class Utils:
                 findings_cache_alert.append(likely_fp_finding)
 
         if is_address: # if it's not a URL
-            from src.blockchain_indexer_service import BlockChainIndexer
-            block_chain_indexer = BlockChainIndexer()
-            labels_dict = block_chain_indexer.get_etherscan_labels(cluster.split(',')) # dict_values([{'labels': ['Proposer Fee Recipient'], 'nametag': 'Fee Recipient: 0xF4...A38'}])
-            labels = []
-            for item in labels_dict.values():
-                if 'labels' in item.keys():
-                    labels.extend(item['labels'])
-                if 'nametag' in item.keys():
-                    labels.append(item['nametag'])
-            etherscan_label = ','.join(labels).lower()
+            etherscan_called = False
+            if cluster in Utils.ETHERSCAN_LOCAL_CACHE.keys():
+                current_time = time.time()
+                # we put a 2h cache on etherscan labels
+                if current_time - Utils.ETHERSCAN_LOCAL_CACHE[cluster]['time'] < 2 * 3600:
+                    etherscan_label = Utils.ETHERSCAN_LOCAL_CACHE[cluster]['labels']
+                    labels_dict = Utils.ETHERSCAN_LOCAL_CACHE[cluster].get('labels_dict', {}) 
+                    etherscan_called = True
+            if not etherscan_called:
+                from src.blockchain_indexer_service import BlockChainIndexer
+                block_chain_indexer = BlockChainIndexer()
+                labels_dict = block_chain_indexer.get_etherscan_labels(cluster.split(',')) # dict_values([{'labels': ['Proposer Fee Recipient'], 'nametag': 'Fee Recipient: 0xF4...A38'}])
+                labels = []
+                for item in labels_dict.values():
+                    if 'labels' in item.keys():
+                        labels.extend(item['labels'])
+                    if 'nametag' in item.keys():
+                        labels.append(item['nametag'])
+                etherscan_label = ','.join(labels).lower()
+                Utils.ETHERSCAN_LOCAL_CACHE[cluster] = {'labels': etherscan_label, 'labels_dict': labels_dict, 'time': time.time()}
             if not ('attack' in etherscan_label
                     or 'phish' in etherscan_label
                     or 'hack' in etherscan_label
