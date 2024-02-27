@@ -3,7 +3,7 @@ from forta_bot import create_transaction_event, FindingSeverity
 from unittest.mock import patch
 import pytest
 from web3 import AsyncWeb3
-from src.web3_mock import Web3Mock, NEW_EOA, OLD_EOA, NEW_CONTRACT
+from web3_mock import Web3Mock, NEW_EOA, OLD_EOA, NEW_CONTRACT
 import time
 from forta_agent import get_json_rpc_url
 
@@ -47,7 +47,7 @@ class TestChangeNowFundingAgent:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         global transaction_from_changenow_to_contract
@@ -61,7 +61,7 @@ class TestChangeNowFundingAgent:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         global transaction_with_changenow_funding
@@ -75,7 +75,7 @@ class TestChangeNowFundingAgent:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         processing_runs = 10
@@ -107,7 +107,7 @@ class TestChangeNowFundingAgent:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         findings = await agent.detect_changenow_funding(w3, tx_event)
@@ -129,7 +129,7 @@ class TestChangeNowFundingAgent:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         findings = await agent.detect_changenow_funding(w3, tx_event)
@@ -151,7 +151,7 @@ class TestChangeNowFundingAgent:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         findings = await agent.detect_changenow_funding(w3, tx_event)
@@ -175,7 +175,7 @@ class TestChangeNowFundingAgent:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         findings = await agent.detect_changenow_funding(w3, tx_event)
@@ -199,7 +199,7 @@ class TestChangeNowFundingAgent:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         findings = await agent.detect_changenow_funding(w3, tx_event)

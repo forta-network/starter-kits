@@ -12,6 +12,18 @@
       "shards": 10,
       "target": 3
     },
+    "10": {
+      "shards": 5,
+      "target": 3
+    },
+    "137": {
+      "shards": 17,
+      "target": 3
+    },
+    "42161": {
+      "shards": 5,
+      "target": 3
+    },
     "default": {
       "shards": 4,
       "target": 3
@@ -22,7 +34,10 @@
   "promoUrl": "https://forta.org",
   "chainIds": [
     1,
-    8453
+    10,
+    137,
+    8453,
+    42161
   ],
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",

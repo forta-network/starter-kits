@@ -3,7 +3,7 @@ from web3 import Web3, AsyncWeb3
 import logging
 import sys
 
-from forta_bot import scan_ethereum, scan_base, TransactionEvent, get_chain_id, run_health_check
+from forta_bot import scan_ethereum, scan_optimism, scan_polygon, scan_base, scan_arbitrum, TransactionEvent, get_chain_id, run_health_check
 from hexbytes import HexBytes
 from async_lru import alru_cache
 
@@ -106,10 +106,28 @@ async def main():
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
+        scan_optimism({
+            'rpc_url': "https://opt-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "5143945b-1e97-46d6-8b29-14125afcc810",
+            'local_rpc_url': "10",
+            'handle_transaction': handle_transaction
+        }),
+        scan_polygon({
+            'rpc_url': "https://polygon-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "b9017deb-b785-48f8-bfb3-771f31190845",
+            'local_rpc_url': "137",
+            'handle_transaction': handle_transaction
+        }),
         scan_base({
             'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
             'rpc_key_id': "1d3097d9-6e44-4ca7-a61b-2209a85d262f",
             'local_rpc_url': "8453",
+            'handle_transaction': handle_transaction
+        }),
+        scan_arbitrum({
+            'rpc_url': "https://arb-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "c59959d5-3ab6-4fea-afc5-495f4571cf02",
+            'local_rpc_url': "42161",
             'handle_transaction': handle_transaction
         }),
         run_health_check()
