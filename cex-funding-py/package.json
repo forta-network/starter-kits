@@ -6,9 +6,15 @@
     "node": ">=20"
   },
   "description": "CEX Funding Bot",
+  "repository": "https://github.com/forta-network/starter-kits/tree/main/cex-funding-py",
+  "licenseUrl": "https://github.com/forta-network/starter-kits/tree/main/cex-funding-py/LICENSE.md",
+  "promoUrl": "https://forta.org",
   "chainIds": [
     1,
-    8453
+    10,
+    137,
+    8453,
+    42161
   ],
   "chainSettings": {
     "default": {
@@ -22,7 +28,11 @@
     "8453": {
       "shards": 4,
       "target": 3
-   }
+    },
+    "137": {
+      "shards": 4,
+      "target": 3
+    }
   },
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",

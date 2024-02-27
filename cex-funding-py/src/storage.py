@@ -22,7 +22,7 @@ async def _load_json(key: str) -> object:
     else:
         async with aiohttp.ClientSession() as session:
             async with session.get(f"{owner_db}{key}", headers=await _token()) as res:
-                if res.status_code == 200:
+                if res.status == 200:
                     try:
                         # Attempt to parse the response as JSON regardless of the Content-Type
                         return await res.json(content_type=None)

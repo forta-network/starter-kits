@@ -22,7 +22,7 @@ class TestDEXFunding:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         findings = await agent.detect_cex_funding(w3, tx_event)
@@ -44,7 +44,7 @@ class TestDEXFunding:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         findings = await agent.detect_cex_funding(w3, tx_event)
@@ -66,7 +66,7 @@ class TestDEXFunding:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         findings = await agent.detect_cex_funding(w3, tx_event)
@@ -88,7 +88,7 @@ class TestDEXFunding:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         findings = await agent.detect_cex_funding(w3, tx_event)
@@ -112,7 +112,7 @@ class TestDEXFunding:
             block = {
                 'number': 1
             },
-            network_id = 1
+            chain_id = 1
         )
 
         findings = await agent.detect_cex_funding(w3, tx_event)
