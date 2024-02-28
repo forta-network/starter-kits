@@ -323,6 +323,7 @@ def check_funding_labels(address: str, n_days: int=365):
         "source_ids": bots,
         "created_since": n_days*24*60*60*1000,
         "entities": [address],
+        "state": True,
     }
     labels_hashes = []
     for _ in range(2):
