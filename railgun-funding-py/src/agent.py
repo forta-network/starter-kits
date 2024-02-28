@@ -4,7 +4,7 @@ import sys
 import asyncio
 from web3 import Web3, AsyncWeb3
 
-from forta_bot import scan_ethereum, scan_polygon, TransactionEvent, get_chain_id, run_health_check
+from forta_bot import scan_ethereum, scan_polygon, scan_arbitrum, TransactionEvent, get_chain_id, run_health_check
 from hexbytes import HexBytes
 from async_lru import alru_cache
 
@@ -74,20 +74,20 @@ async def detect_railgun_funding(w3, transaction_event):
     contract = w3.eth.contract(abi=[json.loads(TRANSFER_FUNCTION_ABI)])
 
     transfer_calldata = [
-    '0x' + call.hex()
+    '0x' + call['data'].hex()
     for invocation in relay_function_invocations
-    for calls in invocation[1]["_actionData"][-1]
-    for call in calls
-    if isinstance(call, bytes) and call.hex().startswith(RAILGUN_TRANSFER_FUNCTION_SIG) 
+    for call in invocation[1]["_actionData"]['calls']
+    if isinstance(call['data'], bytes) and call['data'].hex().startswith(RAILGUN_TRANSFER_FUNCTION_SIG) 
     ]
 
     # Decode and extract 'to' address from the calldata
     to_addresses = [
-        transfer[1]
+        transfer['to']
         for calldata in transfer_calldata
         for transfer in contract.decode_function_input(calldata)[1]['_transfers']
     ]
     
+    # Only process transactions with 1 transfer
     if len(to_addresses) != 1:
         return []
     
@@ -120,7 +120,7 @@ async def detect_railgun_funding(w3, transaction_event):
     findings = []
 
     is_new_account_flag = await is_new_account(w3, to_address, transaction_event.block_number)
-    is_contr = await is_contract(w3, transaction_event.to)
+    is_contr = await is_contract(w3, to_address)
 
     if not is_contr:
         if is_new_account_flag or native_value < railgun_threshold:
@@ -144,14 +144,20 @@ async def main():
     await asyncio.gather(
         scan_ethereum({
             'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "e698634d-79c2-44fe-adf8-f7dac20dd33c",
+            'rpc_key_id': "420b57cc-c2cc-442c-8fd8-901d70a835a5",
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
         scan_polygon({
             'rpc_url': "https://polygon-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "b9017deb-b785-48f8-bfb3-771f31190845",
+            'rpc_key_id': "7e311823-448b-41fa-b530-2029b7db21fa",
             'local_rpc_url': "137",
+            'handle_transaction': handle_transaction
+        }),
+        scan_arbitrum({
+            'rpc_url': "https://arb-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "fc84b32c-ff10-4eb2-b5d6-70062ea39fa6",
+            'local_rpc_url': "42161",
             'handle_transaction': handle_transaction
         }),
         run_health_check()

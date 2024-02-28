@@ -7,11 +7,12 @@
   },
   "description": "Detecting addresses being funded by Railgun",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/railgun-funding-py",
-  "licenseUrl": "https://github.com/forta-network/forta-bot-sdk/blob/master/starter-project/LICENSE.md",
+  "licenseUrl": "https://github.com/forta-network/starter-kits/tree/main/railgun-funding-py/LICENSE.md",
   "promoUrl": "https://forta.org",
   "chainIds": [
     1,
-    137
+    137,
+    42161
   ],
   "chainSettings": {
     "1": {
