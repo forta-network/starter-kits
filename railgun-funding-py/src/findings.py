@@ -1,5 +1,5 @@
-from forta_agent import Finding, FindingType, FindingSeverity, EntityType
-from src.constants import *
+from forta_bot import Finding, FindingSeverity, FindingType, EntityType
+from constants import *
 
 class FundingRailgunFindings:
 
@@ -17,6 +17,10 @@ class FundingRailgunFindings:
                     "amount_funded": f"{value} {CURRENCIES[chain_id]}",
                     "receiving_address": f"{receiver}",
                     "anomaly_score": anomaly_score
+                },
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': transaction.hash}]
                 },
                 'labels': [
                     {
@@ -47,6 +51,10 @@ class FundingRailgunFindings:
                     "amount_funded": f"{value} {CURRENCIES[chain_id]}",
                     "receiving_address": receiver,
                     "anomaly_score": anomaly_score
+                },
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': transaction.hash}]
                 },
                 'labels': [
                     {
