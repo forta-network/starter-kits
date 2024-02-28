@@ -1,8 +1,8 @@
 from hexbytes import HexBytes
 import agent
 from forta_bot import create_transaction_event, FindingSeverity
-from src.constants import RAILGUN_ADDRESSES, WRAPPED_NATIVE_TOKEN_ADDRESSES
-from src.web3_mock import Web3Mock, NEW_CONTRACT
+from constants import RAILGUN_ADDRESSES, WRAPPED_NATIVE_TOKEN_ADDRESSES
+from web3_mock import Web3Mock, NEW_CONTRACT
 from unittest.mock import patch
 import pytest
 
