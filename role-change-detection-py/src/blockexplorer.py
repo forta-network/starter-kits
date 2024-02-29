@@ -1,6 +1,5 @@
 import json
 import logging
-import requests
 import aiohttp
 from async_lru import alru_cache
 
@@ -70,5 +69,5 @@ class BlockExplorer:
                     except json.JSONDecodeError:
                         raise Exception("Failed to decode JSON response")
                 else:
-                    logging.warn("Unable to retrieve ABI. Etherscan returned status code " + str(response.status_code))
+                    logging.warn("Unable to retrieve ABI. Etherscan returned status code " + str(res.status))
                     pass

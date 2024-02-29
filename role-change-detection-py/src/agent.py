@@ -2,7 +2,7 @@ import asyncio
 import logging
 import sys
 
-from forta_bot import scan_ethereum, scan_base, TransactionEvent, get_chain_id, run_health_check, Finding, FindingSeverity, FindingType, EntityType
+from forta_bot import scan_ethereum, scan_optimism, scan_polygon, scan_arbitrum, TransactionEvent, get_chain_id, run_health_check, Finding, FindingSeverity, FindingType, EntityType
 from web3 import Web3, AsyncWeb3
 from hexbytes import HexBytes
 from async_lru import alru_cache
@@ -102,6 +102,10 @@ async def detect_role_change(w3, blockexplorer, transaction_event):
                         "function signature": str(transaction_data[0])[10:-1],
                         "anomaly_score": str((1.0 * ALERT_COUNT) / DENOMINATOR_COUNT)
                     },
+                    'source': {
+                        'chains': [{'chainId': get_chain_id()}],
+                        'transactions': [{'chainId': get_chain_id(), 'hash': transaction_event.hash}]
+                    },
                     "labels": [
                         {
                             "entity_type": EntityType.Address,
@@ -145,17 +149,28 @@ async def main():
     await asyncio.gather(
         scan_ethereum({
             'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "e698634d-79c2-44fe-adf8-f7dac20dd33c",
+            'rpc_key_id': "420b57cc-c2cc-442c-8fd8-901d70a835a5",
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
-        # NOTE: Currently don't have BaseScan API
-        # scan_base({
-        #     'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
-        #     'rpc_key_id': "1d3097d9-6e44-4ca7-a61b-2209a85d262f",
-        #     'local_rpc_url': "8453",
-        #     'handle_transaction': handle_transaction
-        # }),
+        scan_optimism({
+            'rpc_url': "https://opt-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "67374ee9-1b70-485d-be75-83589aa0e10d",
+            'local_rpc_url': "10",
+            'handle_transaction': handle_transaction
+        }),
+        scan_polygon({
+            'rpc_url': "https://polygon-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "7e311823-448b-41fa-b530-2029b7db21fa",
+            'local_rpc_url': "137",
+            'handle_transaction': handle_transaction
+        }),
+        scan_arbitrum({
+            'rpc_url': "https://arb-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "fc84b32c-ff10-4eb2-b5d6-70062ea39fa6",
+            'local_rpc_url': "42161",
+            'handle_transaction': handle_transaction
+        }),
         run_health_check()
     )
 
