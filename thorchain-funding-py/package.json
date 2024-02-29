@@ -2,6 +2,9 @@
   "name": "thorchain-funding-beta",
   "displayName": "Thorchain Funding (beta)",
   "version": "0.1.0",
+  "engines": {
+    "node": ">=20"
+  },
   "description": "Detecting addresses being funded by Thorchain",
   "repository": "https://github.com/forta-network/forta-bot-sdk/tree/main/thorchain-funding-py",
   "licenseUrl": "https://github.com/forta-network/forta-bot-sdk/blob/master/starter-project/LICENSE.md",
