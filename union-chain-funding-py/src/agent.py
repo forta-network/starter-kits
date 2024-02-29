@@ -10,9 +10,6 @@ from async_lru import alru_cache
 from constants import *
 from findings import FundingUnionChainFindings
 
-# For debugging
-import jsonpickle
-
 # Logging set up
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -94,8 +91,6 @@ async def detect_union_chain_funding(w3, transaction_event):
             LOW_VOL_ALERT_COUNT += 1
             score = str((1.0 * LOW_VOL_ALERT_COUNT) / DENOMINATOR_COUNT)
             findings.append(FundingUnionChainFindings.funding_union_chain(transaction_event, "low-amount", score, CHAIN_ID))
-    if len(findings) > 0:
-        print(f"findings: {jsonpickle.encode(findings)}")
     return findings
 
 
