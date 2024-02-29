@@ -21,6 +21,9 @@ logger = logging.getLogger(__name__)
 
 
 TEST_TAG = "attack-detector-test_v2"
+BETA_ALT_TAG = "attack-detector-beta_alt"
+# PROD_TAG = "attack-detector-prod"
+tags = [TEST_TAG, BETA_ALT_TAG] 
 
 # Initialize web3
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
@@ -84,19 +87,25 @@ def update_clusters(du, alert_event: forta_agent.alert_event.AlertEvent) -> list
     return []
 
 
-def provide_handle_alert(du):
+def provide_handle_alert(tags):
     logging.debug("provide_handle_alert called")
+    chain_id = web3.eth.chain_id
 
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         logging.debug("handle_alert inner called")
-        findings = update_clusters(du, alert_event)
 
+        findings = []
+        for tag in tags:
+            du = DynamoUtils(tag, chain_id)
+            logger.info(f"update_clusters called for tag {tag}")
+
+            findings.extend(update_clusters(du, alert_event))
         return findings
 
     return handle_alert
 
 
-real_handle_alert = provide_handle_alert(DynamoUtils(TEST_TAG, web3.eth.chain_id))
+real_handle_alert = provide_handle_alert(tags)
 
 def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
     logging.debug("handle_alert called")
