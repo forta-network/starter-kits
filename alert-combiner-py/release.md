@@ -1,6 +1,6 @@
 # Attack Detector Bot Release Notes
 
-## v3.53.2 (Feb 22th 2024: beta2)
+## v3.53.2 (Feb 22th 2024: beta2, Feb 29th 2024: prod)
 
 - New funding bots integration (Thorchain, eXch)
 
