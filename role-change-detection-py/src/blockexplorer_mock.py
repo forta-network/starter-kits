@@ -5,5 +5,5 @@ class BlockExplorerMock:
         pass
     
 
-    def get_abi(self, address):
+    async def get_abi(self, address):
         return '[{MOCK_ABI: PLACEHOLDER}]'
