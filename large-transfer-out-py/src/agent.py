@@ -4,7 +4,7 @@ from forta_agent import Finding, FindingType, FindingSeverity, get_json_rpc_url,
 from web3 import Web3
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 from src.storage import get_secrets
-from src.constants import THRESHOLDS, DAY_LOOKBACK_WINDOW, SWAP_TOPICS
+from src.constants import IGNORED_FUNCTION_SIGS, THRESHOLDS, DAY_LOOKBACK_WINDOW, SWAP_TOPICS
 
 SECRETS_JSON = get_secrets()
 
@@ -27,6 +27,9 @@ def detect_suspicious_native_transfers(w3, transaction_event: forta_agent.transa
     value = transaction_event.transaction.value
 
     if value >= THRESHOLDS[CHAIN_ID][1]:
+
+        if any(transaction_event.transaction.data.startswith(sig) for sig in IGNORED_FUNCTION_SIGS):
+            return findings
 
         # filter out any transactions that are swaps
         for log in transaction_event.logs:

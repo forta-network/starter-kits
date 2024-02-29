@@ -10,6 +10,10 @@ THRESHOLDS = {1: (20000000000000000000, 50000000000000000000),  # mainnet - 20ET
               42161: (20000000000000000000, 50000000000000000000)  # arbitrum - 20ETH->50 ETH
               }
 
-# 0xd78ad95... is the swap topic for Uniswap v2 & 0xc42079f... is the swap topic for Uniswap v3
+# 0xd78ad95... is the swap topic for Uniswap v2, 0xc42079f... is the swap topic for Uniswap v3 and 0x19b4727... is the swap topic for PancakeSwap v3
 SWAP_TOPICS = ["0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822",
-               "0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67"]
+               "0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67",
+               "0x19b47279256b2a23a1665c810c8d55a1758940ee09377d4f8d26497a3577dc83"]
+
+IGNORED_FUNCTION_SIGS = ["0xf305d719"] # addLiquidityETH
+                        
