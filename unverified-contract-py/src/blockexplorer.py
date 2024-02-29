@@ -3,6 +3,7 @@ import logging
 import aiohttp
 import requests
 from storage import get_secrets
+from async_lru import alru_cache
 
 class BlockExplorer:
     api_key = ""
@@ -47,6 +48,7 @@ class BlockExplorer:
         elif self.chain_id == 43114:
             self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['SNOWTRACE_TOKEN']
 
+    @alru_cache(maxsize=100)
     async def is_verified(self, address):
         url = self.host + "/api?module=contract&action=getabi&address=" + address + "&apikey=" + self.api_key
         async with aiohttp.ClientSession() as session:
