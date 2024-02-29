@@ -15,8 +15,8 @@ from web3 import Web3
 from forta_agent import FindingSeverity, get_labels, get_alerts
 
 from src.findings import AlertCombinerFinding
-from src.constants import (BASE_BOTS, ENTITY_CLUSTER_BOT_ALERT_ID, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_FP_CLUSTERS_QUEUE_SIZE, MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE, ATTACK_DETECTOR_BOT_ID, ATTACK_DETECTOR_BETA_BOT_ID,
-                           FP_MITIGATION_BOTS, ENTITY_CLUSTER_BOT, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE,
+from src.constants import (BASE_BOTS, ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_FP_CLUSTERS_QUEUE_SIZE, MANUALLY_ALERTED_ENTITIES_QUEUE_SIZE, ATTACK_DETECTOR_BOT_ID, ATTACK_DETECTOR_BETA_BOT_ID,
+                           FP_MITIGATION_BOTS, ANOMALY_SCORE_THRESHOLD_STRICT, ANOMALY_SCORE_THRESHOLD_LOOSE,
                            MIN_ALERTS_COUNT, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, ALERTED_FP_CLUSTERS_KEY, MANUALLY_ALERTED_ENTITIES_KEY, VICTIM_IDENTIFICATION_BOTS, DEFAULT_ANOMALY_SCORE, HIGHLY_PRECISE_BOTS,
                            ALERTED_CLUSTERS_FP_MITIGATED_KEY, FINDINGS_CACHE_BLOCK_KEY, END_USER_ATTACK_BOTS, POLYGON_VALIDATOR_ALERT_COUNT_THRESHOLD, PASSTHROUGH_BOTS, ENCRYPTED_BOTS)
 from src.L2Cache import L2Cache
@@ -134,10 +134,6 @@ def initialize():
         subscription_json.append({"botId": bot, "alertId": alertId, "chainId": CHAIN_ID})
         if CHAIN_ID in [10, 42161]:
             subscription_json.append({"botId": bot, "alertId": alertId, "chainId": 1})
-
-    subscription_json.append({"botId": ENTITY_CLUSTER_BOT, "alertId": ENTITY_CLUSTER_BOT_ALERT_ID, "chainId": CHAIN_ID})
-    if CHAIN_ID in [10, 42161]:
-        subscription_json.append({"botId": ENTITY_CLUSTER_BOT, "alertId": ENTITY_CLUSTER_BOT_ALERT_ID, "chainId": 1})
 
     INITIALIZED = True
 
@@ -425,29 +421,6 @@ def detect_attack(w3, du, alert_event: forta_agent.alert_event.AlertEvent) -> li
                         logging.info(f"Alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - decrypting alert. Private key length for {decryption_key_name}: {len(private_key)}")
                         alert_event = Utils.decrypt_alert_event(w3, alert_event, private_key)
 
-                # update entity clusters
-                if in_list(alert_event, [(ENTITY_CLUSTER_BOT, ENTITY_CLUSTER_BOT_ALERT_ID)]):
-                    logging.info(f"alert {alert_event.alert_hash} is entity cluster alert")
-                    cluster = alert_event.alert.metadata["entityAddresses"].lower()
-
-                    for address in cluster.split(','):
-                        du.put_entity_cluster(dynamo, alert_event.alert.created_at, address, cluster)
-                        
-                        stored_alert_data_address = du.read_alert_data(dynamo, address)
-
-                        if not stored_alert_data_address.empty:
-                            du.delete_alert_data(dynamo, address)
-                            stored_alert_data_cluster = du.read_alert_data(dynamo, cluster)
-                            if not stored_alert_data_cluster.empty:
-                                alert_data_cluster = pd.concat([stored_alert_data_address, stored_alert_data_cluster], ignore_index=True, axis=0).drop_duplicates(subset=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'transaction_hash'], inplace=False)
-                            else:
-                                alert_data_cluster = stored_alert_data_address.drop_duplicates(subset=['stage', 'created_at', 'anomaly_score', 'alert_hash', 'bot_id', 'alert_id', 'transaction_hash'], inplace=False)
-                            du.put_alert_data(dynamo, cluster, alert_data_cluster)
-                        
-                        if address in du.read_fp_mitigation_clusters(dynamo):
-                            du.put_fp_mitigation_cluster(dynamo, cluster)
-                        if address in du.read_end_user_attack_clusters(dynamo):
-                            du.put_end_user_attack_cluster(dynamo, cluster)
 
                 # update victim alerts
                 if (in_list(alert_event, VICTIM_IDENTIFICATION_BOTS)):

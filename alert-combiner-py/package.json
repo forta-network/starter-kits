@@ -1,6 +1,6 @@
 {
   "name": "attack-detector-feed",
-  "version": "3.53.2",
+  "version": "3.54.0",
   "displayName": "Attack Detector Feed",
   "description": "Identifies protocol attacks in real-time; often before any digital assets are being stolen",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/alert-combiner-py",
@@ -18,8 +18,8 @@
   ],
   "chainSettings": {
     "default": {
-      "shards": 8,
-      "target": 4
+      "shards": 6,
+      "target": 2
     }
   },
   "scripts": {
