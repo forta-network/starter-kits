@@ -36,6 +36,7 @@ async def initialize():
 
     await blockexplorer.set_api_key()
 
+
 @alru_cache(maxsize=128000)
 async def is_contract(w3, address):
     """
