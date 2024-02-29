@@ -53,9 +53,10 @@ class BlockExplorer:
         response = requests.get(url)
         if (response.status_code == 200):
             data = json.loads(response.text)
-            df_txs = pd.DataFrame(data["result"])
-            if len(df_txs) > 0:
-                return datetime.datetime.fromtimestamp(int(df_txs["timeStamp"].min()))
+            if isinstance(data["result"], list):
+                df_txs = pd.DataFrame(data["result"])
+                if len(df_txs) > 0:
+                    return datetime.datetime.fromtimestamp(int(df_txs["timeStamp"].min()))
         else:
             logging.warn("Unable obtain tx for account. Etherscan returned status code " + str(response.status_code))
 

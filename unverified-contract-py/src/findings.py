@@ -32,6 +32,8 @@ class UnverifiedCodeContractFindings:
 
         unique_key = hashlib.sha256(f'{from_address},{contract_address}'.encode()).hexdigest()
 
+        unique_key = hashlib.sha256(f'{from_address},{contract_address}'.encode()).hexdigest()
+
         return Finding({
             'name': 'Contract with unverified code was created',
             'description': f'{from_address} created contract {contract_address}',
