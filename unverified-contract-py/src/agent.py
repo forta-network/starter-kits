@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from os import environ
 from async_lru import alru_cache
 
-from forta_bot import scan_ethereum, scan_polygon, TransactionEvent, get_chain_id, run_health_check
+from forta_bot import scan_ethereum, scan_optimism, scan_polygon, scan_arbitrum, TransactionEvent, get_chain_id, run_health_check
 from web3 import Web3, AsyncWeb3
 import rlp
 from hexbytes import HexBytes
@@ -59,10 +59,7 @@ async def initialize():
     global SECRETS_JSON
     SECRETS_JSON = blockexplorer.get_secrets()
 
-    # For Prod
-    # environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
-    # For Testing from NM Deployer - 'secrets.json' is different for NM & Forta
-    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["generalApiKeys"]["ZETTABLOCK"][0]
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
 
 
 def calc_contract_address(w3, address, nonce) -> str:
@@ -389,14 +386,26 @@ async def main():
     await asyncio.gather(
         scan_ethereum({
             'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "e698634d-79c2-44fe-adf8-f7dac20dd33c",
+            'rpc_key_id': "420b57cc-c2cc-442c-8fd8-901d70a835a5",
             'local_rpc_url': "1",
+            'handle_transaction': handle_transaction
+        }),
+        scan_optimism({
+            'rpc_url': "https://opt-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "67374ee9-1b70-485d-be75-83589aa0e10d",
+            'local_rpc_url': "10",
             'handle_transaction': handle_transaction
         }),
         scan_polygon({
             'rpc_url': "https://polygon-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "b9017deb-b785-48f8-bfb3-771f31190845",
+            'rpc_key_id': "7e311823-448b-41fa-b530-2029b7db21fa",
             'local_rpc_url': "137",
+            'handle_transaction': handle_transaction
+        }),
+        scan_arbitrum({
+            'rpc_url': "https://arb-mainnet.g.alchemy.com/v2",
+            'rpc_key_id': "fc84b32c-ff10-4eb2-b5d6-70062ea39fa6",
+            'local_rpc_url': "42161",
             'handle_transaction': handle_transaction
         }),
         run_health_check()
