@@ -65,10 +65,16 @@ class BlockChainIndexer:
         
         api_key = ""
 
-        if "ZETTABLOCK" in BlockChainIndexer.SECRETS_JSON['jsonRpc']:
-            api_key = BlockChainIndexer.SECRETS_JSON['jsonRpc']['ZETTABLOCK']
-        elif "ZETTABLOCK" in BlockChainIndexer.SECRETS_JSON['apiKeys']:
-            api_key = BlockChainIndexer.SECRETS_JSON['apiKeys']['ZETTABLOCK']
+        if Utils.is_beta():
+            if "ZETTABLOCK" in BlockChainIndexer.SECRETS_JSON['jsonRpc']:
+                api_key = BlockChainIndexer.SECRETS_JSON['jsonRpc']['ZETTABLOCK_BETA']
+            elif "ZETTABLOCK" in BlockChainIndexer.SECRETS_JSON['apiKeys']:
+                api_key = BlockChainIndexer.SECRETS_JSON['apiKeys']['ZETTABLOCK_BETA']
+        else:
+            if "ZETTABLOCK" in BlockChainIndexer.SECRETS_JSON['jsonRpc']:
+                api_key = BlockChainIndexer.SECRETS_JSON['jsonRpc']['ZETTABLOCK_ATTACK_DETECTOR']
+            elif "ZETTABLOCK" in BlockChainIndexer.SECRETS_JSON['apiKeys']:
+                api_key = BlockChainIndexer.SECRETS_JSON['apiKeys']['ZETTABLOCK_ATTACK_DETECTOR']
 
         return api_key
 

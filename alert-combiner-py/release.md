@@ -1,6 +1,15 @@
 # Attack Detector Bot Release Notes
 
-## v3.53.0 (Feb 2nd 2024: beta2)
+## v3.53.2 (Feb 22th 2024: beta2, Feb 29th 2024: prod)
+
+- New funding bots integration (Thorchain, eXch)
+
+## v3.53.1 (Feb 9th 2024: beta2)
+
+- Polygon validators FP fix
+- Integrated funding stage alerts from all chains
+
+## v3.53.0 (Feb 2nd 2024: beta2, Feb 5th 2024: prod)
 
 - Funding stage alert expiry time extension
 - New funding bots integration (Union Chain, Railgun, Fixed Float, Squid)
