@@ -12,6 +12,7 @@ from src.constants import (
     MODEL_THRESHOLD_ETH,
     MODEL_THRESHOLD_DEFAULT,
     MODEL_THRESHOLD_ETH_PRECISION,
+    MODEL_THRESHOLD_DEFAULT_PRECISION,
     FUNDING_BOTS,
 )
 from src.findings import ContractFindings
@@ -44,12 +45,13 @@ def initialize():
     ML_MODEL = load("deployed_models/imb_recall_precision.joblib")
 
     global MODEL_THRESHOLD
+    global MODEL_PRECISION_THRESHOLD
     if CHAIN_ID == 1:
         MODEL_THRESHOLD = MODEL_THRESHOLD_ETH
+        MODEL_PRECISION_THRESHOLD = MODEL_THRESHOLD_ETH_PRECISION
     else:
         MODEL_THRESHOLD = MODEL_THRESHOLD_DEFAULT
-    global MODEL_PRECISION_THRESHOLD
-    MODEL_PRECISION_THRESHOLD = MODEL_THRESHOLD_ETH_PRECISION  # From this threshold on, the model is very precise. Only use for eth
+        MODEL_PRECISION_THRESHOLD = MODEL_THRESHOLD_DEFAULT_PRECISION
     logger.info(f"Model threshold: {MODEL_THRESHOLD}. Using eth model for recall")
 
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
@@ -135,11 +137,11 @@ def detect_malicious_contract_tx(
                 error=error,
             ):
                 finding.addresses = [trace.action.from_, created_contract_address]
-                funding_alerts = check_funding_labels(trace.action.from_)
+                funding_alerts = check_funding_labels(trace.action.from_, n_days=1)
                 if len(funding_alerts) > 0:
                     finding.severity = FindingSeverity.Critical
                     finding.metadata["funding_alerts"] = ','.join(funding_alerts)
-                if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD and CHAIN_ID == 1:
+                if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
                     finding.severity = FindingSeverity.Critical
                     finding.metadata['high_precision_model'] = True
                 if finding.severity == FindingSeverity.Critical:
@@ -164,11 +166,11 @@ def detect_malicious_contract_tx(
                 creation_bytecode,
             ):
                 finding.addresses = [transaction_event.from_, created_contract_address]
-                funding_alerts = check_funding_labels(transaction_event.from_)
+                funding_alerts = check_funding_labels(transaction_event.from_, n_days=1)
                 if len(funding_alerts) > 0:
                     finding.severity = FindingSeverity.Critical
                     finding.metadata["funding_alerts"] = ','.join(funding_alerts)
-                if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD and CHAIN_ID == 1:
+                if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
                     finding.severity = FindingSeverity.Critical
                     finding.metadata['high_precision_model'] = True
                 if finding.severity == FindingSeverity.Critical:
