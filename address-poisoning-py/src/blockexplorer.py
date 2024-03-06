@@ -1,4 +1,5 @@
 from src.storage import get_secrets
+from functools import lru_cache
 import requests
 import logging
 import json
@@ -31,6 +32,7 @@ class BlockExplorer():
             self.api_key = self.api_keys['apiKeys']['SNOWTRACE_TOKEN']
 
 
+    @lru_cache(maxsize=100)
     def make_token_history_query(self, address_info):
         params = {
             "module": "account",
@@ -44,7 +46,6 @@ class BlockExplorer():
         values = [transfer['value'] for transfer in response.json()['result'] if transfer['from'] == str.lower(address_info[0])]
         
         return values[-5:]
-
 
     def is_verified(self, address):
         url = self.host + "?module=contract&action=getabi&address=" + address + "&apikey=" + self.api_key

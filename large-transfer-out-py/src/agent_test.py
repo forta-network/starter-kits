@@ -19,7 +19,8 @@ class TestLargeTransferOut:
                 'hash': "0",
                 'to': "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4",
                 'from': ADDRESS_WITH_LARGE_BALANCE,
-                'value': "50000000000000000000"
+                'value': "50000000000000000000",
+                'data': '0x1234'
             },
             'block': {
                 'number': CURRENT_BLOCK
@@ -45,7 +46,9 @@ class TestLargeTransferOut:
                 'hash': tx.hash,
                 'to': tx.to,
                 'from': tx['from'],
-                'value': tx.value
+                'value': tx.value,
+                'data': '0x1234'
+
             },
             'block': {
                 'number': tx.blockNumber
@@ -62,7 +65,8 @@ class TestLargeTransferOut:
                 'hash': tx.hash,
                 'to': tx.to,
                 'from': tx['from'],
-                'value': tx.value
+                'value': tx.value,
+                'data': '0x1234'
             },
             'block': {
                 'number': tx.blockNumber
@@ -103,7 +107,8 @@ class TestLargeTransferOut:
                 'hash': tx.hash,
                 'to': tx.to,
                 'from': tx['from'],
-                'value': tx.value
+                'value': tx.value,
+                'data': '0x1234'
             },
             'block': {
                 'number': tx.blockNumber
@@ -123,7 +128,8 @@ class TestLargeTransferOut:
                 'hash': "0",
                 'to': "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4",
                 'from': ADDRESS_WITHOUT_LARGE_BALANCE,
-                'value': "50000000000000000000"
+                'value': "50000000000000000000",
+                'data': '0x1234'
             },
             'block': {
                 'number': CURRENT_BLOCK
@@ -152,7 +158,8 @@ class TestLargeTransferOut:
                 'hash': "0",
                 'to': "0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4",
                 'from': ADDRESS_WITHOUT_LARGE_BALANCE,
-                'value': "50000000000000000000"
+                'value': "50000000000000000000",
+                'data': '0x1234'
             },
             'block': {
                 'number': CURRENT_BLOCK

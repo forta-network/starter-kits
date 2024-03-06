@@ -133,7 +133,7 @@ class Utils:
             return ""
             
         try:
-            res = requests.get(etherscan_label_api + address.lower())
+            res = requests.get(etherscan_label_api + address.lower(), timeout=30)
             if res.status_code == 200:
                 labels = res.json()
                 if labels and len(labels.get('events', [])) > 0:

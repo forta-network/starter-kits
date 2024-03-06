@@ -1,7 +1,8 @@
 {
   "name": "unverified-contract-creation",
-  "version": "0.0.12",
-  "description": "Forta agent raising alerts on unverified contract creations.",
+  "version": "0.0.14",
+  "displayName": "Unverified Contract Creation",
+  "description": "Forta bot raising alerts on unverified contract creations.",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/unverified-contract-py",
   "chainIds": [
     1,
@@ -14,7 +15,7 @@
   ],
   "chainSettings": {
     "1": {
-      "shards": 6,
+      "shards": 4,
       "target": 3
     },
     "56": {

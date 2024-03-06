@@ -15,7 +15,7 @@ from unittest.mock import Mock, patch
 
 from storage import dynamo_table, get_secrets
 from constants import (ALERTS_LOOKBACK_WINDOW_IN_HOURS, BASE_BOTS,
-                       ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY)
+                       ALERTED_CLUSTERS_MAX_QUEUE_SIZE, ALERTED_CLUSTERS_STRICT_KEY, ALERTED_CLUSTERS_LOOSE_KEY, FUNDING_STAGE_ALERTS_LOOKBACK_WINDOW_IN_HOURS)
 from web3_mock import CONTRACT, EOA_ADDRESS, EOA_ADDRESS_2, Web3Mock
 from L2Cache import VERSION
 from dynamo_utils import DynamoUtils as du, TEST_TAG
@@ -609,7 +609,7 @@ class TestAlertCombiner:
         dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
 
         alert_event = TestAlertCombiner.generate_alert(EOA_ADDRESS, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})  # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
-        alert_event.alert.created_at = (datetime.now() - timedelta(hours=ALERTS_LOOKBACK_WINDOW_IN_HOURS + 1)).strftime("%Y-%m-%dT%H:%M:%S.%f123Z")
+        alert_event.alert.created_at = (datetime.now() - timedelta(hours=FUNDING_STAGE_ALERTS_LOOKBACK_WINDOW_IN_HOURS + 1)).strftime("%Y-%m-%dT%H:%M:%S.%f123Z")
         findings = agent.detect_attack(w3, dynamo_utils, alert_event)
         assert len(findings) == 0, "no alert should have been raised"
 
@@ -786,6 +786,35 @@ class TestAlertCombiner:
 
         assert len(findings) == 1, "alert should have been raised"
         assert findings[0].alert_id == "ATTACK-DETECTOR-6", "ATTACK-DETECTOR-6 alert should have been raised as this associated with end user attack"
+
+    def test_alert_onyx_exploit(self):
+        TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))
+        agent.initialize()
+        agent.CHAIN_ID = 1
+        dynamo_utils = du(TEST_TAG, agent.CHAIN_ID)
+
+        TC_FUNDED_EOA = "0x43083E943cd4D35F242F7850bE2402126A57D6B5"
+        HOP_ADDRESS = "0x30E4d4e89369cf4D91cB675448Db0B2f126c1caF"
+        ONYX_EXPLOITER = "0x085bDfF2C522e8637D4154039Db8746bb8642BfF"
+
+        alert_event = TestAlertCombiner.generate_alert(TC_FUNDED_EOA, "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", "FUNDING-TORNADO-CASH", {"anomaly_score": (100.0 / 100000)})   # funding, TC -> alert count 100; ad-scorer transfer-in -> denominator 100000
+        findings =  agent.detect_attack(w3, dynamo_utils, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(TC_FUNDED_EOA, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entityAddresses": f"{TC_FUNDED_EOA},{HOP_ADDRESS}"})  # entity clustering alert
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(TC_FUNDED_EOA, "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER", {"entityAddresses": f"{TC_FUNDED_EOA},{HOP_ADDRESS},{ONYX_EXPLOITER}"})  # entity clustering alert
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+        assert len(findings) == 0, "no alert should have been raised"
+
+        alert_event = TestAlertCombiner.generate_alert(ONYX_EXPLOITER, "0x9aaa5cd64000e8ba4fa2718a467b90055b70815d60351914cc1cbe89fe1c404c", "SUSPICIOUS-CONTRACT-CREATION", {"anomaly_score": (200.0 / 10000)})  # preparation -> alert count = 200, suspicious ML; ad-scorer contract-creation -> denominator 10000
+        findings = agent.detect_attack(w3, dynamo_utils, alert_event)
+
+       
+        assert len(findings) == 2, "2 alerts should have been raised"
+        assert findings[1].alert_id == "ATTACK-DETECTOR-PREPARATION", "should have raised a preparation alert"
 
     def test_emit_new_manual_finding(self):
         TestAlertCombiner.remove_persistent_state(du(TEST_TAG, agent.CHAIN_ID))

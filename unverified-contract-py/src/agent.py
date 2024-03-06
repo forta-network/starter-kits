@@ -186,20 +186,20 @@ def cache_contract_creation(
                     transaction_event.from_ == trace.action.from_
                     or trace.action.from_ in created_contract_addresses
                 ):
-                    # for contracts creating other contracts, the nonce would be 1
-                    nonce = (
-                        transaction_event.transaction.nonce
-                        if transaction_event.from_ == trace.action.from_
-                        else 1
-                    )
-                    created_contract_address = calc_contract_address(
-                        w3, trace.action.from_, nonce
-                    )
-                    logging.info(
-                        f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}"
-                    )
+                    if transaction_event.from_ == trace.action.from_:
+                        nonce = transaction_event.transaction.nonce
+                        created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
+                    else:
+                        # For contracts creating other contracts, get the nonce using Web3
+                        nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                        created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
-                    CREATED_CONTRACTS[created_contract_address] = transaction_event
+                    if created_contract_address not in CREATED_CONTRACTS:
+                        logging.info(
+                            f"Added contract {created_contract_address} to cache. Timestamp: {transaction_event.timestamp}"
+                        )
+
+                        CREATED_CONTRACTS[created_contract_address] = transaction_event
 
     contracts_count = len(CREATED_CONTRACTS.items())
     logging.info(f"Created Contracts Count = {contracts_count}")
@@ -217,7 +217,7 @@ def detect_unverified_contract_creation(
                 for (
                     created_contract_address,
                     transaction_event,
-                ) in CREATED_CONTRACTS.items():
+                ) in CREATED_CONTRACTS.copy().items():
                     logging.info(
                         f"Evaluating contract {created_contract_address} from cache."
                     )
@@ -280,15 +280,14 @@ def detect_unverified_contract_creation(
                                 transaction_event.from_ == trace.action.from_
                                 or trace.action.from_ in created_contract_addresses
                             ):
-                                # for contracts creating other contracts, the nonce would be 1
-                                nonce = (
-                                    transaction_event.transaction.nonce
-                                    if transaction_event.from_ == trace.action.from_
-                                    else 1
-                                )
-                                calc_created_contract_address = calc_contract_address(
-                                    w3, trace.action.from_, nonce
-                                )
+                                if transaction_event.from_ == trace.action.from_:
+                                    nonce = transaction_event.transaction.nonce
+                                    calc_created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
+                                else:
+                                    # For contracts creating other contracts, get the nonce using Web3
+                                    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                                    calc_created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
+
                                 if (
                                     created_contract_address
                                     == calc_created_contract_address
@@ -332,13 +331,13 @@ def detect_unverified_contract_creation(
                                                 )
                                             )
                                             CREATED_CONTRACTS.pop(
-                                                created_contract_address
+                                                created_contract_address, None
                                             )
                                         else:
                                             logging.info(
                                                 f"Identified verified contract: {created_contract_address}"
                                             )
-                                            CREATED_CONTRACTS.pop(created_contract_address)
+                                            CREATED_CONTRACTS.pop(created_contract_address, None)
             if not infinite:
                 break
 

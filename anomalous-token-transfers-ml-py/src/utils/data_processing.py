@@ -35,7 +35,7 @@ def get_token_data(url):
     return requests.get(url)
 
 
-@lru_cache(maxsize=1_000_000)
+@lru_cache(maxsize=100_000)
 def get_first_tx_timestamp(address) -> int:
     """Gets address's first tx timestamp from Etherscan in unix."""
     first_tx_timestamp = -1
@@ -68,7 +68,7 @@ def get_account_active_period(address, recent_tx_timestamp) -> float:
     return (recent_tx_timestamp - first_tx_timestamp) / 60
 
 
-@lru_cache(maxsize=1_000_000)
+@lru_cache(maxsize=100_000)
 def get_token_info(token_address) -> tuple:
     """Get token name, symbol, and decimals from Ethplorer API."""
     token_info_endpoint = (

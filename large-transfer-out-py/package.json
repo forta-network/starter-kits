@@ -1,6 +1,6 @@
 {
   "name": "large-transfer-out",
-  "version": "0.0.9",
+  "version": "0.0.11",
   "displayName": "Large Transfer Out",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/large-transfer-out-py",
   "description": "Bot identifies large native asset transfers that didn't exist X days ago",
@@ -46,9 +46,9 @@
     "test": "python3 -m pytest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.38"
+    "forta-agent": "^0.1.48"
   },
   "devDependencies": {
-    "nodemon": "^2.0.8"
+    "nodemon": "^3.0.2"
   }
 }
