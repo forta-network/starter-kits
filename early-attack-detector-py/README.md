@@ -15,13 +15,17 @@ This bot only creates critical alerts. The logic to create the alerts is as foll
 1. If the risk score lays over the high-recall but under the high-precision thresholds, funding is checked. If the deployer address has received funding from low-KYC sources, a flag with the funding transaction is added to the metadata, and an alert is raised.
 1. If the risk score is under both thresholds, no alert is raised.
 
+## Alerts
+- **EARLY-ATTACK-DETECTOR-1**, severity Critical. Alerts raised when the model is over precision and has funding in the last day, or if the model precisioin is over the high precision threshold.
+- **EARLY-AD-INFO**, [only for beta], severity Info. Auxiliar alerts for continuous improvement. 
+
 ## Metrics
 
 Metrics are calculated using a 5-fold CV fashion (Divide data in 5 splits, train in 4 of them, predict on the unseen 5th, then calculate metrics over the whole dataset). 
 
 |version|eth f1|eth p|eth r|oc f1|oc p|oc r|ehp f1|ehp p|ehp r|ochp f1|ochp p|ochp r|
 |:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
-|v0.0.1|0.38|0.24|0.94|0.47|0.31|0.95|0.57|0.98|0.40|-|-|-|
+|v0.0.1|0.54|0.39|0.9|0.36|0.23|0.89|0.78|0.89|0.69|0.26|0.84|0.15|
 
 Legend:
 - oc - other chains

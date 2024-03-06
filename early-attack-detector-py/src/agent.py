@@ -16,6 +16,7 @@ from src.constants import (
     MODEL_THRESHOLD_DEFAULT_PRECISION,
     FUNDING_BOTS,
     MODEL_INFO_THRESHOLD,
+    MODEL_PATH,
 )
 from src.findings import ContractFindings
 from src.logger import logger
@@ -44,7 +45,7 @@ def initialize():
 
     global ML_MODEL
     logger.info("Start loading model")
-    ML_MODEL = load("deployed_models/imb_recall_precision.joblib")
+    ML_MODEL = load(MODEL_PATH)
 
     global MODEL_THRESHOLD
     global MODEL_PRECISION_THRESHOLD
