@@ -97,6 +97,7 @@ def detect_malicious_contract_tx(
     all_creation_bytecodes = {}
     repeated_bytecodes = {}
     created_contract_address = None
+    tx_timestamp = transaction_event.timestamp * 1000
     for trace in transaction_event.traces:
         if trace.type == "create":
             created_contract_address = (
@@ -147,7 +148,7 @@ def detect_malicious_contract_tx(
                 finding.addresses = [trace.action.from_, created_contract_address]
                 if finding.severity == FindingSeverity.Critical:
                     # We priorize when there are critical findings
-                    funding_alerts, funding_labels = check_funding_labels(trace.action.from_, n_days=1)
+                    funding_alerts, funding_labels = check_funding_labels(trace.action.from_, tx_timestamp=tx_timestamp, n_days=1)
                     if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
                         finding.metadata["funding_labels"] = ','.join(funding_labels)
@@ -161,7 +162,7 @@ def detect_malicious_contract_tx(
                 if BETA:
                     if ENV == 'dev':
                         logger.info(f"Checking funding alerts for {trace.action.from_}")
-                    funding_alerts, funding_labels = check_funding_labels(trace.action.from_, n_days=1)
+                    funding_alerts, funding_labels = check_funding_labels(trace.action.from_, tx_timestamp=tx_timestamp, n_days=365)
                     if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
                         finding.metadata["funding_labels"] = ','.join(funding_labels)
@@ -189,7 +190,7 @@ def detect_malicious_contract_tx(
             ):
                 if finding.severity == FindingSeverity.Critical:
                     # We priorize when there are critical findings
-                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, n_days=1)
+                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=1)
                     if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
                         finding.metadata["funding_labels"] = ','.join(funding_labels)
@@ -203,7 +204,7 @@ def detect_malicious_contract_tx(
                 if BETA:
                     if ENV == 'dev':
                         logger.info(f"Checking funding labels for {transaction_event.from_}")
-                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, n_days=1)
+                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=365)
                     if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
                         finding.metadata["funding_labels"] = ','.join(funding_labels)
@@ -328,15 +329,16 @@ def handle_transaction(
     return real_handle_transaction(transaction_event)
 
 
-def check_funding_labels(address: str, n_days: int=365):
+def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365):
     t = time.time()
     bots = FUNDING_BOTS
     query = {
         "first": 5,
         "source_ids": bots,
-        "created_since": n_days*24*60*60*1000,
+        "created_since": tx_timestamp - n_days*24*60*60*1000,
         "entities": [address],
         "state": True,
+        "labels": ["attacker"],
     }
     alert_ids = []
     label_ids = []
