@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 
 TEST_TAG = "attack-detector-test_v2"
 BETA_ALT_TAG = "attack-detector-beta_alt"
-# PROD_TAG = "attack-detector-prod"
-tags = [TEST_TAG, BETA_ALT_TAG] 
+PROD_TAG = "attack-detector-prod"
+tags = [TEST_TAG, BETA_ALT_TAG, PROD_TAG] 
 
 # Initialize web3
 web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
