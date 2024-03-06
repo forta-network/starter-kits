@@ -1,6 +1,6 @@
 # Attack Detector Bot Release Notes
 
-## v3.54.1 (Mar 5th 2024: beta2)
+## v3.54.1 (Mar 5th 2024: beta2, Mar 6th 2024: prod)
 
 - ICE-PHISHING-SUSPICIOUS-TRANSFER alert removal
 
