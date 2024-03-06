@@ -1,7 +1,5 @@
 from forta_agent import Finding, FindingType, FindingSeverity
-from bot_alert_rate import calculate_alert_rate, ScanCountType
 
-from src.constants import BOT_ID
 
 
 class ContractFindings:
@@ -35,17 +33,17 @@ class ContractFindings:
 
     def malicious_contract_creation(
         self,
-        chain_id: int,
+        severity: FindingSeverity,
         labels: list,
     ) -> Finding:
-        self.label = labels
+        self.labels = labels
         return Finding(
             {
                 "name": "Suspicious Contract Creation",
                 "description": self.description,
                 "alert_id": "EARLY-ATTACK-DETECTOR-1",
                 "type": FindingType.Suspicious,
-                "severity": FindingSeverity.High,
+                "severity": severity,
                 "metadata": self.metadata,
                 "labels": self.labels,
             }
