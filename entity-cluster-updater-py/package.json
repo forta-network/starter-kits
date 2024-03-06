@@ -1,7 +1,7 @@
 {
   "name": "entity-cluster-updater",
   "displayName": "Updater for entity cluster",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Updates Entity Cluster DB",
   "repository": "https://github.com/forta-network/forta-bot-sdk/tree/master/starter-project",
   "licenseUrl": "https://github.com/forta-network/forta-bot-sdk/blob/master/starter-project/LICENSE.md",
@@ -17,7 +17,7 @@
   ],
   "chainSettings": {
     "default": {
-      "shards": 2,
+      "shards": 3,
       "target": 3
     }
   },
