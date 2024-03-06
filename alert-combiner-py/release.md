@@ -1,5 +1,14 @@
 # Attack Detector Bot Release Notes
 
+## v3.54.1 (Mar 5th 2024: beta2, Mar 6th 2024: prod)
+
+- ICE-PHISHING-SUSPICIOUS-TRANSFER alert removal
+
+## v3.54.0 (Feb 29th 2024: beta2)
+
+- Entity clustering logic removal
+- Shards reduction
+
 ## v3.53.2 (Feb 22th 2024: beta2, Feb 29th 2024: prod)
 
 - New funding bots integration (Thorchain, eXch)
