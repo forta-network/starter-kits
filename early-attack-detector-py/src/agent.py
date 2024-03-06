@@ -146,22 +146,24 @@ def detect_malicious_contract_tx(
                 finding.addresses = [trace.action.from_, created_contract_address]
                 if finding.severity == FindingSeverity.Critical:
                     # We priorize when there are critical findings
-                    funding_alerts = check_funding_labels(trace.action.from_, n_days=1)
-                    if len(funding_alerts) > 0:
+                    funding_alerts, funding_labels = check_funding_labels(trace.action.from_, n_days=1)
+                    if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
+                        finding.metadata["funding_labels"] = ','.join(funding_labels)
                     if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
                         finding.metadata['high_precision_model'] = True
                     # If the model is working in high precision, or it has a 1-day funding alert, we raise the alert and continue
-                    if 'high_precision_model' in finding.metadata.keys() or 'funding_alerts' in finding.metadata.keys():
+                    if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys():
                         all_findings.append(finding)
                         continue
                 # This should only trigger in beta and if no critical alert has been raised
                 if BETA:
                     if ENV == 'dev':
                         logger.info(f"Checking funding alerts for {trace.action.from_}")
-                    funding_alerts = check_funding_labels(trace.action.from_, n_days=365)
-                    if len(funding_alerts) > 0:
+                    funding_alerts, funding_labels = check_funding_labels(trace.action.from_, n_days=1)
+                    if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
+                        finding.metadata["funding_labels"] = ','.join(funding_labels)
                         finding.labels = []
                         finding.alert_id = "EARLY-AD-INFO"
                         finding.severity = FindingSeverity.Info
@@ -186,22 +188,24 @@ def detect_malicious_contract_tx(
             ):
                 if finding.severity == FindingSeverity.Critical:
                     # We priorize when there are critical findings
-                    funding_alerts = check_funding_labels(transaction_event.from_, n_days=1)
-                    if len(funding_alerts) > 0:
+                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, n_days=1)
+                    if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
+                        finding.metadata["funding_labels"] = ','.join(funding_labels)
                     if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
                         finding.metadata['high_precision_model'] = True
                     # If the model is working in high precision, or it has a 1-day funding alert, we raise the alert and continue
-                    if 'high_precision_model' in finding.metadata.keys() or 'funding_alerts' in finding.metadata.keys():
+                    if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys():
                         all_findings.append(finding)
                         continue
                 # This should only trigger in beta and if no critical alert has been raised
                 if BETA:
                     if ENV == 'dev':
                         logger.info(f"Checking funding labels for {transaction_event.from_}")
-                    funding_alerts = check_funding_labels(transaction_event.from_, n_days=365)
-                    if len(funding_alerts) > 0:
+                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, n_days=1)
+                    if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
+                        finding.metadata["funding_labels"] = ','.join(funding_labels)
                         finding.labels = []
                         finding.alert_id = "EARLY-AD-INFO"
                         finding.severity = FindingSeverity.Info
@@ -333,14 +337,16 @@ def check_funding_labels(address: str, n_days: int=365):
         "entities": [address],
         "state": True,
     }
-    labels_hashes = []
+    alert_ids = []
+    label_ids = []
     for _ in range(2):
         try:
             labels = forta_agent.get_labels(query)
-            labels_hashes += [label.source.alert_hash for label in labels.labels if 'attacker' in label.label]
+            alert_ids += [label.source.alert_hash for label in labels.labels if 'attacker' in label.label]
+            label_ids += [label.id for label in labels.labels if 'attacker' in label.label]
             break
         except:
             continue
     if ENV == 'dev':
-        logger.info(f"Time taken to get labels: {time.time() - t};\tN_labels: {len(labels_hashes)};\tAddress: {address}")
-    return labels_hashes
+        logger.info(f"Time taken to get labels: {time.time() - t};\tN_labels: {len(alert_ids)};\tAddress: {address}")
+    return alert_ids, label_ids
