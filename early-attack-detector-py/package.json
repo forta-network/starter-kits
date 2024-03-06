@@ -1,6 +1,6 @@
 {
-  "name": "early-attack-detector-py",
-  "displayName": "Early Attack Detector",
+  "name": "early-attack-detector-py-beta",
+  "displayName": "Early Attack Detector Beta",
   "version": "0.0.1",
   "description": "Attack detector focused on detection during preparation",
   "longDescription": "This bot is designed to detect attacks during the contract deployment phase, before the attack is executed.",
