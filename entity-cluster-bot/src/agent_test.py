@@ -443,7 +443,7 @@ class TestEntityClusterBot:
         
         
         processing_runs = 1
-        processing_time_normal_contract_itearation_like_ERC30_approve = 0
+        processing_time_normal_contract_itearation_like_ERC20_approve = 0
         processing_time_small_transaction_with_finding = 0
         processing_time_bi_directional_tx_right = 0
         processing_time_bi_directional_tx_left_with_finding = 0
@@ -455,7 +455,7 @@ class TestEntityClusterBot:
             TestEntityClusterBot.remove_persistent_state()
             global agent
             agent = EntityClusterAgent(DynamoPersistance())
-            processing_time_normal_contract_itearation_like_ERC30_approve += timeit.timeit('agent.cluster_entities(real_w3, transf_token_appproval)', number=processing_runs, globals=globals()) * 1000 
+            processing_time_normal_contract_itearation_like_ERC20_approve += timeit.timeit('agent.cluster_entities(real_w3, transf_token_appproval)', number=processing_runs, globals=globals()) * 1000 
             processing_time_small_transaction_with_finding += timeit.timeit('agent.cluster_entities(real_w3, small_transfer)', number=processing_runs, globals=globals()) * 1000 
 
             processing_time_bi_directional_tx_right += timeit.timeit('agent.cluster_entities(real_w3, native_transfer_bidirectional_right)', number=processing_runs, globals=globals()) * 1000 
@@ -471,7 +471,7 @@ class TestEntityClusterBot:
             processing_time_ERC20_bi_directional_tx_right += processing_time_bi_directional_tx_right + 10
             processing_time_ERC20_bi_directional_tx_left_with_finding += processing_time_bi_directional_tx_left_with_finding + 10
 
-        avg_processing_time_normal_contract_itearation_like_ERC30_approve = processing_time_normal_contract_itearation_like_ERC30_approve / processing_runs
+        avg_processing_time_normal_contract_itearation_like_ERC20_approve = processing_time_normal_contract_itearation_like_ERC20_approve / processing_runs
         avg_processing_time_small_transaction_with_finding = processing_time_small_transaction_with_finding / processing_runs
         avg_processing_time_bi_directional_tx_right = processing_time_bi_directional_tx_right / processing_runs
         avg_processing_time_bi_directional_tx_left_with_finding = processing_time_bi_directional_tx_left_with_finding / processing_runs
@@ -481,7 +481,7 @@ class TestEntityClusterBot:
         avg_processing_time_ERC20_bi_directional_tx_left_with_finding = processing_time_ERC20_bi_directional_tx_left_with_finding / processing_runs
         
 
-        avg_tx_time = (avg_processing_time_normal_contract_itearation_like_ERC30_approve 
+        avg_tx_time = (avg_processing_time_normal_contract_itearation_like_ERC20_approve 
                 + avg_processing_time_small_transaction_with_finding 
                 + avg_processing_time_bi_directional_tx_right 
                 + avg_processing_time_bi_directional_tx_left_with_finding 
@@ -490,7 +490,7 @@ class TestEntityClusterBot:
                 + avg_processing_time_ERC20_bi_directional_tx_right 
                 + avg_processing_time_ERC20_bi_directional_tx_left_with_finding ) / 8
 
-        avg_tx_time_weight = avg_processing_time_normal_contract_itearation_like_ERC30_approve * 0.5 \
+        avg_tx_time_weight = avg_processing_time_normal_contract_itearation_like_ERC20_approve * 0.5 \
                        + avg_processing_time_small_transaction_with_finding * 0.11 \
                        + avg_processing_time_bi_directional_tx_right * 0.10 \
                        + avg_processing_time_bi_directional_tx_left_with_finding * 0.03\
@@ -540,7 +540,7 @@ class TestEntityClusterBot:
         # Because this test is making actual RPC calls on ETH mainnet,
         # we are using a block number that will return a non-zero value
         # for the two addresses' `transaction_count`.
-        block_number = 18127797
+        block_number = 18252000
 
 
         
@@ -602,7 +602,7 @@ class TestEntityClusterBot:
         # Because this test is making actual RPC calls on ETH mainnet,
         # we are using a block number that will return a non-zero value
         # for the two addresses' `transaction_count`.
-        block_number = 18127797
+        block_number = 18252000
     
         agent1 = EntityClusterAgent(DynamoPersistance())
 
