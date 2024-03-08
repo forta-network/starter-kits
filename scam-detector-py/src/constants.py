@@ -156,6 +156,7 @@ BASE_BOTS = [("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9
                 ("0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8", "SOCIAL-ENG-EOA-CREATION-NULL-ADDRESS", "PassThrough", "SCAM-DETECTOR-UNKNOWN"),  # social engineering contract
                 ("0x42dbb60aa8059dd395df9f66230f63852856f7fdd0d6d3fc55b708f8f84a3f47", "CHAINPATROL-SCAM-ASSET", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"), # chainpatrol bot
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Phishing-drainer", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"), 
+                ("0x154da7913f0d42dc50b5007fc4950ac0ab1f399023a0703784fd461d874100c5", "FORTA-1", "PassThrough", "SCAM-DETECTOR-UNKNOWN"),  # forta twitter bot
                 ]
 
 # model information
