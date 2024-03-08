@@ -805,6 +805,24 @@ class TestScamDetector:
         assert len(findings) == 1, "this should have triggered a finding"
         assert Utils.ERROR_CACHE.len() > 0, "error cache should not be empty given w3error logged an error"
 
+    def test_detect_twitter_bot_scammer(self):
+        agent.initialize()
+        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
+
+        bot_id = "0x154da7913f0d42dc50b5007fc4950ac0ab1f399023a0703784fd461d874100c5"
+        alert_id = "FORTA-1"
+        description = "Address 0x9fcf3f94ed5673f414907e381faaa2b014319eb3 was mentioned in a Tweet"
+        metadata = {"accountFrom":"@realScamSniffer","dateTweeted":"03/08/2024","tweetURL":"https://twitter.com/realScamSniffer/status/1766104252185989239","twitterMentionedAccount":"0x9fcf3f94ed5673f414907e381faaa2b014319eb3","tweetText":"victim: 0x02fbadf4f6587885c7db75c65d13cf5fed2d246e scammer: 0x9fcf3f94ed5673f414907e381faaa2b014319eb3 https://t.co/uZL6Gy9jHx"}
+        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
+
+
+        findings = TestScamDetector.filter_findings(agent.detect_scam(w3, alert_event, clear_state_flag=True),"passthrough")
+
+        assert len(findings) == 1, "this should have triggered a finding"
+        finding = findings[0]
+        assert finding.alert_id == "SCAM-DETECTOR-UNKNOWN", "should be impersonating token finding"
+        assert finding.metadata is not None, "metadata should not be empty"
+        assert len(finding.labels) > 0, "labels should not be empty"
 
     def test_detect_alert_similar_contract(self):
         agent.initialize()
