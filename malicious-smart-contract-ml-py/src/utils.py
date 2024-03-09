@@ -1,11 +1,9 @@
-from hexbytes import HexBytes
+import aiohttp
 import rlp
-import requests
-from web3 import Web3
+from hexbytes import HexBytes
 
-
-from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID
-from src.logger import logger
+from constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID
+from logger import logger
 
 
 def calc_contract_address(w3, address, nonce) -> str:
@@ -15,17 +13,17 @@ def calc_contract_address(w3, address, nonce) -> str:
     """
 
     address_bytes = bytes.fromhex(address[2:].lower())
-    return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
+    return w3.to_checksum_address(w3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
-def is_contract(w3, address) -> bool:
+async def is_contract(w3, address) -> bool:
     """
     this function determines whether address is a contract
     :return: is_contract: bool
     """
     if address is None:
         return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
+    code = await w3.eth.get_code(w3.to_checksum_address(address))
     return code != HexBytes("0x")
 
 def get_function_signatures(w3, opcodes) -> set:
@@ -40,7 +38,7 @@ def get_function_signatures(w3, opcodes) -> set:
     return function_signatures
 
 
-def get_storage_addresses(w3, address) -> set:
+async def get_storage_addresses(w3, address) -> set:
     """
     this function returns the addresses that are references in the storage of a contract (first CONTRACT_SLOT_ANALYSIS_DEPTH slots)
     :return: address_list: list (only returning contract addresses)
@@ -50,22 +48,22 @@ def get_storage_addresses(w3, address) -> set:
 
     address_set = set()
     for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH):
-        mem = w3.eth.get_storage_at(Web3.toChecksumAddress(address), i)
+        mem = await w3.eth.get_storage_at(w3.to_checksum_address(address), i)
         if mem != HexBytes(
             "0x0000000000000000000000000000000000000000000000000000000000000000"
         ):
             # looking at both areas of the storage slot as - depending on packing - the address could be at the beginning or the end.
             addr_on_left = mem[0:20].hex()
             addr_on_right = mem[12:].hex()
-            if is_contract(w3, addr_on_left):
-                address_set.add(Web3.toChecksumAddress(addr_on_left))
-            if is_contract(w3, addr_on_right):
-                address_set.add(Web3.toChecksumAddress(addr_on_right))
+            if await is_contract(w3, addr_on_left):
+                address_set.add(w3.to_checksum_address(addr_on_left))
+            if await is_contract(w3, addr_on_right):
+                address_set.add(w3.to_checksum_address(addr_on_right))
 
     return address_set
 
 
-def get_features(w3, opcodes, contract_creator) -> list:
+async def get_features(w3, opcodes, contract_creator) -> list:
     """
     this function returns the contract opcodes
     :return: features: list
@@ -79,8 +77,8 @@ def get_features(w3, opcodes, contract_creator) -> list:
         if opcode_name.startswith("UNKNOWN") or opcode_name.startswith("INVALID"):
             opcode_name = opcode.name.split("_")[0]
         features.append(opcode_name)
-        if len(opcode.operand) == 40 and is_contract(w3, opcode.operand):
-            opcode_addresses.add(Web3.toChecksumAddress(f"0x{opcode.operand}"))
+        if len(opcode.operand) == 40 and await is_contract(w3, opcode.operand):
+            opcode_addresses.add(w3.to_checksum_address(f"0x{opcode.operand}"))
 
         if opcode_name in {"PUSH4", "PUSH32"}:
             features.append(opcode.operand)
@@ -97,16 +95,16 @@ def get_features(w3, opcodes, contract_creator) -> list:
     return features, opcode_addresses
 
 
-def alert_count(chain_id: int, alert_id: str) -> int:
-    alert_stats_url = (
-        f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
-    )
+async def alert_count(chain_id: int, alert_id: str) -> int:
+    alert_stats_url = f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
     alert_id_counts = 1
     alert_counts = 1
     try:
-        result = requests.get(alert_stats_url).json()
-        alert_id_counts = result["alertIds"][alert_id]["count"]
-        alert_counts = result["total"]["count"]
+        async with aiohttp.ClientSession() as session:
+            async with session.get(alert_stats_url) as response:
+                result = await response.json()
+                alert_id_counts = result["alertIds"][alert_id]["count"]
+                alert_counts = result["total"]["count"]
     except Exception as err:
         logger.error(f"Error obtaining alert counts: {err}")
 
