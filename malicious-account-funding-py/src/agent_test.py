@@ -26,7 +26,7 @@ class TestKnownMaliciousAccountFunding:
             block={
                 'number': 0
             },
-            network_id=1,
+            chain_id=1,
             logs= []
         )
 
@@ -50,7 +50,7 @@ class TestKnownMaliciousAccountFunding:
             block={
                 'number': 0
             },
-            network_id=1,
+            chain_id=1,
             logs= []
         )
 
