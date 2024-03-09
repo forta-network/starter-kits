@@ -34,7 +34,7 @@ class TestTornadoCashFunding:
             block={
                     'number': 0
             },
-            network_id=1,
+            chain_id=1,
             logs = [
                 {
                  'address': TORNADO_CASH_ADDRESSES[1][0],
@@ -55,7 +55,7 @@ class TestTornadoCashFunding:
             block={
                     'number': 0
             },
-            network_id=1,
+            chain_id=1,
             logs= []
         )
 
@@ -70,7 +70,7 @@ class TestTornadoCashFunding:
             block={
                     'number': 0
             },
-            network_id=1,
+            chain_id=1,
             logs= []
         )
 
@@ -116,7 +116,7 @@ class TestTornadoCashFunding:
             block= {
                 'number': 0
             },
-            network_id=1,
+            chain_id=1,
             logs = [
                 {'address': TORNADO_CASH_ADDRESSES[1][0],
                  'topics': [TORNADO_CASH_WITHDRAW_TOPIC],
@@ -146,7 +146,7 @@ class TestTornadoCashFunding:
             block= {
                 'number': 0
             },
-            network_id=1,
+            chain_id=1,
             logs= [
                 {'address': TORNADO_CASH_ADDRESSES[1][0],
                  'topics': [TORNADO_CASH_WITHDRAW_TOPIC],
@@ -174,7 +174,7 @@ class TestTornadoCashFunding:
             block = {
                 'number': 0
             },
-            network_id=1,
+            chain_id=1,
             logs = [
                 {'address': TORNADO_CASH_ADDRESSES_HIGH[1][0],
                  'topics': [TORNADO_CASH_WITHDRAW_TOPIC],
