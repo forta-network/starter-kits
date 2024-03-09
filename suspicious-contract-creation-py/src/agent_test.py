@@ -59,7 +59,7 @@ class TestSuspiciousContractAgent:
             block = {
                 'number': 0
             },
-            network_id=1,
+            chain_id=1,
             traces = [
                 {'type': 'call',
                  'action': {
@@ -94,7 +94,7 @@ class TestSuspiciousContractAgent:
             block = {
                 'number': 0
             },
-            network_id=1,
+            chain_id=1,
             traces = [
                 {'type': 'call',
                  'action': {
@@ -142,7 +142,7 @@ class TestSuspiciousContractAgent:
             block = {
                 'number': 0
             },
-            network_id=1,
+            chain_id=1,
             traces = [
                 {'type': 'call',
                  'action': {
@@ -171,7 +171,7 @@ class TestSuspiciousContractAgent:
             block = {
                 'number': 0
             },
-            network_id=1,
+            chain_id=1,
             traces = [],
         )
 
@@ -196,7 +196,7 @@ class TestSuspiciousContractAgent:
             block = {
                 'number': 0
             },
-            network_id=1,
+            chain_id=1,
             traces = [
                 {
                     'type': 'create',
