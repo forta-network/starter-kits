@@ -1,34 +1,30 @@
-import forta_agent
+import asyncio
 import rlp
-from forta_agent import get_json_rpc_url, EntityType
+from forta_bot import scan_base, scan_ethereum, run_health_check, get_chain_id, TransactionEvent, EntityType
 from joblib import load
 from evmdasm import EvmBytecode
-from web3 import Web3
+from web3 import AsyncWeb3
 from os import environ
 
-
-from src.constants import (
+from constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
     MODEL_THRESHOLD,
     SAFE_CONTRACT_THRESHOLD,
 )
-from src.findings import TokenContractFindings
-from src.logger import logger
-from src.utils import (
+from findings import TokenContractFindings
+from logger import logger
+from utils import (
     get_features,
     get_storage_addresses,
     is_contract,
 )
 
-from src.storage import get_secrets
+from storage import get_secrets
 
-SECRETS_JSON = get_secrets()
-
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 ML_MODEL = None
 
 
-def initialize():
+async def initialize():
     """
     this function loads the ml model.
     """
@@ -38,25 +34,35 @@ def initialize():
     logger.info("Complete loading model")
 
     global CHAIN_ID
-    CHAIN_ID = web3.eth.chain_id
+    CHAIN_ID = get_chain_id()
+    print("Chain ID: ", CHAIN_ID)
 
+    SECRETS_JSON = await get_secrets()
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON["apiKeys"]["ZETTABLOCK"]
 
+def calc_contract_address(w3, address, nonce) -> str:
+    """
+    this function calculates the contract address from sender/nonce
+    :return: contract address: str
+    """
 
-def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
+    address_bytes = bytes.fromhex(address[2:].lower())
+    return w3.to_checksum_address(w3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
+
+async def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     """
     this function executes the model to obtain the score for the contract
     :return: score: float
     """
     score = None
-    features, opcode_addresses = get_features(w3, opcodes, contract_creator)
+    features, opcode_addresses = await get_features(w3, opcodes, contract_creator)
     score = ML_MODEL.predict_proba([features])[0][1]
 
     return score, opcode_addresses
 
 
-def detect_malicious_token_contract_tx(
-    w3, transaction_event: forta_agent.transaction_event.TransactionEvent
+async def detect_malicious_token_contract_tx(
+    w3, transaction_event: TransactionEvent
 ) -> list:
     malicious_findings = []
     safe_findings = []
@@ -75,7 +81,7 @@ def detect_malicious_token_contract_tx(
                         contract_address = calc_contract_address(w3, trace.action.from_, nonce)
                     else:
                         # For contracts creating other contracts, get the nonce using Web3
-                        nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                        nonce = await w3.eth.getTransactionCount(w3.to_checksum_address(trace.action.from_), transaction_event.block_number)
                         contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
                     logger.warn(
@@ -83,11 +89,12 @@ def detect_malicious_token_contract_tx(
                     )
                 # creation bytecode contains both initialization and run-time bytecode.
                 creation_bytecode = trace.action.init
-                for finding in detect_malicious_token_contract(
+                for finding in await detect_malicious_token_contract(
                     w3,
                     trace.action.from_,
                     created_contract_address,
                     creation_bytecode,
+                    transaction_event=transaction_event
                 ):
                     if finding.alert_id == "SUSPICIOUS-TOKEN-CONTRACT-CREATION":
                         malicious_findings.append(finding)
@@ -99,14 +106,15 @@ def detect_malicious_token_contract_tx(
             created_contract_address = calc_contract_address(
                 w3, transaction_event.from_, nonce
             )
-            runtime_bytecode = w3.eth.get_code(
-                Web3.toChecksumAddress(created_contract_address)
-            ).hex()
-            for finding in detect_malicious_token_contract(
+            runtime_bytecode = (await w3.eth.get_code(
+                w3.to_checksum_address(created_contract_address)
+            )).hex()
+            for finding in await detect_malicious_token_contract(
                 w3,
                 transaction_event.from_,
                 created_contract_address,
                 runtime_bytecode,
+                transaction_event=transaction_event
             ):
                 if finding.alert_id == "SUSPICIOUS-TOKEN-CONTRACT-CREATION":
                     malicious_findings.append(finding)
@@ -117,7 +125,7 @@ def detect_malicious_token_contract_tx(
     return (malicious_findings + safe_findings)[:10]
 
 
-def detect_malicious_token_contract(w3, from_, created_contract_address, code) -> list:
+async def detect_malicious_token_contract(w3, from_, created_contract_address, code, transaction_event=TransactionEvent) -> list:
     findings = []
 
     if created_contract_address is not None:
@@ -127,9 +135,9 @@ def detect_malicious_token_contract(w3, from_, created_contract_address, code) -
             except Exception as e:
                 logger.warn(f"Error disassembling evm bytecode: {e}")
             # obtain all the addresses contained in the created contract and propagate to the findings
-            storage_addresses = get_storage_addresses(w3, created_contract_address)
-            model_score, opcode_addresses = exec_model(w3, opcodes, from_)
-            from_label_type = "contract" if is_contract(w3, from_) else "eoa"
+            storage_addresses = await get_storage_addresses(w3, created_contract_address)
+            model_score, opcode_addresses = await exec_model(w3, opcodes, from_)
+            from_label_type = "contract" if await is_contract(w3, from_) else "eoa"
             finding = TokenContractFindings(
                 from_,
                 created_contract_address,
@@ -138,7 +146,7 @@ def detect_malicious_token_contract(w3, from_, created_contract_address, code) -
                 MODEL_THRESHOLD,
             )
             if model_score is not None:
-                from_label_type = "contract" if is_contract(w3, from_) else "eoa"
+                from_label_type = "contract" if await is_contract(w3, from_) else "eoa"
                 labels = [
                     {
                         "entity": created_contract_address,
@@ -176,6 +184,7 @@ def detect_malicious_token_contract(w3, from_, created_contract_address, code) -
                         finding.malicious_contract_creation(
                             CHAIN_ID,
                             labels,
+                            transaction_event.hash
                         )
                     )
                 elif model_score <= SAFE_CONTRACT_THRESHOLD:
@@ -199,37 +208,36 @@ def detect_malicious_token_contract(w3, from_, created_contract_address, code) -
                         finding.safe_contract_creation(
                             CHAIN_ID,
                             labels,
+                            transaction_event.hash
                         )
                     )
                 else:
-                    findings.append(finding.non_malicious_contract_creation())
+                    findings.append(finding.non_malicious_contract_creation(CHAIN_ID, transaction_event.hash))
 
     return findings
 
+async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider) -> list:
+    return await detect_malicious_token_contract_tx(web3, transaction_event)
 
-def calc_contract_address(w3, address, nonce) -> str:
-    """
-    this function calculates the contract address from sender/nonce
-    :return: contract address: str
-    """
+async def main():
+    await initialize()
 
-    address_bytes = bytes.fromhex(address[2:].lower())
-    return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
-
-
-def provide_handle_transaction(w3):
-    def handle_transaction(
-        transaction_event: forta_agent.transaction_event.TransactionEvent,
-    ) -> list:
-        return detect_malicious_token_contract_tx(w3, transaction_event)
-
-    return handle_transaction
-
-
-real_handle_transaction = provide_handle_transaction(web3)
+    await asyncio.gather(
+        scan_ethereum({
+        'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
+        'rpc_key_id': "ebbd1b21-4e72-4d80-b4f9-f605fee5eb68",
+        'local_rpc_url': "1",
+        'handle_transaction': handle_transaction
+        }),
+        scan_base({
+        'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
+        'rpc_key_id': "85f8e757-1120-49eb-936a-7ee0aee57659",
+        'local_rpc_url': "8453",
+        'handle_transaction': handle_transaction
+        }),
+        run_health_check()
+    )
 
 
-def handle_transaction(
-    transaction_event: forta_agent.transaction_event.TransactionEvent,
-):
-    return real_handle_transaction(transaction_event)
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -1,8 +1,7 @@
-from forta_agent import Finding, FindingType, FindingSeverity
+from forta_bot import Finding, FindingType, FindingSeverity
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
-BOT_ID = "0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad"
-
+BOT_ID = "0xf0490edadc1cd6eb2cc02e78508fbbcd6e08ea835a8fef0e399b336017fee3c8"
 
 class TokenContractFindings:
     def __init__(
@@ -26,20 +25,21 @@ class TokenContractFindings:
         self,
         chain_id: int,
         labels: list,
+        tx_hash: str,
     ) -> Finding:
         scan_count_type = ScanCountType.CONTRACT_CREATION_COUNT
         custom_scan_count = None
-        if chain_id in [43114, 10, 250]:
+        if chain_id in [43114, 10, 250, 8453]:
             scan_count_type = ScanCountType.CUSTOM_SCAN_COUNT
             custom_scan_count = 500_000
 
-        self.metadata["anomaly_score"] = calculate_alert_rate(
+        self.metadata["anomaly_score"] = str(calculate_alert_rate(
             chain_id,
             BOT_ID,
             "SUSPICIOUS-TOKEN-CONTRACT-CREATION",
             scan_count_type,
             custom_scan_count,
-        )
+        ))
         self.label = labels
         return Finding(
             {
@@ -50,6 +50,10 @@ class TokenContractFindings:
                 "severity": FindingSeverity.High,
                 "metadata": self.metadata,
                 "labels": self.labels,
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': tx_hash}]
+                }
             }
         )
 
@@ -57,18 +61,18 @@ class TokenContractFindings:
         self,
         chain_id: int,
         labels: list,
+        tx_hash: str,
     ) -> Finding:
         self.label = labels
 
-        if chain_id not in [43114, 10, 250]:
-            self.metadata["anomaly_score"] = (
-                calculate_alert_rate(
+        if chain_id not in [43114, 10, 250, 8453]:
+            self.metadata["anomaly_score"] = str(calculate_alert_rate(
                     chain_id,
                     BOT_ID,
                     "SAFE-TOKEN-CONTRACT-CREATION",
                     ScanCountType.CONTRACT_CREATION_COUNT,
-                ),
-            )
+                ))
+
         return Finding(
             {
                 "name": "Safe Token Contract Creation",
@@ -78,19 +82,22 @@ class TokenContractFindings:
                 "severity": FindingSeverity.Info,
                 "metadata": self.metadata,
                 "labels": self.labels,
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': tx_hash}]
+                }
             }
         )
 
-    def non_malicious_contract_creation(self, chain_id: int) -> Finding:
-        if chain_id not in [43114, 10, 250]:
-            self.metadata["anomaly_score"] = (
-                calculate_alert_rate(
+    def non_malicious_contract_creation(self, chain_id: int, tx_hash: str) -> Finding:
+        if chain_id not in [43114, 10, 250, 8453]:
+            self.metadata["anomaly_score"] = str(calculate_alert_rate(
                     chain_id,
                     BOT_ID,
                     "NON-MALICIOUS-TOKEN-CONTRACT-CREATION",
                     ScanCountType.CONTRACT_CREATION_COUNT,
-                ),
-            )
+                ))
+
         return Finding(
             {
                 "name": "Non-malicious Token Contract Creation",
@@ -100,5 +107,9 @@ class TokenContractFindings:
                 "severity": FindingSeverity.Info,
                 "metadata": self.metadata,
                 "labels": self.labels,
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': tx_hash}]
+                }
             }
         )
