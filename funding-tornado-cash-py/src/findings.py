@@ -1,4 +1,4 @@
-from forta_agent import Finding, FindingType, FindingSeverity, EntityType, Label
+from forta_bot import Finding, FindingType, FindingSeverity, EntityType, Label
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 BOT_ID = "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"
 
@@ -6,7 +6,7 @@ BOT_ID = "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"
 class FundingTornadoCashFindings:
 
     @staticmethod
-    def funding_tornado_cash(to_address: str, type: str, chain_id: int) -> Finding:
+    def funding_tornado_cash(to_address: str, type: str, chain_id: int, hash: str) -> Finding:
         if type == "low":
             labels = [Label({
                 'entityType': EntityType.Address,
@@ -21,13 +21,13 @@ class FundingTornadoCashFindings:
 
             metadata = {}
 
-            if chain_id not in [43114, 10, 250]:
-                metadata['anomaly_score'] = calculate_alert_rate(
+            if chain_id not in [43114, 10, 250, 8453]:
+                metadata['anomaly_score'] = str(calculate_alert_rate(
                     chain_id,
                     BOT_ID,
                     'FUNDING-TORNADO-CASH',
                     ScanCountType.TRANSFER_COUNT,
-                )
+                ))
 
             finding = Finding({
                 'name': 'Tornado Cash Funding',
@@ -36,7 +36,11 @@ class FundingTornadoCashFindings:
                 'type': FindingType.Suspicious,
                 'severity': FindingSeverity.Low,
                 'metadata': metadata,
-                'labels': labels
+                'labels': labels,
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': hash}]
+                }
             })
         else:
             labels = [Label({
@@ -52,13 +56,13 @@ class FundingTornadoCashFindings:
 
             metadata = {}
 
-            if chain_id not in [43114, 10, 250]:
-                metadata['anomaly_score'] = calculate_alert_rate(
+            if chain_id not in [43114, 10, 250, 8453]:
+                metadata['anomaly_score'] = str(calculate_alert_rate(
                     chain_id,
                     BOT_ID,
                     'FUNDING-TORNADO-CASH-HIGH',
                     ScanCountType.TRANSFER_COUNT,
-                )
+                ))
 
             finding = Finding({
                 'name': 'Tornado Cash Funding',
@@ -67,6 +71,10 @@ class FundingTornadoCashFindings:
                 'type': FindingType.Info,
                 'severity': FindingSeverity.Info,
                 'metadata': metadata,
-                'labels': labels
+                'labels': labels,
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': hash}]
+                }
             })
         return finding
