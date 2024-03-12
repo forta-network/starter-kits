@@ -1,4 +1,4 @@
-from forta_agent import Finding, FindingSeverity, FindingType, EntityType
+from forta_bot import Finding, FindingSeverity, FindingType, EntityType
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
 BOT_ID = "0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8"
@@ -7,7 +7,7 @@ BOT_ID = "0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8"
 class SocialEngContractFindings:
 
     @staticmethod
-    def social_eng_address_creation(address: str, is_contract: bool, impersonated_contract: str, from_address: str, chain_id: int, alert_id: str) -> Finding:
+    def social_eng_address_creation(address: str, is_contract: bool, impersonated_contract: str, from_address: str, chain_id: int, alert_id: str, hash: str) -> Finding:
         labels = []
         if from_address is not None and from_address != "":
             labels.append({"entity": from_address,
@@ -25,12 +25,9 @@ class SocialEngContractFindings:
 
         metadata = {"impersonated_contract": impersonated_contract}
 
-        if chain_id not in [43114, 10, 250]:
-            metadata['anomaly_score'] = calculate_alert_rate(
-                chain_id,
-                BOT_ID,
-                alert_id,
-                ScanCountType.CONTRACT_CREATION_COUNT)
+        if chain_id not in [43114, 10, 250, 8453]:
+            anomaly_score = calculate_alert_rate(chain_id, BOT_ID, alert_id, ScanCountType.CONTRACT_CREATION_COUNT)
+            metadata['anomaly_score'] = str(anomaly_score)
 
         description = f'{from_address} created contract {address} impersonating {impersonated_contract}'
         if is_contract:
@@ -43,5 +40,9 @@ class SocialEngContractFindings:
             'type': FindingType.Exploit,
             'severity': FindingSeverity.High,
             'metadata': metadata,
-            'labels': labels
+            'labels': labels,
+            'source': {
+                'chains': [{'chainId': chain_id}],
+                'transactions': [{'chainId': chain_id, 'hash': hash}]
+            }
         })

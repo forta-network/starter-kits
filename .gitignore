@@ -26,3 +26,5 @@ alert-combiner-py/src/fp_mitigation/models/attack_lgbm.pkl
 alert-combiner-py/*.ipynb
 alert-combiner-py/*.csv
 .gitignore
+social-eng-contract-py/forta_bot-0.2.0-1704903702.tar.gz.zip
+social-eng-contract-py/package/*
