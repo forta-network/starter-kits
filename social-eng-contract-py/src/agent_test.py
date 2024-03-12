@@ -35,7 +35,7 @@ class TestSocialEngContractAgent:
                     'nonce': 8,
                 },
                 block=block_info,
-                network_id=1,
+                chain_id=1,
             )
 
             await agent.detect_social_eng_account_creations(w3, contract_interaction_tx_event)
@@ -65,7 +65,7 @@ class TestSocialEngContractAgent:
                 'number': 0,
                 'timestamp': datetime.now().timestamp(),
                 },
-                network_id=1,
+                chain_id=1,
             )
 
 
@@ -89,7 +89,7 @@ class TestSocialEngContractAgent:
                 'number': 0,
                 'timestamp': datetime.now().timestamp(),
                 },
-                network_id=1,
+                chain_id=1,
             )
 
         await agent.detect_social_eng_account_creations(w3, contract_interaction_tx_event)
@@ -113,7 +113,7 @@ class TestSocialEngContractAgent:
                 'number': 0,
                 'timestamp': datetime.now().timestamp(),
                 },
-                network_id=1,
+                chain_id=1,
             )
 
 
@@ -129,7 +129,7 @@ class TestSocialEngContractAgent:
                 'number': 0,
                 'timestamp': datetime.now().timestamp(),
                 },
-                network_id=1,
+                chain_id=1,
             )
 
 
@@ -168,7 +168,7 @@ class TestSocialEngContractAgent:
                 'number': 0,
                 'timestamp': datetime.now().timestamp(),
                 },
-                network_id=1,
+                chain_id=1,
             )
 
         await agent.detect_social_eng_account_creations(w3, contract_interaction_tx_event)
@@ -183,7 +183,7 @@ class TestSocialEngContractAgent:
                 'number': 0,
                 'timestamp': datetime.now().timestamp(),
                 },
-                network_id=1,
+                chain_id=1,
             )
 
         findings = await agent.detect_social_eng_account_creations(w3, contract_creation_tx_event)
@@ -204,7 +204,7 @@ class TestSocialEngContractAgent:
                 'number': 1,
                 'timestamp': datetime.now().timestamp(),
                 },
-                network_id=1,
+                chain_id=1,
             )
 
         findings = await agent.detect_social_eng_account_creations(w3, contract_creation_tx_event)
@@ -225,7 +225,7 @@ class TestSocialEngContractAgent:
                 'number': 1,
                 'timestamp': datetime.now().timestamp(),
                 },
-                network_id=1,
+                chain_id=1,
             )
 
 
@@ -267,7 +267,7 @@ class TestSocialEngContractAgent:
                 'number': 1,
                 'timestamp': datetime.now().timestamp(),
                 },
-                network_id=1,
+                chain_id=1,
             )
 
 
