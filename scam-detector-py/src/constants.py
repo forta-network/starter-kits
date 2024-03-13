@@ -43,7 +43,6 @@ BASE_BOTS = [("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9
              ("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9f", "nft-possible-phishing-transfer", "Combination", ""),
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PERMITTED-ERC20-TRANSFER", "Combination", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
-                ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-SUSPICIOUS-TRANSFER", "Combination", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS", "Combination", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-HIGH-NUM-ERC721-APPROVALS", "Combination", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
                 ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL", "Combination", "SCAM-DETECTOR-ICE-PHISHING"),  # ice phishing
