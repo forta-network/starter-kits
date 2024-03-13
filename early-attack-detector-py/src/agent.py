@@ -1,6 +1,6 @@
 import forta_agent
 from forta_agent import get_json_rpc_url, EntityType, FindingSeverity
-from joblib import load
+from joblib import load, parallel_config
 from evmdasm import EvmBytecode
 from web3 import Web3
 from os import environ
@@ -79,7 +79,8 @@ def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     score = None
     features, opcode_addresses = get_features(w3, opcodes, contract_creator)
     t1 = time.time()
-    score = ML_MODEL.predict_proba([features])[0][1]
+    with parallel_config(backend='threading'):
+        score = ML_MODEL.predict_proba([features])[0][1]
     t2 = time.time()
     score = round(score, 4)
     if ENV == 'dev':

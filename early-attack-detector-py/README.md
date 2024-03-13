@@ -25,6 +25,7 @@ Metrics are calculated using a 5-fold CV fashion (Divide data in 5 splits, train
 
 |version|eth f1|eth p|eth r|oc f1|oc p|oc r|ehp f1|ehp p|ehp r|ochp f1|ochp p|ochp r|
 |:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
+|v0.1.0|0.47|0.32|0.92|0.38|0.24|0.9|0.184|0.93|0.1|-|-|-|
 |v0.0.1|0.54|0.39|0.9|0.36|0.23|0.89|0.78|0.89|0.69|0.26|0.84|0.15|
 
 Legend:
