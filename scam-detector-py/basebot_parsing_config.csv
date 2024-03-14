@@ -207,4 +207,5 @@ bot_id,alert_id,type,location,attacker_address_location_in_description,metadata_
 0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8,SOCIAL-ENG-CONTRACT-CREATION-NULL-ADDRESS,contract,label,,attacker_contract,
 0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8,SOCIAL-ENG-CONTRACT-CREATION,contract,label,,attackerContract,
 0xee275019391109f9ce0de16b78e835c261af1118afeb1a1048a08ccbf67c3ea8,SOCIAL-ENG-CONTRACT-CREATION-NULL-ADDRESS,contract,label,,attackerContract,
+0x154da7913f0d42dc50b5007fc4950ac0ab1f399023a0703784fd461d874100c5,FORTA-1,eoa,metadata,,twitterMentionedAccount
 
