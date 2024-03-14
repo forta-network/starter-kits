@@ -32,6 +32,7 @@ WRAPPED_NATIVE_TOKEN_ADDRESSES = {
     56: '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',
     137: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
     250: '0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83',
+    8453: '0x4200000000000000000000000000000000000006',
     42161: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
     43114: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7'
 }
@@ -43,6 +44,7 @@ SQUID_THRESHOLDS = {
     56: 0.5,
     137: 190,
     250: 400,
+    8453: 0.07,
     42161: 0.07,
     43114: 4
 }
@@ -53,6 +55,7 @@ PROTOCOLS = {
     56: 'binance smart chain',
     137: 'polygon',
     250: 'fantom',
+    8453: 'base',
     42161: 'arbitrum',
     43114: 'avalanche'
 }
@@ -63,6 +66,7 @@ CURRENCIES = {
     56: "BSC",
     137: "MATIC",
     250: "FTM",
+    8453: "ETH",
     42161: "ETH",
     43114: "AVAX"
 }
