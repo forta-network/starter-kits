@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## 2.24.2 (beta2 - 3/13/2024, prod - 3/13/2024)
+
+- removed ICE-PHISHING-SUSPICIOUS-TRANSFER
+
 ## 2.24.1 (beta2 - 3/8/2024)
 
 - X (Twitter) bot integration
