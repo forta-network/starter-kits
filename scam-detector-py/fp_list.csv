@@ -682,3 +682,6 @@ address,chain_id,comment
 0x2791bca1f2de4661ed88a30c99a7a9449aa84174,137,polygon deployer
 0xdd277b589804de50560ec5bd3562fc00aaecf325,1,Inbox - Boost
 0x10ed43c718714eb63d5aa57b78b54704e256024e,56,PancakeSwap V2 Router
+0x515a6c0e816f1096a5eaaf2b0516b9738c137c8c,1, normal address
+0xa0e14b89515a50cd5c4ae519ce94490d4ea436b6,1, normal address
+0x679812f0f3cb070182cb780bd0a3b6fb44030b02,1, normal address
