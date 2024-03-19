@@ -29,6 +29,6 @@ COPY package*.json ./
 COPY requirements.txt ./
 COPY requirements_dev.txt ./
 # This is needed for web3 compatibility with python 3.11. See https://stackoverflow.com/questions/74711405/importerror-cannot-import-name-getargspec-from-inspect-c-users-swapn-appd
-COPY .conda/lib/python3.11/site-packages/parsimonious/expressions.py /root/.local/lib/python3.11/site-packages/parsimonious/expressions.py
+COPY ./src/aux/expressions.py /root/.local/lib/python3.11/site-packages/parsimonious/expressions.py
 RUN npm ci --production
 CMD [ "npm", "run", "start:prod" ]
