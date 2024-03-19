@@ -7,7 +7,7 @@ The Early Attack Detector identifies smart contract exploits (protocol attacks) 
 
 ## Approach
 
-This bot has two different thresholds (for each compatible chain, as of version 0.0.1 only eth). The high-precision threshold represents a risk score focused on very-high precision, and slightly lower recall (i.e., if the model thinks a smart contract is malicious, it's very likely to be malicious, but it may miss some smart contracts that are not so clear). 
+This bot has two different thresholds (for each compatible chain, as of version 0.1.0 only eth). The high-precision threshold represents a risk score focused on very-high precision, and slightly lower recall (i.e., if the model thinks a smart contract is malicious, it's very likely to be malicious, but it may miss some smart contracts that are not so clear). 
 
 For a high-recall threshold, targeted more towards researchers and post-incident response, precision is slightly reduced in order to find as many malicious smart contracts as possible.
 
@@ -26,7 +26,7 @@ This bot only generates critical alerts. The logic behind these alerts is as fol
 
 #### Querying the Early Attack Detector for alerts
 
-```
+```json
 {
   "data": {
     "alerts": {
@@ -63,24 +63,51 @@ This bot only generates critical alerts. The logic behind these alerts is as fol
             }
           }
         },
+      ]
+    }
+  }
+}
 ```
 
 #### Metadata
 
-The metadata for each alert will contain the following: 
+The metadata for each alert will contain the following fields:
 
-```
+- function_signatures: All the possible function signatures
+- high_precision_model: [optional] In case when the model was triggered due to the high precision model, a flag showing true.
+- funding_alerts: [optional] When there are potential fundings, the hash(es) to the funding alert(s)
+- funding_labels: [optional] When there are potential fundings, the hash(es) to the funding label(s)
+- model_score: Model score. In case where the alert was raised due to the high precision model, the score will be from the high precision model.
+- model_threshold: Recall threshold that was being used in the model at the moment of raising the alert
+- oko_contract_explorer: Link to contract explorer
+
+Example of high precision model:
+```json
 {
-"function_signatures":"0x57ea89b6,0x2b42b941,0xe2d73ccd,0xeaf67ab9,0xf39d8c65,0x9763d29b,0xbedf0f4a,0xe26d7a70,0xffffffff"
-"high_precision_model":"true"
-"model_score":"0.7028"
-"model_threshold":"0.52"
-"oko_contract_explorer":"https://oko.palkeo.com/0x43421e5f28fb0650f736d917541265fd7a6b69a0/"
+  "function_signatures": "0x57ea89b6,0x2b42b941,0xe2d73ccd,0xeaf67ab9,0xf39d8c65,0x9763d29b,0xbedf0f4a,0xe26d7a70,0xffffffff",
+  "high_precision_model": "true",
+  "model_score": "0.7028",
+  "model_threshold": "0.52",
+  "oko_contract_explorer": "https://oko.palkeo.com/0x43421e5f28fb0650f736d917541265fd7a6b69a0/"
+}
 ```
+
+Example of alert with labels:
+```json
+{
+  "function_signatures": "",
+  "funding_alerts": "0x7abb486d17dd2697f7c43b6855c6166c9e521dac9855297d890725f9b7e845f8",
+  "funding_labels": "0xe5a71c6bbb2c806fb2906b06d620b046f913f81be66e44174f86b9ad5289ec11",
+  "model_score": "0.5107",
+  "model_threshold": "0.57",
+  "oko_contract_explorer": "https://oko.palkeo.com/0x34C36d6382FbF7885da6C46eAeB96a5A41F23CE8/"
+}
+```
+In the second example, we can see that model_score is smaller than model_threshold. This can only happen in `EARLY-AD-INFO`, and it is used for improvement of the underlying ML models.
 
 #### Querying the Early Attack Detector for labels
 
-```
+```json
  "data": {
     "labels": {
       "labels": [
@@ -100,6 +127,10 @@ The metadata for each alert will contain the following:
             "alertId": "EARLY-ATTACK-DETECTOR-1",
             "chainId": 56
           }
+        }
+      ]
+    }
+ }
        
 ```
 
