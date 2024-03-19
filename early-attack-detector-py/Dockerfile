@@ -1,5 +1,5 @@
 # Build stage: compile Python dependencies
-FROM python:3.11 as builder
+FROM python:3.11-slim as builder
 RUN apt-get update -y && apt-get upgrade -y
 RUN apt-get install -y python3 pip
 # Required for lightgbm
@@ -9,7 +9,7 @@ COPY requirements.txt ./
 RUN python3 -m pip install --user -r requirements.txt --no-cache-dir
 
 # Final stage: copy over Python dependencies and install production Node dependencies
-FROM python:3.11
+FROM python:3.11-slim
 # this python version should match the build stage python version
 RUN apt-get update
 RUN apt-get -y install curl gnupg
