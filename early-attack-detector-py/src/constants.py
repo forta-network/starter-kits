@@ -7,7 +7,7 @@ MASK = "0xffffffffffffffffffffffffffffffffffffffff"
 BOT_ID = "0xf60b23986fc15a8ff9bc78cc47daeb13a1bef4bfc3d867f3425b355f750866a7"
 
 MODEL_PATH = 'deployed_models/NormalPre_eec.joblib'
-HIGH_PRECISION_MODEL_PATH = 'models/NormalPre_newdata_brcf.joblib'
+HIGH_PRECISION_MODEL_PATH = 'deployed_models/NormalPre_newdata_brcf.joblib'
 MODEL_THRESHOLD_ETH = .52
 MODEL_THRESHOLD_ETH_PRECISION = .98
 MODEL_THRESHOLD_DEFAULT = .57
