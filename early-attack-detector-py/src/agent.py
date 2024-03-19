@@ -17,6 +17,7 @@ from src.constants import (
     FUNDING_BOTS,
     MODEL_INFO_THRESHOLD,
     MODEL_PATH,
+    HIGH_PRECISION_MODEL_PATH
 )
 from src.findings import ContractFindings
 from src.logger import logger
@@ -46,6 +47,13 @@ def initialize():
     global ML_MODEL
     logger.info("Start loading model")
     ML_MODEL = load(MODEL_PATH)
+    global ML_MODEL_HIGH_PRECISION
+    if HIGH_PRECISION_MODEL_PATH == MODEL_PATH:
+        logger.info("Using the same model for high precision")
+        ML_MODEL_HIGH_PRECISION = ML_MODEL
+    else:
+        logger.info("Loading high precision model")
+        ML_MODEL_HIGH_PRECISION = load(HIGH_PRECISION_MODEL_PATH)
 
     global MODEL_THRESHOLD
     global MODEL_PRECISION_THRESHOLD
@@ -55,7 +63,7 @@ def initialize():
     else:
         MODEL_THRESHOLD = MODEL_THRESHOLD_DEFAULT
         MODEL_PRECISION_THRESHOLD = MODEL_THRESHOLD_DEFAULT_PRECISION
-    logger.info(f"Model threshold: {MODEL_THRESHOLD}. Using eth model for recall")
+    logger.info(f"Model threshold: {MODEL_THRESHOLD}. Threshold for high precision: {MODEL_PRECISION_THRESHOLD}")
 
     global ENV
     if 'production' in os.environ.get('NODE_ENV', ''):
@@ -75,16 +83,28 @@ def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     this function executes the model to obtain the score for the contract
     :return: score: float
     """
+    t_aux = None
     t = time.time()
     score = None
     features, opcode_addresses = get_features(w3, opcodes, contract_creator)
     t1 = time.time()
     with parallel_config(backend='threading'):
         score = ML_MODEL.predict_proba([features])[0][1]
+        if MODEL_PATH != HIGH_PRECISION_MODEL_PATH:
+            t_aux = time.time()
+            score_high_precision = ML_MODEL_HIGH_PRECISION.predict_proba([features])[0][1]
+            if ENV == 'dev':
+                logger.info(f"High precision model score: {score_high_precision}")
+            if score_high_precision >= MODEL_PRECISION_THRESHOLD:
+                # If the high precision model is over the treshold, we use that score
+                score = score_high_precision
     t2 = time.time()
     score = round(score, 4)
     if ENV == 'dev':
-        logger.info(f"Model Timing:\t Time taken to get features: {t1 - t};\t Time taken to predict: {t2 - t1};\t Total time: {t2 - t}")
+        if t_aux is None:
+            logger.info(f"Model Timing:\t Time taken to get features: {t1 - t};\t Time taken to predict: {t2 - t1};\t Total time: {t2 - t}")
+        else:
+            logger.info(f"Model Timing:\t Time taken to get features: {t1 - t};\t Time taken to predict: {t_aux - t1};\t Time taken to predict high precision: {t2 - t_aux};\t Total time: {t2 - t}")
     return score, opcode_addresses
 
 
