@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## 2.24.3 (prod - 3/19/2024)
+
+- removed NIP-4 and NIP-7 passthrough alerts
+
 ## 2.24.2 (beta2 - 3/13/2024, prod - 3/13/2024)
 
 - removed ICE-PHISHING-SUSPICIOUS-TRANSFER

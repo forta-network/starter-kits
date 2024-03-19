@@ -4,7 +4,6 @@ bot_id,alert_id,type,location,attacker_address_location_in_description,metadata_
 0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9f,nft-phishing-sale,eoa,metadata,,initiator,
 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14,ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS,eoa,description,0,,
 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14,ICE-PHISHING-PERMITTED-ERC20-TRANSFER,eoa,description,0,,
-0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14,ICE-PHISHING-SUSPICIOUS-TRANSFER,eoa,description,0,,
 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14,ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS,eoa,description,0,,
 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14,ICE-PHISHING-HIGH-NUM-ERC721-APPROVALS,eoa,description,0,,
 0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14,ICE-PHISHING-ERC20-APPROVAL-FOR-ALL,eoa,description,0,,
