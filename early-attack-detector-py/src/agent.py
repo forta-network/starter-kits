@@ -279,6 +279,11 @@ def detect_malicious_contract(
                 if ENV == 'dev':
                     logger.info(f"Score is less than threshold: {model_score} < {MODEL_INFO_THRESHOLD}. Not creating alert.")
                 return []
+            # If we are not in beta, we only create alerts if the score is above the threshold
+            if model_score < MODEL_THRESHOLD and not BETA:
+                if ENV == 'dev':
+                    logger.info(f"Score is less than threshold: {model_score} < {MODEL_THRESHOLD} and we are not in beta. Not checking for labels.")
+                return []
             # obtain all the addresses contained in the created contract and propagate to the findings
             # We only do it if the model score is above the threshold
             env_t = time.time()
@@ -380,6 +385,7 @@ def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365, extra
     if extra_time_bots is not None and len(alert_ids) == 0:
         query["source_ids"] = extra_time_bots
         query["created_since"] = tx_timestamp - extra_time*24*60*60*1000
+        tt = time.time()
         for _ in range(2):
             try:
                 labels = forta_agent.get_labels(query)
@@ -388,6 +394,8 @@ def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365, extra
                 break
             except:
                 continue
+        if ENV == 'dev':
+            logger.info(f"Time taken to get extra time labels: {time.time() - tt}")
     if ENV == 'dev':
         logger.info(f"Time taken to get labels: {time.time() - t};\tN_labels: {len(alert_ids)};\tAddress: {address}")
     return alert_ids, label_ids
