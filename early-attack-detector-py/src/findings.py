@@ -39,7 +39,7 @@ class ContractFindings:
         self.labels = labels
         return Finding(
             {
-                "name": "Suspicious Contract Creation",
+                "name": "Early Attack Detector",
                 "description": self.description,
                 "alert_id": "EARLY-ATTACK-DETECTOR-1",
                 "type": FindingType.Suspicious,
