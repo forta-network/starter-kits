@@ -2,7 +2,7 @@ import json
 import logging
 import sys
 import asyncio
-from web3 import Web3, AsyncWeb3
+from web3 import AsyncWeb3
 
 from forta_bot import scan_ethereum, scan_polygon, scan_arbitrum, TransactionEvent, get_chain_id, run_health_check
 from hexbytes import HexBytes
@@ -48,14 +48,14 @@ async def is_contract(w3, address):
     """
     if address is None:
         return True
-    code = await w3.eth.get_code(Web3.to_checksum_address(address))
+    code = await w3.eth.get_code(w3.to_checksum_address(address))
     return code != HexBytes('0x')
 
 @alru_cache(maxsize=100000)
 async def is_new_account(w3, address, block_number):
     if address is None:
         return True
-    return await w3.eth.get_transaction_count(Web3.to_checksum_address(address), block_number) == 0
+    return await w3.eth.get_transaction_count(w3.to_checksum_address(address), block_number) == 0
 
 
 async def detect_railgun_funding(w3, transaction_event):

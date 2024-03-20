@@ -16,6 +16,9 @@ class Web3Mock:
     def __init__(self):
         self.eth = EthMock()
 
+    def to_checksum_address(self, address):
+        return Web3.to_checksum_address(address)
+
 
 class EthMock:
     def __init__(self):
