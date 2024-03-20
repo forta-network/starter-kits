@@ -17,7 +17,10 @@ from src.constants import (
     FUNDING_BOTS,
     MODEL_INFO_THRESHOLD,
     MODEL_PATH,
-    HIGH_PRECISION_MODEL_PATH
+    HIGH_PRECISION_MODEL_PATH,
+    FUNDING_TIME,
+    EXTRA_TIME_BOTS,
+    EXTRA_TIME_DAYS,
 )
 from src.findings import ContractFindings
 from src.logger import logger
@@ -169,7 +172,8 @@ def detect_malicious_contract_tx(
                 finding.addresses = [trace.action.from_, created_contract_address]
                 if finding.severity == FindingSeverity.Critical:
                     # We priorize when there are critical findings
-                    funding_alerts, funding_labels = check_funding_labels(trace.action.from_, tx_timestamp=tx_timestamp, n_days=1)
+                    funding_alerts, funding_labels = check_funding_labels(trace.action.from_, tx_timestamp=tx_timestamp, n_days=FUNDING_TIME,
+                                                                          extra_time_bots=EXTRA_TIME_BOTS, extra_time=EXTRA_TIME_DAYS)
                     if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
                         finding.metadata["funding_labels"] = ','.join(funding_labels)
@@ -211,7 +215,8 @@ def detect_malicious_contract_tx(
             ):
                 if finding.severity == FindingSeverity.Critical:
                     # We priorize when there are critical findings
-                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=1)
+                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=FUNDING_TIME, 
+                                                                          extra_time_bots=EXTRA_TIME_BOTS, extra_time=EXTRA_TIME_DAYS)
                     if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
                         finding.metadata["funding_labels"] = ','.join(funding_labels)
@@ -350,7 +355,7 @@ def handle_transaction(
     return real_handle_transaction(transaction_event)
 
 
-def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365):
+def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365, extra_time_bots: str=None, extra_time: int=180):
     t = time.time()
     bots = FUNDING_BOTS
     query = {
@@ -371,6 +376,18 @@ def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365):
             break
         except:
             continue
+    # We only check if there are no alerts and we have bots that should be checked further into the past
+    if extra_time_bots is not None and len(alert_ids) == 0:
+        query["source_ids"] = extra_time_bots
+        query["created_since"] = tx_timestamp - extra_time*24*60*60*1000
+        for _ in range(2):
+            try:
+                labels = forta_agent.get_labels(query)
+                alert_ids += [label.source.alert_hash for label in labels.labels if 'attacker' in label.label]
+                label_ids += [label.id for label in labels.labels if 'attacker' in label.label]
+                break
+            except:
+                continue
     if ENV == 'dev':
         logger.info(f"Time taken to get labels: {time.time() - t};\tN_labels: {len(alert_ids)};\tAddress: {address}")
     return alert_ids, label_ids

@@ -25,3 +25,10 @@ FUNDING_BOTS = [
         '0x29daabf74506f2aa4feb93fa8ec0f4ac61c4e9ba3f3190072bc680bc70e71bd7',  # funding eXch
         '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e',  # funding ChangeNow
     ]
+FUNDING_TIME = 1  # How many days in the past to look for labels
+
+# For the following funding bots, we want to look deeper into the past
+EXTRA_TIME_BOTS = [
+    '0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400'  # funding tornado cash
+]
+EXTRA_TIME_DAYS = 180
