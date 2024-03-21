@@ -7,11 +7,10 @@ from os import environ
 from async_lru import alru_cache
 
 from forta_bot import scan_ethereum, scan_optimism, scan_polygon, scan_arbitrum, TransactionEvent, get_chain_id, run_health_check
-from web3 import Web3, AsyncWeb3
+from web3 import AsyncWeb3
 import rlp
 from hexbytes import HexBytes
 from pyevmasm import disassemble_hex
-from web3 import Web3
 import time
 
 from blockexplorer import BlockExplorer
@@ -69,7 +68,7 @@ def calc_contract_address(w3, address, nonce) -> str:
     """
 
     address_bytes = bytes.fromhex(address[2:].lower())
-    return Web3.to_checksum_address(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
+    return w3.to_checksum_address(w3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
 @alru_cache(maxsize=12800)
@@ -81,7 +80,7 @@ async def is_contract(w3, address) -> bool:
     if address is None:
         return True
     try:
-        code = await w3.eth.get_code(Web3.to_checksum_address(address))
+        code = await w3.eth.get_code(w3.to_checksum_address(address))
         return code != HexBytes("0x")
     except Exception as e:
         logging.warn(f"Web3 error for is_contract method", {address: address, e: e})
@@ -103,7 +102,7 @@ async def get_storage_addresses(w3, address) -> set:
     async def get_storage_at_slot(size):
         for i in size:
             try:
-                mem = await w3.eth.get_storage_at(Web3.to_checksum_address(address), i)
+                mem = await w3.eth.get_storage_at(w3.to_checksum_address(address), i)
                 if mem != HexBytes(
                     "0x0000000000000000000000000000000000000000000000000000000000000000"
                 ):
@@ -112,9 +111,9 @@ async def get_storage_addresses(w3, address) -> set:
                     is_contract_second_half_contract = await is_contract(w3, mem[12:])
 
                     if is_contract_first_half_contract:
-                        address_set.add(Web3.to_checksum_address(mem[0:20].hex()))
+                        address_set.add(w3.to_checksum_address(mem[0:20].hex()))
                     if is_contract_second_half_contract:
-                        address_set.add(Web3.to_checksum_address(mem[12:].hex()))
+                        address_set.add(w3.to_checksum_address(mem[12:].hex()))
             except Exception as e:
                 logging.warning(
                     f"Web3 Error at get_storage_at method", {address: address, e: e}
@@ -146,7 +145,7 @@ async def get_opcode_addresses(w3, address) -> set:
     if address is None:
         return set()
 
-    code = await w3.eth.get_code(Web3.to_checksum_address(address))
+    code = await w3.eth.get_code(w3.to_checksum_address(address))
     opcode = disassemble_hex(code.hex())
 
     address_set = set()
@@ -154,7 +153,7 @@ async def get_opcode_addresses(w3, address) -> set:
         for param in op.split(" "):
             if param.startswith("0x") and len(param) == 42:
                 if await is_contract(w3, param):
-                    address_set.add(Web3.to_checksum_address(param))
+                    address_set.add(w3.to_checksum_address(param))
 
     end_time = time.time()
 
@@ -197,7 +196,7 @@ def cache_contract_creation(
                         created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
                     else:
                         # For contracts creating other contracts, get the nonce using Web3
-                        nonce = w3.eth.getTransactionCount(Web3.to_checksum_address(trace.action.from_), transaction_event.block_number)
+                        nonce = w3.eth.getTransactionCount(w3.to_checksum_address(trace.action.from_), transaction_event.block_number)
                         created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
                     if created_contract_address not in CREATED_CONTRACTS:
@@ -293,7 +292,7 @@ async def detect_unverified_contract_creation(
                                     calc_created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
                                 else:
                                     # For contracts creating other contracts, get the nonce using Web3
-                                    nonce = w3.eth.getTransactionCount(Web3.to_checksum_address(trace.action.from_), transaction_event.block_number)
+                                    nonce = w3.eth.getTransactionCount(w3.to_checksum_address(trace.action.from_), transaction_event.block_number)
                                     calc_created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
                                 if (

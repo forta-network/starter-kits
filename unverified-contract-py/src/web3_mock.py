@@ -1,3 +1,4 @@
+from web3 import Web3
 from hexbytes import HexBytes
 
 EOA_ADDRESS = '0x1c5dCdd006EA78a7E4783f9e6021C32935a10fb4'
@@ -9,6 +10,12 @@ CONTRACT = '0x2320A28f52334d62622cc2EaFa15DE55F9987eD9'
 class Web3Mock:
     def __init__(self):
         self.eth = EthMock()
+
+    def to_checksum_address(self, address):
+        return Web3.to_checksum_address(address)
+    
+    def keccak(self, input):
+        return Web3.keccak(input)
 
 
 class EthMock:
