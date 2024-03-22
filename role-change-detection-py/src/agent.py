@@ -90,7 +90,6 @@ async def detect_role_change(w3, blockexplorer, transaction_event):
                 if keyword in function_params and str(function_params[keyword]).startswith('0x')
             ]
             ALERT_COUNT += 1
-            print(type(matching_keywords))
             findings.append(Finding(
                 {
                     "name": "Possible Role Change",
