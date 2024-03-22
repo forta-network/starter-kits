@@ -270,7 +270,7 @@ class Utils:
             if not etherscan_called:
                 from src.blockchain_indexer_service import BlockChainIndexer
                 block_chain_indexer = BlockChainIndexer()
-                labels_dict = block_chain_indexer.get_etherscan_labels(cluster.split(',')) # dict_values([{'labels': ['Proposer Fee Recipient'], 'nametag': 'Fee Recipient: 0xF4...A38'}])
+                labels_dict = block_chain_indexer.get_etherscan_labels(tuple(cluster.split(','))) # dict_values([{'labels': ['Proposer Fee Recipient'], 'nametag': 'Fee Recipient: 0xF4...A38'}])
                 labels = []
                 for item in labels_dict.values():
                     if 'labels' in item.keys():
