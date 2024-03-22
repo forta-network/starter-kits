@@ -12,12 +12,6 @@ w3 = Web3Mock()
 w3.to_checksum_address = AsyncWeb3.to_checksum_address
 real_w3 = AsyncWeb3.AsyncHTTPProvider
 
-async def async_timeit(func, *args, **kwargs):
-    start_time = time.time()
-    await func(*args, **kwargs)
-    end_time = time.time()
-    return (end_time - start_time) * 1000  # Return time in milliseconds
-
 class TestSquidFundingAgent:
 
     @pytest.mark.asyncio
