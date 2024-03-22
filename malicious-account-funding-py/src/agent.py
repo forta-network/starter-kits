@@ -12,8 +12,6 @@ from async_lru import alru_cache
 
 BOT_ID = "0x9091c581c6e3c11f5485754d2bf0f01a7d6297467c2363f3084ab000274b86c2"
 
-web3 = AsyncWeb3.AsyncHTTPProvider
-
 root = logging.getLogger()
 root.setLevel(logging.INFO)
 
