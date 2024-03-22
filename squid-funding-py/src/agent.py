@@ -118,9 +118,8 @@ async def detect_squid_funding(w3, transaction_event):
 
     findings = []
 
-    is_new_account_flag = await is_new_account(w3, recipient, transaction_event.block_number)
-
     if not (await is_contract(w3, recipient)):
+        is_new_account_flag = await is_new_account(w3, recipient, transaction_event.block_number)
         if is_new_account_flag or native_value < squid_threshold:
             alert_type = "new-eoa" if is_new_account_flag else "low-amount"
             alert_count = NEW_EOA_ALERT_COUNT if is_new_account_flag else LOW_VOL_ALERT_COUNT
