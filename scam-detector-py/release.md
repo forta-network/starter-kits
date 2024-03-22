@@ -1,5 +1,9 @@
 # Scam Detector Bot Release Notes
 
+## 2.24.4 (prod - 3/22/2024)
+
+- Bug fixes
+
 ## 2.24.3 (prod - 3/19/2024)
 
 - removed NIP-4 and NIP-7 passthrough alerts
