@@ -1,9 +1,5 @@
 from hexbytes import HexBytes
-from web3 import Web3
-
-
 from constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK
-from logger import logger
 
 BOT_ID = "0xf0490edadc1cd6eb2cc02e78508fbbcd6e08ea835a8fef0e399b336017fee3c8"
 
