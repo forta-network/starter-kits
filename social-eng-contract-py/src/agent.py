@@ -48,7 +48,7 @@ async def is_contract(w3, address) -> bool:
     """
     if address is None:
         return True
-    code = await w3.eth.get_code(AsyncWeb3.to_checksum_address(address))
+    code = await w3.eth.get_code(w3.to_checksum_address(address))
     return code != HexBytes('0x')
 
 
@@ -129,7 +129,7 @@ async def detect_social_eng_account_creations(w3, transaction_event: Transaction
                     created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
                 else:
                     # For contracts creating other contracts, get the nonce using Web3
-                    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                    nonce = w3.eth.getTransactionCount(w3.to_checksum_address(trace.action.from_), transaction_event.block_number)
                     created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
                 created_contract_addresses.append(created_contract_address.lower())
