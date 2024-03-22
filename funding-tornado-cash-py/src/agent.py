@@ -10,10 +10,6 @@ from constants import TORNADO_CASH_ADDRESSES, TORNADO_CASH_WITHDRAW_TOPIC, TORNA
 from findings import FundingTornadoCashFindings
 from storage import get_secrets
 
-
-
-web3 = AsyncWeb3.AsyncHTTPProvider
-
 root = logging.getLogger()
 root.setLevel(logging.INFO)
 
