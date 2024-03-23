@@ -10,6 +10,8 @@ from io import StringIO
 from web3 import Web3
 import pandas as pd
 import logging
+import random
+from functools import lru_cache
 from datetime import datetime, timedelta
 
 from src.storage import get_secrets
@@ -228,10 +230,11 @@ class BlockChainIndexer:
         return False
     
     @staticmethod
+    @lru_cache(maxsize=512)
     @RateLimiter(max_calls=1, period=1)
     def get_etherscan_labels(addresses) -> dict: #address -> {'labels': ['XXXXX'], 'nametag': 'YYYYYY'}
         address_labels = dict()
-
+        wait_time = 1 # seconds
         try:
             addresses_str = ','.join(addresses)
             labels_url = f"https://api-metadata.etherscan.io/v1/api.ashx?module=nametag&action=getaddresstag&address={addresses_str}&tag=trusted&apikey={BlockChainIndexer.get_api_key(1)}"         
@@ -240,8 +243,8 @@ class BlockChainIndexer:
             count = 0
             while not success:
                 data = requests.get(labels_url)
-                if data.status_code == 200:
-                    json_data = json.loads(data.content)
+                json_data = json.loads(data.content)
+                if data.status_code == 200 and json_data['status'] == '1':
                     success = True
                     if isinstance(json_data["result"], list):
                         for result in json_data["result"]:
@@ -258,12 +261,18 @@ class BlockChainIndexer:
                         logging.info(f"Labels for address {address}: {', '.join(labels)}, Nametag: {nametag}")
                     return address_labels
                 else:
+                    if json_data['message'] == 'No matching records found':
+                        logging.info(f"No matching Etherscan labels found for {addresses_str}")
+                        return address_labels
                     logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")
                     count += 1
                     if count > 10:
                         Utils.ERROR_CACHE.add(Utils.alert_error(f'request etherscan {data.status_code}', "blockchain_indexer_service.get_etherscan_labels", ""))
                         break
-                    time.sleep(1)
+                    # Exponential backoff with jitter
+                    time_to_sleep = wait_time + random.uniform(-0.3 * wait_time, 0.3 * wait_time)
+                    time.sleep(time_to_sleep)
+                    wait_time = min(wait_time * 2, 7)  # Ensure wait time does not exceed 7 seconds
         except Exception as e:
             logging.warning(f"Error getting labels on etherscan: {e}")
             Utils.ERROR_CACHE.add(Utils.alert_error(str(e), "blockchain_indexer_service.get_etherscan_labels", traceback.format_exc()))
