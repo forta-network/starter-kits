@@ -10,6 +10,7 @@ from io import StringIO
 from web3 import Web3
 import pandas as pd
 import logging
+import random
 from datetime import datetime, timedelta
 
 from src.storage import get_secrets
@@ -204,10 +205,12 @@ class BlockChainIndexer:
         labels = set()
         success = False
         count = 0
+        wait_time = 1 # seconds
+        
         while not success:
             data = requests.get(labels_url)
-            if data.status_code == 200:
-                json_data = json.loads(data.content)
+            json_data = json.loads(data.content)
+            if data.status_code == 200 and json_data['status'] == '1':
                 success = True 
                 if "result" in json_data:
                     result_data = json_data.get("result")
@@ -221,12 +224,18 @@ class BlockChainIndexer:
                 else:
                     logging.warning("Etherscan response does not contain 'result' field.")
             else:
+                if json_data['message'] == 'No matching records found':
+                    logging.info(f"No matching Etherscan labels found for {address}")
+                    return labels
                 logging.warning(f"Error getting labels on etherscan: {data.status_code} {data.content}")
                 count += 1
                 if count > 10:
                     Utils.ERROR_CACHE.add(Utils.alert_error(f'request etherscan {data.status_code}', "blockchain_indexer_service.get_etherscan_labels", ""))
                     break
-                time.sleep(1)
+                # Exponential backoff with jitter
+                time_to_sleep = wait_time + random.uniform(-0.3 * wait_time, 0.3 * wait_time)
+                time.sleep(time_to_sleep)
+                wait_time = min(wait_time * 2, 7)  # Ensure wait time does not exceed 7 seconds
         return labels
     
     @staticmethod
