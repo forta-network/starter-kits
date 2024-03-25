@@ -2,8 +2,13 @@
   "name": "funding-tornado-cash",
   "version": "0.0.15",
   "description": "A bot that clusters entities",
+  "displayName": "Tornado Cash Withdrawals",
   "chainIds": [
-    1, 56, 137, 42161, 10
+    1,
+    56,
+    137,
+    42161,
+    10
   ],
   "chainSettings": {
     "1": {
