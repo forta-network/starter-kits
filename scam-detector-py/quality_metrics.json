@@ -1,5 +1,117 @@
 {  
             "weekly": {
+             "2024-7": {
+                "ice-phishing": {
+                    "precision": {
+                        "value": 0.96,
+                        "N": 25,
+                        "lower_bound": 0.8391,
+                        "upper_bound": 0.9910,
+                        "confidence": 0.9
+                    }
+                },
+                "address-poisoner": {
+                    "precision": {
+                        "value": 1.0,
+                        "N": 10,
+                        "lower_bound": 0.7870,
+                        "upper_bound": 1.0,
+                        "confidence": 0.9
+                    }
+                },        
+                "soft-rug-pull": {
+                    "precision": {
+                        "value": 0.8333,
+                        "N": 6,
+                        "lower_bound": 0.4976,
+                        "upper_bound": 0.9619,
+                        "confidence": 0.9
+                    }
+                },
+                "social-eng-native-ice-phishing": {
+                    "precision": {
+                        "value": 0.4,
+                        "N": 5,
+                        "lower_bound": 0.1677,
+                        "upper_bound": 0.6881,
+                        "confidence": 0.9
+                    }
+                },
+                "fraudulent-nft-order": {
+                    "precision": {
+                        "value": 0.2857,
+                        "N": 7,
+                        "lower_bound": 0.0996,
+                        "upper_bound": 0.5914,
+                        "confidence": 0.9
+                    }
+                },
+                "wash-trade": {
+                    "precision": {
+                        "value": 1.0,
+                        "N": 4,
+                        "lower_bound": 0.5965,
+                        "upper_bound": 1.0,
+                        "confidence": 0.9
+                    }
+                },
+                "scammer-deployed-contract": {
+                    "precision": {
+                        "value": 1.0,
+                        "N": 5,
+                        "lower_bound": 0.6488,
+                        "upper_bound": 1.0,
+                        "confidence": 0.9  
+                    }
+                },
+                "unknown": {
+                    "precision": {
+                        "value": 1.0,
+                        "N": 7,
+                        "lower_bound": 0.7212,
+                        "upper_bound": 1.0,
+                        "confidence": 0.9
+                    }
+                },
+                "pig-butchering": {
+                    "precision": {
+                        "value": 1,
+                        "N": 5,
+                        "lower_bound": 0.6488,
+                        "upper_bound": 1,
+                        "confidence": 0.9   
+                      }
+                },
+                "rake-token": {
+                    "precision": {
+                        "value": 1.0,
+                        "N": 5,
+                        "lower_bound": 0.6488,
+                        "upper_bound": 1.0,
+                        "confidence": 0.9
+                        }
+                },
+                "native-ice-phishing": {
+                    "precision": {
+                        "value": 1.0,
+                        "N": 7,
+                        "lower_bound": 0.7212,
+                        "upper_bound": 1.0,
+                        "confidence": 0.9 
+                     }
+                },
+                "gas-minting": {
+                    "precision": {
+                        "value": 1.0,
+                        "N": 4,
+                        "lower_bound": 0.5965,
+                        "upper_bound": 1.0,
+                        "confidence": 0.9 
+                              
+                }
+            }
+        },        
+            "weekly": {
              "2024-6": {
                 "ice-phishing": {
                     "precision": {
