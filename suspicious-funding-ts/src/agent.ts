@@ -66,6 +66,7 @@ export const provideHandleTransaction =
         (await provider.getTransactionCount(txEvent.to)) === 0 &&
         (await provider.getCode(txEvent.to)) === "0x"
       ) {
+        attackers.add(txEvent.to.toLowerCase());
         findings.push(createFinding(txEvent.from, txEvent.to));
       }
     }
