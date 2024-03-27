@@ -1,4 +1,7 @@
 # V0
+## V0.2.1
+- Removed squid from funding sources temporarily
+
 ## V0.2.0
 - Updated model, new threshold. Updated docker version to be more lightweight.
 
