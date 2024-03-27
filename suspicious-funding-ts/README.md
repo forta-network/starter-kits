@@ -16,7 +16,7 @@ This bot identifies when a new EOA receives funds from an address previously fun
 
 ## Alerts
 
-- FORTA-1
+- SUSPICIOUS-FUNDING
   - Fired when a transaction contains a Tether transfer over 10,000 USDT
   - Severity is always set to "Medium" (mention any conditions where it could be something else)
   - Type is always set to "Suspicious" (mention any conditions where it could be something else)
