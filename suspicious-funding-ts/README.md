@@ -17,9 +17,9 @@ This bot identifies when a new EOA receives funds from an address previously fun
 ## Alerts
 
 - SUSPICIOUS-FUNDING
-  - Fired when a transaction contains a Tether transfer over 10,000 USDT
-  - Severity is always set to "Medium" (mention any conditions where it could be something else)
-  - Type is always set to "Suspicious" (mention any conditions where it could be something else)
+  - Fired when a new EOA is funded by a suspicious address
+  - Severity is always set to "Medium"
+  - Type is always set to "Suspicious"
   - Metadata includes:
     - `sender`: The address that sent funds
     - `receiver`: The address that received funds
