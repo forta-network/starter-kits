@@ -1,0 +1,53 @@
+{
+  "name": "suspicious-funding",
+  "displayName": "Suspicious Funding Detector",
+  "version": "0.0.1",
+  "description": "Detects suspicious funding transactions",
+  "repository": "https://github.com/forta-network/starter-kits/tree/main/suspicious-funding-ts",
+  "licenseUrl": "https://github.com/forta-network/forta-bot-sdk/blob/master/starter-project/LICENSE.md",
+  "promoUrl": "https://forta.org",
+  "chainIds": [
+    1,
+    10,
+    56,
+    137,
+    250,
+    42161,
+    43114
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run start:dev",
+    "start:dev": "nodemon --watch src --watch forta.config.json -e js,ts,json  --exec \"npm run build && forta-agent run\"",
+    "start:prod": "forta-agent run --prod",
+    "tx": "npm run build && forta-agent run --tx",
+    "block": "npm run build && forta-agent run --block",
+    "range": "npm run build && forta-agent run --range",
+    "alert": "npm run build && forta-agent run --alert",
+    "sequence": "npm run build && forta-agent run --sequence",
+    "file": "npm run build && forta-agent run --file",
+    "publish": "forta-agent publish",
+    "info": "forta-agent info",
+    "logs": "forta-agent logs",
+    "push": "forta-agent push",
+    "disable": "forta-agent disable",
+    "enable": "forta-agent enable",
+    "keyfile": "forta-agent keyfile",
+    "stake": "forta-agent stake",
+    "test": "jest"
+  },
+  "dependencies": {
+    "forta-agent": "^0.1.48"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.10",
+    "@types/nodemon": "^1.19.0",
+    "@types/jest-when": "^3.5.2",
+    "jest": "^29.7.0",
+    "nodemon": "^2.0.8",
+    "ts-jest": "^29.1.1",
+    "typescript": "^4.3.4",
+    "forta-agent-tools": "3.2.7",
+    "jest-when": "^3.5.2"
+  }
+}
