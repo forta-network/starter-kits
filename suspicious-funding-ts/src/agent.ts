@@ -46,10 +46,6 @@ export const provideInitialize =
             botId: BOTS_TO_MONITOR[2],
             alertIds: ["EARLY-ATTACK-DETECTOR-1"],
           },
-          {
-            botId: BOTS_TO_MONITOR[3],
-            alertIds: ["SUSPICIOUS-FUNDING"],
-          },
         ],
       },
     };
