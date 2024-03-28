@@ -46,7 +46,9 @@ describe("Suspicious funding detector bot", () => {
 
   const mockProvider = new MockEthersProviderExtended();
   const mockAttacker1 = createAddress("0x0123");
-  const mockAttackers = new Set<string>([mockAttacker1]);
+  const mockAttackers = new Map<string, { origin: string; hops: number }>([
+    [mockAttacker1, { origin: "Tornado Cash", hops: 0 }],
+  ]);
 
   beforeAll(async () => {
     mockProvider.setNetwork(1);
@@ -59,76 +61,76 @@ describe("Suspicious funding detector bot", () => {
     await initialize();
   });
 
-  describe("handleTransaction", () => {
-    it("returns empty findings if there is no native token transfer", async () => {
-      const mockTxEvent = new TestTransactionEvent()
-        .setTo(createAddress("0xabc"))
-        .setValue("0x0");
-      const findings = await handleTransaction(mockTxEvent);
+  it("returns empty findings if there is no native token transfer", async () => {
+    const mockTxEvent = new TestTransactionEvent()
+      .setTo(createAddress("0xabc"))
+      .setValue("0x0");
+    const findings = await handleTransaction(mockTxEvent);
 
-      expect(findings).toStrictEqual([]);
-    });
+    expect(findings).toStrictEqual([]);
+  });
 
-    it("returns empty findings if there is a native token transfer but not from a past attacker", async () => {
-      const mockTxEvent = new TestTransactionEvent()
-        .setFrom(createAddress("0xdef"))
-        .setTo(createAddress("0xabc"))
-        .setValue("0x0");
-      const findings = await handleTransaction(mockTxEvent);
+  it("returns empty findings if there is a native token transfer but not from a past attacker", async () => {
+    const mockTxEvent = new TestTransactionEvent()
+      .setFrom(createAddress("0xdef"))
+      .setTo(createAddress("0xabc"))
+      .setValue("0x0");
+    const findings = await handleTransaction(mockTxEvent);
 
-      expect(findings).toStrictEqual([]);
-    });
+    expect(findings).toStrictEqual([]);
+  });
 
-    it("returns empty findings if there is a native token transfer from an attacker but the value is over the threshold", async () => {
-      const mockTxEvent = new TestTransactionEvent()
-        .setFrom(mockAttacker1)
-        .setTo(createAddress("0xabc"))
-        .setValue("0xDE0B6B3A7640000"); // 1 ETH
-      const findings = await handleTransaction(mockTxEvent);
+  it("returns empty findings if there is a native token transfer from an attacker but the value is over the threshold", async () => {
+    const mockTxEvent = new TestTransactionEvent()
+      .setFrom(mockAttacker1)
+      .setTo(createAddress("0xabc"))
+      .setValue("0xDE0B6B3A7640000"); // 1 ETH
+    const findings = await handleTransaction(mockTxEvent);
 
-      expect(findings).toStrictEqual([]);
-    });
+    expect(findings).toStrictEqual([]);
+  });
 
-    it("returns empty findings if there is a native token transfer from an attacker to an old EOA", async () => {
-      const mockTxTo = createAddress("0xabc");
-      const mockTxEvent = new TestTransactionEvent()
-        .setFrom(mockAttacker1)
-        .setTo(mockTxTo)
-        .setValue("0x01");
+  it("returns empty findings if there is a native token transfer from an attacker to an old EOA", async () => {
+    const mockTxTo = createAddress("0xabc");
+    const mockTxEvent = new TestTransactionEvent()
+      .setFrom(mockAttacker1)
+      .setTo(mockTxTo)
+      .setValue("0x01");
 
-      mockProvider.setNonce(mockTxTo, 10000); // old EOA
+    mockProvider.setNonce(mockTxTo, 10000); // old EOA
 
-      const findings = await handleTransaction(mockTxEvent);
+    const findings = await handleTransaction(mockTxEvent);
 
-      expect(findings).toStrictEqual([]);
-    });
+    expect(findings).toStrictEqual([]);
+  });
 
-    it("returns empty findings if there is a native token transfer from an attacker to a contract", async () => {
-      const mockTxTo = createAddress("0xabc");
-      const mockTxEvent = new TestTransactionEvent()
-        .setFrom(mockAttacker1)
-        .setTo(mockTxTo)
-        .setValue("0x01");
+  it("returns empty findings if there is a native token transfer from an attacker to a contract", async () => {
+    const mockTxTo = createAddress("0xabc");
+    const mockTxEvent = new TestTransactionEvent()
+      .setFrom(mockAttacker1)
+      .setTo(mockTxTo)
+      .setValue("0x01");
 
-      mockProvider.setNonce(mockTxTo, 0);
-      mockProvider.setCode(mockTxTo, "0x1234"); // contract
-      const findings = await handleTransaction(mockTxEvent);
+    mockProvider.setNonce(mockTxTo, 0);
+    mockProvider.setCode(mockTxTo, "0x1234"); // contract
+    const findings = await handleTransaction(mockTxEvent);
 
-      expect(findings).toStrictEqual([]);
-    });
+    expect(findings).toStrictEqual([]);
+  });
 
-    it("returns a finding if there is a native token transfer from an attacker to new EOA", async () => {
-      const mockTxTo = createAddress("0xabc");
-      const mockTxEvent = new TestTransactionEvent()
-        .setFrom(mockAttacker1)
-        .setTo(mockTxTo)
-        .setValue("0x01");
+  it("returns a finding if there is a native token transfer from an attacker to new EOA", async () => {
+    const mockTxTo = createAddress("0xabc");
+    const mockTxEvent = new TestTransactionEvent()
+      .setFrom(mockAttacker1)
+      .setTo(mockTxTo)
+      .setValue("0x01");
 
-      mockProvider.setNonce(mockTxTo, 0);
-      mockProvider.setCode(mockTxTo, "0x");
-      const findings = await handleTransaction(mockTxEvent);
+    mockProvider.setNonce(mockTxTo, 0);
+    mockProvider.setCode(mockTxTo, "0x");
+    const findings = await handleTransaction(mockTxEvent);
 
-      expect(findings).toStrictEqual([createFinding(mockAttacker1, mockTxTo)]);
-    });
+    expect(findings).toStrictEqual([
+      createFinding(mockAttacker1, mockTxTo, "Tornado Cash", 1),
+    ]);
   });
 });
