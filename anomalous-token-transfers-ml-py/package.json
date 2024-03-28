@@ -1,6 +1,6 @@
 {
   "name": "anomalous-token-transfers-detection-ml",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "displayName": "Anomalous Token Transfers Detection ML",
   "description": "ML Anomaly Detection of Transactions with Token Transfers",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/anomalous-token-transfers-ml-py#anomalous-transaction-with-token-transfers",

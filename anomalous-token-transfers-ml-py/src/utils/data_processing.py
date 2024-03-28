@@ -49,10 +49,13 @@ def get_first_tx_timestamp(address) -> int:
     except requests.exceptions.RequestException or Exception as err:
         logger.warn(f"Request failed for addr: {address}, err: {err}")
 
-    if int(data["status"]) == 1:
+    if data["status"] and int(data["status"]) == 1:
         first_tx_timestamp = int(data["result"][0]["timeStamp"])
     else:
-        first_tx_timestamp = data["result"]
+        if data["result"]:
+            first_tx_timestamp = data["result"]
+        else:
+            first_tx_timestamp = "Block explorer API failed to return data."
 
     return first_tx_timestamp
 
