@@ -9,29 +9,51 @@ import {
   LabelsResponse,
   getLabels,
 } from "forta-agent";
+import { alertOriginMap } from "./constants";
 
 export const getAllLabels = async (
   query: LabelQueryOptions,
-  attackers: Set<string>
+  attackers: Map<string, { origin: string; hops: number }>
 ) => {
   let startingCursor: LabelCursor | undefined;
   let labelsResponse: LabelsResponse;
   do {
     labelsResponse = await getLabels({ ...query, startingCursor });
-    labelsResponse.labels.forEach((label) => {
+    for (const label of labelsResponse.labels) {
+      const alertId = label.source?.alertId;
+
       // Exclude "FUNDING-TORNADO-CASH-HIGH" and "...-LOW-AMOUNT" alerts
-      if (
-        !label.source?.alertId?.includes("HIGH") &&
-        !label.source?.alertId?.includes("LOW")
-      ) {
-        attackers.add(label.entity.toLowerCase());
+      if (alertId && !alertId.includes("HIGH") && !alertId.includes("LOW")) {
+        let origin = "Unknown Origin";
+        let hops = 0;
+
+        for (const [key, value] of Object.entries(alertOriginMap)) {
+          if (alertId.includes(key)) {
+            origin = value;
+            break;
+          }
+        }
+
+        if (alertId.includes("SUSPICIOUS-FUNDING")) {
+          if (label.metadata.origin && label.metadata.hops) {
+            origin = label.metadata.origin;
+            hops = parseInt(label.metadata.hops, 10);
+          } else continue;
+        }
+        attackers.set(label.entity.toLowerCase(), { origin, hops });
       }
-    });
+    }
+
     startingCursor = labelsResponse.pageInfo.endCursor;
   } while (labelsResponse.pageInfo.hasNextPage);
 };
 
-export const createFinding = (from: string, to: string): Finding => {
+export const createFinding = (
+  from: string,
+  to: string,
+  origin: string,
+  hops: number
+): Finding => {
   return Finding.fromObject({
     name: "Suspicious Funding Alert",
     description: `${to} received funds from ${from}`,
@@ -41,6 +63,8 @@ export const createFinding = (from: string, to: string): Finding => {
     metadata: {
       sender: from,
       receiver: to,
+      origin,
+      hops: hops.toString(),
     },
     labels: [
       Label.fromObject({
@@ -49,6 +73,10 @@ export const createFinding = (from: string, to: string): Finding => {
         label: "attacker",
         confidence: 0.6,
         remove: false,
+        metadata: {
+          origin,
+          hops: hops.toString(),
+        },
       }),
     ],
   });

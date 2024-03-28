@@ -16,3 +16,9 @@ export const VALUE_THRESHOLDS: Record<number, number> = {
   42161: 0.07,
   43114: 4,
 };
+
+export const alertOriginMap = {
+  "TORNADO-CASH": "Tornado Cash",
+  "FIXED-FLOAT": "Fixed Float",
+  "ATTACK-DETECTOR": "Attack Detector",
+};

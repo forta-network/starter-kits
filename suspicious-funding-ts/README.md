@@ -23,3 +23,5 @@ This bot identifies when a new EOA receives funds from an address previously fun
   - Metadata includes:
     - `sender`: The address that sent funds
     - `receiver`: The address that received funds
+    - `origin`: The initial funding source
+    - `hops`: The count of intermediary transactions that occurred between the initial funding source and the final receiver.

@@ -11,11 +11,12 @@ import {
   BOTS_TO_MONITOR,
   DAYS_TO_LOOK_BACK,
   VALUE_THRESHOLDS,
+  alertOriginMap,
 } from "./constants";
 import { createFinding, getAllLabels } from "./utils";
 
 const ethersProvider = getEthersProvider();
-const attackers = new Set<string>();
+const attackers = new Map<string, { origin: string; hops: number }>();
 let chainId: number;
 
 export const provideInitialize =
@@ -52,7 +53,10 @@ export const provideInitialize =
   };
 
 export const provideHandleTransaction =
-  (attackers: Set<string>, provider: ethers.providers.Provider) =>
+  (
+    attackers: Map<string, { origin: string; hops: number }>,
+    provider: ethers.providers.Provider
+  ) =>
   async (txEvent: TransactionEvent) => {
     const findings: Finding[] = [];
 
@@ -66,8 +70,17 @@ export const provideHandleTransaction =
         (await provider.getTransactionCount(txEvent.to)) === 0 &&
         (await provider.getCode(txEvent.to)) === "0x"
       ) {
-        attackers.add(txEvent.to.toLowerCase());
-        findings.push(createFinding(txEvent.from, txEvent.to));
+        const senderInfo = attackers.get(txEvent.from.toLowerCase());
+        if (senderInfo) {
+          const newHops = senderInfo.hops + 1;
+          attackers.set(txEvent.to.toLowerCase(), {
+            origin: senderInfo.origin,
+            hops: newHops,
+          });
+          findings.push(
+            createFinding(txEvent.from, txEvent.to, senderInfo.origin, newHops)
+          );
+        }
       }
     }
 
@@ -79,7 +92,17 @@ const handleAlert: HandleAlert = async (alertEvent: AlertEvent) => {
 
   alertEvent.alert.labels?.forEach((label) => {
     if (label.label === "attacker") {
-      attackers.add(label.entity.toLowerCase());
+      let origin = "Unknown Origin";
+      const alertId = alertEvent.alert.alertId;
+
+      for (const [key, value] of Object.entries(alertOriginMap)) {
+        if (alertId?.includes(key)) {
+          origin = value;
+          break;
+        }
+      }
+
+      attackers.set(label.entity.toLowerCase(), { origin, hops: 0 });
     }
   });
   return findings;
