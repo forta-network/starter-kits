@@ -169,6 +169,11 @@ def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent
     if first_tx is None:
         logging.info(f"Checking first tx of address with blockexplorer {address}")
         first_tx = blockexplorer.get_first_tx(address)
+
+        # if the block explorer fails to return the first tx, we skip the check
+        if first_tx is None:
+            return findings
+        
         put_first_tx(address, first_tx)
 
     # Check if the first transaction is older than the minimum age
