@@ -1,12 +1,4 @@
-import {
-  FindingType,
-  FindingSeverity,
-  Finding,
-  HandleTransaction,
-  createTransactionEvent,
-  ethers,
-  Initialize,
-} from "forta-agent";
+import { HandleTransaction, Initialize } from "forta-agent";
 import {
   TestTransactionEvent,
   MockEthersProvider,
