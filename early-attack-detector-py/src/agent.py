@@ -1,14 +1,14 @@
-import forta_agent
-from forta_agent import get_json_rpc_url, EntityType, FindingSeverity
+import asyncio
+from forta_bot import scan_base, scan_ethereum, run_health_check, get_chain_id, get_labels, TransactionEvent, EntityType, FindingSeverity
 from joblib import load, parallel_config
 from evmdasm import EvmBytecode
-from web3 import Web3
+from web3 import AsyncWeb3
 from os import environ
 import time
 import os
 import json
 
-from src.constants import (
+from constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
     MODEL_THRESHOLD_ETH,
     MODEL_THRESHOLD_DEFAULT,
@@ -22,30 +22,29 @@ from src.constants import (
     EXTRA_TIME_BOTS,
     EXTRA_TIME_DAYS,
 )
-from src.findings import ContractFindings
-from src.logger import logger
-from src.utils import (
+from findings import ContractFindings
+from logger import logger
+from utils import (
     calc_contract_address,
     get_features,
     get_function_signatures,
     get_storage_addresses,
     is_contract,
 )
-from src.storage import get_secrets
+from storage import get_secrets
 
-SECRETS_JSON = get_secrets()
-
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 ML_MODEL = None
 
-
-def initialize():
+async def initialize():
     """
     this function loads the ml model.
     """
 
     global CHAIN_ID
-    CHAIN_ID = web3.eth.chain_id
+    CHAIN_ID = get_chain_id()
+    print("Chain ID: ", CHAIN_ID)
+
+    SECRETS_JSON = await get_secrets()
 
     global ML_MODEL
     logger.info("Start loading model")
@@ -81,7 +80,7 @@ def initialize():
     logger.info(f"Beta: {BETA}")
 
 
-def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
+async def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     """
     this function executes the model to obtain the score for the contract
     :return: score: float
@@ -89,7 +88,7 @@ def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     t_aux = None
     t = time.time()
     score = None
-    features, opcode_addresses = get_features(w3, opcodes, contract_creator)
+    features, opcode_addresses = await get_features(w3, opcodes, contract_creator)
     t1 = time.time()
     with parallel_config(backend='threading'):
         score = ML_MODEL.predict_proba([features])[0][1]
@@ -111,8 +110,8 @@ def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
     return score, opcode_addresses
 
 
-def detect_malicious_contract_tx(
-    w3, transaction_event: forta_agent.transaction_event.TransactionEvent
+async def detect_malicious_contract_tx(
+    w3, transaction_event: TransactionEvent
 ) -> list:
     t0 = time.time()
     all_findings = []
@@ -138,7 +137,7 @@ def detect_malicious_contract_tx(
                     contract_address = calc_contract_address(w3, trace.action.from_, nonce)
                 else:
                     # For contracts creating other contracts, get the nonce using Web3
-                    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                    nonce = await w3.eth.getTransactionCount(w3.to_checksum_address(trace.action.from_), transaction_event.block_number)
                     contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
                 logger.warn(
@@ -162,17 +161,18 @@ def detect_malicious_contract_tx(
                 repeated_bytecodes[original_contract_address][trace.action.from_].append(created_contract_address)
                 continue
             all_creation_bytecodes[created_contract_address] = creation_bytecode
-            for finding in detect_malicious_contract(
+            for finding in await detect_malicious_contract(
                 w3,
                 trace.action.from_,
                 created_contract_address,
                 creation_bytecode,
+                transaction_event.hash,
                 error=error,
             ):
                 finding.addresses = [trace.action.from_, created_contract_address]
                 if finding.severity == FindingSeverity.Critical:
                     # We priorize when there are critical findings
-                    funding_alerts, funding_labels = check_funding_labels(trace.action.from_, tx_timestamp=tx_timestamp, n_days=FUNDING_TIME,
+                    funding_alerts, funding_labels = await check_funding_labels(trace.action.from_, tx_timestamp=tx_timestamp, n_days=FUNDING_TIME,
                                                                           extra_time_bots=EXTRA_TIME_BOTS, extra_time=EXTRA_TIME_DAYS)
                     if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
@@ -187,7 +187,7 @@ def detect_malicious_contract_tx(
                 if BETA:
                     if ENV == 'dev':
                         logger.info(f"Checking funding alerts for {trace.action.from_}")
-                    funding_alerts, funding_labels = check_funding_labels(trace.action.from_, tx_timestamp=tx_timestamp, n_days=365)
+                    funding_alerts, funding_labels = await check_funding_labels(trace.action.from_, tx_timestamp=tx_timestamp, n_days=365)
                     if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
                         finding.metadata["funding_labels"] = ','.join(funding_labels)
@@ -216,7 +216,7 @@ def detect_malicious_contract_tx(
             ):
                 if finding.severity == FindingSeverity.Critical:
                     # We priorize when there are critical findings
-                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=FUNDING_TIME, 
+                    funding_alerts, funding_labels = await check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=FUNDING_TIME,
                                                                           extra_time_bots=EXTRA_TIME_BOTS, extra_time=EXTRA_TIME_DAYS)
                     if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
@@ -231,7 +231,7 @@ def detect_malicious_contract_tx(
                 if BETA:
                     if ENV == 'dev':
                         logger.info(f"Checking funding labels for {transaction_event.from_}")
-                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=365)
+                    funding_alerts, funding_labels = await check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=365)
                     if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
                         finding.metadata["funding_labels"] = ','.join(funding_labels)
@@ -272,7 +272,7 @@ async def detect_malicious_contract(
             (
                 model_score,
                 opcode_addresses,
-            ) = exec_model(w3, opcodes, from_)
+            ) = await exec_model(w3, opcodes, from_)
             function_signatures = get_function_signatures(w3, opcodes)
             logger.info(f"{created_contract_address}: score={model_score}")
 
@@ -288,9 +288,9 @@ async def detect_malicious_contract(
             # obtain all the addresses contained in the created contract and propagate to the findings
             # We only do it if the model score is above the threshold
             env_t = time.time()
-            storage_addresses = get_storage_addresses(w3, created_contract_address)
+            storage_addresses = await get_storage_addresses(w3, created_contract_address)
             if ENV == 'dev':
-                logger.info(f"Time taken to get storage addresses: {time.time() - env_t}")            
+                logger.info(f"Time taken to get storage addresses: {time.time() - env_t}")
             finding = ContractFindings(
                 from_,
                 created_contract_address,
@@ -303,7 +303,7 @@ async def detect_malicious_contract(
             if model_score is not None and model_score >= MODEL_INFO_THRESHOLD:
                 # If it's a potential alert, we create labels. Otherwise, we don't
                 if model_score >= MODEL_THRESHOLD:
-                    from_label_type = "contract" if is_contract(w3, from_) else "eoa"
+                    from_label_type = "contract" if await is_contract(w3, from_) else "eoa"
                     labels = [
                         {
                             "entity": created_contract_address,
@@ -342,28 +342,17 @@ async def detect_malicious_contract(
                         labels=labels,
                     )
                 )
+
     return findings
 
 
-def provide_handle_transaction(w3):
-    def handle_transaction(
-        transaction_event: forta_agent.transaction_event.TransactionEvent,
-    ) -> list:
-        return detect_malicious_contract_tx(w3, transaction_event)
-
-    return handle_transaction
+async def handle_transaction(
+    transaction_event: TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider
+) -> list:
+    return await detect_malicious_contract_tx(web3, transaction_event)
 
 
-real_handle_transaction = provide_handle_transaction(web3)
-
-
-def handle_transaction(
-    transaction_event: forta_agent.transaction_event.TransactionEvent,
-):
-    return real_handle_transaction(transaction_event)
-
-
-def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365, extra_time_bots: str=None, extra_time: int=180):
+async def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365, extra_time_bots: str=None, extra_time: int=180):
     t = time.time()
     bots = FUNDING_BOTS
     query = {
@@ -378,7 +367,7 @@ def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365, extra
     label_ids = []
     for _ in range(2):
         try:
-            labels = forta_agent.get_labels(query)
+            labels = await get_labels(query)
             alert_ids += [label.source.alert_hash for label in labels.labels if 'attacker' in label.label]
             label_ids += [label.id for label in labels.labels if 'attacker' in label.label]
             break
@@ -391,7 +380,7 @@ def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365, extra
         tt = time.time()
         for _ in range(2):
             try:
-                labels = forta_agent.get_labels(query)
+                labels = await get_labels(query)
                 alert_ids += [label.source.alert_hash for label in labels.labels if 'attacker' in label.label]
                 label_ids += [label.id for label in labels.labels if 'attacker' in label.label]
                 break
@@ -402,3 +391,26 @@ def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365, extra
     if ENV == 'dev':
         logger.info(f"Time taken to get labels: {time.time() - t};\tN_labels: {len(alert_ids)};\tAddress: {address}")
     return alert_ids, label_ids
+
+async def main():
+    await initialize()
+
+    await asyncio.gather(
+        scan_ethereum({
+        'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
+        'rpc_key_id': "ebbd1b21-4e72-4d80-b4f9-f605fee5eb68",
+        'local_rpc_url': "1",
+        'handle_transaction': handle_transaction
+        }),
+        # scan_base({
+        # 'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
+        # 'rpc_key_id': "85f8e757-1120-49eb-936a-7ee0aee57659",
+        # 'local_rpc_url': "8453",
+        # 'handle_transaction': handle_transaction
+        # }),
+        run_health_check()
+    )
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
