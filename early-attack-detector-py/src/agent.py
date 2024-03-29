@@ -207,11 +207,12 @@ def detect_malicious_contract_tx(
             logger.info(f"Contract created {created_contract_address}")
             previous_contracts.append(created_contract_address.lower())
             creation_bytecode = transaction_event.transaction.data
-            for finding in detect_malicious_contract(
+            for finding in await detect_malicious_contract(
                 w3,
                 transaction_event.from_,
                 created_contract_address,
                 creation_bytecode,
+                transaction_event.hash,
             ):
                 if finding.severity == FindingSeverity.Critical:
                     # We priorize when there are critical findings
@@ -256,8 +257,8 @@ def detect_malicious_contract_tx(
     return all_findings[:10]
 
 
-def detect_malicious_contract(
-    w3, from_, created_contract_address, code, error=None
+async def detect_malicious_contract(
+    w3, from_, created_contract_address, code, tx_hash, error=None,
 ) -> list:
     findings = []
 
@@ -335,6 +336,8 @@ def detect_malicious_contract(
                     severity = FindingSeverity.Info
                 findings.append(
                     finding.malicious_contract_creation(
+                        CHAIN_ID,
+                        tx_hash,
                         severity=severity,
                         labels=labels,
                     )

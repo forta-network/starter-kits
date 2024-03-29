@@ -1,6 +1,4 @@
-from forta_agent import Finding, FindingType, FindingSeverity
-
-
+from forta_bot import Finding, FindingType, FindingSeverity
 
 class ContractFindings:
     def __init__(
@@ -33,6 +31,8 @@ class ContractFindings:
 
     def malicious_contract_creation(
         self,
+        chain_id: int,
+        tx_hash: str,
         severity: FindingSeverity,
         labels: list,
     ) -> Finding:
@@ -46,5 +46,9 @@ class ContractFindings:
                 "severity": severity,
                 "metadata": self.metadata,
                 "labels": self.labels,
+                "source": {
+                    "chains": [{"chainId": chain_id}],
+                    "transactions": [{"chainId": chain_id, "hash": tx_hash}]
+                }
             }
         )
