@@ -1,14 +1,15 @@
 from hexbytes import HexBytes
 import rlp
-import requests
-from web3 import Web3
+from web3 import AsyncWeb3
 from time import time
 from concurrent.futures import ThreadPoolExecutor
 import functools
 import operator
+import aiohttp
+import asyncio
 
-from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID
-from src.logger import logger
+from constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID
+from logger import logger
 
 
 def calc_contract_address(w3, address, nonce) -> str:
@@ -18,17 +19,17 @@ def calc_contract_address(w3, address, nonce) -> str:
     """
 
     address_bytes = bytes.fromhex(address[2:].lower())
-    return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
+    return w3.to_checksum_address(w3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
-def is_contract(w3, address) -> bool:
+async def is_contract(w3, address) -> bool:
     """
     this function determines whether address is a contract
     :return: is_contract: bool
     """
     if address is None:
         return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
+    code = await w3.eth.get_code(w3.to_checksum_address(address))
     return code != HexBytes("0x")
 
 def get_function_signatures(w3, opcodes) -> set:
@@ -43,29 +44,33 @@ def get_function_signatures(w3, opcodes) -> set:
     return function_signatures
 
 
-def get_storage_addresses(w3, address) -> set:
+async def get_storage_addresses(w3, address) -> set:
     """
     this function returns the addresses that are references in the storage of a contract (first CONTRACT_SLOT_ANALYSIS_DEPTH slots)
     :return: address_list: list (only returning contract addresses)
     """
     if address is None:
         return set()
-    
-    tp_executor = ThreadPoolExecutor(max_workers=10)
-    checksumed_address = Web3.toChecksumAddress(address)
-    futures = [tp_executor.submit(w3.eth.get_storage_at, checksumed_address, i) for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH)]
-    tp_executor.shutdown(wait=True)
-    futures_result = [f.result() for f in futures]
-    all_addresses = [[result[0:20].hex(), result[12:].hex()] for result in futures_result if result != HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000')]
-    all_addresses = list(set(functools.reduce(operator.iconcat, all_addresses, [])))
-    tp_executor = ThreadPoolExecutor(max_workers=10)
-    futures = [tp_executor.submit(is_contract, w3, address) for address in all_addresses]
-    tp_executor.shutdown(wait=True)
-    address_set = set([Web3.toChecksumAddress(all_addresses[i]) for i, f in enumerate(futures) if f.result()])
+
+    checksumed_address = w3.to_checksum_address(address)
+    tasks = [w3.eth.get_storage_at(checksumed_address, i) for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH)]
+    futures_result = await asyncio.gather(*tasks)
+
+    all_addresses = [
+        [result[0:20].hex(), result[12:].hex()]
+        for result in futures_result
+        if result != HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000')
+    ]
+    all_addresses_flat = set(functools.reduce(operator.iconcat, all_addresses, []))
+
+    contract_checks = [is_contract(w3, addr) for addr in all_addresses_flat]
+    contract_results = await asyncio.gather(*contract_checks)
+
+    address_set = {w3.to_checksum_address(addr) for addr, is_contract in zip(all_addresses_flat, contract_results) if is_contract}
     return address_set
 
 
-def get_features(w3, opcodes, contract_creator) -> list:
+async def get_features(w3, opcodes, contract_creator) -> list:
     """
     this function returns the contract opcodes
     :return: features: list
@@ -83,10 +88,10 @@ def get_features(w3, opcodes, contract_creator) -> list:
             if opcode.operand is not None and opcode.operand in checked_contracts.keys():
                 is_contract_local = checked_contracts[opcode.operand]
             else:
-                is_contract_local = is_contract(w3, opcode.operand)
+                is_contract_local = await is_contract(w3, opcode.operand)
                 checked_contracts[opcode.operand] = is_contract_local
             if is_contract_local:
-                opcode_addresses.add(Web3.toChecksumAddress(f"0x{opcode.operand}"))
+                opcode_addresses.add(w3.to_checksum_address(f"0x{opcode.operand}"))
 
         if opcode_name in {"PUSH4", "PUSH32"}:
             features.append(opcode.operand)
@@ -103,16 +108,16 @@ def get_features(w3, opcodes, contract_creator) -> list:
     return features, opcode_addresses
 
 
-def alert_count(chain_id: int, alert_id: str) -> int:
-    alert_stats_url = (
-        f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
-    )
+async def alert_count(chain_id: int, alert_id: str) -> int:
+    alert_stats_url = f"https://api.forta.network/stats/bot/{BOT_ID}/alerts?chainId={chain_id}"
     alert_id_counts = 1
     alert_counts = 1
     try:
-        result = requests.get(alert_stats_url).json()
-        alert_id_counts = result["alertIds"][alert_id]["count"]
-        alert_counts = result["total"]["count"]
+        async with aiohttp.ClientSession() as session:
+            async with session.get(alert_stats_url) as response:
+                result = await response.json()
+                alert_id_counts = result["alertIds"][alert_id]["count"]
+                alert_counts = result["total"]["count"]
     except Exception as err:
         logger.error(f"Error obtaining alert counts: {err}")
 
