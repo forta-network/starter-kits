@@ -9,3 +9,4 @@ deployed_models
 secrets.json
 *.log
 models
+mlops
