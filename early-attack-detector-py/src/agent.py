@@ -394,16 +394,16 @@ async def main():
     await asyncio.gather(
         scan_ethereum({
         'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-        'rpc_key_id': "ebbd1b21-4e72-4d80-b4f9-f605fee5eb68",
+        'rpc_key_id': "c795687c-5795-4d63-bcb1-f18b5a391dc4",
         'local_rpc_url': "1",
         'handle_transaction': handle_transaction
         }),
-        # scan_base({
-        # 'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
-        # 'rpc_key_id': "85f8e757-1120-49eb-936a-7ee0aee57659",
-        # 'local_rpc_url': "8453",
-        # 'handle_transaction': handle_transaction
-        # }),
+        scan_base({
+        'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
+        'rpc_key_id': "166a510e-edca-4c3d-86e2-7cc49cd90f7f",
+        'local_rpc_url': "8453",
+        'handle_transaction': handle_transaction
+        }),
         run_health_check()
     )
 
