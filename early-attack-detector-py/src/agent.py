@@ -174,7 +174,7 @@ async def detect_malicious_contract_tx(
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
                         finding.metadata["funding_labels"] = ','.join(funding_labels)
                     if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
-                        finding.metadata['high_precision_model'] = True
+                        finding.metadata['high_precision_model'] = str(True)
                     # If the model is working in high precision, or it has a 1-day funding alert, we raise the alert and continue
                     if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys():
                         all_findings.append(finding)
@@ -218,7 +218,7 @@ async def detect_malicious_contract_tx(
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
                         finding.metadata["funding_labels"] = ','.join(funding_labels)
                     if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
-                        finding.metadata['high_precision_model'] = True
+                        finding.metadata['high_precision_model'] = str(True)
                     # If the model is working in high precision, or it has a 1-day funding alert, we raise the alert and continue
                     if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys():
                         all_findings.append(finding)
