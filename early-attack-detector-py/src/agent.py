@@ -3,7 +3,6 @@ from forta_bot import scan_base, scan_ethereum, run_health_check, get_chain_id, 
 from joblib import load, parallel_config
 from evmdasm import EvmBytecode
 from web3 import AsyncWeb3
-from os import environ
 import time
 import os
 import json
@@ -31,7 +30,6 @@ from utils import (
     get_storage_addresses,
     is_contract,
 )
-from storage import get_secrets
 
 ML_MODEL = None
 
@@ -43,8 +41,6 @@ async def initialize():
     global CHAIN_ID
     CHAIN_ID = get_chain_id()
     print("Chain ID: ", CHAIN_ID)
-
-    SECRETS_JSON = await get_secrets()
 
     global ML_MODEL
     logger.info("Start loading model")
