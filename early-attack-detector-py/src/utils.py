@@ -1,5 +1,6 @@
 from hexbytes import HexBytes
 import rlp
+from web3 import constants
 from web3 import AsyncWeb3
 from time import time
 from concurrent.futures import ThreadPoolExecutor
@@ -10,7 +11,6 @@ import asyncio
 
 from constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID
 from logger import logger
-
 
 def calc_contract_address(w3, address, nonce) -> str:
     """
@@ -27,6 +27,9 @@ async def is_contract(w3, address) -> bool:
     this function determines whether address is a contract
     :return: is_contract: bool
     """
+
+    if address == constants.ADDRESS_ZERO:
+        return False
     if address is None:
         return True
     code = await w3.eth.get_code(w3.to_checksum_address(address))
