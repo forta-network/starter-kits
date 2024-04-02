@@ -1,9 +1,6 @@
 from hexbytes import HexBytes
 import rlp
 from web3 import constants
-from web3 import AsyncWeb3
-from time import time
-from concurrent.futures import ThreadPoolExecutor
 import functools
 import operator
 import aiohttp
