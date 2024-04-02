@@ -1,16 +1,15 @@
-import json
 import logging
 import sys
+import asyncio
 
-from forta_agent import get_json_rpc_url, Web3
+from forta_bot import TransactionEvent, scan_ethereum, run_health_check, get_chain_id
 from hexbytes import HexBytes
-from functools import lru_cache
+from async_lru import alru_cache
+from web3 import AsyncWeb3, constants   
 
-from src.constants import *
-from src.findings import FundingSwftSwapFindings
+from constants import *
+from findings import FundingSwftSwapFindings
 
-# Initialize web3
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 # Logging set up
 root = logging.getLogger()
@@ -25,7 +24,7 @@ LOW_VOL_ALERT_COUNT = 0  # stats to emit anomaly score
 NEW_EOA_ALERT_COUNT = 0  # stats to emit anomaly score
 DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
-def initialize():
+async def initialize():
     """
     Reset global variables.
     """
@@ -39,26 +38,25 @@ def initialize():
     DENOMINATOR_COUNT = 0
 
     global CHAIN_ID
-    CHAIN_ID = web3.eth.chain_id
+    CHAIN_ID = get_chain_id()
 
-
-@lru_cache(maxsize=100000)
-def is_contract(w3, address):
+@alru_cache(maxsize=100000)
+async def is_contract(w3, address):
     """
     this function determines whether address is a contract
     :return: is_contract: bool
     """
     if address is None:
         return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
+    code = await w3.eth.get_code(w3.to_checksum_address(address))
     return code != HexBytes('0x')
 
-@lru_cache(maxsize=100000)
-def is_new_account(w3, address, block_number):
-    return w3.eth.get_transaction_count(Web3.toChecksumAddress(address), block_number) == 0
+@alru_cache(maxsize=100000)
+async def is_new_account(w3, address, block_number):
+    return (await w3.eth.get_transaction_count(w3.to_checksum_address(address), block_number)) == 0
 
 
-def detect_swft_swap_funding(w3, transaction_event):
+async def detect_swft_swap_funding(w3, transaction_event):
     global LOW_VOL_ALERT_COUNT
     global NEW_EOA_ALERT_COUNT
     global DENOMINATOR_COUNT
@@ -81,9 +79,9 @@ def detect_swft_swap_funding(w3, transaction_event):
 
     findings = []
 
-    is_new_account_flag = is_new_account(w3, recipient, transaction_event.block_number)
+    is_new_account_flag = await is_new_account(w3, recipient, transaction_event.block_number)
 
-    if not is_contract(w3, recipient):
+    if not (await is_contract(w3, recipient)):
         if is_new_account_flag or native_value < swft_swap_threshold:
             
             alert_type = "new-eoa" if is_new_account_flag else "low-amount"
@@ -95,15 +93,22 @@ def detect_swft_swap_funding(w3, transaction_event):
 
     return findings
 
-def provide_handle_transaction(w3):
-    def handle_transaction(transaction_event):
-        return detect_swft_swap_funding(w3, transaction_event)
-
-    return handle_transaction
+async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider):
+    return await detect_swft_swap_funding(web3, transaction_event)
 
 
-real_handle_transaction = provide_handle_transaction(web3)
+async def main():
+    await initialize()
 
+    await asyncio.gather(
+        scan_ethereum({
+        'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
+        'rpc_key_id': "ebbd1b21-4e72-4d80-b4f9-f605fee5eb68",
+        'local_rpc_url': "1",
+        'handle_transaction': handle_transaction
+        }),
+        run_health_check()
+    )
 
-def handle_transaction(transaction_event):
-    return real_handle_transaction(transaction_event)
+if __name__ == "__main__":
+    asyncio.run(main())
