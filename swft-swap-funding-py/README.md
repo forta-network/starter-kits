@@ -13,6 +13,7 @@ This bot detects transactions in the native currency from SWFT Swap to new EOA a
 - Optimism
 - Avalanche
 - Fantom
+- Base
 
 ## Alerts
 
