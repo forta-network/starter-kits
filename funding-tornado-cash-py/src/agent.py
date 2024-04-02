@@ -5,7 +5,7 @@ from os import environ
 
 
 from web3 import AsyncWeb3
-from forta_bot import get_chain_id, scan_ethereum, run_health_check, TransactionEvent
+from forta_bot import get_chain_id, scan_ethereum, scan_arbitrum, scan_bsc, scan_optimism, scan_polygon, run_health_check, TransactionEvent
 from constants import TORNADO_CASH_ADDRESSES, TORNADO_CASH_WITHDRAW_TOPIC, TORNADO_CASH_ADDRESSES_HIGH
 from findings import FundingTornadoCashFindings
 from storage import get_secrets
@@ -88,8 +88,31 @@ async def main():
     await asyncio.gather(
         scan_ethereum({
         'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-        'rpc_key_id': "ebbd1b21-4e72-4d80-b4f9-f605fee5eb68",
+        'rpc_key_id': "c795687c-5795-4d63-bcb1-f18b5a391dc4",
         'local_rpc_url': "1",
+        'handle_transaction': handle_transaction
+        }),
+        scan_arbitrum({
+        'rpc_url': "https://arb-mainnet.g.alchemy.com/v2",
+        'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
+        'local_rpc_url': "42161",
+        'handle_transaction': handle_transaction
+        }),
+        scan_optimism({
+        'rpc_url': "https://opt-mainnet.g.alchemy.com/v2",
+        'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
+        'local_rpc_url': "10",
+        'handle_transaction': handle_transaction
+        }),
+        scan_polygon({
+        'rpc_url': "https://polygon-mainnet.g.alchemy.com/v2",
+        'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
+        'local_rpc_url': "137",
+        'handle_transaction': handle_transaction
+        }),
+        scan_bsc({
+        'rpc_url': "https://intensive-wider-thunder.bsc.quiknode.pro/3385d6a314acba4f5f45bfcc90703ee8d9fd92b9/",
+        'local_rpc_url': "56",
         'handle_transaction': handle_transaction
         }),
 
