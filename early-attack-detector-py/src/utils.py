@@ -25,10 +25,10 @@ async def is_contract(w3, address) -> bool:
     :return: is_contract: bool
     """
 
-    if address == constants.ADDRESS_ZERO:
-        return False
     if address is None:
         return True
+    if address == constants.ADDRESS_ZERO:
+        return False
     code = await w3.eth.get_code(w3.to_checksum_address(address))
     return code != HexBytes("0x")
 
