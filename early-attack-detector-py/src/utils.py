@@ -6,8 +6,8 @@ from time import time
 from concurrent.futures import ThreadPoolExecutor
 import functools
 import operator
-
-from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID
+from eth_abi import decode
+from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID,UTILITY_CONTRACT_BYTECODE,UTILITY_CONTRACT_ABI
 from src.logger import logger
 
 
@@ -21,15 +21,38 @@ def calc_contract_address(w3, address, nonce) -> str:
     return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
-def is_contract(w3, address) -> bool:
-    """
-    this function determines whether address is a contract
-    :return: is_contract: bool
-    """
-    if address is None:
-        return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
-    return code != HexBytes("0x")
+def is_contract(w3, addresses) -> list:
+    # Your contract's ABI
+    contract_abi = UTILITY_CONTRACT_ABI
+
+    # The address you want to simulate the contract being deployed at
+    simulated_contract_address = '0x1111111111111111111111111111111111111111'
+
+    # The runtime bytecode of your contract
+    override_code = UTILITY_CONTRACT_BYTECODE
+
+    # Create the contract instance with the simulated address
+    contract = w3.eth.contract(address=simulated_contract_address, abi=contract_abi)
+
+    # Convert to checksum addresses
+    addresses_to_check = [Web3.toChecksumAddress(addr) for addr in addresses]
+
+    # Define the state override parameters
+    state_override = {
+        simulated_contract_address: {'code': override_code}
+    }
+
+    # Perform the call with state override
+    call_result = w3.eth.call({
+        'to': simulated_contract_address,
+        'data': contract.encode_abi(fn_name='isContract', args=[addresses_to_check])
+    }, 'latest', state_override)
+
+    # Decode the result - Assuming checkEOA returns bool[]
+    result = decode(['bool[]'], call_result)
+
+    return result[0] if result else False
+
 
 def get_function_signatures(w3, opcodes) -> set:
     """
@@ -50,7 +73,7 @@ def get_storage_addresses(w3, address) -> set:
     """
     if address is None:
         return set()
-    
+
     tp_executor = ThreadPoolExecutor(max_workers=10)
     checksumed_address = Web3.toChecksumAddress(address)
     futures = [tp_executor.submit(w3.eth.get_storage_at, checksumed_address, i) for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH)]
@@ -58,10 +81,8 @@ def get_storage_addresses(w3, address) -> set:
     futures_result = [f.result() for f in futures]
     all_addresses = [[result[0:20].hex(), result[12:].hex()] for result in futures_result if result != HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000')]
     all_addresses = list(set(functools.reduce(operator.iconcat, all_addresses, [])))
-    tp_executor = ThreadPoolExecutor(max_workers=10)
-    futures = [tp_executor.submit(is_contract, w3, address) for address in all_addresses]
-    tp_executor.shutdown(wait=True)
-    address_set = set([Web3.toChecksumAddress(all_addresses[i]) for i, f in enumerate(futures) if f.result()])
+    is_contract_result = is_contract(w3, all_addresses)
+    address_set = set([Web3.toChecksumAddress(all_addresses[i]) for i, contract in enumerate(is_contract_result) if contract])
     return address_set
 
 
@@ -83,7 +104,7 @@ def get_features(w3, opcodes, contract_creator) -> list:
             if opcode.operand is not None and opcode.operand in checked_contracts.keys():
                 is_contract_local = checked_contracts[opcode.operand]
             else:
-                is_contract_local = is_contract(w3, opcode.operand)
+                is_contract_local = is_contract(w3, [opcode.operand])
                 checked_contracts[opcode.operand] = is_contract_local
             if is_contract_local:
                 opcode_addresses.add(Web3.toChecksumAddress(f"0x{opcode.operand}"))

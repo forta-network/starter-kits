@@ -302,7 +302,7 @@ def detect_malicious_contract(
             if model_score is not None and model_score >= MODEL_INFO_THRESHOLD:
                 # If it's a potential alert, we create labels. Otherwise, we don't
                 if model_score >= MODEL_THRESHOLD:
-                    from_label_type = "contract" if is_contract(w3, from_) else "eoa"
+                    from_label_type = "contract" if is_contract(w3, [from_]) else "eoa"
                     labels = [
                         {
                             "entity": created_contract_address,
