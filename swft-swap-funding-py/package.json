@@ -1,7 +1,7 @@
 {
-  "name": "swft-swap-funding",
-  "displayName": "SWFT Swap Funding",
-  "version": "0.0.1",
+  "name": "swft-swap-funding-v2-beta",
+  "displayName": "SWFT Swap Funding v2 Beta",
+  "version": "0.1.0",
   "engines": {
     "node": ">=20"
   },
