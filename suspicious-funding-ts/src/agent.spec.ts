@@ -1,4 +1,4 @@
-import { HandleTransaction, Initialize } from "forta-agent";
+import { HandleTransaction } from "forta-bot";
 import {
   TestTransactionEvent,
   MockEthersProvider,
@@ -6,7 +6,7 @@ import {
 import { createAddress } from "forta-agent-tools";
 import { when } from "jest-when";
 
-import { provideHandleTransaction, provideInitialize } from "./agent";
+import { provideHandleTransaction } from "./agent";
 import { createFinding } from "./utils";
 
 class MockEthersProviderExtended extends MockEthersProvider {
@@ -34,7 +34,6 @@ class MockEthersProviderExtended extends MockEthersProvider {
 
 describe("Suspicious funding detector bot", () => {
   let handleTransaction: HandleTransaction;
-  let initialize: Initialize;
 
   const mockProvider = new MockEthersProviderExtended();
   const mockAttacker1 = createAddress("0x0123");
@@ -44,20 +43,18 @@ describe("Suspicious funding detector bot", () => {
 
   beforeAll(async () => {
     mockProvider.setNetwork(1);
-    initialize = provideInitialize(mockProvider as any);
     handleTransaction = provideHandleTransaction(
       mockAttackers,
       mockProvider as any
     );
-
-    await initialize();
   });
 
   it("returns empty findings if there is no native token transfer", async () => {
     const mockTxEvent = new TestTransactionEvent()
       .setTo(createAddress("0xabc"))
-      .setValue("0x0");
-    const findings = await handleTransaction(mockTxEvent);
+      .setValue("0x0") as any;
+    mockTxEvent.chainId = 1;
+    const findings = await handleTransaction(mockTxEvent, mockProvider as any);
 
     expect(findings).toStrictEqual([]);
   });
@@ -66,8 +63,10 @@ describe("Suspicious funding detector bot", () => {
     const mockTxEvent = new TestTransactionEvent()
       .setFrom(createAddress("0xdef"))
       .setTo(createAddress("0xabc"))
-      .setValue("0x0");
-    const findings = await handleTransaction(mockTxEvent);
+      .setValue("0x0") as any;
+    mockTxEvent.chainId = 1;
+
+    const findings = await handleTransaction(mockTxEvent, mockProvider as any);
 
     expect(findings).toStrictEqual([]);
   });
@@ -76,8 +75,10 @@ describe("Suspicious funding detector bot", () => {
     const mockTxEvent = new TestTransactionEvent()
       .setFrom(mockAttacker1)
       .setTo(createAddress("0xabc"))
-      .setValue("0xDE0B6B3A7640000"); // 1 ETH
-    const findings = await handleTransaction(mockTxEvent);
+      .setValue("0xDE0B6B3A7640000") as any; // 1 ETH
+    mockTxEvent.chainId = 1;
+
+    const findings = await handleTransaction(mockTxEvent, mockProvider as any);
 
     expect(findings).toStrictEqual([]);
   });
@@ -87,11 +88,12 @@ describe("Suspicious funding detector bot", () => {
     const mockTxEvent = new TestTransactionEvent()
       .setFrom(mockAttacker1)
       .setTo(mockTxTo)
-      .setValue("0x01");
+      .setValue("0x01") as any;
+    mockTxEvent.chainId = 1;
 
     mockProvider.setNonce(mockTxTo, 10000); // old EOA
 
-    const findings = await handleTransaction(mockTxEvent);
+    const findings = await handleTransaction(mockTxEvent, mockProvider as any);
 
     expect(findings).toStrictEqual([]);
   });
@@ -101,11 +103,12 @@ describe("Suspicious funding detector bot", () => {
     const mockTxEvent = new TestTransactionEvent()
       .setFrom(mockAttacker1)
       .setTo(mockTxTo)
-      .setValue("0x01");
+      .setValue("0x01") as any;
+    mockTxEvent.chainId = 1;
 
     mockProvider.setNonce(mockTxTo, 0);
     mockProvider.setCode(mockTxTo, "0x1234"); // contract
-    const findings = await handleTransaction(mockTxEvent);
+    const findings = await handleTransaction(mockTxEvent, mockProvider as any);
 
     expect(findings).toStrictEqual([]);
   });
@@ -115,11 +118,12 @@ describe("Suspicious funding detector bot", () => {
     const mockTxEvent = new TestTransactionEvent()
       .setFrom(mockAttacker1)
       .setTo(mockTxTo)
-      .setValue("0x01");
+      .setValue("0x01") as any;
+    mockTxEvent.chainId = 1;
 
     mockProvider.setNonce(mockTxTo, 0);
     mockProvider.setCode(mockTxTo, "0x");
-    const findings = await handleTransaction(mockTxEvent);
+    const findings = await handleTransaction(mockTxEvent, mockProvider as any);
 
     expect(findings).toStrictEqual([
       createFinding(mockAttacker1, mockTxTo, "Tornado Cash", 1),
