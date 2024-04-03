@@ -13,6 +13,7 @@ This bot identifies when a new EOA receives funds from an address previously fun
 - Optimism
 - Arbitrum
 - Avalanche
+- Base
 
 ## Alerts
 
