@@ -1,5 +1,5 @@
-from forta_agent import Finding, FindingType, FindingSeverity, EntityType
-from src.constants import *
+from forta_bot import Finding, FindingType, FindingSeverity, EntityType
+from constants import *
 
 class FundingSquidFindings:
 
@@ -16,7 +16,7 @@ class FundingSquidFindings:
                 'metadata': {
                     "amount_funded": f"{value} {CURRENCIES[chain_id]}",
                     "receiving_address": f"{receiver}",
-                    "anomaly_score": anomaly_score
+                    "anomaly_score": str(anomaly_score)
                 },
                 'labels': [
                     {
@@ -31,7 +31,11 @@ class FundingSquidFindings:
                         'label': "attacker-funding",
                         'confidence': 0.2
                     },
-                ]
+                ],
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': transaction.transaction.hash}]
+                }
             })
         else:
             finding = Finding({
@@ -46,7 +50,7 @@ class FundingSquidFindings:
                     "threshold": f"{SQUID_THRESHOLDS[chain_id]} {CURRENCIES[chain_id]}",
                     "amount_funded": f"{value} {CURRENCIES[chain_id]}",
                     "receiving_address": receiver,
-                    "anomaly_score": anomaly_score
+                    "anomaly_score": str(anomaly_score)
                 },
                 'labels': [
                     {
@@ -61,6 +65,10 @@ class FundingSquidFindings:
                         'label': "attacker-funding",
                         'confidence': 0.2
                     },
-                ]
+                ],
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': transaction.transaction.hash}]
+                }
             })
         return finding

@@ -1,18 +1,16 @@
 import json
 import logging
 import sys
+import asyncio
 
-from forta_agent import get_json_rpc_url, Web3
+from forta_bot import get_chain_id, scan_ethereum, scan_base, run_health_check, TransactionEvent
+from web3 import AsyncWeb3
 from hexbytes import HexBytes
-from functools import lru_cache
+from async_lru import alru_cache
 
-from src.constants import *
-from src.findings import FundingSquidFindings
+from constants import *
+from findings import FundingSquidFindings
 from eth_abi import decode
-
-
-# Initialize web3
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 # Logging set up
 root = logging.getLogger()
@@ -27,10 +25,12 @@ LOW_VOL_ALERT_COUNT = 0  # stats to emit anomaly score
 NEW_EOA_ALERT_COUNT = 0  # stats to emit anomaly score
 DENOMINATOR_COUNT = 0  # stats to emit anomaly score
 
-def initialize():
+async def initialize():
     """
     Reset global variables.
     """
+    print("Initializing")
+
     global LOW_VOL_ALERT_COUNT
     LOW_VOL_ALERT_COUNT = 0
 
@@ -41,38 +41,37 @@ def initialize():
     DENOMINATOR_COUNT = 0
 
     global CHAIN_ID
-    CHAIN_ID = web3.eth.chain_id
+    CHAIN_ID = get_chain_id()
+    print("Chain ID: ", CHAIN_ID)
 
-
-@lru_cache(maxsize=100000)
-def is_contract(w3, address):
+@alru_cache(maxsize=100000)
+async def is_contract(w3, address):
     """
     this function determines whether address is a contract
     :return: is_contract: bool
     """
     if address is None:
         return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
+    code = await w3.eth.get_code(w3.to_checksum_address(address))
     return code != HexBytes('0x')
 
-@lru_cache(maxsize=100000)
-def is_new_account(w3, address, block_number):
-    return w3.eth.get_transaction_count(Web3.toChecksumAddress(address), block_number) == 0
+@alru_cache(maxsize=100000)
+async def is_new_account(w3, address, block_number):
+    return await w3.eth.get_transaction_count(w3.to_checksum_address(address), block_number) == 0
 
 
-def detect_squid_funding(w3, transaction_event):
+async def detect_squid_funding(w3, transaction_event):
     global LOW_VOL_ALERT_COUNT
     global NEW_EOA_ALERT_COUNT
     global DENOMINATOR_COUNT
     global CHAIN_ID
-    
     express_execute_with_token_function_invocations = transaction_event.filter_function(EXPRESS_EXECUTE_WITH_TOKEN_FUNCTION_ABI, SQUID_ROUTER_ADDRESS)
 
     if len(express_execute_with_token_function_invocations) != 1 or transaction_event.from_ != SQUID_RELAYER:
         return []
 
     DENOMINATOR_COUNT += 1
-    
+
     payload = '0x' + express_execute_with_token_function_invocations[0][1]['payload'].hex()
 
     decoded_data = decode(SQUID_TYPES, HexBytes(payload))
@@ -84,10 +83,10 @@ def detect_squid_funding(w3, transaction_event):
     if not recipient:
         for callType, _, _, callData, _ in calls:
             if callType == 1:
-                sig = ('0x' + callData.hex())[:10] 
+                sig = ('0x' + callData.hex())[:10]
                 if sig in SIGS_AND_ABIS:
                     abi = json.loads(SIGS_AND_ABIS[sig])
-                    recipient = w3.eth.contract(abi=[abi]).decode_function_input('0x' + callData.hex())[1]['to'].lower()
+                    recipient = await w3.eth.contract(abi=[abi]).decode_function_input('0x' + callData.hex())[1]['to'].lower()
                     break
 
     if not recipient:
@@ -111,7 +110,7 @@ def detect_squid_funding(w3, transaction_event):
             if transfer['args']['to'] == ZERO_ADDRESS:
                 native_value = transfer['args']['value'] / 1e18
                 break
-    
+
     if native_value == 0:
         return []
 
@@ -119,9 +118,8 @@ def detect_squid_funding(w3, transaction_event):
 
     findings = []
 
-    is_new_account_flag = is_new_account(w3, recipient, transaction_event.block_number)
-
-    if not is_contract(w3, recipient):
+    if not (await is_contract(w3, recipient)):
+        is_new_account_flag = await is_new_account(w3, recipient, transaction_event.block_number)
         if is_new_account_flag or native_value < squid_threshold:
             alert_type = "new-eoa" if is_new_account_flag else "low-amount"
             alert_count = NEW_EOA_ALERT_COUNT if is_new_account_flag else LOW_VOL_ALERT_COUNT
@@ -132,15 +130,31 @@ def detect_squid_funding(w3, transaction_event):
 
     return findings
 
-def provide_handle_transaction(w3):
-    def handle_transaction(transaction_event):
-        return detect_squid_funding(w3, transaction_event)
 
-    return handle_transaction
+async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider):
+    return await detect_squid_funding(web3, transaction_event)
+
+async def main():
+    await initialize()
+
+    await asyncio.gather(
+        scan_ethereum({
+        'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
+        'rpc_key_id': "ebbd1b21-4e72-4d80-b4f9-f605fee5eb68",
+        'local_rpc_url': "1",
+        'handle_transaction': handle_transaction
+        }),
+
+        scan_base({
+        'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
+        'rpc_key_id': "85f8e757-1120-49eb-936a-7ee0aee57659",
+        'local_rpc_url': "8453",
+        'handle_transaction': handle_transaction
+        }),
+
+        run_health_check()
+    )
 
 
-real_handle_transaction = provide_handle_transaction(web3)
-
-
-def handle_transaction(transaction_event):
-    return real_handle_transaction(transaction_event)
+if __name__ == "__main__":
+    asyncio.run(main())
