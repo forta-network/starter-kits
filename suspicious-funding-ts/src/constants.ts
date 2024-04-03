@@ -13,6 +13,7 @@ export const VALUE_THRESHOLDS: Record<number, number> = {
   56: 0.5,
   137: 190,
   250: 400,
+  8453: 0.07,
   42161: 0.07,
   43114: 4,
 };
