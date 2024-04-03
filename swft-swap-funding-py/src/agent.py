@@ -5,7 +5,7 @@ import asyncio
 from forta_bot import TransactionEvent, scan_ethereum, run_health_check, get_chain_id
 from hexbytes import HexBytes
 from async_lru import alru_cache
-from web3 import AsyncWeb3, constants   
+from web3 import AsyncWeb3   
 
 from constants import *
 from findings import FundingSwftSwapFindings

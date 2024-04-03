@@ -5,7 +5,6 @@ from web3_mock import Web3Mock, NEW_CONTRACT
 from web3 import AsyncWeb3
 import pytest
 from unittest.mock import patch
-import timeit
 
 w3 = Web3Mock()
 w3.to_checksum_address = AsyncWeb3.to_checksum_address
