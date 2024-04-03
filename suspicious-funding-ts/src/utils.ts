@@ -6,9 +6,9 @@ import {
   Label,
   LabelCursor,
   LabelQueryOptions,
-  LabelsResponse,
+  LabelQueryResponse,
   getLabels,
-} from "forta-agent";
+} from "forta-bot";
 import { alertOriginMap } from "./constants";
 
 export const getAllLabels = async (
@@ -16,7 +16,7 @@ export const getAllLabels = async (
   attackers: Map<string, { origin: string; hops: number }>
 ) => {
   let startingCursor: LabelCursor | undefined;
-  let labelsResponse: LabelsResponse;
+  let labelsResponse: LabelQueryResponse;
   do {
     labelsResponse = await getLabels({ ...query, startingCursor });
     for (const label of labelsResponse.labels) {
@@ -35,7 +35,7 @@ export const getAllLabels = async (
         }
 
         if (alertId.includes("SUSPICIOUS-FUNDING")) {
-          if (label.metadata.origin && label.metadata.hops) {
+          if (label.metadata && label.metadata.origin && label.metadata.hops) {
             origin = label.metadata.origin;
             hops = parseInt(label.metadata.hops, 10);
           } else continue;
