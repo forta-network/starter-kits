@@ -5,8 +5,11 @@ import {
   TransactionEvent,
   LabelQueryOptions,
   ethers,
-  getEthersProvider,
-} from "forta-agent";
+  runHealthCheck,
+  scanEthereum,
+  getProvider,
+  scanAlerts,
+} from "forta-bot";
 import {
   BOTS_TO_MONITOR,
   DAYS_TO_LOOK_BACK,
@@ -15,47 +18,23 @@ import {
 } from "./constants";
 import { createFinding, getAllLabels } from "./utils";
 
-const ethersProvider = getEthersProvider();
 const attackers = new Map<string, { origin: string; hops: number }>();
-let chainId: number;
 
-export const provideInitialize =
-  (provider: ethers.providers.Provider) => async () => {
-    chainId = Number((await provider.getNetwork()).chainId);
-
-    const query: LabelQueryOptions = {
-      sourceIds: BOTS_TO_MONITOR,
-      state: true,
-      labels: ["attacker"],
-      createdSince: Date.now() - DAYS_TO_LOOK_BACK * 60 * 60 * 24 * 1000,
-      first: 2000,
-    };
-    await getAllLabels(query, attackers);
-
-    return {
-      alertConfig: {
-        subscriptions: [
-          {
-            botId: BOTS_TO_MONITOR[0],
-            alertIds: ["FUNDING-TORNADO-CASH"],
-          },
-          {
-            botId: BOTS_TO_MONITOR[1],
-            alertIds: ["FUNDING-FIXED-FLOAT-NEW-ACCOUNT"],
-          },
-          {
-            botId: BOTS_TO_MONITOR[2],
-            alertIds: ["EARLY-ATTACK-DETECTOR-1"],
-          },
-        ],
-      },
-    };
+export const initialize = async () => {
+  const query: LabelQueryOptions = {
+    sourceIds: BOTS_TO_MONITOR,
+    state: true,
+    labels: ["attacker"],
+    createdSince: Date.now() - DAYS_TO_LOOK_BACK * 60 * 60 * 24 * 1000,
+    first: 2000,
   };
+  await getAllLabels(query, attackers);
+};
 
 export const provideHandleTransaction =
   (
     attackers: Map<string, { origin: string; hops: number }>,
-    provider: ethers.providers.Provider
+    provider: ethers.JsonRpcProvider
   ) =>
   async (txEvent: TransactionEvent) => {
     const findings: Finding[] = [];
@@ -64,7 +43,8 @@ export const provideHandleTransaction =
       txEvent.to &&
       attackers.has(txEvent.from.toLowerCase()) &&
       txEvent.transaction.value != "0x0" &&
-      Number(txEvent.transaction.value) / 1e18 <= VALUE_THRESHOLDS[chainId]
+      Number(txEvent.transaction.value) / 1e18 <=
+        VALUE_THRESHOLDS[txEvent.chainId]
     ) {
       if (
         (await provider.getTransactionCount(txEvent.to)) === 0 &&
@@ -87,9 +67,8 @@ export const provideHandleTransaction =
     return findings;
   };
 
-const handleAlert: HandleAlert = async (alertEvent: AlertEvent) => {
+export const handleAlert: HandleAlert = async (alertEvent: AlertEvent) => {
   const findings: Finding[] = [];
-
   alertEvent.alert.labels?.forEach((label) => {
     if (label.label === "attacker") {
       let origin = "Unknown Origin";
@@ -108,8 +87,44 @@ const handleAlert: HandleAlert = async (alertEvent: AlertEvent) => {
   return findings;
 };
 
-export default {
-  initialize: provideInitialize(ethersProvider),
-  handleTransaction: provideHandleTransaction(attackers, ethersProvider),
-  handleAlert,
-};
+async function main() {
+  const ethProvider = await getProvider({
+    rpcUrl: "https://eth-mainnet.g.alchemy.com/v2",
+    rpcKeyId: "9febef20-c5b1-401c-bf8c-c06aa93262fa",
+    localRpcUrl: "1",
+  });
+
+  const handleTransactionEth = provideHandleTransaction(attackers, ethProvider);
+
+  await initialize();
+
+  scanEthereum({
+    rpcUrl: "https://eth-mainnet.g.alchemy.com/v2",
+    rpcKeyId: "b6e6ca09-7878-4da0-aad0-2227518b440b",
+    localRpcUrl: "1",
+    handleTransaction: handleTransactionEth,
+  });
+
+  scanAlerts({
+    subscriptions: [
+      {
+        botId: BOTS_TO_MONITOR[0],
+        alertIds: ["FUNDING-TORNADO-CASH"],
+      },
+      {
+        botId: BOTS_TO_MONITOR[1],
+        alertIds: ["FUNDING-FIXED-FLOAT-NEW-ACCOUNT"],
+      },
+      {
+        botId: BOTS_TO_MONITOR[2],
+        alertIds: ["EARLY-ATTACK-DETECTOR-1"],
+      },
+    ],
+    handleAlert,
+  });
+  runHealthCheck();
+}
+
+if (require.main === module) {
+  main();
+}
