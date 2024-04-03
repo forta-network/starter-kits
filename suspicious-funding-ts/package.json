@@ -1,6 +1,6 @@
 {
-  "name": "suspicious-funding",
-  "displayName": "Suspicious Funding Detector",
+  "name": "suspicious-funding-v2-beta",
+  "displayName": "Suspicious Funding Detector v2 Beta",
   "version": "0.1.0",
   "description": "Detects suspicious funding transactions",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/suspicious-funding-ts",
