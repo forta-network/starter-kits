@@ -25,8 +25,10 @@ def is_contract(w3, address) -> bool:
     """
     if address is None:
         return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
-    return code != HexBytes("0x")
+
+    checksum_address = Web3.toChecksumAddress(address)
+    code = w3.eth.get_code(checksum_address)
+    return code is not None and code != HexBytes("0x")
 
 
 def detect_cex_funding(
