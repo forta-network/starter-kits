@@ -36,20 +36,24 @@ def detect_cex_funding(
 ) -> list:
     findings = []
 
-    # alert on funding tx from CEXes
-    value = transaction_event.transaction.value
-    if w3.eth.get_transaction_count(Web3.toChecksumAddress(transaction_event.transaction.to), transaction_event.block.number,) == 0 and not is_contract(w3, transaction_event.transaction.to):
-        for chainId, chain_data in CEXES.items():
-            if chainId == w3.eth.chainId:
-                threshold = chain_data["threshold"]
-                for address, name in chain_data["exchanges"]:
-                    if address.lower() == transaction_event.transaction.from_ and value < threshold:
-                        findings.append(
-                            CEXFundingFinding(
-                                name, transaction_event.transaction.to, value, chainId
-                            ).emit_finding()
-                        )
-                        break
+    if transaction_event.transaction.to is not None:
+        to_address_checksum = Web3.toChecksumAddress(transaction_event.transaction.to)
+
+        # alert on funding tx from CEXes
+        if w3.eth.get_transaction_count(to_address_checksum, transaction_event.block.number) == 0 and not is_contract(w3, to_address_checksum):
+            value = transaction_event.transaction.value
+
+            for chainId, chain_data in CEXES.items():
+                if chainId == w3.eth.chainId:
+                    threshold = chain_data["threshold"]
+                    for address, name in chain_data["exchanges"]:
+                        if address.lower() == transaction_event.transaction.from_ and value < threshold:
+                            findings.append(
+                                CEXFundingFinding(
+                                    name, transaction_event.transaction.to, value, chainId
+                                ).emit_finding()
+                            )
+                            break
 
     return findings
 
