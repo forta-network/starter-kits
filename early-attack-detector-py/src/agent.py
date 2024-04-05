@@ -29,6 +29,7 @@ from src.utils import (
     get_features,
     get_function_signatures,
     get_storage_addresses,
+    get_storage_addresses_with_state_override,
     is_contract,
 )
 from src.storage import get_secrets
@@ -287,9 +288,10 @@ def detect_malicious_contract(
             # obtain all the addresses contained in the created contract and propagate to the findings
             # We only do it if the model score is above the threshold
             env_t = time.time()
-            storage_addresses = get_storage_addresses(w3, created_contract_address)
+            storage_addresses = get_storage_addresses_with_state_override(w3, created_contract_address)
+            logger.info(storage_addresses)
             if ENV == 'dev':
-                logger.info(f"Time taken to get storage addresses: {time.time() - env_t}")            
+                logger.info(f"Time taken to get storage addresses: {time.time() - env_t}")
             finding = ContractFindings(
                 from_,
                 created_contract_address,

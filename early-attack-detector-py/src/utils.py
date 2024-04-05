@@ -11,6 +11,7 @@ from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID,UTILITY_CON
 from src.logger import logger
 
 
+
 def calc_contract_address(w3, address, nonce) -> str:
     """
     this function calculates the contract address from sender/nonce
@@ -45,7 +46,7 @@ def is_contract(w3, addresses) -> list:
     # Perform the call with state override
     call_result = w3.eth.call({
         'to': simulated_contract_address,
-        'data': contract.encode_abi(fn_name='isContract', args=[addresses_to_check])
+        'data': contract.encodeABI(fn_name='isContract', args=[addresses_to_check])
     }, 'latest', state_override)
 
     # Decode the result - Assuming checkEOA returns bool[]
@@ -84,6 +85,64 @@ def get_storage_addresses(w3, address) -> set:
     is_contract_result = is_contract(w3, all_addresses)
     address_set = set([Web3.toChecksumAddress(all_addresses[i]) for i, contract in enumerate(is_contract_result) if contract])
     return address_set
+
+
+def get_storage_addresses_with_state_override(w3, simulated_contract_address) -> set:
+    """
+    This function returns the addresses that are references in the storage of a contract
+    (first CONTRACT_SLOT_ANALYSIS_DEPTH slots) using state override to simulate contract code.
+
+    :param w3: Web3 instance
+    :param simulated_contract_address: Address of the contract to analyze
+    :param override_code: The overridden bytecode of the contract
+    :return: address_set: set (only returning contract addresses)
+    """
+
+    # Specify the contract code to execute
+    override_code = "0x5f5b80361460135780355481526020016001565b365ff3"
+
+    if simulated_contract_address is None:
+        return set()
+
+    # Define the state override parameters
+    state_override = {
+        simulated_contract_address: {'code': override_code}
+    }
+
+    checksumed_address = Web3.toChecksumAddress(simulated_contract_address)
+    all_addresses = []
+
+    # Loop through the desired range of storage slots
+    for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH):
+        call_result = w3.eth.call({
+            'to': checksumed_address,
+            'data': w3.toHex(text='')[2:] + w3.toHex(i)[2:].rjust(64, '0')
+        }, 'latest', state_override)
+
+        # Assuming call_result is the storage data, extract potential addresses
+        if call_result != Web3.toBytes(hexstr='0x' + '0' * 64):
+            potential_address_1 = Web3.toHex(call_result[0:20])
+            potential_address_2 = Web3.toHex(call_result[12:])
+            all_addresses.extend([potential_address_1, potential_address_2])
+
+    # Deduplicate and filter out non-contract addresses
+    all_addresses = list(set(all_addresses))
+    is_contract_result = is_contract(w3, all_addresses)
+    address_set = set([Web3.toChecksumAddress(all_addresses[i]) for i, contract in enumerate(is_contract_result) if contract])
+
+    return address_set
+
+
+def do_post(w3, payload):
+    response = w3.eth_call(payload)
+
+    # Error handling could be improved based on the needs of your application
+    if 'result' in response:
+        return response['result']
+    elif 'error' in response:
+        raise Exception(f"JSON-RPC error: {response['error']}")
+    else:
+        raise Exception("Malformed JSON-RPC response")
 
 
 def get_features(w3, opcodes, contract_creator) -> list:
