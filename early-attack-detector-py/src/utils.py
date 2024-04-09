@@ -52,7 +52,7 @@ def is_contract(w3, addresses) -> list:
     # Decode the result - Assuming checkEOA returns bool[]
     result = decode(['bool[]'], call_result)
 
-    return result[0] if result else False
+    return result
 
 
 def get_function_signatures(w3, opcodes) -> set:
