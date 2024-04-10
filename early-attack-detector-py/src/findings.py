@@ -1,4 +1,4 @@
-from forta_bot import Finding, FindingType, FindingSeverity
+from forta_bot_sdk import Finding, FindingType, FindingSeverity
 
 class ContractFindings:
     def __init__(
