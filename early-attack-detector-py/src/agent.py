@@ -7,6 +7,8 @@ from os import environ
 import time
 import os
 import json
+from datetime import datetime
+import pandas as pd
 
 from src.constants import (
     BYTE_CODE_LENGTH_THRESHOLD,
@@ -21,6 +23,8 @@ from src.constants import (
     FUNDING_TIME,
     EXTRA_TIME_BOTS,
     EXTRA_TIME_DAYS,
+    COMBINATOR_THRESHOLD,
+    COMBINATOR_MODEL_PATH,
 )
 from src.findings import ContractFindings
 from src.logger import logger
@@ -69,6 +73,9 @@ def initialize():
         MODEL_PRECISION_THRESHOLD = MODEL_THRESHOLD_DEFAULT_PRECISION
     logger.info(f"Model threshold: {MODEL_THRESHOLD}. Threshold for high precision: {MODEL_PRECISION_THRESHOLD}")
 
+    global COMBINATOR_MODEL
+    COMBINATOR_MODEL = load(COMBINATOR_MODEL_PATH)
+
     global ENV
     if 'production' in os.environ.get('NODE_ENV', ''):
         ENV = 'production'
@@ -97,6 +104,7 @@ def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
         if MODEL_PATH != HIGH_PRECISION_MODEL_PATH:
             t_aux = time.time()
             score_high_precision = ML_MODEL_HIGH_PRECISION.predict_proba([features])[0][1]
+            return_both_scores = (score, score_high_precision)
             if ENV == 'dev':
                 logger.info(f"High precision model score: {score_high_precision}")
             if score_high_precision >= MODEL_PRECISION_THRESHOLD:
@@ -109,7 +117,7 @@ def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
             logger.info(f"Model Timing:\t Time taken to get features: {t1 - t};\t Time taken to predict: {t2 - t1};\t Total time: {t2 - t}")
         else:
             logger.info(f"Model Timing:\t Time taken to get features: {t1 - t};\t Time taken to predict: {t_aux - t1};\t Time taken to predict high precision: {t2 - t_aux};\t Total time: {t2 - t}")
-    return score, opcode_addresses
+    return score, opcode_addresses, return_both_scores
 
 
 def detect_malicious_contract_tx(
@@ -163,39 +171,16 @@ def detect_malicious_contract_tx(
                 repeated_bytecodes[original_contract_address][trace.action.from_].append(created_contract_address)
                 continue
             all_creation_bytecodes[created_contract_address] = creation_bytecode
-            for finding in detect_malicious_contract(
+            for iter_finding in detect_malicious_contract(
                 w3,
                 trace.action.from_,
                 created_contract_address,
                 creation_bytecode,
                 error=error,
             ):
-                finding.addresses = [trace.action.from_, created_contract_address]
-                if finding.severity == FindingSeverity.Critical:
-                    # We priorize when there are critical findings
-                    funding_alerts, funding_labels = check_funding_labels(trace.action.from_, tx_timestamp=tx_timestamp, n_days=FUNDING_TIME,
-                                                                          extra_time_bots=EXTRA_TIME_BOTS, extra_time=EXTRA_TIME_DAYS)
-                    if len(funding_labels) > 0:
-                        finding.metadata["funding_alerts"] = ','.join(funding_alerts)
-                        finding.metadata["funding_labels"] = ','.join(funding_labels)
-                    if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
-                        finding.metadata['high_precision_model'] = True
-                    # If the model is working in high precision, or it has a 1-day funding alert, we raise the alert and continue
-                    if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys():
-                        all_findings.append(finding)
-                        continue
-                # This should only trigger in beta and if no critical alert has been raised
-                if BETA:
-                    if ENV == 'dev':
-                        logger.info(f"Checking funding alerts for {trace.action.from_}")
-                    funding_alerts, funding_labels = check_funding_labels(trace.action.from_, tx_timestamp=tx_timestamp, n_days=365)
-                    if len(funding_labels) > 0:
-                        finding.metadata["funding_alerts"] = ','.join(funding_alerts)
-                        finding.metadata["funding_labels"] = ','.join(funding_labels)
-                        finding.labels = []
-                        finding.alert_id = "EARLY-AD-INFO"
-                        finding.severity = FindingSeverity.Info
-                        all_findings.append(finding)
+                new_fundings = process_finding(iter_finding, trace.action.from_, created_contract_address, tx_timestamp)
+                if new_fundings is not None:
+                    all_findings.append(new_fundings)
     # Fake loop tp break out if the contract here has already been analyzed
     for _ in range(1):
         if transaction_event.to is None:
@@ -208,38 +193,15 @@ def detect_malicious_contract_tx(
             logger.info(f"Contract created {created_contract_address}")
             previous_contracts.append(created_contract_address.lower())
             creation_bytecode = transaction_event.transaction.data
-            for finding in detect_malicious_contract(
+            for iter_finding in detect_malicious_contract(
                 w3,
                 transaction_event.from_,
                 created_contract_address,
                 creation_bytecode,
             ):
-                if finding.severity == FindingSeverity.Critical:
-                    # We priorize when there are critical findings
-                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=FUNDING_TIME, 
-                                                                          extra_time_bots=EXTRA_TIME_BOTS, extra_time=EXTRA_TIME_DAYS)
-                    if len(funding_labels) > 0:
-                        finding.metadata["funding_alerts"] = ','.join(funding_alerts)
-                        finding.metadata["funding_labels"] = ','.join(funding_labels)
-                    if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
-                        finding.metadata['high_precision_model'] = True
-                    # If the model is working in high precision, or it has a 1-day funding alert, we raise the alert and continue
-                    if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys():
-                        all_findings.append(finding)
-                        continue
-                # This should only trigger in beta and if no critical alert has been raised
-                if BETA:
-                    if ENV == 'dev':
-                        logger.info(f"Checking funding labels for {transaction_event.from_}")
-                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=365)
-                    if len(funding_labels) > 0:
-                        finding.metadata["funding_alerts"] = ','.join(funding_alerts)
-                        finding.metadata["funding_labels"] = ','.join(funding_labels)
-                        finding.labels = []
-                        finding.alert_id = "EARLY-AD-INFO"
-                        finding.severity = FindingSeverity.Info
-                        all_findings.append(finding)
-
+                new_fundings = process_finding(iter_finding, transaction_event.from_, created_contract_address, tx_timestamp)
+                if new_fundings is not None:
+                    all_findings.append(new_fundings)
 
     if len(repeated_bytecodes) > 0:
         if ENV == 'dev':
@@ -257,6 +219,42 @@ def detect_malicious_contract_tx(
     return all_findings[:10]
 
 
+def process_finding(iter_finding, address_from, created_contract_address, tx_timestamp):
+    finding = iter_finding[0]
+    both_scores = iter_finding[1]
+    preds_eec = both_scores[0]
+    preds_brcf = both_scores[1]
+    finding.addresses = [address_from, created_contract_address]
+    # If it's critical, we check funding alerts. Independently of whether there are or not, we run the combination model
+    info_labels = get_labels_extra_info(address_from, tx_timestamp=tx_timestamp, n_days=700)
+    # Let's only process if it's over info threshold AND has a label, or if it's over high_precision
+    if len(info_labels) > 0 or float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
+        if len(info_labels) > 0:
+            time_since_creation_h = info_labels[0]['time_since_creation_s']/3600
+            alert_id = info_labels[0]['alert_id']
+            alert_hash = info_labels[0]['alert_hash']
+            label_hash = info_labels[0]['label_hash']
+        else:
+            time_since_creation_h = None
+            alert_id = None
+            alert_hash = None
+            label_hash = None
+        inference = pd.DataFrame({'alert_id': alert_id, 'time_since_creation_h': time_since_creation_h, 'preds_eec': preds_eec, 'preds_brcf': preds_brcf}, index=[0])
+        combiner_pred = COMBINATOR_MODEL.predict_proba(inference)
+        if ENV == 'dev':
+            logger.info(f"scores: {both_scores}; combiner_pred: {combiner_pred}; time_since_creation_h: {time_since_creation_h}; alert_id: {alert_id}")
+        if combiner_pred[0][1] >= COMBINATOR_THRESHOLD:
+            finding.severity = FindingSeverity.Critical
+            finding.metadata['combinator_score'] = str(combiner_pred[0][1])
+            finding.metadata['combinator_threshold'] = str(COMBINATOR_THRESHOLD)
+            finding.metadata['both_scores'] = ','.join([str(score) for score in both_scores])
+            if len(info_labels) > 0:
+                finding.metadata['alert_hash'] = alert_hash
+                finding.metadata['label_hash'] = label_hash
+            return finding
+    return None
+
+
 def detect_malicious_contract(
     w3, from_, created_contract_address, code, error=None
 ) -> list:
@@ -272,6 +270,7 @@ def detect_malicious_contract(
             (
                 model_score,
                 opcode_addresses,
+                both_scores,
             ) = exec_model(w3, opcodes, from_)
             function_signatures = get_function_signatures(w3, opcodes)
             logger.info(f"{created_contract_address}: score={model_score}")
@@ -304,20 +303,7 @@ def detect_malicious_contract(
             if model_score is not None and model_score >= MODEL_INFO_THRESHOLD:
                 # If it's a potential alert, we create labels. Otherwise, we don't
                 if model_score >= MODEL_THRESHOLD:
-                    from_label_type = "contract" if is_contract(w3, [from_]) else "eoa"
                     labels = [
-                        {
-                            "entity": created_contract_address,
-                            "entity_type": EntityType.Address,
-                            "label": "contract",
-                            "confidence": 1.0,
-                        },
-                        {
-                            "entity": from_,
-                            "entity_type": EntityType.Address,
-                            "label": from_label_type,
-                            "confidence": 1.0,
-                        },
                         {
                             "entity": created_contract_address,
                             "entity_type": EntityType.Address,
@@ -336,10 +322,11 @@ def detect_malicious_contract(
                     labels = []
                     severity = FindingSeverity.Info
                 findings.append(
-                    finding.malicious_contract_creation(
+                    (finding.malicious_contract_creation(
                         severity=severity,
                         labels=labels,
-                    )
+                    ),
+                    both_scores)
                 )
     return findings
 
@@ -401,3 +388,37 @@ def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365, extra
     if ENV == 'dev':
         logger.info(f"Time taken to get labels: {time.time() - t};\tN_labels: {len(alert_ids)};\tAddress: {address}")
     return alert_ids, label_ids
+
+
+def get_labels_extra_info(address: str, tx_timestamp: int, n_days: int=365):
+    t = time.time()
+    bots = FUNDING_BOTS
+    query = {
+        "first": 5,
+        "source_ids": bots,
+        "created_since": tx_timestamp - n_days*24*60*60*1000,
+        "entities": [address],
+        "state": True,
+        "labels": ["attacker"],
+    }
+    for _ in range(2):
+        try:
+            labels = forta_agent.get_labels(query)
+            break
+        except Exception as e:
+            logger.error(f"Error getting labels: {e}")
+            continue
+    labels_to_return = []
+    for label in labels.labels:
+        if 'attacker' in label.label:
+            labels_to_return.append({
+                'contract_creator': label.entity,
+                # 'contract_address': row['contract_address'],
+                'label_hash': label.id,
+                'alert_id': label.source.alert_id,
+                'alert_hash': label.source.alert_hash,
+                'created_at': label.created_at,
+                'time_since_creation_s': tx_timestamp/1000 - int(datetime.fromisoformat(labels.labels[0].created_at).timestamp()),
+            })
+
+    return labels_to_return

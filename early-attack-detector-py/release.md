@@ -1,4 +1,7 @@
 # V0
+## V0.2.3
+- [beta] Added is_contract optimizations
+- [beta] Added a new combinator model
 
 ## V0.2.2
 - [beta] Added squid, 1-hops, and SWFT Swap funding sources 
