@@ -40,7 +40,7 @@ export default class AssetFetcher {
         }
 
         if (tries === MAX_FETCH_ATTEMPTS) {
-          throw e;
+          continue;
         }
       }
       // Wait for 1 second before retrying
