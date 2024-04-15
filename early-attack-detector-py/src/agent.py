@@ -228,7 +228,7 @@ def process_finding(iter_finding, address_from, created_contract_address, tx_tim
     # If it's critical, we check funding alerts. Independently of whether there are or not, we run the combination model
     info_labels = get_labels_extra_info(address_from, tx_timestamp=tx_timestamp, n_days=700)
     # Let's only process if it's over info threshold AND has a label, or if it's over high_precision
-    if len(info_labels) > 0 or float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
+    if (len(info_labels) > 0 and float(finding.metadata['model_score']) >= MODEL_THRESHOLD) or float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
         if len(info_labels) > 0:
             time_since_creation_h = info_labels[0]['time_since_creation_s']/3600
             alert_id = info_labels[0]['alert_id']
