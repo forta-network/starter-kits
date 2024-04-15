@@ -33,14 +33,14 @@ export default class AssetFetcher {
       } catch (e) {
         tries++;
 
-        if (apiUrl === this.assetListUrl) {
-          console.log(`Error in fetching AssetList. Attempt: ${tries} | Error: ${e}`);
-        } else {
-          console.log(`Error in fetching AssetDetails. Attempt: ${tries} | Error: ${e}`);
-        }
-
         if (tries === MAX_FETCH_ATTEMPTS) {
-          throw e;
+          if (apiUrl === this.assetListUrl) {
+            console.log(`Error in fetching AssetList. Attempt: ${tries} | Error: ${e}`);
+          } else {
+            console.log(`Error in fetching AssetDetails. Attempt: ${tries} | Error: ${e}`);
+          }
+
+          continue;
         }
       }
       // Wait for 1 second before retrying

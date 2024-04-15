@@ -14,6 +14,10 @@ let assetListStartDate: string;
 // since entries will be cleared after alerted.
 const unalertedAssets: UnalertedAsset[] = [];
 
+// Array of assets whose details were failed
+// to be fetched and thus will be attempted again
+let assetsWithoutDetails: Asset[] = [];
+
 async function createAssetFetcher(
   apiKey: string,
   assetListUrl: string,
@@ -42,6 +46,34 @@ export function provideHandleBlock(): HandleBlock {
   return async (blockEvent: BlockEvent): Promise<Finding[]> => {
     const findings: Finding[] = [];
 
+    // Attempting to fetch `AssetDetails` of the
+    // assets whose details were failed to be
+    // fetched previously.
+    if (assetsWithoutDetails.length > 0) {
+      let assetsStillWithoutDetails: Asset[] = [];
+
+      while (assetsWithoutDetails.length > 0) {
+        let asset = assetsWithoutDetails.pop();
+        const assetDetails: AssetDetails | undefined = await assetFetcher.getAssetDetails(asset!.content);
+        if (assetDetails) {
+          unalertedAssets.push({
+            type: asset!.type,
+            status: asset!.status,
+            content: asset!.content,
+            updatedAt: asset!.updatedAt,
+            reason: assetDetails?.reason,
+            reportId: assetDetails?.reportId,
+            reportUrl: assetDetails?.reportUrl,
+          });
+        } else {
+          assetsStillWithoutDetails.push(asset!);
+        }
+      }
+
+      // Add back assets that failed to fetch their details
+      assetsWithoutDetails = [...assetsStillWithoutDetails];
+    }
+
     // Querying ChainPatrol API once per day,
     // otherwise API query returns zero results.
     // Argument format is `YYYY-MM-DD`
@@ -52,15 +84,19 @@ export function provideHandleBlock(): HandleBlock {
       await Promise.all(
         assetList!.map(async (asset: Asset) => {
           const assetDetails: AssetDetails | undefined = await assetFetcher.getAssetDetails(asset.content);
-          unalertedAssets.push({
-            type: asset.type,
-            status: asset.status,
-            content: asset.content,
-            updatedAt: asset.updatedAt,
-            reason: assetDetails?.reason,
-            reportId: assetDetails?.reportId,
-            reportUrl: assetDetails?.reportUrl,
-          });
+          if (assetDetails) {
+            unalertedAssets.push({
+              type: asset.type,
+              status: asset.status,
+              content: asset.content,
+              updatedAt: asset.updatedAt,
+              reason: assetDetails.reason,
+              reportId: assetDetails.reportId,
+              reportUrl: assetDetails.reportUrl,
+            });
+          } else {
+            assetsWithoutDetails.push(asset);
+          }
         })
       );
 

@@ -196,4 +196,45 @@ describe("ChainPatrol Bot Test Suite", () => {
     findings = await handleBlock(mockBlockEvent);
     expect(findings).toStrictEqual([]);
   });
+
+  it("creates an alert for an asset that was fetched, but its details were only fetched after first returning 'undefined'", async () => {
+    const batchOfFive = 5;
+    const mockAssetListOfFive = createMockAssetBatch(batchOfFive);
+    const mockAssetDetailsOfFive = createMockAssetDetailsBatch(batchOfFive);
+
+    when(mockAssetFetcher.getAssetlist)
+      .calledWith(mockCurrentDate, mockInitApiQueryDate)
+      .mockReturnValue(mockAssetListOfFive);
+
+    mockAssetListOfFive.map((mockAsset: MockAsset, i: number) => {
+      if (i < mockAssetListOfFive.length - 1) {
+        when(mockAssetFetcher.getAssetDetails).calledWith(mockAsset.content).mockReturnValue(mockAssetDetailsOfFive[i]);
+      } else {
+        when(mockAssetFetcher.getAssetDetails).calledWith(mockAsset.content).mockReturnValue(undefined);
+      }
+    });
+
+    let mockFindings = createMockBlockedAssetFindingBatch(
+      mockAssetListOfFive.slice(0, -1),
+      mockAssetDetailsOfFive.slice(0, -1)
+    );
+
+    let findings = await handleBlock(mockBlockEvent);
+    expect(findings).toStrictEqual(mockFindings);
+
+    // Create alerts in the very next block
+    mockBlockEvent.setNumber(mockEthereumBlocksInADay + 1);
+
+    when(mockAssetFetcher.getAssetDetails)
+      .calledWith(mockAssetListOfFive[mockAssetListOfFive.length - 1].content)
+      .mockReturnValue(mockAssetDetailsOfFive[mockAssetDetailsOfFive.length - 1]);
+
+    mockFindings = createMockBlockedAssetFindingBatch(
+      [mockAssetListOfFive[mockAssetListOfFive.length - 1]],
+      [mockAssetDetailsOfFive[mockAssetDetailsOfFive.length - 1]]
+    );
+
+    findings = await handleBlock(mockBlockEvent);
+    expect(findings).toStrictEqual(mockFindings);
+  });
 });

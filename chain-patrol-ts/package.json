@@ -1,7 +1,7 @@
 {
   "name": "chainpatrol-scam-detector",
   "displayName": "ChainPatrol Scam Detector",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Detects URLs, web pages, and X/Twitter accounts that are scams",
   "longDescription": "The bot's functionality revolves around querying the ChainPatrol API. The bot queries the API once a day, and when it receives a result, it extracts the result's information. Subsequently, it then creates an alert for the result using the extracted information.",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/chain-patrol-ts",
