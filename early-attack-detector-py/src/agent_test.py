@@ -1,18 +1,17 @@
 from forta_agent import FindingSeverity, create_transaction_event
-
+import threading
+import time
 import agent
 import utils
 from evmdasm import EvmBytecode
 from unittest.mock import patch
 from web3_mock import (
-    BENIGN_CONTRACT,
     CONTRACT_NO_ADDRESS,
     CONTRACT_WITH_ADDRESS,
     EOA_ADDRESS,
     MALICIOUS_CONTRACT,
     MALICIOUS_CONTRACT_DEPLOYER,
     MALICIOUS_CONTRACT_DEPLOYER_NONCE,
-    SHORT_CONTRACT,
     Web3Mock,
 )
 
@@ -74,6 +73,94 @@ class TestEarlyAttackDetector:
         opcodes = EvmBytecode(bytecode.hex()).disassemble()
         features, _ = agent.get_features(w3, opcodes, EOA_ADDRESS)
         assert len(features) == 4572, "incorrect features length obtained"
+
+    # Test for Concurrency and Performance
+    def test_concurrent_access_to_get_storage_addresses(self):
+        number_of_threads = 10  # Number of threads to simulate concurrency
+        threads = []
+        results = [None] * number_of_threads  # to store results
+        execution_times = [0] * number_of_threads  # to store execution times
+
+        # Worker thread function
+        def thread_function(index):
+            start_time = time.time()
+            result = agent.get_storage_addresses(w3, CONTRACT_WITH_ADDRESS)
+            end_time = time.time()
+
+            results[index] = result
+            execution_times[index] = end_time - start_time
+
+        # Start threads
+        for i in range(number_of_threads):
+            thread = threading.Thread(target=thread_function, args=(i,))
+            threads.append(thread)
+            thread.start()
+
+        # Wait for all threads to complete
+        for thread in threads:
+            thread.join()
+
+        # Check results and print performance data
+        for i in range(number_of_threads):
+            print(f'Thread {i}: Execution time {execution_times[i]:.4f} seconds')
+            assert isinstance(results[i], set), "Expected result type is set"
+
+    # Test for Concurrency and Performance
+    def test_concurrent_access_to_get_storage_addresses_with_none_contract_address(self):
+        number_of_threads = 10
+        threads = []
+        results = [None] * number_of_threads
+        execution_times = [0] * number_of_threads
+
+        def thread_function(index):
+            start_time = time.time()
+            result = agent.get_storage_addresses(w3, EOA_ADDRESS)
+            end_time = time.time()
+
+            results[index] = result
+            execution_times[index] = end_time - start_time
+
+        for i in range(number_of_threads):
+            thread = threading.Thread(target=thread_function, args=(i,))
+            threads.append(thread)
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+
+        # Check if function returns an empty set
+        for i in range(number_of_threads):
+            print(f'Thread {i}: Execution time {execution_times[i]:.4f} seconds')
+            assert results[i] == set(), "Function should return an empty set for None address"
+
+    def test_concurrent_access_to_get_storage_addresses_with_invalid_address(self):
+        number_of_threads = 10
+        threads = []
+        results = [None] * number_of_threads
+        execution_times = [0] * number_of_threads
+        exceptions = [None] * number_of_threads  # Array to store exceptions
+
+        def thread_function(index):
+            try:
+                start_time = time.time()
+                result = agent.get_storage_addresses(w3, "12345")
+                end_time = time.time()
+                results[index] = result
+                execution_times[index] = end_time - start_time
+            except ValueError as e:
+                exceptions[index] = e  # Store the exception
+
+        for i in range(number_of_threads):
+            thread = threading.Thread(target=thread_function, args=(i,))
+            threads.append(thread)
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+
+        # Check for exceptions in each thread
+        for i, exception in enumerate(exceptions):
+            assert isinstance(exception, ValueError), f"Thread {i} did not raise ValueError as expected"
 
     def test_finding_MALICIOUS_CONTRACT_creation(self):
         agent.initialize()
