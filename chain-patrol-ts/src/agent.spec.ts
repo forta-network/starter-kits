@@ -207,18 +207,17 @@ describe("ChainPatrol Bot Test Suite", () => {
       .mockReturnValue(mockAssetListOfFive);
 
     mockAssetListOfFive.map((mockAsset: MockAsset, i: number) => {
-      if(i < (mockAssetListOfFive.length - 1)) {
-        when(mockAssetFetcher.getAssetDetails)
-          .calledWith(mockAsset.content)
-          .mockReturnValue(mockAssetDetailsOfFive[i]);
+      if (i < mockAssetListOfFive.length - 1) {
+        when(mockAssetFetcher.getAssetDetails).calledWith(mockAsset.content).mockReturnValue(mockAssetDetailsOfFive[i]);
       } else {
-        when(mockAssetFetcher.getAssetDetails)
-          .calledWith(mockAsset.content)
-          .mockReturnValue(undefined);
+        when(mockAssetFetcher.getAssetDetails).calledWith(mockAsset.content).mockReturnValue(undefined);
       }
     });
 
-    let mockFindings = createMockBlockedAssetFindingBatch(mockAssetListOfFive.slice(0, -1), mockAssetDetailsOfFive.slice(0, -1));
+    let mockFindings = createMockBlockedAssetFindingBatch(
+      mockAssetListOfFive.slice(0, -1),
+      mockAssetDetailsOfFive.slice(0, -1)
+    );
 
     let findings = await handleBlock(mockBlockEvent);
     expect(findings).toStrictEqual(mockFindings);
@@ -227,10 +226,13 @@ describe("ChainPatrol Bot Test Suite", () => {
     mockBlockEvent.setNumber(mockEthereumBlocksInADay + 1);
 
     when(mockAssetFetcher.getAssetDetails)
-        .calledWith(mockAssetListOfFive[mockAssetListOfFive.length - 1].content)
-        .mockReturnValue(mockAssetDetailsOfFive[mockAssetDetailsOfFive.length - 1]);
+      .calledWith(mockAssetListOfFive[mockAssetListOfFive.length - 1].content)
+      .mockReturnValue(mockAssetDetailsOfFive[mockAssetDetailsOfFive.length - 1]);
 
-    mockFindings = createMockBlockedAssetFindingBatch([mockAssetListOfFive[mockAssetListOfFive.length - 1]], [mockAssetDetailsOfFive[mockAssetDetailsOfFive.length - 1]]);
+    mockFindings = createMockBlockedAssetFindingBatch(
+      [mockAssetListOfFive[mockAssetListOfFive.length - 1]],
+      [mockAssetDetailsOfFive[mockAssetDetailsOfFive.length - 1]]
+    );
 
     findings = await handleBlock(mockBlockEvent);
     expect(findings).toStrictEqual(mockFindings);

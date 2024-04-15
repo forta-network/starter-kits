@@ -49,13 +49,13 @@ export function provideHandleBlock(): HandleBlock {
     // Attempting to fetch `AssetDetails` of the
     // assets whose details were failed to be
     // fetched previously.
-    if(assetsWithoutDetails.length > 0) {
+    if (assetsWithoutDetails.length > 0) {
       let assetsStillWithoutDetails: Asset[] = [];
 
-      while(assetsWithoutDetails.length > 0) {
+      while (assetsWithoutDetails.length > 0) {
         let asset = assetsWithoutDetails.pop();
         const assetDetails: AssetDetails | undefined = await assetFetcher.getAssetDetails(asset!.content);
-        if(assetDetails) {
+        if (assetDetails) {
           unalertedAssets.push({
             type: asset!.type,
             status: asset!.status,
@@ -68,10 +68,10 @@ export function provideHandleBlock(): HandleBlock {
         } else {
           assetsStillWithoutDetails.push(asset!);
         }
-      };
+      }
 
       // Add back assets that failed to fetch their details
-      assetsWithoutDetails = [...assetsStillWithoutDetails]
+      assetsWithoutDetails = [...assetsStillWithoutDetails];
     }
 
     // Querying ChainPatrol API once per day,
@@ -84,7 +84,7 @@ export function provideHandleBlock(): HandleBlock {
       await Promise.all(
         assetList!.map(async (asset: Asset) => {
           const assetDetails: AssetDetails | undefined = await assetFetcher.getAssetDetails(asset.content);
-          if(assetDetails) {
+          if (assetDetails) {
             unalertedAssets.push({
               type: asset.type,
               status: asset.status,
