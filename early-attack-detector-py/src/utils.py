@@ -18,7 +18,7 @@ def calc_contract_address(w3, address, nonce) -> str:
     """
 
     address_bytes = bytes.fromhex(address[2:].lower())
-    return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
+    return Web3.to_checksum_address(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
 
 def is_contract(w3, address) -> bool:
@@ -28,7 +28,7 @@ def is_contract(w3, address) -> bool:
     """
     if address is None:
         return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
+    code = w3.eth.get_code(Web3.to_checksum_address(address))
     return code != HexBytes("0x")
 
 def get_function_signatures(w3, opcodes) -> set:
@@ -50,9 +50,9 @@ def get_storage_addresses(w3, address) -> set:
     """
     if address is None:
         return set()
-    
+
     tp_executor = ThreadPoolExecutor(max_workers=10)
-    checksumed_address = Web3.toChecksumAddress(address)
+    checksumed_address = Web3.to_checksum_address(address)
     futures = [tp_executor.submit(w3.eth.get_storage_at, checksumed_address, i) for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH)]
     tp_executor.shutdown(wait=True)
     futures_result = [f.result() for f in futures]
@@ -61,7 +61,7 @@ def get_storage_addresses(w3, address) -> set:
     tp_executor = ThreadPoolExecutor(max_workers=10)
     futures = [tp_executor.submit(is_contract, w3, address) for address in all_addresses]
     tp_executor.shutdown(wait=True)
-    address_set = set([Web3.toChecksumAddress(all_addresses[i]) for i, f in enumerate(futures) if f.result()])
+    address_set = set([Web3.to_checksum_address(all_addresses[i]) for i, f in enumerate(futures) if f.result()])
     return address_set
 
 
@@ -86,7 +86,7 @@ def get_features(w3, opcodes, contract_creator) -> list:
                 is_contract_local = is_contract(w3, opcode.operand)
                 checked_contracts[opcode.operand] = is_contract_local
             if is_contract_local:
-                opcode_addresses.add(Web3.toChecksumAddress(f"0x{opcode.operand}"))
+                opcode_addresses.add(Web3.to_checksum_address(f"0x{opcode.operand}"))
 
         if opcode_name in {"PUSH4", "PUSH32"}:
             features.append(opcode.operand)
