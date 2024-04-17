@@ -1,4 +1,4 @@
-from forta_agent import FindingSeverity, create_transaction_event, EntityType
+from forta_agent import FindingSeverity, create_transaction_event
 from unittest.mock import patch
 
 import agent

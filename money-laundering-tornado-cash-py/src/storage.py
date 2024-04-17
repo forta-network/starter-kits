@@ -1,5 +1,4 @@
 import forta_agent
-import boto3
 import json
 import requests
 import os
