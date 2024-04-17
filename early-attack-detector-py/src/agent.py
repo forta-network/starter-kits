@@ -138,7 +138,7 @@ def detect_malicious_contract_tx(
                     contract_address = calc_contract_address(w3, trace.action.from_, nonce)
                 else:
                     # For contracts creating other contracts, get the nonce using Web3
-                    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                    nonce = w3.eth.getTransactionCount(Web3.to_checksum_address(trace.action.from_), transaction_event.block_number)
                     contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
                 logger.warn(
