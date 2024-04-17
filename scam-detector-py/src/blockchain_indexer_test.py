@@ -32,6 +32,6 @@ class TestBlockChainIndexer:
 
     def test_get_etherscan_labels(self):
         address = '0x1673888242bad06cc87a7bcaff392cb27218b3e3' # Uniswap V3: FORT-USDC 
-        labels = BlockChainIndexer.get_etherscan_labels([address])
+        labels = BlockChainIndexer.get_etherscan_labels((address,))
         assert labels == {'0x1673888242bad06cc87a7bcaff392cb27218b3e3': {'labels': ['Uniswap'], 'nametag': 'Uniswap V3: FORT-USDC'}},"should return one Uniswap label and a nametag"
 

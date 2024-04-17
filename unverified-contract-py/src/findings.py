@@ -1,6 +1,6 @@
 from forta_agent import Finding, FindingSeverity, FindingType, EntityType
 from bot_alert_rate import calculate_alert_rate, ScanCountType
-
+import hashlib
 BOT_ID = "0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3"
 
 
@@ -29,6 +29,8 @@ class UnverifiedCodeContractFindings:
                 'UNVERIFIED-CODE-CONTRACT-CREATION',
                 ScanCountType.CONTRACT_CREATION_COUNT)
 
+        unique_key = hashlib.sha256(f'{from_address},{contract_address}'.encode()).hexdigest()
+
         return Finding({
             'name': 'Contract with unverified code was created',
             'description': f'{from_address} created contract {contract_address}',
@@ -36,5 +38,6 @@ class UnverifiedCodeContractFindings:
             'type': FindingType.Suspicious,
             'severity': FindingSeverity.Medium,
             'metadata': metadata,
-            'labels': labels
+            'labels': labels,
+            'unique_key': unique_key
         })

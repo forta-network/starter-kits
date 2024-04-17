@@ -35,7 +35,7 @@ def get_token_data(url):
     return requests.get(url)
 
 
-@lru_cache(maxsize=1_000_000)
+@lru_cache(maxsize=100_000)
 def get_first_tx_timestamp(address) -> int:
     """Gets address's first tx timestamp from Etherscan in unix."""
     first_tx_timestamp = -1
@@ -49,10 +49,13 @@ def get_first_tx_timestamp(address) -> int:
     except requests.exceptions.RequestException or Exception as err:
         logger.warn(f"Request failed for addr: {address}, err: {err}")
 
-    if int(data["status"]) == 1:
+    if data["status"] and int(data["status"]) == 1:
         first_tx_timestamp = int(data["result"][0]["timeStamp"])
     else:
-        first_tx_timestamp = data["result"]
+        if data["result"]:
+            first_tx_timestamp = data["result"]
+        else:
+            first_tx_timestamp = "Block explorer API failed to return data."
 
     return first_tx_timestamp
 
@@ -68,7 +71,7 @@ def get_account_active_period(address, recent_tx_timestamp) -> float:
     return (recent_tx_timestamp - first_tx_timestamp) / 60
 
 
-@lru_cache(maxsize=1_000_000)
+@lru_cache(maxsize=100_000)
 def get_token_info(token_address) -> tuple:
     """Get token name, symbol, and decimals from Ethplorer API."""
     token_info_endpoint = (

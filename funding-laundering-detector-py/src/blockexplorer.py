@@ -3,6 +3,7 @@ import logging
 import datetime
 import requests
 import pandas as pd
+from functools import lru_cache
 
 from src.storage import get_secrets
 
@@ -38,6 +39,7 @@ class BlockExplorer:
             self.host = "https://api.snowtrace.io"
             self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['SNOWTRACE_TOKEN']
 
+    @lru_cache(maxsize=100_000)
     def get_first_tx(self, address: str) -> datetime:
         url = self.host + \
             f"/api?module=account&action=txlist&address={address}&startblock=0&endblock=999999999&page=1&offset=10&sort=asc&apikey={self.api_key}"

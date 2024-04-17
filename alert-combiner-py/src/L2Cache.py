@@ -9,15 +9,14 @@ import forta_agent
 from src.utils import Utils
 
 DATABASE = "https://research.forta.network/database/bot/"
-VERSION = "V2"
-L2_VERSION = "V2.1"
+VERSION = "V2.1"
 
 class L2Cache:
     MAX_RETRIES = 3
 
     @staticmethod
     def write(obj: object, chain_id: int, key: str):
-        key = f"{L2_VERSION}-{key}" if chain_id in (10, 42161) else f"{VERSION}-{key}"
+        key = f"{VERSION}-{key}"
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
             attempt = 0  
             while attempt < L2Cache.MAX_RETRIES:
@@ -42,7 +41,7 @@ class L2Cache:
 
     @staticmethod
     def load(chain_id: int, key: str) -> object:
-        key = f"{L2_VERSION}-{key}" if chain_id in (10, 42161) else f"{VERSION}-{key}"
+        key = f"{VERSION}-{key}"
         if 'NODE_ENV' in os.environ and 'production' in os.environ.get('NODE_ENV'):
             try:
                 logging.info(f"Loading {key}_{chain_id}  using API")

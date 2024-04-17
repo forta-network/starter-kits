@@ -2,6 +2,7 @@ import json
 import logging
 
 import requests
+from functools import lru_cache
 from src.storage import get_secrets
 
 class BlockExplorer:
@@ -36,6 +37,7 @@ class BlockExplorer:
             self.host = "https://api.snowtrace.io"
             self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['SNOWTRACE_TOKEN']
 
+    @lru_cache(maxsize=100)
     def is_verified(self, address):
         url = self.host + "/api?module=contract&action=getabi&address=" + address + "&apikey=" + self.api_key
         response = requests.get(url)

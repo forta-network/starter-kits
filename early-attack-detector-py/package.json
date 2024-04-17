@@ -1,0 +1,51 @@
+{
+  "name": "early-attack-detector-py-beta",
+  "displayName": "Early Attack Detector Beta",
+  "version": "0.2.2",
+  "description": "Attack detector focused on detection during preparation",
+  "longDescription": "This bot is designed to detect attacks during the contract deployment phase, before the attack is executed.",
+  "repository": "https://github.com/forta-network/starter-kits/tree/main/early-attack-detector-py",
+  "promoUrl": "https://forta.org",
+  "chainIds": [
+    1,
+    56,
+    137,
+    43114,
+    42161,
+    10,
+    250
+  ],
+  "chainSettings": {
+    "default": {
+      "shards": 4,
+      "target": 2
+    }
+  },
+  "scripts": {
+    "postinstall": "python3 -m pip install -r requirements_dev.txt",
+    "start": "npm run start:dev",
+    "start:dev": "nodemon --watch src --watch forta.config.json -e py --exec \"forta-agent run\"",
+    "start:prod": "forta-agent run --prod",
+    "tx": "forta-agent run --tx",
+    "block": "forta-agent run --block",
+    "range": "forta-agent run --range",
+    "alert": "forta-agent run --alert",
+    "sequence": "forta-agent run --sequence",
+    "file": "forta-agent run --file",
+    "publish": "forta-agent publish",
+    "info": "forta-agent info",
+    "logs": "forta-agent logs",
+    "push": "forta-agent push",
+    "disable": "forta-agent disable",
+    "enable": "forta-agent enable",
+    "keyfile": "forta-agent keyfile",
+    "stake": "forta-agent stake",
+    "test": "python3 -m pytest"
+  },
+  "dependencies": {
+    "forta-agent": "^0.1.48"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.8"
+  }
+}

@@ -39,7 +39,7 @@ class TestUtils:
         assert 'uniswap' in label, "this should be a uniswap address"
   
     def test_get_total_shards(self):
-        assert Utils.get_total_shards(w3) == 8, "this should be 8"
+        assert Utils.get_total_shards(w3) == 6, "this should be 6"
 
     def test_is_beta(self):
         assert Utils.is_beta() is not None

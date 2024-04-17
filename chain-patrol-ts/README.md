@@ -58,8 +58,6 @@ To verify the bot's behavior, you'll need to meet the following prerequisites.
 LOCAL_NODE = 1
 ```
 
-> Note: `INIT_API_QUERY_DATE` in `src/constants.ts` should be updated as the desired `startDate` to be used to query [getAssetList](https://chainpatrol.io/docs/external-api/asset-list) upon the bot's initialization.
-
 You can verify the bot's behavior by following these steps:
 
 1. Install the required dependencies:
@@ -76,7 +74,46 @@ npm run start
 
 The example alert after running the command:
 
-<img src="https://raw.githubusercontent.com/forta-network/starter-kits/tree/main/chain-patrol-ts/images/alert-findings.png" width="1134" height="741">
+```
+{
+  "name": "A scam has been detected by ChainPatrol",
+  "description": "ChainPatrol detected scam: starksnet.life",
+  "alertId": "CHAINPATROL-SCAM-ASSET",
+  "protocol": "N/A",
+  "severity": "Critical",
+  "type": "Scam",
+  "metadata": {
+    "type": "URL",
+    "status": "BLOCKED",
+    "updatedAt": "2024-03-14T08:31:51.140Z",
+    "reason": "reported",
+    "reportId": "39169",
+    "reportUrl": "https://app.chainpatrol.io/reports/39169",
+    "Url": "starksnet.life"
+  },
+  "addresses": [],
+  "labels": [
+    {
+      "entityType": "Url",
+      "entity": "starksnet.life",
+      "label": "Blocked URL",
+      "confidence": 0.99,
+      "remove": false,
+      "metadata": {
+        "type": "URL",
+        "status": "BLOCKED",
+        "updatedAt": "2024-03-14T08:31:51.140Z",
+        "reason": "reported",
+        "reportId": "39169",
+        "reportUrl": "https://app.chainpatrol.io/reports/39169"
+      }
+    }
+  ],
+  "uniqueKey": "0xf8fe3c17500683400173ab9dfbaecee49850f3a5aff2a25a93a9aa40b16423b8",
+  "source": {},
+  "timestamp": "2024-04-12T19:53:22.000Z"
+}
+```
 
 ## 📜 License
 

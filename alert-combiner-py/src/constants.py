@@ -24,9 +24,6 @@ DATAFRAME_SIZE_LIMIT = 350 * 1024 # 350KB
 ATTACK_DETECTOR_BOT_ID = "0x80ed808b586aeebe9cdd4088ea4dea0a8e322909c0e4493c993e060e89c09ed1"
 ATTACK_DETECTOR_BETA_BOT_ID = "0xac82fb2a572c7c0d41dc19d24790db17148d1e00505596ebe421daf91c837799"
 
-ENTITY_CLUSTER_BOT = "0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9"
-ENTITY_CLUSTER_BOT_ALERT_ID = "ENTITY-CLUSTER"
-
 ENCRYPTED_BOTS = {"0xe39e45ab19bb1c9a30887e157a21393680d336232263c96b326f68fa57a29723": "BLOCKSEC_AD"} # value is name of the private key that is stored in secrets.json
 
 VICTIM_IDENTIFICATION_BOTS = [("0x441d3228a68bbbcf04e6813f52306efcaf1e66f275d682e62499f44905215250", "VICTIM-IDENTIFIER-PREPARATION-STAGE"),
@@ -75,7 +72,6 @@ END_USER_ATTACK_CLUSTERS_KEY="end_user_attack_clusters_key"
 
 BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-HIGH-NUM-APPROVED-TRANSFERS", "Exploitation"),  # ice phishing
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-PERMITTED-ERC20-TRANSFER", "Preparation"),  # ice phishing
-             ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-SUSPICIOUS-TRANSFER", "Preparation"),  # ice phishing
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-HIGH-NUM-ERC20-APPROVALS", "Preparation"),  # ice phishing
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-HIGH-NUM-ERC721-APPROVALS", "Preparation"),  # ice phishing
              ("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c14", "ICE-PHISHING-ERC20-APPROVAL-FOR-ALL", "Preparation"),  # ice phishing
@@ -226,6 +222,8 @@ BASE_BOTS = [("0x8badbf2ad65abc3df5b1d9cc388e419d9255ef999fb69aac6bf395646cf01c1
              ("0xd2a25c368501ec7f9cd1219858c8a53cc4da7bd64c43633658a90b54bfcc595a", "FUNDING-RAILGUN-NEW-ACCOUNT", "Funding"), # Railgun Funding
              ("0x2d3bb89e9cecc0024d8ae1a9c93ca42664472cb074cc200fa2c0f77f2be34bf3", "FUNDING-FIXED-FLOAT-NEW-ACCOUNT", "Funding"), # Fixed Float Funding
              ("0xa5a23e3fd7a5401db47008329061bb9dca48fc0199151e043d93376d31adb40d", "FUNDING-SQUID-NEW-ACCOUNT", "Funding"), # Squid Funding 
+             ("0xf2ee3554a13ee126dae179918e89010afc1bfc1ffabd3a381b529632ebf7497a", "FUNDING-THORCHAIN-NEW-ACCOUNT", "Funding"), # Thorchain Funding
+             ("0x29daabf74506f2aa4feb93fa8ec0f4ac61c4e9ba3f3190072bc680bc70e71bd7", "FUNDING-EXCH-NEW-ACCOUNT", "Funding"), # Exch Funding
              ("0x3858be37e155f84e8e0d6212db1b47d4e83b1d41e8a2bebecb902651ed1125d6", "NETHFORTA-1", "Exploitation"),  # high gas
              ("0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d", "NEGATIVE-ANGER-TEXT-MESSAGE", "MoneyLaundering"),  # txt msg sentiment analysis
              ("0xbdb84cba815103a9a72e66643fb4ff84f03f7c9a4faa1c6bb03d53c7115ddc4d", "NEGATIVE-DISGUST-TEXT-MESSAGE", "MoneyLaundering"),  # txt msg sentiment analysis

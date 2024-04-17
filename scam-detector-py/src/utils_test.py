@@ -49,6 +49,7 @@ class TestUtils:
 
     def test_fp_etherscan_label(self):
         assert Utils.is_fp(w3, "0xffc0022959f58aa166ce58e6a38f711c95062b99", 1), "this should be a false positive"
+        assert Utils.is_fp(w3, "0xffc0022959f58aa166ce58e6a38f711c95062b99", 1), "this should be a false positive" # test caching
 
     def test_fp_max_tx_count(self):
         assert Utils.is_fp(w3, EOA_ADDRESS_LARGE_TX, 1), "this should be a false positive"

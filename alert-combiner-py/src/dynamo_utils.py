@@ -11,6 +11,7 @@ from src.utils import Utils
 
 TEST_TAG = "attack-detector-test_v3"
 PROD_TAG = "attack-detector-prod"
+BETA_ALT_TAG = "attack-detector-beta_alt"
 
 class DynamoUtils:
     chain_id = None

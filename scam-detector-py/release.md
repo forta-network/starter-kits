@@ -1,5 +1,29 @@
 # Scam Detector Bot Release Notes
 
+## 2.24.4 (prod - 4/3/2024)
+
+- removed ADDRESS-POISONING-FAKE-TOKEN alert
+
+## 2.24.4 (prod - 3/22/2024)
+
+- Bug fixes
+
+## 2.24.3 (prod - 3/19/2024)
+
+- removed NIP-4 and NIP-7 passthrough alerts
+
+## 2.24.2 (beta2 - 3/13/2024, prod - 3/13/2024)
+
+- removed ICE-PHISHING-SUSPICIOUS-TRANSFER
+
+## 2.24.1 (beta2 - 3/8/2024)
+
+- X (Twitter) bot integration
+
+## 2.24.0 (beta2 - 2/27/2024, prod - 3/6/2024)
+
+- base bot parser bug fix
+- add cache to block explorer calls
 
 ## 2.23.2 (beta2 - 1/11/2024, prod - 1/17/2024)
 
@@ -19,7 +43,9 @@
 ## 2.22.10 (beta2 - 11/29/2023, prod - 12/4/2023)
 
 =======
+
 ## 2.22.11 (beta2 - 11/29/2023, prod - 12/7/2023)
+
 - fix broken link in documentation
 
 ## 2.22.10 (beta2 - 11/29/2023, prod - 12/3/2023)

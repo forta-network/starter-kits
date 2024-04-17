@@ -1,0 +1,12 @@
+node_modules
+dist
+forta.config.json
+__pycache__
+.pytest_cache
+data
+*.ipynb
+deployed_models
+secrets.json
+*.log
+models
+mlops

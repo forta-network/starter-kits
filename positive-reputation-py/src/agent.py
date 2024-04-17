@@ -86,7 +86,7 @@ def put_first_tx(address: str, first_tx_datetime: datetime):
         logging.info(f"Successfully put first tx in dynamoDB: {response}")
         return
 
-@lru_cache(maxsize=12800)
+@lru_cache(maxsize=64000)
 def read_first_tx(address: str):
     global CHAIN_ID
 
@@ -169,6 +169,11 @@ def detect_positive_reputation(w3, blockexplorer, transaction_event: forta_agent
     if first_tx is None:
         logging.info(f"Checking first tx of address with blockexplorer {address}")
         first_tx = blockexplorer.get_first_tx(address)
+
+        # if the block explorer fails to return the first tx, we skip the check
+        if first_tx is None:
+            return findings
+        
         put_first_tx(address, first_tx)
 
     # Check if the first transaction is older than the minimum age
