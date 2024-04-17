@@ -4,7 +4,7 @@ import time
 import agent
 import utils
 from evmdasm import EvmBytecode
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from web3_mock import (
     CONTRACT_NO_ADDRESS,
     CONTRACT_WITH_ADDRESS,
@@ -161,6 +161,21 @@ class TestEarlyAttackDetector:
         # Check for exceptions in each thread
         for i, exception in enumerate(exceptions):
             assert isinstance(exception, ValueError), f"Thread {i} did not raise ValueError as expected"
+
+    @patch('utils.requests.get')
+    def test_alert_count_success(self, mock_get):
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "alertIds": {"alert1": {"count": 10}},
+            "total": {"count": 50}
+        }
+        mock_get.return_value = mock_response
+
+        alert_id_counts, alert_counts = utils.alert_count(1, "alert1")
+
+        assert alert_id_counts == 10
+        assert alert_counts == 50
+
 
     def test_finding_MALICIOUS_CONTRACT_creation(self):
         agent.initialize()
