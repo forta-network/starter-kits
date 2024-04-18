@@ -1,4 +1,4 @@
-from forta_agent import FindingSeverity, create_transaction_event, EntityType
+from forta_agent import FindingSeverity, create_transaction_event
 from unittest.mock import patch
 
 import agent
@@ -10,97 +10,11 @@ w3 = Web3Mock()
 
 TORNADO_CASH_ADDRESSES = {"0xa160cdab225685da1d56aa342ad8841c3b53f291": 100, "0x910cbd523d972eb0a6f4cae4618ad62622b39dbf": 10, "0x47ce0c6ed5b0ce3d3a51fdb1c52dc66a7c3c2936": 1, "0x1e34a77868e19a6647b1f2f47b51ed72dede95dd": 100,
                           "0x330bdfade01ee9bf63c209ee33102dd334618e0a": 10, "0xd47438c816c9e7f2e2888e060936a499af9582b3": 1, "0xa5c2254e4253490c54cef0a4347fddb8f75a4998": 100000, "0xaf4c0b70b2ea9fb7487c7cbb37ada259579fe040": 10000, "0xdf231d99ff8b6c6cbf4e9b9a945cbacef9339178": 1000}
-
+RANDOM_CONTRACT = "0x1234567890123456789012345678901234567890"
 
 class TestSuspiciousContractAgent:
-    @patch("agent.put_tc_ml", return_value=None)
-    @patch("agent.read_tc_ml", return_value=[])
     @patch("src.findings.calculate_alert_rate", return_value=0.33)
-    def test_detect_money_laundering_at_low_threshold_within_blockrange(self, mock_put, mock_read, mocker):
-        agent.initialize()
-
-        tx_event = create_transaction_event({
-            'transaction': {
-                'hash': "0",
-                'from': EOA_ADDRESS,
-                'value': 1000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
-            },
-            'block': {
-                'number': 0
-            },
-            'logs': [
-                {'address': "0x47ce0c6ed5b0ce3d3a51fdb1c52dc66a7c3c2936",
-                 'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                 }
-            ],
-            'receipt': {
-                'logs': []}
-        })
-        findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(findings) == 0, "this should not have triggered a finding"
-
-        tx_event = create_transaction_event({
-            'transaction': {
-                'hash': "0",
-                'from': EOA_ADDRESS,
-                'value': 10000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
-            },
-            'block': {
-                'number': 1
-            },
-            'logs': [
-                {'address': "0x910cbd523d972eb0a6f4cae4618ad62622b39dbf",
-                 'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                 }
-            ],
-            'receipt': {
-                'logs': []}
-        })
-        findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(findings) == 0, "this should not have triggered a finding"
-
-        tx_event = create_transaction_event({
-            'transaction': {
-                'hash': "0",
-                'from': EOA_ADDRESS,
-                'value': 100000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
-            },
-            'block': {
-                'number': 2
-            },
-            'logs': [
-                {'address': "0xa160cdab225685da1d56aa342ad8841c3b53f291",
-                 'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                 }
-            ],
-            'receipt': {
-                'logs': []}
-        })
-        findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(findings) == 1, "this should have triggered a finding"
-        finding = next((x for x in findings if x.alert_id ==
-                       'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-LOW'), None)
-        assert finding.severity == FindingSeverity.Low
-        assert finding.metadata == {
-            "anomaly_score": 0.33, "total_funds_transferred": "111"}
-
-        assert finding.metadata["anomaly_score"] == 0.33, "should have anomaly score of 1/3"
-        assert finding.labels[0].toDict(
-        )["entity"] == EOA_ADDRESS, "should have EOA address as label"
-        assert finding.labels[0].toDict(
-        )["entity_type"] == EntityType.Address, "should have label_type address"
-        assert finding.labels[0].toDict(
-        )["label"] == 'attacker', "should have attacker as label"
-        assert finding.labels[0].toDict(
-        )["confidence"] == 0.5, "should have 0.3 as label confidence"
-
-    @patch("agent.put_tc_ml", return_value=None)
-    @patch("agent.read_tc_ml", return_value=[])
-    @patch("src.findings.calculate_alert_rate", return_value=0.33)
-    def test_detect_money_laundering_at_medium_threshold_within_blockrange(self, mock_put, mock_read, mocker):
+    def test_detect_money_laundering(self, mocker):
         agent.initialize()
 
         tx_event = create_transaction_event({
@@ -123,199 +37,14 @@ class TestSuspiciousContractAgent:
         })
         findings = agent.detect_money_laundering(w3, tx_event)
         assert len(
-            findings) == 1, "this should have triggered a low severity finding"
+            findings) == 1, "this should have triggered a finding"
         finding = next((x for x in findings if x.alert_id ==
-                       'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-LOW'), None)
-        assert finding.severity == FindingSeverity.Low
-
-        tx_event = create_transaction_event({
-            'transaction': {
-                'hash': "0",
-                'from': EOA_ADDRESS,
-                'value': 100000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
-            },
-            'block': {
-                'number': 1
-            },
-            'logs': [
-                {'address': "0x910cbd523d972eb0a6f4cae4618ad62622b39dbf",
-                 'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                 }
-            ],
-            'receipt': {
-                'logs': []}
-        })
-        findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(
-            findings) == 1, "this should have triggered a low severity finding"
-        finding = next((x for x in findings if x.alert_id ==
-                       'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-LOW'), None)
-        assert finding.severity == FindingSeverity.Low
-
-        tx_event = create_transaction_event({
-            'transaction': {
-                'hash': "0",
-                'from': EOA_ADDRESS,
-                'value': 100000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
-            },
-            'block': {
-                'number': 241
-            },
-            'logs': [
-                {'address': "0xa160cdab225685da1d56aa342ad8841c3b53f291",
-                 'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                 }
-            ],
-            'receipt': {
-                'logs': []}
-        })
-        findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(
-            findings) == 1, "this should have triggered a medium severity finding"
-        finding = next((x for x in findings if x.alert_id ==
-                       'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM'), None)
-        assert finding.severity == FindingSeverity.Medium
-        assert finding.metadata == {
-            "anomaly_score": 0.33, "total_funds_transferred": "210"}
-
-    @patch("agent.put_tc_ml", return_value=None)
-    @patch("agent.read_tc_ml", return_value=[])
-    @patch("src.findings.calculate_alert_rate", return_value=0.33)
-    def test_detect_money_laundering_at_high_threshold_within_blockrange(self, mock_put, mock_read, mocker):
-        agent.initialize()
-
-        tx_event = create_transaction_event({
-            'transaction': {
-                'hash': "0",
-                'from': EOA_ADDRESS,
-                'value': 100000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
-            },
-            'block': {
-                'number': 0
-            },
-            'logs': [
-                {'address': "0xa160cdab225685da1d56aa342ad8841c3b53f291",
-                 'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                 }
-            ],
-            'receipt': {
-                'logs': []}
-        })
-        findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(
-            findings) == 1, "this should have triggered a low severity finding"
-        finding = next((x for x in findings if x.alert_id ==
-                       'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-LOW'), None)
-        assert finding.severity == FindingSeverity.Low
-
-        tx_event = create_transaction_event({
-            'transaction': {
-                'hash': "0",
-                'from': EOA_ADDRESS,
-                'value': 100000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
-            },
-            'block': {
-                'number': 1
-            },
-            'logs': [
-                {'address': "0xa160cdab225685da1d56aa342ad8841c3b53f291",
-                 'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                 }
-            ],
-            'receipt': {
-                'logs': []}
-        })
-        findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(
-            findings) == 1, "this should have triggered a medium severity finding"
-        finding = next((x for x in findings if x.alert_id ==
-                       'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM'), None)
-        assert finding.severity == FindingSeverity.Medium
-
-        tx_event = create_transaction_event({
-            'transaction': {
-                'hash': "0",
-                'from': EOA_ADDRESS,
-                'value': 100000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
-            },
-            'block': {
-                'number': 2
-            },
-            'logs': [
-                {'address': "0xa160cdab225685da1d56aa342ad8841c3b53f291",
-                 'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                 }
-            ],
-            'receipt': {
-                'logs': []}
-        })
-        findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(
-            findings) == 1, "this should have triggered a medium severity finding"
-        finding = next((x for x in findings if x.alert_id ==
-                       'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM'), None)
-        assert finding.severity == FindingSeverity.Medium
-
-        tx_event = create_transaction_event({
-            'transaction': {
-                'hash': "0",
-                'from': EOA_ADDRESS,
-                'value': 100000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
-            },
-            'block': {
-                'number': 3
-            },
-            'logs': [
-                {'address': "0xa160cdab225685da1d56aa342ad8841c3b53f291",
-                 'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                 }
-            ],
-            'receipt': {
-                'logs': []}
-        })
-        findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(
-            findings) == 1, "this should have triggered a medium severity finding"
-        finding = next((x for x in findings if x.alert_id ==
-                       'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM'), None)
-        assert finding.severity == FindingSeverity.Medium
-
-        tx_event = create_transaction_event({
-            'transaction': {
-                'hash': "0",
-                'from': EOA_ADDRESS,
-                'value': 100000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
-            },
-            'block': {
-                'number': 4
-            },
-            'logs': [
-                {'address': "0xa160cdab225685da1d56aa342ad8841c3b53f291",
-                 'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                 }
-            ],
-            'receipt': {
-                'logs': []}
-        })
-        findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(
-            findings) == 1, "this should have triggered a high severity finding"
-        finding = next((x for x in findings if x.alert_id ==
-                       'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH'), None)
+                       'TORNADO-CASH-DEPOSITS'), None)
         assert finding.severity == FindingSeverity.High
         assert finding.metadata == {
-            "anomaly_score": 0.33, "total_funds_transferred": "500"}
+            "anomaly_score": 0.33, "total_funds_transferred": "100000000000000000000"}
 
-    @patch("agent.put_tc_ml", return_value=None)
-    @patch("agent.read_tc_ml", return_value=[])
-    def test_detect_money_laundering_below_threshold(self, mock_put, mock_read, mocker):
+    def test_return_no_finding_for_non_TC_contracts(self):
         agent.initialize()
 
         tx_event = create_transaction_event({
@@ -323,63 +52,13 @@ class TestSuspiciousContractAgent:
                 'hash': "0",
                 'from': EOA_ADDRESS,
                 'value': 100000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
-            },
-            'block': {
-                'number': 2
-            },
-            'logs': [
-                {'address': "0x47ce0c6ed5b0ce3d3a51fdb1c52dc66a7c3c2936",
-                 'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                 }
-            ],
-            'receipt': {
-                'logs': []}
-        })
-        findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(findings) == 0, "this should not have triggered a finding"
-
-    @patch("agent.put_tc_ml", return_value=None)
-    @patch("agent.read_tc_ml", return_value=[])
-    @patch("src.findings.calculate_alert_rate", return_value=0.33)
-    def test_detect_money_laundering_below_threshold_polygon(self, mock_put, mock_read, mocker):
-        agent.initialize()
-
-        w3.eth.chain_id = 137
-
-        tx_event = create_transaction_event({
-            'transaction': {
-                'hash': "0",
-                'from': EOA_ADDRESS,
-                'value': 100000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
+                'to': RANDOM_CONTRACT,
             },
             'block': {
                 'number': 0
             },
             'logs': [
-                {'address': "0xaf4c0b70b2ea9fb7487c7cbb37ada259579fe040",
-                 'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                 }
-            ],
-            'receipt': {
-                'logs': []}
-        })
-        findings = agent.detect_money_laundering(w3, tx_event)
-        assert len(findings) == 0, "this should not have triggered a finding"
-
-        tx_event = create_transaction_event({
-            'transaction': {
-                'hash': "0",
-                'from': EOA_ADDRESS,
-                'value': 100000000000000000000,
-                'to': TORNADO_CASH_ADDRESSES,
-            },
-            'block': {
-                'number': 1
-            },
-            'logs': [
-                {'address': "0xa5c2254e4253490c54cef0a4347fddb8f75a4998",
+                {'address': RANDOM_CONTRACT,
                  'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
                  }
             ],
@@ -388,46 +67,5 @@ class TestSuspiciousContractAgent:
         })
         findings = agent.detect_money_laundering(w3, tx_event)
         assert len(
-            findings) == 1, "this should have triggered a low severity finding"
-        finding = next((x for x in findings if x.alert_id ==
-                       'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-LOW'), None)
-        assert finding.severity == FindingSeverity.Low
-        assert finding.metadata == {
-            "anomaly_score": 0.33, "total_funds_transferred": "110000"}
-
-        for i in range(15):
-            tx_event = create_transaction_event({
-                'transaction': {
-                    'hash': "0",
-                    'from': EOA_ADDRESS,
-                    'value': 100000000000000000000,
-                    'to': TORNADO_CASH_ADDRESSES,
-                },
-                'block': {
-                    'number': i
-                },
-                'logs': [
-                    {'address': "0xa5c2254e4253490c54cef0a4347fddb8f75a4998",
-                     'topics': ['0xa945e51eec50ab98c161376f0db4cf2aeba3ec92755fe2fcd388bdbbb80ff196'],
-                     }
-                ],
-                'receipt': {
-                    'logs': []}
-            })
-            findings = agent.detect_money_laundering(w3, tx_event)
-            if i == 5:
-                assert len(
-                    findings) == 1, "this should have triggered a finding"
-                finding = next((x for x in findings if x.alert_id ==
-                                'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH-MEDIUM'), None)
-                assert finding.severity == FindingSeverity.Medium
-                assert finding.metadata == {
-                    "anomaly_score": 0.33, "total_funds_transferred": "710000"}
-            elif i == 14:
-                assert len(
-                    findings) == 1, "this should have triggered a finding"
-                finding = next((x for x in findings if x.alert_id ==
-                                'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH'), None)
-                assert finding.severity == FindingSeverity.High
-                assert finding.metadata == {
-                    "anomaly_score": 0.33, "total_funds_transferred": "1610000"}
+            findings) == 0, "this shouldn't have triggered a finding"
+        

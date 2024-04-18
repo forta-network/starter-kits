@@ -1,6 +1,6 @@
 {
   "name": "money-laundering-tornado-cash",
-  "version": "0.0.13",
+  "version": "0.1.0",
   "description": "Money Laundering Tornado Cash Bot",
   "displayName": "Tornado Cash Deposits",
   "chainIds": [
@@ -15,12 +15,12 @@
       "shards": 3,
       "target": 1
     },
-    "137": {
-      "shards": 3,
-      "target": 1
-    },
     "56": {
       "shards": 6,
+      "target": 1
+    },
+    "137": {
+      "shards": 3,
       "target": 1
     },
     "default": {
