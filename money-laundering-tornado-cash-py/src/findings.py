@@ -11,7 +11,7 @@ class MoneyLaunderingTornadoCashFindings:
         labels = [{"entity": from_address,
                    "entity_type": EntityType.Address,
                    "label": "attacker",
-                   "confidence": 0.5}]
+                   "confidence": 0.7}]
 
         metadata = {"total_funds_transferred": str(funds_transferred)}
 
