@@ -1,4 +1,4 @@
-import forta_bot
+import forta_bot_sdk
 import json
 import aiohttp
 import os
@@ -10,7 +10,7 @@ test_mode = "main" if 'FORTA_ENV' in os.environ and 'production' in os.environ.g
 
 
 async def _token():
-    tk = await forta_bot.fetch_jwt()
+    tk = await forta_bot_sdk.fetch_jwt()
     return {"Authorization": f"Bearer {tk}"}
 
 

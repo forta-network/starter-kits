@@ -1,7 +1,7 @@
 import asyncio
 from web3 import Web3, AsyncWeb3
 from os import environ
-from forta_bot import scan_ethereum, scan_optimism, scan_polygon, scan_base, scan_arbitrum, TransactionEvent, get_chain_id, run_health_check
+from forta_bot_sdk import scan_ethereum, scan_optimism, scan_polygon, scan_base, scan_arbitrum, TransactionEvent, get_chain_id, run_health_check
 from async_lru import alru_cache
 from hexbytes import HexBytes
 from constants import CEXES
