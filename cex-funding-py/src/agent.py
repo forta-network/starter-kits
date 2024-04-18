@@ -60,35 +60,35 @@ async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb
 
 async def main():
     await initialize()
-    
+
     await asyncio.gather(
         scan_ethereum({
             'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "420b57cc-c2cc-442c-8fd8-901d70a835a5",
+            'rpc_key_id': "c795687c-5795-4d63-bcb1-f18b5a391dc4",
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
         scan_optimism({
             'rpc_url': "https://opt-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "67374ee9-1b70-485d-be75-83589aa0e10d",
+            'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
             'local_rpc_url': "10",
             'handle_transaction': handle_transaction
         }),
         scan_polygon({
             'rpc_url': "https://polygon-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "7e311823-448b-41fa-b530-2029b7db21fa",
+            'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
             'local_rpc_url': "137",
             'handle_transaction': handle_transaction
         }),
         scan_base({
             'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "a0532f55-5f90-4c46-a3c0-5ce77b3325bb",
+            'rpc_key_id': "166a510e-edca-4c3d-86e2-7cc49cd90f7f",
             'local_rpc_url': "8453",
             'handle_transaction': handle_transaction
         }),
         scan_arbitrum({
             'rpc_url': "https://arb-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "fc84b32c-ff10-4eb2-b5d6-70062ea39fa6",
+            'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
             'local_rpc_url': "42161",
             'handle_transaction': handle_transaction
         }),
