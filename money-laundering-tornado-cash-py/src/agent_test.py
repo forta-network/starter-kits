@@ -39,7 +39,7 @@ class TestSuspiciousContractAgent:
         assert len(
             findings) == 1, "this should have triggered a finding"
         finding = next((x for x in findings if x.alert_id ==
-                       'POSSIBLE-MONEY-LAUNDERING-TORNADO-CASH'), None)
+                       'TORNADO-CASH-DEPOSITS'), None)
         assert finding.severity == FindingSeverity.High
         assert finding.metadata == {
             "anomaly_score": 0.33, "total_funds_transferred": "100000000000000000000"}
