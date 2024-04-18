@@ -1,4 +1,4 @@
-from forta_bot import Finding, FindingType, FindingSeverity, EntityType, Label
+from forta_bot_sdk import Finding, FindingType, FindingSeverity, EntityType, Label
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 BOT_ID = "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400"
 

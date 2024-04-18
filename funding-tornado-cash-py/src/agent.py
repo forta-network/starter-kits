@@ -5,7 +5,7 @@ from os import environ
 
 
 from web3 import AsyncWeb3
-from forta_bot import get_chain_id, scan_ethereum, scan_arbitrum, scan_bsc, scan_optimism, scan_polygon, run_health_check, TransactionEvent
+from forta_bot_sdk import get_chain_id, scan_ethereum, scan_arbitrum, scan_bsc, scan_optimism, scan_polygon, run_health_check, TransactionEvent
 from constants import TORNADO_CASH_ADDRESSES, TORNADO_CASH_WITHDRAW_TOPIC, TORNADO_CASH_ADDRESSES_HIGH
 from findings import FundingTornadoCashFindings
 from storage import get_secrets
