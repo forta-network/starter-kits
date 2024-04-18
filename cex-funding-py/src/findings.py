@@ -4,7 +4,7 @@ from forta_bot_sdk import Finding, FindingSeverity, FindingType, EntityType, Lab
 # Prod
 # BOT_ID = "0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb"
 # Beta
-BOT_ID = "0x8a208d9bd5bcbb81804f7ee68bee912ca168e3b4764d6537d78c49f8af9c4bed"
+BOT_ID = "0x31edad924e47947521f90b6e4a4075de21fa57e2ebaa751252cb0193bfec2fd7"
 
 
 class CEXFundingFinding:
