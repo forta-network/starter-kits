@@ -19,14 +19,14 @@ class MoneyLaunderingTornadoCashFindings:
             metadata['anomaly_score'] = calculate_alert_rate(
                 chain_id,
                 BOT_ID,
-                'TORNADO-CASH-DEPOSITS',
+                'TORNADO-CASH-DEPOSIT',
                 ScanCountType.TRANSFER_COUNT,
             )
 
         return Finding({
             'name': 'Possible Money Laundering With Tornado Cash',
             'description': f'{from_address} potentially engaged in money laundering',
-            'alert_id': 'TORNADO-CASH-DEPOSITS',
+            'alert_id': 'TORNADO-CASH-DEPOSIT',
             'type': FindingType.Suspicious,
             'severity': FindingSeverity.High,
             'metadata': metadata,

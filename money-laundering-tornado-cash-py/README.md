@@ -14,7 +14,7 @@ This detection bot triggers alerts for Tornado Cash Deposits
 
 ## Alerts
 
-- TORNADO-CASH-DEPOSITS
+- TORNADO-CASH-DEPOSIT
   - Fired when a Tornado Cash deposit is identified
   - Metadata will contain the amount of transferred funds
   - Findings severity is High
