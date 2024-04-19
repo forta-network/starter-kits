@@ -1,7 +1,7 @@
 import asyncio
 from web3 import Web3, AsyncWeb3
 from os import environ
-from forta_bot_sdk import scan_ethereum, scan_optimism, scan_polygon, scan_base, scan_arbitrum, TransactionEvent, get_chain_id, run_health_check
+from forta_bot_sdk import scan_ethereum, scan_bsc, scan_optimism, scan_polygon, scan_base, scan_arbitrum, TransactionEvent, get_chain_id, run_health_check
 from async_lru import alru_cache
 from hexbytes import HexBytes
 from constants import CEXES
@@ -92,6 +92,12 @@ async def main():
             'local_rpc_url': "42161",
             'handle_transaction': handle_transaction
         }),
+        scan_bsc({
+            'rpc_url': "https://intensive-wider-thunder.bsc.quiknode.pro/3385d6a314acba4f5f45bfcc90703ee8d9fd92b9/",
+            'local_rpc_url': "56",
+            'handle_transaction': handle_transaction
+        }),
+
         run_health_check()
     )
 
