@@ -4,7 +4,6 @@ RUN apk update
 RUN apk add alpine-sdk
 RUN python3 -m pip install --upgrade pip
 COPY requirements.txt ./
-COPY forta_bot-0.2.0.tar.gz ./
 RUN python3 -m pip install --user -r requirements.txt
 
 # Final stage: copy over Python dependencies
