@@ -1,4 +1,4 @@
-forta_bot-0.2.0.tar.gz
+forta_bot_sdk>=0.2.2
 setuptools>=61.3.1
 pyevmasm>=0.2.3
 rlp>=2.0.1
