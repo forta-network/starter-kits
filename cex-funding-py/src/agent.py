@@ -63,37 +63,37 @@ async def main():
 
     await asyncio.gather(
         scan_ethereum({
-            'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "c795687c-5795-4d63-bcb1-f18b5a391dc4",
+            'rpc_url': "https://rpc.ankr.com/eth",
+            # 'rpc_key_id': "c795687c-5795-4d63-bcb1-f18b5a391dc4",
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
         scan_optimism({
-            'rpc_url': "https://opt-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
+            'rpc_url': "https://rpc.ankr.com/optimism",
+            # 'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
             'local_rpc_url': "10",
             'handle_transaction': handle_transaction
         }),
         scan_polygon({
-            'rpc_url': "https://polygon-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
+            'rpc_url': "https://rpc.ankr.com/polygon",
+            # 'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
             'local_rpc_url': "137",
             'handle_transaction': handle_transaction
         }),
         scan_base({
-            'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "166a510e-edca-4c3d-86e2-7cc49cd90f7f",
+            'rpc_url': "https://rpc.ankr.com/base",
+            # 'rpc_key_id': "166a510e-edca-4c3d-86e2-7cc49cd90f7f",
             'local_rpc_url': "8453",
             'handle_transaction': handle_transaction
         }),
         scan_arbitrum({
-            'rpc_url': "https://arb-mainnet.g.alchemy.com/v2",
-            'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
+            'rpc_url': "https://rpc.ankr.com/arbitrum",
+            # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
             'local_rpc_url': "42161",
             'handle_transaction': handle_transaction
         }),
         scan_bsc({
-            'rpc_url': "https://intensive-wider-thunder.bsc.quiknode.pro/3385d6a314acba4f5f45bfcc90703ee8d9fd92b9/",
+            'rpc_url': "https://rpc.ankr.com/bsc",
             'local_rpc_url': "56",
             'handle_transaction': handle_transaction
         }),
