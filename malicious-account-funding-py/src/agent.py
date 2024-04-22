@@ -96,10 +96,22 @@ async def main():
 
     await asyncio.gather(
         scan_ethereum({
-        'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-        'rpc_key_id': "ebbd1b21-4e72-4d80-b4f9-f605fee5eb68",
-        'local_rpc_url': "1",
-        'handle_transaction': handle_transaction
+            'rpc_url': "https://rpc.ankr.com/eth",
+            # 'rpc_key_id': "c795687c-5795-4d63-bcb1-f18b5a391dc4",
+            'local_rpc_url': "1",
+            'handle_transaction': handle_transaction
+        }),
+        scan_fantom({
+            'rpc_url': "https://rpc.ankr.com/fantom",
+            # 'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
+            'local_rpc_url': "250",
+            'handle_transaction': handle_transaction
+        }),
+        scan_polygon({
+            'rpc_url': "https://rpc.ankr.com/polygon",
+            # 'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
+            'local_rpc_url': "137",
+            'handle_transaction': handle_transaction
         }),
 
         run_health_check()
