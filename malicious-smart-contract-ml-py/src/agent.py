@@ -1,5 +1,5 @@
 import asyncio
-from forta_bot import scan_base, scan_ethereum, run_health_check, get_chain_id, TransactionEvent, EntityType
+from forta_bot_sdk import scan_base, scan_ethereum, run_health_check, get_chain_id, TransactionEvent, EntityType
 from joblib import load
 from evmdasm import EvmBytecode
 from web3 import AsyncWeb3
