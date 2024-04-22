@@ -1,7 +1,7 @@
 import time
 from datetime import datetime
 
-from forta_bot import FindingSeverity, FindingType, EntityType, create_transaction_event
+from forta_bot_sdk import FindingSeverity, FindingType, EntityType, create_transaction_event
 import pytest
 import agent
 from blockexplorer_mock import BlockExplorerMock

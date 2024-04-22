@@ -1,7 +1,6 @@
 import json
 import logging
 import aiohttp
-import requests
 from storage import get_secrets
 from async_lru import alru_cache
 
@@ -64,6 +63,6 @@ class BlockExplorer:
                 else:
                     logging.warn("Unable to retrieve ABI. Etherscan returned status code " + str(res.status))
                     pass
-    
+
     def get_secrets(self):
         return self.SECRETS_JSON
