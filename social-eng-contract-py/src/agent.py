@@ -5,7 +5,7 @@ import sys
 import pandas as pd
 import asyncio
 from web3 import AsyncWeb3
-from forta_bot import get_chain_id, scan_base, scan_ethereum, scan_alerts, run_health_check, Finding, FindingSeverity, FindingType, BlockEvent, TransactionEvent, AlertEvent
+from forta_bot_sdk import get_chain_id, scan_base, scan_ethereum, scan_bsc, scan_arbitrum, scan_avalanche, scan_fantom, scan_optimism, scan_polygon, run_health_check, Finding, FindingSeverity, FindingType, BlockEvent, TransactionEvent, AlertEvent
 from hexbytes import HexBytes
 from os import environ
 

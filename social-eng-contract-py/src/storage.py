@@ -1,9 +1,7 @@
-import forta_bot
+import forta_bot_sdk
 import json
 import aiohttp
 import os
-
-import forta_bot
 
 owner_db = "https://research.forta.network/database/owner/"
 
@@ -11,7 +9,7 @@ test_mode = "main" if 'FORTA_ENV' in os.environ and 'production' in os.environ.g
     'FORTA_ENV') else "test"
 
 async def _token():
-    tk = await forta_bot.fetch_jwt()
+    tk = await forta_bot_sdk.fetch_jwt()
     return {"Authorization": f"Bearer {tk}"}
 
 async def _load_json(key: str) -> object:

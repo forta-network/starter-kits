@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from forta_bot import create_transaction_event, EntityType
+from forta_bot_sdk import create_transaction_event, EntityType
 import pytest
 import agent
 from web3 import Web3
