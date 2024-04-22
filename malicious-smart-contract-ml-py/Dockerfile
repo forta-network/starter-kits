@@ -10,7 +10,6 @@ RUN apt-get install -y wget
 RUN wget https://bootstrap.pypa.io/get-pip.py
 RUN python3.10 get-pip.py
 COPY requirements.txt ./
-COPY forta_bot-0.2.0.tar.gz ./
 RUN python3.10 -m pip install --user -r requirements.txt
 
 # Final stage: copy over Python dependencies
