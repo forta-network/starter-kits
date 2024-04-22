@@ -5,7 +5,7 @@ import asyncio
 
 from os import environ
 from web3 import AsyncWeb3
-from forta_bot import get_chain_id, scan_ethereum, scan_polygon, scan_fantom, run_health_check, TransactionEvent
+from forta_bot_sdk import get_chain_id, scan_ethereum, scan_polygon, scan_fantom, run_health_check, TransactionEvent
 from findings import MaliciousAccountFundingFinding
 from storage import get_secrets
 from async_lru import alru_cache

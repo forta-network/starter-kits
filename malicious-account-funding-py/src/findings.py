@@ -1,4 +1,4 @@
-from forta_bot import Finding, FindingType, FindingSeverity, EntityType
+from forta_bot_sdk import Finding, FindingType, FindingSeverity, EntityType
 from bot_alert_rate import calculate_alert_rate, ScanCountType
 
 

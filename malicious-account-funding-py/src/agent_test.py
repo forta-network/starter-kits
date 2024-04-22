@@ -1,4 +1,4 @@
-from forta_bot import FindingSeverity, create_transaction_event
+from forta_bot_sdk import FindingSeverity, create_transaction_event
 from web3_mock import Web3Mock
 from unittest.mock import patch
 import agent
