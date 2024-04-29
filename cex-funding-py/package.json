@@ -10,28 +10,11 @@
   "licenseUrl": "https://github.com/forta-network/starter-kits/tree/main/cex-funding-py/LICENSE.md",
   "promoUrl": "https://forta.org",
   "chainIds": [
-    1,
-    10,
-    56,
-    137,
-    8453,
-    42161
+    1
   ],
   "chainSettings": {
     "1": {
       "shards": 2,
-      "target": 3
-    },
-    "137": {
-      "shards": 4,
-      "target": 3
-    },
-    "8453": {
-      "shards": 4,
-      "target": 3
-    },
-    "default": {
-      "shards": 1,
       "target": 3
     }
   },
