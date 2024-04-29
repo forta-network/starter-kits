@@ -5,11 +5,7 @@
   "description": "A bot that clusters entities",
   "promoUrl": "https://forta.org",
   "chainIds": [
-    1,
-    10,
-    56,
-    137,
-    42161
+    1
   ],
   "scripts": {
     "postinstall": "python3 -m pip install -r requirements_dev.txt",
