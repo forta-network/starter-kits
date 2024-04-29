@@ -2,13 +2,15 @@ import logging
 import sys
 import aiohttp
 import asyncio
-
+import random
 from os import environ
 from web3 import AsyncWeb3
 from forta_bot_sdk import get_chain_id, scan_ethereum, scan_polygon, scan_fantom, run_health_check, TransactionEvent
 from findings import MaliciousAccountFundingFinding
 from storage import get_secrets
 from async_lru import alru_cache
+from constants import RPC_ENDPOINTS
+
 
 BOT_ID = "0x9091c581c6e3c11f5485754d2bf0f01a7d6297467c2363f3084ab000274b86c2"
 
@@ -66,6 +68,9 @@ async def detect_funding(
     transaction_event: TransactionEvent
 ) -> list:
     findings = []
+    rpc_url = random.choice(RPC_ENDPOINTS[CHAIN_ID])
+
+    w3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(rpc_url))
 
     from_ = transaction_event.transaction.from_.lower()
     malicious_account = await is_malicious_account(CHAIN_ID, from_)
@@ -101,18 +106,18 @@ async def main():
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
-        scan_fantom({
-            'rpc_url': "https://rpc.ankr.com/fantom",
-            # 'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
-            'local_rpc_url': "250",
-            'handle_transaction': handle_transaction
-        }),
-        scan_polygon({
-            'rpc_url': "https://rpc.ankr.com/polygon",
-            # 'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
-            'local_rpc_url': "137",
-            'handle_transaction': handle_transaction
-        }),
+        # scan_fantom({
+        #     'rpc_url': "https://rpc.ankr.com/fantom",
+        #     # 'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
+        #     'local_rpc_url': "250",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_polygon({
+        #     'rpc_url': "https://rpc.ankr.com/polygon",
+        #     # 'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
+        #     'local_rpc_url': "137",
+        #     'handle_transaction': handle_transaction
+        # }),
 
         run_health_check()
     )
