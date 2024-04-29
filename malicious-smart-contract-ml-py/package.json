@@ -8,16 +8,11 @@
   "repository": "https://github.com/forta-network/starter-kits/tree/main/malicious-smart-contract-ml-py",
   "description": "Malicious Smart Contract Detection Bot V2 Beta",
   "chainIds": [
-    1,
-    8453
+    1
   ],
   "chainSettings": {
     "1": {
       "shards": 6,
-      "target": 3
-    },
-    "default": {
-      "shards": 4,
       "target": 3
     }
   },
