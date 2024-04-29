@@ -244,47 +244,47 @@ async def main():
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
-        scan_optimism({
-            'rpc_url': "https://rpc.ankr.com/optimism",
-            # 'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
-            'local_rpc_url': "10",
-            'handle_transaction': handle_transaction
-        }),
-        scan_polygon({
-            'rpc_url': "https://rpc.ankr.com/polygon",
-            # 'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
-            'local_rpc_url': "137",
-            'handle_transaction': handle_transaction
-        }),
-        scan_base({
-            'rpc_url': "https://rpc.ankr.com/base",
-            # 'rpc_key_id': "166a510e-edca-4c3d-86e2-7cc49cd90f7f",
-            'local_rpc_url': "8453",
-            'handle_transaction': handle_transaction
-        }),
-        scan_arbitrum({
-            'rpc_url': "https://rpc.ankr.com/arbitrum",
-            # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
-            'local_rpc_url': "42161",
-            'handle_transaction': handle_transaction
-        }),
-        scan_avalanche({
-            'rpc_url': "https://rpc.ankr.com/avalanche",
-            # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
-            'local_rpc_url': "43114",
-            'handle_transaction': handle_transaction
-        }),
-        scan_fantom({
-            'rpc_url': "https://rpc.ankr.com/fantom",
-            # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
-            'local_rpc_url': "250",
-            'handle_transaction': handle_transaction
-        }),
-        scan_bsc({
-            'rpc_url': "https://rpc.ankr.com/bsc",
-            'local_rpc_url': "56",
-            'handle_transaction': handle_transaction
-        }),
+        # scan_optimism({
+        #     'rpc_url': "https://rpc.ankr.com/optimism",
+        #     # 'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
+        #     'local_rpc_url': "10",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_polygon({
+        #     'rpc_url': "https://rpc.ankr.com/polygon",
+        #     # 'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
+        #     'local_rpc_url': "137",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_base({
+        #     'rpc_url': "https://rpc.ankr.com/base",
+        #     # 'rpc_key_id': "166a510e-edca-4c3d-86e2-7cc49cd90f7f",
+        #     'local_rpc_url': "8453",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_arbitrum({
+        #     'rpc_url': "https://rpc.ankr.com/arbitrum",
+        #     # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
+        #     'local_rpc_url': "42161",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_avalanche({
+        #     'rpc_url': "https://rpc.ankr.com/avalanche",
+        #     # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
+        #     'local_rpc_url': "43114",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_fantom({
+        #     'rpc_url': "https://rpc.ankr.com/fantom",
+        #     # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
+        #     'local_rpc_url': "250",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_bsc({
+        #     'rpc_url': "https://rpc.ankr.com/bsc",
+        #     'local_rpc_url': "56",
+        #     'handle_transaction': handle_transaction
+        # }),
         run_health_check()
     )
 
