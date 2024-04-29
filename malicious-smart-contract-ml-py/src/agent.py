@@ -1,9 +1,11 @@
 import asyncio
+import random
 from forta_bot_sdk import scan_base, scan_ethereum, scan_fantom, scan_polygon, scan_arbitrum, scan_avalanche, scan_bsc, scan_optimism, run_health_check, get_chain_id, TransactionEvent, EntityType
 from joblib import load
 from evmdasm import EvmBytecode
 from web3 import AsyncWeb3
 from os import environ
+from constants import RPC_ENDPOINTS
 
 
 from constants import (
@@ -101,6 +103,8 @@ async def detect_malicious_contract_tx(
 
     if transaction_event.to is None:
         nonce = transaction_event.transaction.nonce
+
+
         created_contract_address = calc_contract_address(
             w3, transaction_event.from_, nonce
         )
@@ -225,6 +229,9 @@ async def detect_malicious_contract(
 
 
 async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider) -> list:
+    rpc_url = random.choice(RPC_ENDPOINTS[CHAIN_ID])
+
+    web3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(rpc_url))
     return await detect_malicious_contract_tx(web3, transaction_event)
 
 async def main():
