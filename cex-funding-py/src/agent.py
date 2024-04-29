@@ -1,10 +1,11 @@
 import asyncio
+import random
 from web3 import AsyncWeb3
 from os import environ
 from forta_bot_sdk import scan_ethereum, scan_bsc, scan_optimism, scan_polygon, scan_base, scan_arbitrum, TransactionEvent, get_chain_id, run_health_check
 from async_lru import alru_cache
 from hexbytes import HexBytes
-from constants import CEXES
+from constants import CEXES, RPC_ENDPOINTS
 
 from findings import CEXFundingFinding
 from storage import get_secrets
@@ -13,6 +14,9 @@ from storage import get_secrets
 async def initialize():
     SECRETS_JSON = await get_secrets()
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
+    global CHAIN_ID
+    CHAIN_ID = get_chain_id()
+    print("Chain ID: ", CHAIN_ID)
 
 @alru_cache(maxsize=1_000_000)
 async def is_contract(w3, address) -> bool:
@@ -33,8 +37,13 @@ async def is_new_account(w3, address, block_number):
 
 
 async def detect_cex_funding(w3, transaction_event: TransactionEvent) -> list:
+    global CHAIN_ID
     findings = []
+    rpc_url = random.choice(RPC_ENDPOINTS[CHAIN_ID])
 
+    w3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(rpc_url))
+
+    print(w3.provider)
     # alert on funding tx from CEXes
     value = transaction_event.transaction.value
     is_new_acc = await is_new_account(w3, transaction_event.to, transaction_event.block_number)
@@ -42,7 +51,7 @@ async def detect_cex_funding(w3, transaction_event: TransactionEvent) -> list:
 
     if is_new_acc and not is_contr:
         for chainId, chain_data in CEXES.items():
-            if chainId == get_chain_id():
+            if chainId == CHAIN_ID:
                 threshold = chain_data["threshold"]
                 for address, name in chain_data["exchanges"]:
                     if address.lower() == transaction_event.transaction.from_ and value < threshold:
@@ -68,35 +77,35 @@ async def main():
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
-        scan_optimism({
-            'rpc_url': "https://rpc.ankr.com/optimism",
-            # 'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
-            'local_rpc_url': "10",
-            'handle_transaction': handle_transaction
-        }),
-        scan_polygon({
-            'rpc_url': "https://rpc.ankr.com/polygon",
-            # 'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
-            'local_rpc_url': "137",
-            'handle_transaction': handle_transaction
-        }),
-        scan_base({
-            'rpc_url': "https://rpc.ankr.com/base",
-            # 'rpc_key_id': "166a510e-edca-4c3d-86e2-7cc49cd90f7f",
-            'local_rpc_url': "8453",
-            'handle_transaction': handle_transaction
-        }),
-        scan_arbitrum({
-            'rpc_url': "https://rpc.ankr.com/arbitrum",
-            # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
-            'local_rpc_url': "42161",
-            'handle_transaction': handle_transaction
-        }),
-        scan_bsc({
-            'rpc_url': "https://rpc.ankr.com/bsc",
-            'local_rpc_url': "56",
-            'handle_transaction': handle_transaction
-        }),
+        # scan_optimism({
+        #     'rpc_url': "https://rpc.ankr.com/optimism",
+        #     # 'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
+        #     'local_rpc_url': "10",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_polygon({
+        #     'rpc_url': "https://rpc.ankr.com/polygon",
+        #     # 'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
+        #     'local_rpc_url': "137",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_base({
+        #     'rpc_url': "https://rpc.ankr.com/base",
+        #     # 'rpc_key_id': "166a510e-edca-4c3d-86e2-7cc49cd90f7f",
+        #     'local_rpc_url': "8453",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_arbitrum({
+        #     'rpc_url': "https://rpc.ankr.com/arbitrum",
+        #     # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
+        #     'local_rpc_url': "42161",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_bsc({
+        #     'rpc_url': "https://rpc.ankr.com/bsc",
+        #     'local_rpc_url': "56",
+        #     'handle_transaction': handle_transaction
+        # }),
 
         run_health_check()
     )
