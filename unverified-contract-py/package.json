@@ -9,18 +9,11 @@
   "promoUrl": "https://forta.org",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/unverified-contract-py",
   "chainIds": [
-    1,
-    10,
-    137,
-    42161
+    1
   ],
   "chainSettings": {
     "1": {
       "shards": 4,
-      "target": 3
-    },
-    "default": {
-      "shards": 3,
       "target": 3
     }
   },
