@@ -4,12 +4,13 @@ import rlp
 import sys
 import pandas as pd
 import asyncio
+import random
 from web3 import AsyncWeb3
 from forta_bot_sdk import get_chain_id, scan_base, scan_ethereum, scan_bsc, scan_arbitrum, scan_avalanche, scan_fantom, scan_optimism, scan_polygon, run_health_check, Finding, FindingSeverity, FindingType, BlockEvent, TransactionEvent, AlertEvent
 from hexbytes import HexBytes
 from os import environ
 
-from constants import CONTRACT_QUEUE_SIZE
+from constants import CONTRACT_QUEUE_SIZE, RPC_ENDPOINTS
 from findings import SocialEngContractFindings
 from storage import get_secrets
 
@@ -144,6 +145,8 @@ async def detect_social_eng_account_creations(w3, transaction_event: Transaction
 
 
 async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider):
+    rpc_url = random.choice(RPC_ENDPOINTS[CHAIN_ID])
+    web3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(rpc_url))
     return await detect_social_eng_account_creations(web3, transaction_event)
 
 
@@ -160,17 +163,17 @@ async def main():
 
     await asyncio.gather(
         scan_ethereum({
-        'rpc_url': "https://eth-mainnet.g.alchemy.com/v2",
-        'rpc_key_id': "ebbd1b21-4e72-4d80-b4f9-f605fee5eb68",
+        'rpc_url': "https://rpc.ankr.com/eth",
+        # 'rpc_key_id': "ebbd1b21-4e72-4d80-b4f9-f605fee5eb68",
         'local_rpc_url': "1",
         'handle_transaction': handle_transaction
         }),
-        scan_base({
-        'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
-        'rpc_key_id': "85f8e757-1120-49eb-936a-7ee0aee57659",
-        'local_rpc_url': "8453",
-        'handle_transaction': handle_transaction
-        }),
+        # scan_base({
+        # 'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
+        # 'rpc_key_id': "85f8e757-1120-49eb-936a-7ee0aee57659",
+        # 'local_rpc_url': "8453",
+        # 'handle_transaction': handle_transaction
+        # }),
         run_health_check()
     )
 
