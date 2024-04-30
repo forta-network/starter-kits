@@ -6,8 +6,7 @@
     "node": ">=20"
   },
   "chainIds": [
-    1,
-    8453
+    1
   ],
   "description": "Forta Bot Python starter project",
   "longDescription": "Identifies when a new social engineering contract or EOA is created.",
