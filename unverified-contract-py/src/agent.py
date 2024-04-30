@@ -2,6 +2,7 @@ import asyncio
 import logging
 import sys
 import threading
+import random
 from datetime import datetime, timedelta
 from os import environ
 from async_lru import alru_cache
@@ -14,7 +15,7 @@ from pyevmasm import disassemble_hex
 import time
 
 from blockexplorer import BlockExplorer
-from constants import CONTRACT_SLOT_ANALYSIS_DEPTH, WAIT_TIME, CONCURRENT_SIZE
+from constants import CONTRACT_SLOT_ANALYSIS_DEPTH, WAIT_TIME, CONCURRENT_SIZE, RPC_ENDPOINTS
 from findings import UnverifiedCodeContractFindings
 
 SECRETS_JSON = None
@@ -67,6 +68,9 @@ def calc_contract_address(w3, address, nonce) -> str:
     :return: contract address: str
     """
 
+    rpc_url = random.choice(RPC_ENDPOINTS[CHAIN_ID])
+    w3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(rpc_url))
+
     address_bytes = bytes.fromhex(address[2:].lower())
     return w3.to_checksum_address(w3.keccak(rlp.encode([address_bytes, nonce]))[-20:])
 
@@ -80,6 +84,8 @@ async def is_contract(w3, address) -> bool:
     if address is None:
         return True
     try:
+        rpc_url = random.choice(RPC_ENDPOINTS[CHAIN_ID])
+        w3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(rpc_url))
         code = await w3.eth.get_code(w3.to_checksum_address(address))
         return code != HexBytes("0x")
     except Exception as e:
@@ -144,7 +150,8 @@ async def get_opcode_addresses(w3, address) -> set:
 
     if address is None:
         return set()
-
+    rpc_url = random.choice(RPC_ENDPOINTS[CHAIN_ID])
+    w3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(rpc_url))
     code = await w3.eth.get_code(w3.to_checksum_address(address))
     opcode = disassemble_hex(code.hex())
 
@@ -215,7 +222,6 @@ async def detect_unverified_contract_creation(
 ):
     global CREATED_CONTRACTS
     global FINDINGS_CACHE
-
     try:
         while True:
             with LOCK:
@@ -390,47 +396,47 @@ async def main():
             'local_rpc_url': "1",
             'handle_transaction': handle_transaction
         }),
-        scan_optimism({
-            'rpc_url': "https://rpc.ankr.com/optimism",
-            # 'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
-            'local_rpc_url': "10",
-            'handle_transaction': handle_transaction
-        }),
-        scan_polygon({
-            'rpc_url': "https://rpc.ankr.com/polygon",
-            # 'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
-            'local_rpc_url': "137",
-            'handle_transaction': handle_transaction
-        }),
-        scan_base({
-            'rpc_url': "https://rpc.ankr.com/base",
-            # 'rpc_key_id': "166a510e-edca-4c3d-86e2-7cc49cd90f7f",
-            'local_rpc_url': "8453",
-            'handle_transaction': handle_transaction
-        }),
-        scan_arbitrum({
-            'rpc_url': "https://rpc.ankr.com/arbitrum",
-            # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
-            'local_rpc_url': "42161",
-            'handle_transaction': handle_transaction
-        }),
-        scan_avalanche({
-            'rpc_url': "https://rpc.ankr.com/avalanche",
-            # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
-            'local_rpc_url': "43114",
-            'handle_transaction': handle_transaction
-        }),
-        scan_fantom({
-            'rpc_url': "https://rpc.ankr.com/fantom",
-            # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
-            'local_rpc_url': "250",
-            'handle_transaction': handle_transaction
-        }),
-        scan_bsc({
-            'rpc_url': "https://rpc.ankr.com/bsc",
-            'local_rpc_url': "56",
-            'handle_transaction': handle_transaction
-        }),
+        # scan_optimism({
+        #     'rpc_url': "https://rpc.ankr.com/optimism",
+        #     # 'rpc_key_id': "be4bb945-3e18-4045-a7c4-c3fec8dbc3e1",
+        #     'local_rpc_url': "10",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_polygon({
+        #     'rpc_url': "https://rpc.ankr.com/polygon",
+        #     # 'rpc_key_id': "889fa483-ddd8-4fc0-b6d9-baa1a1a65119",
+        #     'local_rpc_url': "137",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_base({
+        #     'rpc_url': "https://rpc.ankr.com/base",
+        #     # 'rpc_key_id': "166a510e-edca-4c3d-86e2-7cc49cd90f7f",
+        #     'local_rpc_url': "8453",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_arbitrum({
+        #     'rpc_url': "https://rpc.ankr.com/arbitrum",
+        #     # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
+        #     'local_rpc_url': "42161",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_avalanche({
+        #     'rpc_url': "https://rpc.ankr.com/avalanche",
+        #     # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
+        #     'local_rpc_url': "43114",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_fantom({
+        #     'rpc_url': "https://rpc.ankr.com/fantom",
+        #     # 'rpc_key_id': "09037aa1-1e48-4092-ad3b-cf22c89d5b8a",
+        #     'local_rpc_url': "250",
+        #     'handle_transaction': handle_transaction
+        # }),
+        # scan_bsc({
+        #     'rpc_url': "https://rpc.ankr.com/bsc",
+        #     'local_rpc_url': "56",
+        #     'handle_transaction': handle_transaction
+        # }),
         run_health_check()
     )
 
