@@ -1,34 +1,31 @@
 # Build stage: compile Python dependencies
-FROM python:3.11-slim-bullseye as builder
+FROM ubuntu:focal as builder
 RUN apt-get update -y && apt-get upgrade -y
-RUN apt-get install -y python3 pip
-# Required for lightgbm
-# RUN apt-get install libgomp1  
-RUN python3 -m pip install --upgrade pip
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository -y ppa:deadsnakes/ppa
+RUN apt-get install -y python3.10 python3.10-distutils
+RUN apt-get install -y python3-pip
+RUN apt-get install -y build-essential libffi-dev python3.10-dev  # for building C extensions
+RUN apt-get install -y wget
+RUN wget https://bootstrap.pypa.io/get-pip.py
+RUN python3.10 get-pip.py
 COPY requirements.txt ./
-RUN python3 -m pip install --user -r requirements.txt --no-cache-dir
+RUN python3.10 -m pip install --user -r requirements.txt
 
-# Final stage: copy over Python dependencies and install production Node dependencies
-FROM python:3.11-slim-bullseye
-# this python version should match the build stage python version
+# Final stage: copy over Python dependencies
+FROM ubuntu:focal
 RUN apt-get update
-RUN apt-get -y install curl gnupg
-RUN apt-get install nodejs -y
-RUN node --version
-RUN apt-get install npm -y
-RUN npm --version
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository -y ppa:deadsnakes/ppa
+RUN apt-get install -y python3.10
 COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local:$PATH
-ENV NODE_ENV=production
-# Uncomment the following line to enable agent logging
+ENV FORTA_ENV=production
+ENV PYTHONUNBUFFERED=1
 LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
-COPY ./src ./src
 COPY ./deployed_models ./deployed_models
 COPY package*.json ./
-COPY requirements.txt ./
-COPY requirements_dev.txt ./
-# This is needed for web3 compatibility with python 3.11. See https://stackoverflow.com/questions/74711405/importerror-cannot-import-name-getargspec-from-inspect-c-users-swapn-appd
-COPY ./src/aux/expressions.py /root/.local/lib/python3.11/site-packages/parsimonious/expressions.py
-RUN npm ci --production
-CMD [ "npm", "run", "start:prod" ]
+COPY LICENSE.md ./
+COPY ./src ./src
+CMD ["python3.10", "./src/agent.py"]
