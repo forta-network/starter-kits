@@ -687,3 +687,4 @@ address,chain_id,comment
 0x679812f0f3cb070182cb780bd0a3b6fb44030b02,1, normal address
 0xa15c16b9a5cb0218afdfbf5005221f5117d584d3,1, basket DAO deployer
 0xad4c4d7f06ff5990ea6e1c20b6050ff0fa5ed597,1, Zksynk
+0xCda361f988fD071D61aeC65584E43eB269ad0dE2, 1, Treasury wallet address of Ethlas holding ELS tokens
