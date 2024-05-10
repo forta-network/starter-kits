@@ -134,7 +134,7 @@ def detect_malicious_contract_tx(
     tx_timestamp = transaction_event.timestamp * 1000
     for trace in transaction_event.traces:
         if trace.type == "create":
-            nonce_address = w3.eth.getTransactionCount(w3.toChecksumAddress(transaction_event.from_), transaction_event.block_hash)
+            nonce_address = w3.eth.getTransactionCount(w3.toChecksumAddress(transaction_event.from_), transaction_event.block_number)
             if nonce_address > MAX_NONCE:
                 if ENV == 'dev':
                     logger.info(f"Nonce {nonce_address} is higher than {MAX_NONCE}. Skipping transaction")
@@ -190,7 +190,7 @@ def detect_malicious_contract_tx(
     # Fake loop tp break out if the contract here has already been analyzed
     for _ in range(1):
         if transaction_event.to is None:
-            nonce_address = w3.eth.getTransactionCount(w3.toChecksumAddress(transaction_event.from_), transaction_event.block_hash)
+            nonce_address = w3.eth.getTransactionCount(w3.toChecksumAddress(transaction_event.from_), transaction_event.block_number)
             if nonce_address > MAX_NONCE:
                 if ENV == 'dev':
                     logger.info(f"Nonce {nonce_address} is higher than {MAX_NONCE}. Skipping transaction")
