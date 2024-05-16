@@ -10,7 +10,7 @@ class EthMock:
     def __init__(self):
         self.contract = ContractMock()
 
-   
+
 class ContractMock:
     def __init__(self):
         self.functions = FunctionsMock()
@@ -23,6 +23,5 @@ class FunctionsMock:
     def __init__(self):
         self.return_value = None
 
-    def call(self, *_, **__):
+    async def call(self, *_, **__):
         return self.return_value
-

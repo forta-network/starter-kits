@@ -1,5 +1,5 @@
-forta_agent>=0.1.21
+forta_bot_sdk>=0.2.2
 setuptools>=61.3.1
-requests>=2.27.1
 expiring-dict>=1.1.0
 bot-alert-rate>=0.0.4
+async-lru==2.0.4
