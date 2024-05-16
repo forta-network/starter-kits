@@ -1,5 +1,5 @@
-from forta_agent import Finding, FindingType, FindingSeverity, EntityType
-from src.constants import *
+from forta_bot import Finding, FindingSeverity, FindingType, EntityType
+from constants import *
 
 class FundingFixedFloatFindings:
 
@@ -17,6 +17,10 @@ class FundingFixedFloatFindings:
                     "amount_funded": f"{transaction.transaction.value / 10e17} {CURRENCIES[chain_id]}",
                     "receiving_address": f"{transaction.to}",
                     "anomaly_score": anomaly_score
+                },
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': transaction.hash}]
                 },
                 'labels': [
                     {
@@ -47,6 +51,10 @@ class FundingFixedFloatFindings:
                     "amount_funded": f"{transaction.transaction.value / 10e17} {CURRENCIES[chain_id]}",
                     "receiving_address": f"{transaction.to}",
                     "anomaly_score": anomaly_score
+                },
+                'source': {
+                    'chains': [{'chainId': chain_id}],
+                    'transactions': [{'chainId': chain_id, 'hash': transaction.hash}]
                 },
                 'labels': [
                     {
