@@ -688,3 +688,5 @@ address,chain_id,comment
 0xa15c16b9a5cb0218afdfbf5005221f5117d584d3,1, basket DAO deployer
 0xad4c4d7f06ff5990ea6e1c20b6050ff0fa5ed597,1, Zksynk
 0xCda361f988fD071D61aeC65584E43eB269ad0dE2, 1, Treasury wallet address of Ethlas holding ELS tokens
+0x46b3fdf7b5cde91ac049936bf0bdb12c5d22202e, 137, Linea swaps contract official
+0xaa95f26e30001251fb905d264aa7b00ee9df6c18, 1, Kendu Inu token
