@@ -1,51 +1,68 @@
 import json
 import logging
-
-import requests
-from functools import lru_cache
-from src.storage import get_secrets
+import aiohttp
+from storage import get_secrets
+from async_lru import alru_cache
 
 class BlockExplorer:
-
-    SECRETS_JSON = None
-
     api_key = ""
     host = ""
+    chain_id = None
+    SECRETS_JSON = None
 
     def __init__(self, chain_id):
-        BlockExplorer.SECRETS_JSON = get_secrets()
+        self.chain_id = chain_id
 
         if chain_id == 1:
             self.host = "https://api.etherscan.io"
-            self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['ETHERSCAN_TOKEN']
         elif chain_id == 137:
             self.host = "https://api.polygonscan.com"
-            self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['POLYGONSCAN_TOKEN']
         elif chain_id == 56:
             self.host = "https://api.bscscan.com"
-            self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['BSCSCAN_TOKEN']
         elif chain_id == 42161:
             self.host = "https://api.arbiscan.io"
-            self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['ARBISCAN_TOKEN']
         elif chain_id == 10:
             self.host = "https://api-optimistic.etherscan.io"
-            self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['OPTIMISTICSCAN_TOKEN']
         elif chain_id == 250:
             self.host = "https://api.ftmscan.com"
-            self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['FTMSCAN_TOKEN']
         elif chain_id == 43114:
             self.host = "https://api.snowtrace.io"
+
+    async def set_api_key(self):
+        if BlockExplorer.SECRETS_JSON is None:
+            BlockExplorer.SECRETS_JSON = await get_secrets()
+
+        if self.chain_id == 1:
+            self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['ETHERSCAN_TOKEN']
+        elif self.chain_id == 137:
+            self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['POLYGONSCAN_TOKEN']
+        elif self.chain_id == 56:
+            self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['BSCSCAN_TOKEN']
+        elif self.chain_id == 42161:
+            self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['ARBISCAN_TOKEN']
+        elif self.chain_id == 10:
+            self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['OPTIMISTICSCAN_TOKEN']
+        elif self.chain_id == 250:
+            self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['FTMSCAN_TOKEN']
+        elif self.chain_id == 43114:
             self.api_key = BlockExplorer.SECRETS_JSON['apiKeys']['SNOWTRACE_TOKEN']
 
-    @lru_cache(maxsize=100)
-    def is_verified(self, address):
+    @alru_cache(maxsize=100)
+    async def is_verified(self, address):
         url = self.host + "/api?module=contract&action=getabi&address=" + address + "&apikey=" + self.api_key
-        response = requests.get(url)
-        if (response.status_code == 200):
-            data = json.loads(response.text)
-            if data['status'] == '1':
-                return True
-        else:
-            logging.warn("Unable to check if contract is verified. Etherscan returned status code " + str(response.status_code))
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as res:
+                if res.status == 200:
+                    try:
+                        # Attempt to parse the response as JSON regardless of the Content-Type
+                        data = await res.json(content_type=None)
+                        if data['status'] == '1':
+                            return True
+                    except json.JSONDecodeError:
+                        raise Exception("Failed to decode JSON response")
+                else:
+                    logging.warn("Unable to retrieve ABI. Etherscan returned status code " + str(res.status))
+                    pass
 
-        return False
+    def get_secrets(self):
+        return self.SECRETS_JSON
