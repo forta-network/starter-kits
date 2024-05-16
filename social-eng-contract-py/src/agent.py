@@ -1,21 +1,19 @@
 import logging
 
-import forta_agent
 import rlp
 import sys
 import pandas as pd
-from forta_agent import get_json_rpc_url
+import asyncio
+import random
+from web3 import AsyncWeb3
+from forta_bot_sdk import get_chain_id, scan_base, scan_ethereum, scan_bsc, scan_arbitrum, scan_avalanche, scan_fantom, scan_optimism, scan_polygon, run_health_check, Finding, FindingSeverity, FindingType, BlockEvent, TransactionEvent, AlertEvent
 from hexbytes import HexBytes
-from web3 import Web3
 from os import environ
 
-from src.constants import CONTRACT_QUEUE_SIZE
-from src.findings import SocialEngContractFindings
-from src.storage import get_secrets
+from constants import CONTRACT_QUEUE_SIZE, RPC_ENDPOINTS
+from findings import SocialEngContractFindings
+from storage import get_secrets
 
-SECRETS_JSON = get_secrets()
-
-web3 = Web3(Web3.HTTPProvider(get_json_rpc_url()))
 
 ALERTS_CACHE = set()
 
@@ -30,45 +28,42 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
-def initialize():
+
+async def initialize():
     """
     this function initializes the agent; only used for testing purposes to reset state across test cases
 
     """
-    # global CONTRACTS_QUEUE
-    # CONTRACTS_QUEUE = pd.DataFrame(columns={'contract_address', 'first_four_char', 'last_four_char'})
-
     global CHAIN_ID
-    CHAIN_ID = web3.eth.chain_id
-
+    CHAIN_ID = 1
     global CONTRACTS_QUEUE
     CONTRACTS_QUEUE = pd.concat([CONTRACTS_QUEUE, pd.DataFrame({'contract_address': '0x0000000000000000000000000000000000000000', 'first_four_char': '0000', 'last_four_char': '0000'}, index=[len(CONTRACTS_QUEUE)])])
 
+    SECRETS_JSON = await get_secrets()
     environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
 
-
-def is_contract(w3, address) -> bool:
+async def is_contract(w3, address) -> bool:
     """
     this function determines whether address is a contract
     :return: is_contract: bool
     """
     if address is None:
         return True
-    code = w3.eth.get_code(Web3.toChecksumAddress(address))
+    code = await w3.eth.get_code(w3.to_checksum_address(address))
     return code != HexBytes('0x')
 
 
-def calc_contract_address(w3, address, nonce) -> str:
+async def calc_contract_address(address, nonce) -> str:
     """
     this function calculates the contract address from sender/nonce
     :return: contract address: str
     """
 
     address_bytes = bytes.fromhex(address[2:].lower())
-    return Web3.toChecksumAddress(Web3.keccak(rlp.encode([address_bytes, nonce]))[-20:]).lower()
+    return AsyncWeb3.to_checksum_address(AsyncWeb3.keccak(rlp.encode([address_bytes, nonce]))[-20:]).lower()
 
 
-def append_contract_finding(findings: list, created_contract_address: str, from_: str) -> None:
+def append_contract_finding(findings: list, created_contract_address: str, from_: str, chain_id: int, tx_hash: str) -> None:
     """
         function assesses whether created contract address impersonates an existing contract
     """
@@ -76,30 +71,31 @@ def append_contract_finding(findings: list, created_contract_address: str, from_
     global ALERTS_CACHE
     logging.info("Contract created: " + created_contract_address)
 
+
     criteria1 = CONTRACTS_QUEUE["first_four_char"] == created_contract_address[2:6]
     criteria2 = CONTRACTS_QUEUE["last_four_char"] == created_contract_address[-4:]
 
     impersonated_contract_address = CONTRACTS_QUEUE[criteria1 & criteria2]["contract_address"]
     if len(impersonated_contract_address) > 0 and impersonated_contract_address.iloc[0] is not None and impersonated_contract_address.iloc[0] != created_contract_address and created_contract_address not in ALERTS_CACHE:
         if impersonated_contract_address.iloc[0] == '0x0000000000000000000000000000000000000000':
-            findings.append(SocialEngContractFindings.social_eng_address_creation(created_contract_address, True, impersonated_contract_address.iloc[0], from_, CHAIN_ID, 'SOCIAL-ENG-CONTRACT-CREATION-NULL-ADDRESS'))
+            findings.append(SocialEngContractFindings.social_eng_address_creation(created_contract_address, True, impersonated_contract_address.iloc[0], from_, chain_id, 'SOCIAL-ENG-CONTRACT-CREATION-NULL-ADDRESS', tx_hash))
             ALERTS_CACHE.add(created_contract_address)
         else:
-            findings.append(SocialEngContractFindings.social_eng_address_creation(created_contract_address, True, impersonated_contract_address.iloc[0], from_, CHAIN_ID, 'SOCIAL-ENG-CONTRACT-CREATION'))
+            findings.append(SocialEngContractFindings.social_eng_address_creation(created_contract_address, True, impersonated_contract_address.iloc[0], from_, chain_id, 'SOCIAL-ENG-CONTRACT-CREATION', tx_hash))
             ALERTS_CACHE.add(created_contract_address)
 
 
 
 
 
-def detect_social_eng_account_creations(w3, transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
+async def detect_social_eng_account_creations(w3, transaction_event: TransactionEvent) -> list:
     global CONTRACTS_QUEUE
     global ALERTS_CACHE
 
     # contract creation - managing queue
     if transaction_event.to is not None:
         to = transaction_event.to.lower()
-        if is_contract(w3, to):
+        if await is_contract(w3, to):
             if len(CONTRACTS_QUEUE[CONTRACTS_QUEUE["contract_address"] == to]) == 0:
                 logging.info("Adding contract to queue: " + to)
                 logging.info("Contract size: " + str(len(CONTRACTS_QUEUE)))
@@ -117,11 +113,11 @@ def detect_social_eng_account_creations(w3, transaction_event: forta_agent.trans
 
     # contract creation - emit finding using non-trace contract creation flow
     if transaction_event.to is None:
-        created_contract_address = calc_contract_address(w3, transaction_event.from_, transaction_event.transaction.nonce)
-        append_contract_finding(findings, created_contract_address, transaction_event.from_)
+        created_contract_address = await calc_contract_address(transaction_event.from_, transaction_event.transaction.nonce)
+        append_contract_finding(findings, created_contract_address, transaction_event.from_, CHAIN_ID, transaction_event.transaction.hash)
     elif transaction_event.from_[2:6] == '0000' and transaction_event.from_[-4:] == '0000' and transaction_event.from_ != '0x0000000000000000000000000000000000000000': #only support null as the check would be too expensive at this point
         if transaction_event.from_ not in ALERTS_CACHE:
-            findings.append(SocialEngContractFindings.social_eng_address_creation(transaction_event.from_, False, '0x0000000000000000000000000000000000000000', "", CHAIN_ID, 'SOCIAL-ENG-EOA-CREATION-NULL-ADDRESS'))
+            findings.append(SocialEngContractFindings.social_eng_address_creation(transaction_event.from_, False, '0x0000000000000000000000000000000000000000', "", CHAIN_ID, 'SOCIAL-ENG-EOA-CREATION-NULL-ADDRESS', transaction_event.transaction.hash))
             ALERTS_CACHE.add(transaction_event.from_)
 
 
@@ -134,11 +130,11 @@ def detect_social_eng_account_creations(w3, transaction_event: forta_agent.trans
                     created_contract_address = calc_contract_address(w3, trace.action.from_, nonce)
                 else:
                     # For contracts creating other contracts, get the nonce using Web3
-                    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                    nonce = w3.eth.getTransactionCount(w3.to_checksum_address(trace.action.from_), transaction_event.block_number)
                     created_contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
                 created_contract_addresses.append(created_contract_address.lower())
-                append_contract_finding(findings, created_contract_address, transaction_event.from_)
+                append_contract_finding(findings, created_contract_address, transaction_event.from_, CHAIN_ID, transaction_event.transaction.hash)
 
     while len(ALERTS_CACHE) > 100000:
         ALERTS_CACHE.pop()
@@ -146,15 +142,41 @@ def detect_social_eng_account_creations(w3, transaction_event: forta_agent.trans
     return findings
 
 
-def provide_handle_transaction(w3):
-    def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
-        return detect_social_eng_account_creations(w3, transaction_event)
-
-    return handle_transaction
 
 
-real_handle_transaction = provide_handle_transaction(web3)
+async def handle_transaction(transaction_event: TransactionEvent, web3: AsyncWeb3.AsyncHTTPProvider):
+    rpc_url = random.choice(RPC_ENDPOINTS[CHAIN_ID])
+    web3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(rpc_url))
+    return await detect_social_eng_account_creations(web3, transaction_event)
 
 
-def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent):
-    return real_handle_transaction(transaction_event)
+async def main():
+    SECRETS_JSON = await get_secrets()
+
+    global CONTRACTS_QUEUE
+    CONTRACTS_QUEUE = pd.concat([CONTRACTS_QUEUE, pd.DataFrame({'contract_address': '0x0000000000000000000000000000000000000000', 'first_four_char': '0000', 'last_four_char': '0000'}, index=[len(CONTRACTS_QUEUE)])])
+
+    global CHAIN_ID
+    CHAIN_ID = get_chain_id()
+
+    environ["ZETTABLOCK_API_KEY"] = SECRETS_JSON['apiKeys']['ZETTABLOCK']
+
+    await asyncio.gather(
+        scan_ethereum({
+        'rpc_url': "https://rpc.ankr.com/eth",
+        # 'rpc_key_id': "ebbd1b21-4e72-4d80-b4f9-f605fee5eb68",
+        'local_rpc_url': "1",
+        'handle_transaction': handle_transaction
+        }),
+        # scan_base({
+        # 'rpc_url': "https://base-mainnet.g.alchemy.com/v2",
+        # 'rpc_key_id': "85f8e757-1120-49eb-936a-7ee0aee57659",
+        # 'local_rpc_url': "8453",
+        # 'handle_transaction': handle_transaction
+        # }),
+        run_health_check()
+    )
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

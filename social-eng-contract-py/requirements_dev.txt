@@ -1,3 +1,4 @@
 -r requirements.txt
 pytest==7.2.1
+pytest-asyncio==0.23.4
 pytest-env==0.6.2
