@@ -13,6 +13,7 @@ This agent detects address poisoning, phishing transactions.
 - Arbitrum
 - Optimism
 - Fantom
+- Linea
 
 ## Alerts
 
