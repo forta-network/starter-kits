@@ -42,14 +42,15 @@ STABLECOIN_CONTRACTS = {
         '0x19860ccb0a68fd4213ab9d8266f7bbf05a8dde98',
         '0x9c9e5fd8bbc25984b178fdce6117defa39d2db39',
         '0xd586e7f844cea2f87f50152665bcbc2c279d8d70'
-    ]
+    ],
+    59144: ["0xa219439258ca9da29e9cc4ce5596924745e12b93", "0x176211869ca2b568f2a7d4ee941e073a821ee1ff", "0x4af15ec2a0bd43db75dd04e62faa3b8ef36b00d5", "0xd2bc272ea0154a93bf00191c8a1db23e67643ec5", "0xb79dd08ea68a908a97220c76d19a6aa9cbde4376", "0xf3b001d64c656e30a62fbaaca003b1336b4ce12a"]
 }
 
 BASE_TOKENS = [
-    '0x0000000000000000000000000000000000001010', # MATIC on Polygon
-    '0x4200000000000000000000000000000000000042', # OP on Optimism
-    '0x912ce59144191c1204e64559fe8253a0e49e6548', # ARB on Arbitrum
-    '0x658b0c7613e890ee50b8c4bc6a3f41ef411208ad' # FETH on Fantom
+    '0x0000000000000000000000000000000000001010',  # MATIC on Polygon
+    '0x4200000000000000000000000000000000000042',  # OP on Optimism
+    '0x912ce59144191c1204e64559fe8253a0e49e6548',  # ARB on Arbitrum
+    '0x658b0c7613e890ee50b8c4bc6a3f41ef411208ad'  # FETH on Fantom
 ]
 
 # ABIs for decoding relevant log events
@@ -59,17 +60,17 @@ APPROVAL_EVENT_ABI = '{"name":"Approval","type":"event","anonymous":false,"input
 # ABI for symbol function
 SYMBOL_CALL_ABI = [
     {
-      "constant": True,
-      "inputs": [],
-      "name": "symbol",
-      "outputs": [
-          {"name": "",
-            "type": "string"
-          }
-      ],
-      "payable": False,
-      "stateMutability": "view",
-      "type": "function"
+        "constant": True,
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {"name": "",
+             "type": "string"
+             }
+        ],
+        "payable": False,
+        "stateMutability": "view",
+        "type": "function"
     }
 ]
 
@@ -81,22 +82,26 @@ OFFICIAL_SYMBOLS = {
     42161: ['USDT', 'USDC', 'DAI', 'TUSD', 'ARB'],
     10: ['USDT', 'USDC', 'DAI', 'OP'],
     250: ['TUSD', 'USDC', 'DAI', 'FETH'],
-    43114: ['USDT.e', 'USDt', 'USDC', 'USDC.e', 'BUSD.e', 'BUSD', 'DAI.e', 'AVAX']
+    43114: ['USDT.e', 'USDt', 'USDC', 'USDC.e', 'BUSD.e', 'BUSD', 'DAI.e', 'AVAX'],
+    59144: ['USDT', 'USDC', 'DAI', 'USDP', 'USD+', 'MAI']
 }
 
 CHAIN_ORDINAL_SYMBOL_MAP = {
     1: [
-        [85, 83, 68, 84], # USDT
-        [85, 83, 68, 1058], # USDТ -> Cyrillic T
-        [85, 83, 68, 67], # USDC
-        [85, 83, 68, 1057], # USDС -> Cyrillic C
-        [69, 84, 72], # ETH
-        [1045, 84, 72], # ЕTH -> Cyrillic E
-        [68, 65, 73], # DAI
-        [68, 1040, 73], # DАI -> Cyrillic A
-        [119828, 119826, 119811, 119810], # USDC -> 𝐔𝐒𝐃𝐂
-        [119828, 119826, 119811, 119827], # USDТ -> 𝐔𝐒𝐃𝐓
-        [119811, 119808, 119816] # DАI -> 𝐃𝐀𝐈
+        [85, 83, 68, 84],  # USDT
+        [85, 83, 68, 1058],  # USDТ -> Cyrillic T
+        [85, 83, 68, 67],  # USDC
+        [85, 83, 68, 1057],  # USDС -> Cyrillic C
+        [85, 83, 68, 80],  # USDP
+        [85, 83, 68, 43],  # USD+
+        [69, 84, 72],  # ETH
+        [1045, 84, 72],  # ЕTH -> Cyrillic E
+        [77, 65, 73],  # MAI
+        [68, 65, 73],  # DAI
+        [68, 1040, 73],  # DАI -> Cyrillic A
+        [119828, 119826, 119811, 119810],  # USDC -> 𝐔𝐒𝐃𝐂
+        [119828, 119826, 119811, 119827],  # USDТ -> 𝐔𝐒𝐃𝐓
+        [119811, 119808, 119816]  # DАI -> 𝐃𝐀𝐈
     ]
 }
 
