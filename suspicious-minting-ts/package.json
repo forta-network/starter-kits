@@ -1,7 +1,7 @@
 {
   "name": "suspicious-minting-bot-ts",
   "displayName": "Suspicious Minting Bot",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Forta bot that detects suspicious minting activity",
   "repository": "https://github.com/forta-network/forta-bot-sdk/tree/master/starter-project",
   "licenseUrl": "https://github.com/forta-network/forta-bot-sdk/blob/master/starter-project/LICENSE.md",
