@@ -7,19 +7,65 @@ type TokenPriceCacheEntry = {
   decimals: number; // Cached decimals
 };
 
+export const tokenInterface = new ethers.utils.Interface([
+  "function balanceOf(address account) external view returns (uint256 balance)",
+  "function totalSupply() external view returns (uint256 totalSupply)",
+]);
+
 export default class Fetcher {
   provider: providers.JsonRpcProvider;
+  private tokenContract: Contract;
+  private tokensBalanceCache: LRU<string, BigNumber | string>;
+  private tokensTotalSupplyCache: LRU<string, BigNumber | string>;
   private tokensPriceCache: LRU<string, TokenPriceCacheEntry>;
   private priceCacheExpirationTime: number;
   private maxRetries: number;
 
   constructor(provider: ethers.providers.JsonRpcProvider) {
     this.provider = provider;
+    this.tokenContract = new Contract("", tokenInterface, this.provider);
+    this.tokensBalanceCache = new LRU<string, BigNumber | string>({
+      max: 2000,
+    });
+    this.tokensTotalSupplyCache = new LRU<string, BigNumber | string>({
+      max: 2000,
+    });
     this.tokensPriceCache = new LRU<string, TokenPriceCacheEntry>({
       max: 20000,
     });
     this.priceCacheExpirationTime = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
     this.maxRetries = 2;
+  }
+  public async getBalance(
+    block: number | string,
+    eoaAddress: string,
+    tokenAddress: string
+  ): Promise<BigNumber> {
+    const token = this.tokenContract.attach(tokenAddress);
+
+    const key: string = `${tokenAddress}-${eoaAddress}-${block}`;
+    if (this.tokensBalanceCache.has(key))
+      return this.tokensBalanceCache.get(key) as BigNumber;
+
+    const balance: BigNumber = await token.balanceOf(eoaAddress, {
+      blockTag: block,
+    });
+
+    this.tokensBalanceCache.set(key, balance);
+
+    return balance;
+  }
+
+  public async getTotalSupply(block: number | string, tokenAddress: string) {
+    const token = this.tokenContract.attach(tokenAddress);
+    const key: string = `${tokenAddress}-${block}`;
+    if (this.tokensTotalSupplyCache.has(key))
+      return this.tokensTotalSupplyCache.get(key) as BigNumber;
+    const totalSupply: BigNumber = await token.totalSupply({
+      blockTag: block,
+    });
+    this.tokensTotalSupplyCache.set(key, totalSupply);
+    return totalSupply;
   }
 
   private getTokenPriceUrl = (chain: string, token: string) => {
