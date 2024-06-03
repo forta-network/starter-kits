@@ -6,6 +6,10 @@ from time import time
 from concurrent.futures import ThreadPoolExecutor
 import functools
 import operator
+import pandas as pd
+import logging
+import io
+import re
 
 from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID
 from src.logger import logger
@@ -117,3 +121,34 @@ def alert_count(chain_id: int, alert_id: str) -> int:
         logger.error(f"Error obtaining alert counts: {err}")
 
     return alert_id_counts, alert_counts
+
+def get_tp_attacker_list(test_state=True) -> list:
+    content = open('tp_list_test.csv', 'r').read() if test_state else open('tp_list.csv', 'r').read()
+    if not test_state:
+        res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/early-attack-detector-py/tp_list.csv')
+        logging.info(f"Made request to fetch fp list: {res.status_code}")
+        content = res.content.decode('utf-8') if res.status_code == 200 else open('tp_list.csv', 'r').read()
+
+    df_fps = pd.read_csv(io.StringIO(content), sep=',')
+    attacker_list = set(df_fps['Attacker'].tolist())
+
+    # Regular expression for Ethereum addresses
+    eth_address_pattern = re.compile(r'^0x[a-fA-F0-9]{40}$')
+
+    unique_attacker_addresses = set()
+    # Besides random strings, this list is populated
+    # by some Cosmos and Solana addresses.
+    non_eth_entries = []
+
+    for entry in attacker_list:
+        # some values were sneaking in as `float` types
+        # (e.g. 'nan')
+        if isinstance(entry, str):
+            parts = [part.strip() for part in entry.split(',')]
+            for part in parts:
+                if eth_address_pattern.match(part):
+                    unique_attacker_addresses.add(part)
+                else:
+                    non_eth_entries.append(part)
+            
+    return list(unique_attacker_addresses)
