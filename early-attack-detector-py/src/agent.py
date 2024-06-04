@@ -21,6 +21,8 @@ from src.constants import (
     FUNDING_TIME,
     EXTRA_TIME_BOTS,
     EXTRA_TIME_DAYS,
+    ETH_BLOCKS_IN_ONE_DAY,
+    THREE_SECOND_BLOCKS_IN_ONE_DAY
 )
 from src.findings import ContractFindings
 from src.logger import logger
@@ -30,6 +32,8 @@ from src.utils import (
     get_function_signatures,
     get_storage_addresses,
     is_contract,
+    get_tp_attacker_list,
+    update_tp_attacker_list
 )
 from src.storage import get_secrets
 
@@ -41,7 +45,7 @@ ML_MODEL = None
 
 def initialize():
     """
-    this function loads the ml model.
+    this function loads the ml model and fetches the list of true positive attackers
     """
 
     global CHAIN_ID
@@ -79,6 +83,9 @@ def initialize():
     package = json.load(open('package.json'))
     BETA = 'beta' in package['name']
     logger.info(f"Beta: {BETA}")
+
+    global TP_ATTACKER_LIST
+    TP_ATTACKER_LIST = get_tp_attacker_list()
 
 
 def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
@@ -262,7 +269,10 @@ def detect_malicious_contract(
     findings = []
 
     if created_contract_address is not None and code is not None:
-        if len(code) > BYTE_CODE_LENGTH_THRESHOLD:
+        from_label_type = "contract" if is_contract(w3, from_) else "eoa"
+        from_eoa_in_tp_list = from_label_type == "eoa" and from_ in TP_ATTACKER_LIST
+
+        if (len(code) > BYTE_CODE_LENGTH_THRESHOLD) or from_eoa_in_tp_list:
             try:
                 opcodes = EvmBytecode(code).disassemble()
             except Exception as e:
@@ -275,12 +285,12 @@ def detect_malicious_contract(
             function_signatures = get_function_signatures(w3, opcodes)
             logger.info(f"{created_contract_address}: score={model_score}")
 
-            if model_score is None or model_score < MODEL_INFO_THRESHOLD:
+            if model_score is None or model_score < MODEL_INFO_THRESHOLD and not from_eoa_in_tp_list:
                 if ENV == 'dev':
                     logger.info(f"Score is less than threshold: {model_score} < {MODEL_INFO_THRESHOLD}. Not creating alert.")
                 return []
             # If we are not in beta, we only create alerts if the score is above the threshold
-            if model_score < MODEL_THRESHOLD and not BETA:
+            if model_score < MODEL_THRESHOLD and not BETA and not from_eoa_in_tp_list:
                 if ENV == 'dev':
                     logger.info(f"Score is less than threshold: {model_score} < {MODEL_THRESHOLD} and we are not in beta. Not checking for labels.")
                 return []
@@ -299,10 +309,9 @@ def detect_malicious_contract(
                 MODEL_THRESHOLD,
                 error=error,
             )
-            if model_score is not None and model_score >= MODEL_INFO_THRESHOLD:
+            if (model_score is not None and model_score >= MODEL_INFO_THRESHOLD) or from_eoa_in_tp_list:
                 # If it's a potential alert, we create labels. Otherwise, we don't
-                if model_score >= MODEL_THRESHOLD:
-                    from_label_type = "contract" if is_contract(w3, from_) else "eoa"
+                if (model_score >= MODEL_THRESHOLD) or from_eoa_in_tp_list:
                     labels = [
                         {
                             "entity": created_contract_address,
@@ -326,7 +335,7 @@ def detect_malicious_contract(
                             "entity": from_,
                             "entity_type": EntityType.Address,
                             "label": "attacker",
-                            "confidence": model_score,
+                            "confidence": 1.0 if from_eoa_in_tp_list else model_score,
                         },
                         ]
                     severity = FindingSeverity.Critical
@@ -359,6 +368,24 @@ def handle_transaction(
 ):
     return real_handle_transaction(transaction_event)
 
+def provide_handle_block(w3):
+    def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
+        findings = []
+
+        DAILY_BLOCKS_DENOMINATOR = ETH_BLOCKS_IN_ONE_DAY if CHAIN_ID == 1 else THREE_SECOND_BLOCKS_IN_ONE_DAY
+        if block_event.block_number % DAILY_BLOCKS_DENOMINATOR == 0:
+            global TP_ATTACKER_LIST
+            TP_ATTACKER_LIST = update_tp_attacker_list(TP_ATTACKER_LIST)
+        return findings
+        
+    return handle_block
+
+
+real_handle_block = provide_handle_block(web3)
+
+
+def handle_block(block_event: forta_agent.block_event.BlockEvent):
+    return real_handle_block(block_event)
 
 def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365, extra_time_bots: str=None, extra_time: int=180):
     t = time.time()
