@@ -152,3 +152,12 @@ def get_tp_attacker_list(test_state=True) -> list:
                     non_eth_entries.append(part)
             
     return list(unique_attacker_addresses)
+
+def update_tp_attacker_list(current_tp_list, test_state=True) -> list:
+    fetched_tp_list = get_tp_attacker_list(test_state)
+
+    for entry in fetched_tp_list:
+        if entry not in current_tp_list:
+            current_tp_list.append(entry)
+
+    return current_tp_list
