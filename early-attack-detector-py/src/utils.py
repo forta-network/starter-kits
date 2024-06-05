@@ -144,9 +144,9 @@ def get_tp_attacker_list() -> list:
             parts = [part.strip() for part in entry.split(',')]
             for part in parts:
                 if eth_address_pattern.match(part):
-                    unique_attacker_addresses.add(part)
+                    unique_attacker_addresses.add(part.lower())
                 else:
-                    non_eth_entries.append(part)
+                    non_eth_entries.append(part.lower())
             
     return list(unique_attacker_addresses)
 
