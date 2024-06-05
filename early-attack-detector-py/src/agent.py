@@ -269,8 +269,7 @@ def detect_malicious_contract(
     findings = []
 
     if created_contract_address is not None and code is not None:
-        from_label_type = "contract" if is_contract(w3, from_) else "eoa"
-        from_eoa_in_tp_list = from_label_type == "eoa" and from_ in TP_ATTACKER_LIST
+        from_eoa_in_tp_list = from_ in TP_ATTACKER_LIST
 
         if (len(code) > BYTE_CODE_LENGTH_THRESHOLD) or from_eoa_in_tp_list:
             try:
@@ -285,12 +284,12 @@ def detect_malicious_contract(
             function_signatures = get_function_signatures(w3, opcodes)
             logger.info(f"{created_contract_address}: score={model_score}")
 
-            if model_score is None or model_score < MODEL_INFO_THRESHOLD and not from_eoa_in_tp_list:
+            if (model_score is None or model_score < MODEL_INFO_THRESHOLD) and not from_eoa_in_tp_list:
                 if ENV == 'dev':
                     logger.info(f"Score is less than threshold: {model_score} < {MODEL_INFO_THRESHOLD}. Not creating alert.")
                 return []
             # If we are not in beta, we only create alerts if the score is above the threshold
-            if model_score < MODEL_THRESHOLD and not BETA and not from_eoa_in_tp_list:
+            if (model_score < MODEL_THRESHOLD and not BETA) and not from_eoa_in_tp_list:
                 if ENV == 'dev':
                     logger.info(f"Score is less than threshold: {model_score} < {MODEL_THRESHOLD} and we are not in beta. Not checking for labels.")
                 return []
@@ -310,6 +309,7 @@ def detect_malicious_contract(
                 error=error,
             )
             if (model_score is not None and model_score >= MODEL_INFO_THRESHOLD) or from_eoa_in_tp_list:
+                from_label_type = "eoa" if from_eoa_in_tp_list else "contract" if is_contract(w3, from_) else "eoa"
                 # If it's a potential alert, we create labels. Otherwise, we don't
                 if (model_score >= MODEL_THRESHOLD) or from_eoa_in_tp_list:
                     labels = [
@@ -372,6 +372,8 @@ def provide_handle_block(w3):
     def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
         findings = []
 
+        # Choosing the denomincator based on chain's block time
+        # so as to update TP list approx. once daily
         DAILY_BLOCKS_DENOMINATOR = ETH_BLOCKS_IN_ONE_DAY if CHAIN_ID == 1 else THREE_SECOND_BLOCKS_IN_ONE_DAY
         if block_event.block_number % DAILY_BLOCKS_DENOMINATOR == 0:
             global TP_ATTACKER_LIST
