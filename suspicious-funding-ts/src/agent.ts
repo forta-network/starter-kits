@@ -12,15 +12,18 @@ import {
   DAYS_TO_LOOK_BACK,
   VALUE_THRESHOLDS,
   alertOriginMap,
+  TRUE_POSITIVE_LIST_URL,
+  TRUE_POSITIVE_LIST_PATH
 } from "./constants";
 import { createFinding, getAllLabels } from "./utils";
+import TruePositiveFetcher from "./truePositive.fetcher"
 
 const ethersProvider = getEthersProvider();
 const attackers = new Map<string, { origin: string; hops: number }>();
 let chainId: number;
 
 export const provideInitialize =
-  (provider: ethers.providers.Provider) => async () => {
+  (provider: ethers.providers.Provider, fetcher: TruePositiveFetcher) => async () => {
     chainId = Number((await provider.getNetwork()).chainId);
 
     const query: LabelQueryOptions = {
@@ -31,6 +34,7 @@ export const provideInitialize =
       first: 2000,
     };
     await getAllLabels(query, attackers);
+    fetcher.getTruePositiveList(attackers);
 
     return {
       alertConfig: {
@@ -109,7 +113,7 @@ const handleAlert: HandleAlert = async (alertEvent: AlertEvent) => {
 };
 
 export default {
-  initialize: provideInitialize(ethersProvider),
+  initialize: provideInitialize(ethersProvider, new TruePositiveFetcher(TRUE_POSITIVE_LIST_URL, TRUE_POSITIVE_LIST_PATH)),
   handleTransaction: provideHandleTransaction(attackers, ethersProvider),
   handleAlert,
 };
