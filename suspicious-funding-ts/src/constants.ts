@@ -22,3 +22,6 @@ export const alertOriginMap = {
   "FIXED-FLOAT": "Fixed Float",
   "ATTACK-DETECTOR": "Attack Detector",
 };
+
+export const TRUE_POSITIVE_LIST_PATH = "../tp_list.csv";
+export const TRUE_POSITIVE_LIST_URL = "https://raw.githubusercontent.com/forta-network/starter-kits/main/early-attack-detector-py/tp_list.csv"
