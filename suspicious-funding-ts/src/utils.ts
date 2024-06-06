@@ -57,9 +57,9 @@ export const createFinding = (
   return Finding.fromObject({
     name: "Suspicious Funding Alert",
     description: `${to} received funds from ${from}`,
-    alertId: "SUSPICIOUS-FUNDING",
-    severity: FindingSeverity.Medium,
-    type: FindingType.Suspicious,
+    alertId: origin == "True Positive List" ? "MALICIOUS-FUNDING" : "SUSPICIOUS-FUNDING",
+    severity: origin == "True Positive List" ? FindingSeverity.Critical : FindingSeverity.Medium,
+    type: origin == "True Positive List" ? FindingType.Exploit : FindingType.Suspicious,
     metadata: {
       sender: from,
       receiver: to,
@@ -71,7 +71,7 @@ export const createFinding = (
         entity: to,
         entityType: EntityType.Address,
         label: "attacker",
-        confidence: 0.6,
+        confidence: origin == "True Positive List" ? 1.0 : 0.6,
         remove: false,
         metadata: {
           origin,
