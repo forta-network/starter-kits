@@ -26,6 +26,8 @@ export default class TruePositiveFetcher {
         attacker = attacker.trim();
         if (this.isValidEthereumAddress(attacker)) {
           tpAttackers.push(attacker.toLowerCase());
+        } else {
+          console.log(`Non-Ethereum address True Positive list entry found: ${attacker}`);
         }
       });
     });
