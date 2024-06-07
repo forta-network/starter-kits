@@ -23,5 +23,14 @@ export const alertOriginMap = {
   "ATTACK-DETECTOR": "Attack Detector",
 };
 
+const ONE_DAY = 60 * 60 * 24;
+const THREE_SECOND_BLOCK_TIME = 3;
+const ETH_BLOCK_TIME = 12;
+export const ETH_BLOCKS_IN_ONE_DAY = ONE_DAY / ETH_BLOCK_TIME;
+// Amount of blocks in a day for faster chains
+// Using 3 second block times as the average
+export const THREE_SECOND_BLOCKS_IN_ONE_DAY = ONE_DAY / THREE_SECOND_BLOCK_TIME;
+
 export const TRUE_POSITIVE_LIST_PATH = "../tp_list.csv";
+// Using the Early Attack Detector True Positive list as source of truth
 export const TRUE_POSITIVE_LIST_URL = "https://raw.githubusercontent.com/forta-network/starter-kits/main/early-attack-detector-py/tp_list.csv"
