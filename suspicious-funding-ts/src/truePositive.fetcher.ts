@@ -73,12 +73,11 @@ export default class TruePositiveFetcher {
     try {
       this.getTruePositiveListRemotely(this.truePositiveListUrl, truePositiveAttackers);
     } catch(e) {
-      console.error(`Error: ${e}`);
+      console.log(`'getTruePositiveListRemotely' failed. ${e}`);
       try {
         this.getTruePositiveListLocally(this.truePositiveListPath, truePositiveAttackers);
       } catch (e) {
-        console.log(`Both True Positive List fetching functions failed.`);
-        console.error(`Error: ${e}`);
+        console.log(`Both True Positive List fetching functions failed. ${e}`);
       }
     }
   
