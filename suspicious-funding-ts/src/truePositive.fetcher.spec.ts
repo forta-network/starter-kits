@@ -58,7 +58,7 @@ describe("TruePositiveFetcher Test Suite", () => {
         });
     });
 
-    it("should fetch True Positive List locally, after failing to do so remotely", async () => {
+    it("should fetch True Positive List locally, after failing to do so remotely - error in `complete()` fallback results", async () => {
         // This result will cause the `getTruePositiveListRemotely` to error out,
         // then proceed to `getTruePositiveListLocally`.
         const mockResultOne: ParseResult<TruePositiveCsv> = {
@@ -114,9 +114,51 @@ describe("TruePositiveFetcher Test Suite", () => {
         });
     });
 
-    it("will handle errors on both True Positive List fetching functions by not fetching anything", async () => {
+    it("should fetch True Positive List locally, after failing to do so remotely - `error()` fallback invoked", async () => {
         // This result will cause the `getTruePositiveListRemotely` to error out,
         // then proceed to `getTruePositiveListLocally`.
+        const errorMessage = "Failure to fetch True Positive List remotely.";
+        const mockError = {
+            name: "error",
+            message: errorMessage
+        };
+        const mockResult: ParseResult<TruePositiveCsv> = {
+            data: [{ Attacker: createAddress("0x0123") }],
+            errors: [],
+            // Mock values, since required
+            meta: {
+            delimiter: "",
+            linebreak: "",
+            aborted: false,
+            truncated: false,
+            cursor: 0
+            },
+        };
+
+        (fs.readFileSync as jest.Mock).mockReturnValue("");
+
+        // Mock `error` and `complete` inside of `parse()` from `papaparse`
+        (parse as jest.Mock).mockImplementationOnce((input: string, options: ParseRemoteConfig<TruePositiveCsv>) => {
+            options.error!(mockError, mockTpListPath)
+        }).mockImplementationOnce((input: string, options: ParseRemoteConfig<TruePositiveCsv>) => {
+            options.complete!(mockResult, mockTpListPath)
+        });
+
+        const spy = jest.spyOn(console, "log").mockImplementation(() => {});
+
+        await fetcher.getTruePositiveList(mockAttackers);
+
+        expect(spy).toHaveBeenCalledWith(`'getTruePositiveListRemotely' failed. Error: ${errorMessage}`);
+        expect(mockAttackers.has(mockAttacker)).toBe(true);
+        expect(mockAttackers.get(mockAttacker)).toEqual({
+            origin: 'True Positive List',
+            hops: 0,
+        });
+    });
+
+    it("will handle errors on both True Positive List fetching functions by not fetching anything - error in `complete()` fallback results", async () => {
+        // This result will cause the `getTruePositiveListRemotely` to error out,
+        // then proceed to `getTruePositiveListLocally`, which will also error out.
         const mockResult: ParseResult<TruePositiveCsv> = {
             data: [],
             // `type` and `code` have legitimate values,
@@ -148,6 +190,32 @@ describe("TruePositiveFetcher Test Suite", () => {
 
         expect(spy).toHaveBeenCalledWith("'getTruePositiveListRemotely' failed. Error: getTruePositiveListRemotely() failed.");
         expect(spy).toHaveBeenCalledWith("Both True Positive List fetching functions failed. Error: getTruePositiveListLocally() failed.");
+        // Confirm it registers `console.log`s inside of the nested `try/catch`s.
+        expect(spy).toHaveBeenCalledTimes(2);
+        expect(mockAttackers.has(mockAttacker)).toBe(false);
+        expect(mockAttackers.size).toBe(0)
+    });
+
+    it("will handle errors on both True Positive List fetching functions by not fetching anything - `error()` fallback invoked", async () => {
+        // This result will cause the `getTruePositiveListRemotely` to error out,
+        // then proceed to `getTruePositiveListLocally`, , which will also error out.
+        const errorMessage = "Failure to fetch True Positive List.";
+        const mockError = {
+            name: "error",
+            message: errorMessage
+        };
+
+        // Mock `complete` inside of `parse()` from `papaparse`
+        (parse as jest.Mock).mockImplementation((input: string, options: ParseRemoteConfig<TruePositiveCsv>) => {
+            options.error!(mockError, mockTpListPath)
+        });
+
+        const spy = jest.spyOn(console, "log").mockImplementation(() => {});
+
+        await fetcher.getTruePositiveList(mockAttackers);
+
+        expect(spy).toHaveBeenCalledWith(`'getTruePositiveListRemotely' failed. Error: ${errorMessage}`);
+        expect(spy).toHaveBeenCalledWith(`Both True Positive List fetching functions failed. Error: ${errorMessage}`);
         // Confirm it registers `console.log`s inside of the nested `try/catch`s.
         expect(spy).toHaveBeenCalledTimes(2);
         expect(mockAttackers.has(mockAttacker)).toBe(false);
