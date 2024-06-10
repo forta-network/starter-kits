@@ -34,7 +34,7 @@ export const getAllLabels = async (
           }
         }
 
-        if (alertId.includes("SUSPICIOUS-FUNDING")) {
+        if (alertId.includes("SUSPICIOUS-FUNDING") || alertId.includes("MALICIOUS-FUNDING")) {
           if (label.metadata.origin && label.metadata.hops) {
             origin = label.metadata.origin;
             hops = parseInt(label.metadata.hops, 10);
