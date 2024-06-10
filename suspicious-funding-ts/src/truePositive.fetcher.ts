@@ -43,7 +43,7 @@ export default class TruePositiveFetcher {
         this.processParseResults(results, tpAttackers);
       },
       error: (error: Error) => {
-        throw new Error(`getTruePositiveListRemotely() failed. error: ${error.message}`);
+        throw new Error(`${error.message}`);
       }
     });
   }
@@ -60,7 +60,7 @@ export default class TruePositiveFetcher {
         this.processParseResults(results, tpAttackers);
       },
       error: (error: Error) => {
-        throw new Error(`getTruePositiveListLocally() failed. error: ${error.message}`);
+        throw new Error(`${error.message}`);
       }
     });
   };
