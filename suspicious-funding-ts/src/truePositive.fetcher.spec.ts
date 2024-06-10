@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { parse, ParseRemoteConfig, ParseResult } from 'papaparse';
 import { createAddress } from "forta-agent-tools";
 import TruePositiveFetcher from "./truePositive.fetcher";
@@ -7,10 +8,10 @@ import { TruePositiveCsv } from "./types";
 jest.mock('papaparse', () => ({
     parse: jest.fn(),
 }));
+jest.mock('fs');
 
-const mockTpListUrl = "https://raw.testurl.com//tp_list.csv";
-// Though empty, we need a valid csv file for `getTruePositiveListLocally`
-const mockTpListPath = "../test_tp_list.csv";
+const mockTpListUrl = "https://mock.url.com//mock_tp_list.csv";
+const mockTpListPath = "mock_tp_list_path.csv";
 
 describe("TruePositiveFetcher Test Suite", () => {
     let fetcher: TruePositiveFetcher;
@@ -91,6 +92,8 @@ describe("TruePositiveFetcher Test Suite", () => {
             cursor: 0
             },
         };
+
+        (fs.readFileSync as jest.Mock).mockReturnValue("");
 
         // Mock `complete` inside of `parse()` from `papaparse`
         (parse as jest.Mock).mockImplementationOnce((input: string, options: ParseRemoteConfig<TruePositiveCsv>) => {
