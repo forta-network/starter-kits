@@ -55,7 +55,7 @@ export const createFinding = (
   hops: number
 ): Finding => {
   return Finding.fromObject({
-    name: "Suspicious Funding Alert",
+    name: origin == "True Positive List" ? "Malicious Funding Alert" : "Suspicious Funding Alert",
     description: `${to} received funds from ${from}`,
     alertId: origin == "True Positive List" ? "MALICIOUS-FUNDING" : "SUSPICIOUS-FUNDING",
     severity: origin == "True Positive List" ? FindingSeverity.Critical : FindingSeverity.Medium,
