@@ -38,7 +38,6 @@
   },
   "dependencies": {
     "forta-agent": "^0.1.48",
-    "node-fetch": "^2.7.0",
     "papaparse": "^5.4.1"
   },
   "devDependencies": {
