@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "forta-agent": "^0.1.48",
+    "node-fetch": "^2.7.0",
     "papaparse": "^5.4.1"
   },
   "devDependencies": {
@@ -45,7 +46,7 @@
     "@types/jest-when": "^3.5.2",
     "@types/nodemon": "^1.19.0",
     "@types/papaparse": "^5.3.14",
-    "forta-agent-tools": "3.2.7",
+    "forta-agent-tools": "^3.2.12",
     "jest": "^29.7.0",
     "jest-when": "^3.5.2",
     "nodemon": "^2.0.8",
