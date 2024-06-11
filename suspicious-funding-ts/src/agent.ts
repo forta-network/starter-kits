@@ -98,7 +98,7 @@ export const provideHandleTransaction =
 export const provideHandleBlock = (fetcher: TruePositiveFetcher) => async (blockEvent: BlockEvent) => {
   const findings: Finding[] = [];
 
-  // Choosing the denomincator based on chain's block time
+  // Choosing the denominator based on chain's block time
   // so as to update TP list approx. once daily
   const DAILY_BLOCKS_DENOMINATOR = chainId == 1 ? ETH_BLOCKS_IN_ONE_DAY : THREE_SECOND_BLOCKS_IN_ONE_DAY;
   if (blockEvent.blockNumber % DAILY_BLOCKS_DENOMINATOR == 0) {
