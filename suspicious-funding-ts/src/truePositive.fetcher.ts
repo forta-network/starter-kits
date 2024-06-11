@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import fetch from 'node-fetch';
 import { parse, ParseResult } from "papaparse";
 import { AttackerEntry, TruePositiveCsv } from "./types";
 
@@ -61,7 +60,7 @@ export default class TruePositiveFetcher {
     const resolvedTpListPath = path.resolve(__dirname, tpListPath);
     const tpListContent = fs.readFileSync(resolvedTpListPath, 'utf8');
     this.parse(tpListContent, tpAttackers);
-  };
+  }
 
   public getTruePositiveList = async (
     attackers: Map<string, { origin: string; hops: number }>
@@ -80,7 +79,6 @@ export default class TruePositiveFetcher {
     }
   
     truePositiveAttackers.forEach((attacker: string) => {
-      console.log(`attacker: ${attacker}`);
       const origin = "True Positive List";
       const hops = 0;
 
