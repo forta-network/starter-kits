@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import fetch from 'node-fetch';
 import { parse, ParseResult } from "papaparse";
 import { AttackerEntry, TruePositiveCsv } from "./types";
 
@@ -33,13 +34,12 @@ export default class TruePositiveFetcher {
     });
   }
 
-  private getTruePositiveListRemotely = (tpListUrl: string, tpAttackers: string[]) => {
-    parse(tpListUrl, {
-      download: true,
+  private parse = (tpListContent: string, tpAttackers: string[]) => {
+    parse(tpListContent, {
       header: true,
       skipEmptyLines: true,
       complete: (results: ParseResult<TruePositiveCsv>) => {
-        if(results.errors.length) throw new Error("getTruePositiveListRemotely() failed.");
+        if(results.errors.length) throw new Error(`${results.errors[0].message}`);
         this.processParseResults(results, tpAttackers);
       },
       error: (error: Error) => {
@@ -48,30 +48,28 @@ export default class TruePositiveFetcher {
     });
   }
 
+  private getTruePositiveListRemotely = async (tpListUrl: string, tpAttackers: string[]) => {
+    const response = await fetch(tpListUrl);
+    if (!response.ok) {
+      throw new Error("Failed to fetch remote True Positive list");
+    }
+    const tpListContent = await response.text();
+    this.parse(tpListContent, tpAttackers);
+  }
+
   private getTruePositiveListLocally = (tpListPath: string, tpAttackers: string[]) => {
     const resolvedTpListPath = path.resolve(__dirname, tpListPath);
     const tpListContent = fs.readFileSync(resolvedTpListPath, 'utf8');
-  
-    parse(tpListContent, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results: ParseResult<TruePositiveCsv>) => {
-        if(results.errors.length) throw new Error("getTruePositiveListLocally() failed.");
-        this.processParseResults(results, tpAttackers);
-      },
-      error: (error: Error) => {
-        throw new Error(`${error.message}`);
-      }
-    });
+    this.parse(tpListContent, tpAttackers);
   };
 
-  public getTruePositiveList = (
+  public getTruePositiveList = async (
     attackers: Map<string, { origin: string; hops: number }>
   ) => {
     let truePositiveAttackers: string[] = [];
   
     try {
-      this.getTruePositiveListRemotely(this.truePositiveListUrl, truePositiveAttackers);
+      await this.getTruePositiveListRemotely(this.truePositiveListUrl, truePositiveAttackers);
     } catch(e) {
       console.log(`'getTruePositiveListRemotely' failed. ${e}`);
       try {
@@ -82,6 +80,7 @@ export default class TruePositiveFetcher {
     }
   
     truePositiveAttackers.forEach((attacker: string) => {
+      console.log(`attacker: ${attacker}`);
       const origin = "True Positive List";
       const hops = 0;
 
