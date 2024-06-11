@@ -38,7 +38,7 @@ export const provideInitialize =
       first: 2000,
     };
     await getAllLabels(query, attackers);
-    fetcher.getTruePositiveList(attackers);
+    await fetcher.getTruePositiveList(attackers);
 
     return {
       alertConfig: {
