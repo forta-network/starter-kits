@@ -45,7 +45,9 @@ ML_MODEL = None
 
 def initialize():
     """
-    this function loads the ml model and fetches the list of true positive attackers
+    this function loads the ml model, fetches the list of true positive attackers,
+    and returns `alert_config` to subscribe to the Suspicious Funding's "MALICIOUS-FUNDING"
+    alert id.
     """
 
     global CHAIN_ID
@@ -86,6 +88,18 @@ def initialize():
 
     global TP_ATTACKER_LIST
     TP_ATTACKER_LIST = get_tp_attacker_list()
+
+    alert_config = {
+        "alertConfig": {
+            "subscriptions": [
+                {
+                    "botId": FUNDING_BOTS[8],
+                    "alertId": "MALICIOUS-FUNDING"
+                }
+            ]
+        }
+    }
+    return alert_config
 
 
 def exec_model(w3, opcodes: str, contract_creator: str) -> tuple:
@@ -288,7 +302,8 @@ def detect_malicious_contract(
                 if ENV == 'dev':
                     logger.info(f"Score is less than threshold: {model_score} < {MODEL_INFO_THRESHOLD}. Not creating alert.")
                 return []
-            # If we are not in beta, we only create alerts if the score is above the threshold
+            # If we are not in beta, we create alerts if the score is above the threshold
+            # or if `from_` is in the True Positive list
             if (model_score < MODEL_THRESHOLD and not BETA) and not from_eoa_in_tp_list:
                 if ENV == 'dev':
                     logger.info(f"Score is less than threshold: {model_score} < {MODEL_THRESHOLD} and we are not in beta. Not checking for labels.")
@@ -329,7 +344,7 @@ def detect_malicious_contract(
                             "entity": created_contract_address,
                             "entity_type": EntityType.Address,
                             "label": "attacker",
-                            "confidence": model_score,
+                            "confidence": 1.0 if from_eoa_in_tp_list else model_score,
                         },
                         {
                             "entity": from_,
@@ -372,7 +387,7 @@ def provide_handle_block(w3):
     def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
         findings = []
 
-        # Choosing the denomincator based on chain's block time
+        # Choosing the denominator based on chain's block time
         # so as to update TP list approx. once daily
         DAILY_BLOCKS_DENOMINATOR = ETH_BLOCKS_IN_ONE_DAY if CHAIN_ID == 1 else THREE_SECOND_BLOCKS_IN_ONE_DAY
         if block_event.block_number % DAILY_BLOCKS_DENOMINATOR == 0:
@@ -388,6 +403,27 @@ real_handle_block = provide_handle_block(web3)
 
 def handle_block(block_event: forta_agent.block_event.BlockEvent):
     return real_handle_block(block_event)
+
+def provide_handle_alert(w3):
+    def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
+        findings = []
+
+        global TP_ATTACKER_LIST
+        if alert_event.alert.metadata.sender not in TP_ATTACKER_LIST:
+            TP_ATTACKER_LIST.append(alert_event.alert.metadata.sender.lower())
+        
+        TP_ATTACKER_LIST.append(alert_event.alert.metadata.receiver.lower())
+
+        return findings
+
+    return handle_alert
+
+
+real_handle_alert = provide_handle_alert(web3)
+
+
+def handle_alert(alert_event: forta_agent.alert_event.AlertEvent):
+    return real_handle_alert(alert_event)
 
 def check_funding_labels(address: str, tx_timestamp: int, n_days: int=365, extra_time_bots: str=None, extra_time: int=180):
     t = time.time()
