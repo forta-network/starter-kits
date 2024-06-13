@@ -298,16 +298,17 @@ def detect_malicious_contract(
             function_signatures = get_function_signatures(w3, opcodes)
             logger.info(f"{created_contract_address}: score={model_score}")
 
-            if (model_score is None or model_score < MODEL_INFO_THRESHOLD) and not from_eoa_in_tp_list:
-                if ENV == 'dev':
-                    logger.info(f"Score is less than threshold: {model_score} < {MODEL_INFO_THRESHOLD}. Not creating alert.")
-                return []
-            # If we are not in beta, we create alerts if the score is above the threshold
-            # or if `from_` is in the True Positive list
-            if (model_score < MODEL_THRESHOLD and not BETA) and not from_eoa_in_tp_list:
-                if ENV == 'dev':
-                    logger.info(f"Score is less than threshold: {model_score} < {MODEL_THRESHOLD} and we are not in beta. Not checking for labels.")
-                return []
+            if not from_eoa_in_tp_list:
+                if model_score is None or model_score < MODEL_INFO_THRESHOLD:
+                    if ENV == 'dev':
+                        logger.info(f"Score is less than threshold: {model_score} < {MODEL_INFO_THRESHOLD}. Not creating alert.")
+                    return []
+                # If we are not in beta, we create alerts if the score is above the threshold
+                # or if `from_` is in the True Positive list
+                if model_score < MODEL_THRESHOLD and not BETA:
+                    if ENV == 'dev':
+                        logger.info(f"Score is less than threshold: {model_score} < {MODEL_THRESHOLD} and we are not in beta. Not checking for labels.")
+                    return []
             # obtain all the addresses contained in the created contract and propagate to the findings
             # We only do it if the model score is above the threshold
             env_t = time.time()
@@ -324,7 +325,7 @@ def detect_malicious_contract(
                 error=error,
             )
             if (model_score is not None and model_score >= MODEL_INFO_THRESHOLD) or from_eoa_in_tp_list:
-                from_label_type = "eoa" if from_eoa_in_tp_list else "contract" if is_contract(w3, from_) else "eoa"
+                from_label_type = "eoa" if from_eoa_in_tp_list or not is_contract(w3, from_) else "contract"
                 # If it's a potential alert, we create labels. Otherwise, we don't
                 if (model_score >= MODEL_THRESHOLD) or from_eoa_in_tp_list:
                     labels = [
@@ -383,7 +384,7 @@ def handle_transaction(
 ):
     return real_handle_transaction(transaction_event)
 
-def provide_handle_block(w3):
+def provide_handle_block():
     def handle_block(block_event: forta_agent.block_event.BlockEvent) -> list:
         findings = []
 
@@ -398,28 +399,28 @@ def provide_handle_block(w3):
     return handle_block
 
 
-real_handle_block = provide_handle_block(web3)
+real_handle_block = provide_handle_block()
 
 
 def handle_block(block_event: forta_agent.block_event.BlockEvent):
     return real_handle_block(block_event)
 
-def provide_handle_alert(w3):
+def provide_handle_alert():
     def handle_alert(alert_event: forta_agent.alert_event.AlertEvent) -> list:
         findings = []
 
         global TP_ATTACKER_LIST
-        if alert_event.alert.metadata.sender not in TP_ATTACKER_LIST:
-            TP_ATTACKER_LIST.append(alert_event.alert.metadata.sender.lower())
+        if alert_event.alert.metadata['sender'].lower() not in TP_ATTACKER_LIST:
+            TP_ATTACKER_LIST.append(alert_event.alert.metadata['sender'].lower())
         
-        TP_ATTACKER_LIST.append(alert_event.alert.metadata.receiver.lower())
+        TP_ATTACKER_LIST.append(alert_event.alert.metadata['receiver'].lower())
 
         return findings
 
     return handle_alert
 
 
-real_handle_alert = provide_handle_alert(web3)
+real_handle_alert = provide_handle_alert()
 
 
 def handle_alert(alert_event: forta_agent.alert_event.AlertEvent):
