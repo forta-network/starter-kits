@@ -102,7 +102,7 @@ export const provideHandleBlock = (fetcher: TruePositiveFetcher) => async (block
   // so as to update TP list approx. once daily
   const DAILY_BLOCKS_DENOMINATOR = chainId == 1 ? ETH_BLOCKS_IN_ONE_DAY : THREE_SECOND_BLOCKS_IN_ONE_DAY;
   if (blockEvent.blockNumber % DAILY_BLOCKS_DENOMINATOR == 0) {
-      fetcher.getTruePositiveList(attackers);
+      await fetcher.getTruePositiveList(attackers);
   }
 
   return findings;
