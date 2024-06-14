@@ -7,14 +7,15 @@ export const BOTS_TO_MONITOR = [
 
 export const DAYS_TO_LOOK_BACK = 3;
 
+// Around $5000 at the time of the update
 export const VALUE_THRESHOLDS: Record<number, number> = {
-  1: 0.07,
-  10: 0.07,
-  56: 0.5,
-  137: 190,
-  250: 400,
-  42161: 0.07,
-  43114: 4,
+  1: 1.4,
+  10: 1.4,
+  56: 9,
+  137: 8300,
+  250: 8000,
+  42161: 1.4,
+  43114: 160,
 };
 
 export const alertOriginMap = {
