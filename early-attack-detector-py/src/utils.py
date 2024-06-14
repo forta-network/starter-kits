@@ -50,7 +50,7 @@ def get_storage_addresses(w3, address) -> set:
     """
     if address is None:
         return set()
-    
+
     tp_executor = ThreadPoolExecutor(max_workers=10)
     checksumed_address = Web3.toChecksumAddress(address)
     futures = [tp_executor.submit(w3.eth.get_storage_at, checksumed_address, i) for i in range(CONTRACT_SLOT_ANALYSIS_DEPTH)]
