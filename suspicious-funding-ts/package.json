@@ -1,7 +1,7 @@
 {
   "name": "suspicious-funding",
   "displayName": "Suspicious Funding Detector",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Detects suspicious funding transactions",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/suspicious-funding-ts",
   "licenseUrl": "https://github.com/forta-network/forta-bot-sdk/blob/master/starter-project/LICENSE.md",
@@ -37,17 +37,19 @@
     "test": "jest"
   },
   "dependencies": {
-    "forta-agent": "^0.1.48"
+    "forta-agent": "^0.1.48",
+    "papaparse": "^5.4.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.10",
-    "@types/nodemon": "^1.19.0",
     "@types/jest-when": "^3.5.2",
+    "@types/nodemon": "^1.19.0",
+    "@types/papaparse": "^5.3.14",
+    "forta-agent-tools": "^3.2.12",
     "jest": "^29.7.0",
+    "jest-when": "^3.5.2",
     "nodemon": "^2.0.8",
     "ts-jest": "^29.1.1",
-    "typescript": "^4.3.4",
-    "forta-agent-tools": "3.2.7",
-    "jest-when": "^3.5.2"
+    "typescript": "^4.3.4"
   }
 }

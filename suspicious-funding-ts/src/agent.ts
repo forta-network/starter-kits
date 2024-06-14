@@ -3,6 +3,7 @@ import {
   HandleAlert,
   AlertEvent,
   TransactionEvent,
+  BlockEvent,
   LabelQueryOptions,
   ethers,
   getEthersProvider,
@@ -12,15 +13,21 @@ import {
   DAYS_TO_LOOK_BACK,
   VALUE_THRESHOLDS,
   alertOriginMap,
+  TRUE_POSITIVE_LIST_URL,
+  TRUE_POSITIVE_LIST_PATH,
+  ETH_BLOCKS_IN_ONE_DAY,
+  THREE_SECOND_BLOCKS_IN_ONE_DAY
 } from "./constants";
 import { createFinding, getAllLabels } from "./utils";
+import TruePositiveFetcher from "./truePositive.fetcher"
 
 const ethersProvider = getEthersProvider();
 const attackers = new Map<string, { origin: string; hops: number }>();
+let truePositiveFetcher: TruePositiveFetcher = new TruePositiveFetcher(TRUE_POSITIVE_LIST_URL, TRUE_POSITIVE_LIST_PATH);
 let chainId: number;
 
 export const provideInitialize =
-  (provider: ethers.providers.Provider) => async () => {
+  (provider: ethers.providers.Provider, fetcher: TruePositiveFetcher) => async () => {
     chainId = Number((await provider.getNetwork()).chainId);
 
     const query: LabelQueryOptions = {
@@ -31,6 +38,7 @@ export const provideInitialize =
       first: 2000,
     };
     await getAllLabels(query, attackers);
+    await fetcher.getTruePositiveList(attackers);
 
     return {
       alertConfig: {
@@ -87,6 +95,19 @@ export const provideHandleTransaction =
     return findings;
   };
 
+export const provideHandleBlock = (fetcher: TruePositiveFetcher) => async (blockEvent: BlockEvent) => {
+  const findings: Finding[] = [];
+
+  // Choosing the denominator based on chain's block time
+  // so as to update TP list approx. once daily
+  const DAILY_BLOCKS_DENOMINATOR = chainId == 1 ? ETH_BLOCKS_IN_ONE_DAY : THREE_SECOND_BLOCKS_IN_ONE_DAY;
+  if (blockEvent.blockNumber % DAILY_BLOCKS_DENOMINATOR == 0) {
+      await fetcher.getTruePositiveList(attackers);
+  }
+
+  return findings;
+};
+
 const handleAlert: HandleAlert = async (alertEvent: AlertEvent) => {
   const findings: Finding[] = [];
 
@@ -109,7 +130,8 @@ const handleAlert: HandleAlert = async (alertEvent: AlertEvent) => {
 };
 
 export default {
-  initialize: provideInitialize(ethersProvider),
+  initialize: provideInitialize(ethersProvider, truePositiveFetcher),
   handleTransaction: provideHandleTransaction(attackers, ethersProvider),
+  handleBlock: provideHandleBlock(truePositiveFetcher),
   handleAlert,
 };
