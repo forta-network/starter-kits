@@ -1,7 +1,7 @@
 {
   "name": "suspicious-funding",
   "displayName": "Suspicious Funding Detector",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Detects suspicious funding transactions",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/suspicious-funding-ts",
   "licenseUrl": "https://github.com/forta-network/forta-bot-sdk/blob/master/starter-project/LICENSE.md",
