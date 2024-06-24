@@ -22,9 +22,9 @@ import forta_agent
 from forta_agent import Finding, FindingType, FindingSeverity, get_alerts, get_labels
 from web3 import Web3
 
-from src.constants import (BASE_BOTS, ALERTED_ENTITIES_ML_KEY, ALERTED_ENTITIES_ML_QUEUE_SIZE, ALERTED_ENTITIES_PASSTHROUGH_KEY, ALERTED_ENTITIES_PASSTHROUGH_QUEUE_SIZE, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE, ALERTED_ENTITIES_SIMILAR_CONTRACT_KEY, ALERTED_ENTITIES_SIMILAR_CONTRACT_QUEUE_SIZE, ALERTED_ENTITIES_MANUAL_KEY, ALERTED_ENTITIES_MANUAL_QUEUE_SIZE, ALERTED_ENTITIES_MANUAL_METAMASK_KEY, ALERTED_ENTITIES_MANUAL_METAMASK_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
+from src.constants import (BASE_BOTS, ALERTED_ENTITIES_ML_KEY, ALERTED_ENTITIES_ML_QUEUE_SIZE, ALERTED_ENTITIES_PASSTHROUGH_KEY, ALERTED_ENTITIES_PASSTHROUGH_QUEUE_SIZE, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE, ALERTED_ENTITIES_MANUAL_KEY, ALERTED_ENTITIES_MANUAL_QUEUE_SIZE, ALERTED_ENTITIES_MANUAL_METAMASK_KEY, ALERTED_ENTITIES_MANUAL_METAMASK_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
                        FINDINGS_CACHE_ALERT_KEY, FINDINGS_CACHE_BLOCK_KEY, ALERTED_FP_CLUSTERS_KEY, FINDINGS_CACHE_TRANSACTION_KEY,
-                       ALERTED_FP_CLUSTERS_QUEUE_SIZE, SCAM_DETECTOR_BOT_ID, SCAM_DETECTOR_BETA_BOT_ID, SCAM_DETECTOR_BETA_ALT_BOT_ID, CONTRACT_SIMILARITY_BOTS, CONTRACT_SIMILARITY_BOT_THRESHOLDS, EOA_ASSOCIATION_BOTS,
+                       ALERTED_FP_CLUSTERS_QUEUE_SIZE, SCAM_DETECTOR_BOT_ID, SCAM_DETECTOR_BETA_BOT_ID, SCAM_DETECTOR_BETA_ALT_BOT_ID, EOA_ASSOCIATION_BOTS,
                        EOA_ASSOCIATION_BOT_THRESHOLDS, PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES, POOLCREATED_EVENT_ABI, ENCRYPTED_BOTS,
                        MODEL_ALERT_THRESHOLD_LOOSE, MODEL_ALERT_THRESHOLD_STRICT, MODEL_FEATURES, MODEL_NAME, DEBUG_ALERT_ENABLED, ENABLE_METAMASK_CONSUMPTION)
 from src.storage import s3_client, dynamo_table, get_secrets, bucket_name
@@ -50,7 +50,6 @@ LAST_PROCESSED_TIME = 0 # Used to update reactive likely fps
 ALERTED_ENTITIES_ML = OrderedDict()  # cluster -> alert_id
 ALERTED_ENTITIES_PASSTHROUGH = OrderedDict()  # cluster -> alert_id
 ALERTED_ENTITIES_SCAMMER_ASSOCIATION = OrderedDict()  # cluster -> alert_id
-ALERTED_ENTITIES_SIMILAR_CONTRACT = OrderedDict()  # cluster -> alert_id
 ALERTED_ENTITIES_MANUAL = OrderedDict()  # cluster -> alert_id
 ALERTED_ENTITIES_MANUAL_METAMASK = OrderedDict()  # cluster -> alert_id
 ALERTED_ENTITIES_MANUAL_METAMASK_LIST = [] # Used to reduce size of persisted item
@@ -111,10 +110,6 @@ def initialize(test = False):
         global ALERTED_ENTITIES_SCAMMER_ASSOCIATION
         alerted_entities_scammer_association = load(CHAIN_ID, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY)
         ALERTED_ENTITIES_SCAMMER_ASSOCIATION = OrderedDict() if alerted_entities_scammer_association is None else OrderedDict(alerted_entities_scammer_association)
-
-        global ALERTED_ENTITIES_SIMILAR_CONTRACT
-        alerted_entities_similar_contract = load(CHAIN_ID, ALERTED_ENTITIES_SIMILAR_CONTRACT_KEY)
-        ALERTED_ENTITIES_SIMILAR_CONTRACT = OrderedDict() if alerted_entities_similar_contract is None else OrderedDict(alerted_entities_similar_contract)
 
         global ALERTED_ENTITIES_MANUAL
         alerted_entities_manual = load(CHAIN_ID, ALERTED_ENTITIES_MANUAL_KEY)
@@ -450,7 +445,7 @@ def get_model_score(df_feature_vector: pd.DataFrame) -> float:
 
 
 def already_alerted(entity: str, alert_id: str, logic = ""):
-    global ALERTED_ENTITIES_ML, ALERTED_ENTITIES_PASSTHROUGH, ALERTED_ENTITIES_SCAMMER_ASSOCIATION, ALERTED_ENTITIES_SIMILAR_CONTRACT, ALERTED_ENTITIES_MANUAL, ALERTED_ENTITIES_MANUAL_METAMASK
+    global ALERTED_ENTITIES_ML, ALERTED_ENTITIES_PASSTHROUGH, ALERTED_ENTITIES_SCAMMER_ASSOCIATION, ALERTED_ENTITIES_MANUAL, ALERTED_ENTITIES_MANUAL_METAMASK
     
     if logic == "ml":
         alerted_entities = ALERTED_ENTITIES_ML
@@ -458,8 +453,6 @@ def already_alerted(entity: str, alert_id: str, logic = ""):
         alerted_entities = ALERTED_ENTITIES_PASSTHROUGH
     elif logic == "scammer_association":
         alerted_entities = ALERTED_ENTITIES_SCAMMER_ASSOCIATION
-    elif logic == "similar_contract":
-        alerted_entities = ALERTED_ENTITIES_SIMILAR_CONTRACT
     elif logic == "manual":
         alerted_entities = ALERTED_ENTITIES_MANUAL
     elif logic == "manual_metamask":
@@ -628,43 +621,6 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
 
 
     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - return total findings: {len(findings)}")
-    return findings
-
-def emit_contract_similarity_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list:
-    global ALERTED_ENTITIES_SIMILAR_CONTRACT
-    global ALERTED_ENTITIES_SIMILAR_CONTRACT_QUEUE_SIZE
-    global CONTRACT_SIMILARITY_BOT_THRESHOLDS
-    global CHAIN_ID
-
-    findings = []
-    scammer_addresses_lower = BaseBotParser.get_scammer_addresses(w3, alert_event)
-    logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got contract similarity bot alert; got {len(scammer_addresses_lower)} scammer addresses.")
-    for scammer_address_lower in scammer_addresses_lower:
-        # Check if the address is in the manual FP list
-        if Utils.is_in_fp_mitigation_list(scammer_address_lower):
-            logging.info(f"Skipped alert for {scammer_address_lower} as it is in the manual FP list.")
-            continue
-
-        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - processing contract similarity bot address {scammer_address_lower}")
-
-        similarity_score = float(alert_event.alert.metadata['similarity_score']) if 'similarity_score' in alert_event.alert.metadata else float(alert_event.alert.metadata['similarityScore'])
-        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - {scammer_address_lower} similarity score {similarity_score}")
-        if similarity_score > CONTRACT_SIMILARITY_BOT_THRESHOLDS[0]:
-            logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - similarity score {similarity_score} is above threshold {CONTRACT_SIMILARITY_BOT_THRESHOLDS[0]}")
-            if not Utils.is_fp(w3, scammer_address_lower, CHAIN_ID, FINDINGS_CACHE_ALERT):
-                
-                if not already_alerted(scammer_address_lower, "SCAM-DETECTOR-SIMILAR-CONTRACT", "similar_contract"):
-                    logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower}; emitting finding")
-                    update_list(ALERTED_ENTITIES_SIMILAR_CONTRACT, ALERTED_ENTITIES_SIMILAR_CONTRACT_QUEUE_SIZE, scammer_address_lower, "SCAM-DETECTOR-SIMILAR-CONTRACT", "ALERTED_ENTITIES_SIMILAR_CONTRACT", "similar_contract")
-                    finding = ScamDetectorFinding.alert_similar_contract(block_chain_indexer, forta_explorer, alert_event.alert.alert_id, alert_event.alert_hash, alert_event.alert.metadata, CHAIN_ID)
-                    if(finding is not None):
-                        findings.append(finding)
-                    else:
-                        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - finding is none due to original threat category not being in list flagged for propagation")
-                else:
-                    logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} already alerted")
-            else:
-                logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - address {scammer_address_lower} in FP.")
     return findings
 
 
@@ -898,16 +854,10 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
                     put_entity_cluster(alert_event.alert.created_at, address, cluster)
 
             # for basebots, three paths:
-            # for contract similarity, a bit more work
             # for passthroughs, simply emit an alert (pot with some adjustments on mappings)
             # for combination base bots store in dynamo; then query dynamo for the cluster (this will pull all alerts from multiple shards), build feature vector and then evaluate detection heuristic
             
-            if in_list(alert_event, CONTRACT_SIMILARITY_BOTS):
-                start = time.time()
-                logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} is contract similarity alert")
-                findings.extend(emit_contract_similarity_finding(w3, alert_event))
-                logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} is contract similarity alert. Processing took {time.time() - start} seconds.")
-            elif in_list(alert_event, EOA_ASSOCIATION_BOTS):
+            if in_list(alert_event, EOA_ASSOCIATION_BOTS):
                 start = time.time()
                 logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} is eoa association alert")
                 findings.extend(emit_eoa_association_finding(w3, alert_event))
@@ -1302,7 +1252,6 @@ def clear_state():
     L2Cache.remove(CHAIN_ID, ALERTED_ENTITIES_ML_KEY)
     L2Cache.remove(CHAIN_ID, ALERTED_ENTITIES_PASSTHROUGH_KEY)
     L2Cache.remove(CHAIN_ID, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY)
-    L2Cache.remove(CHAIN_ID, ALERTED_ENTITIES_SIMILAR_CONTRACT_KEY)
     L2Cache.remove(CHAIN_ID, ALERTED_ENTITIES_MANUAL_KEY)
     L2Cache.remove(CHAIN_ID, ALERTED_ENTITIES_MANUAL_METAMASK_KEY)
     L2Cache.remove(CHAIN_ID, ALERTED_FP_CLUSTERS_KEY)
@@ -1324,9 +1273,6 @@ def persist_state():
 
     global ALERTED_ENTITIES_SCAMMER_ASSOCIATION
     global ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY
-
-    global ALERTED_ENTITIES_SIMILAR_CONTRACT
-    global ALERTED_ENTITIES_SIMILAR_CONTRACT_KEY
 
     global ALERTED_ENTITIES_MANUAL
     global ALERTED_ENTITIES_MANUAL_KEY
@@ -1353,7 +1299,6 @@ def persist_state():
     persist(ALERTED_ENTITIES_ML, CHAIN_ID, ALERTED_ENTITIES_ML_KEY)
     persist(ALERTED_ENTITIES_PASSTHROUGH, CHAIN_ID, ALERTED_ENTITIES_PASSTHROUGH_KEY)
     persist(ALERTED_ENTITIES_SCAMMER_ASSOCIATION, CHAIN_ID, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY)
-    persist(ALERTED_ENTITIES_SIMILAR_CONTRACT, CHAIN_ID, ALERTED_ENTITIES_SIMILAR_CONTRACT_KEY)
     persist(ALERTED_ENTITIES_MANUAL, CHAIN_ID, ALERTED_ENTITIES_MANUAL_KEY)
     persist(ALERTED_FP_CLUSTERS, CHAIN_ID, ALERTED_FP_CLUSTERS_KEY)
     persist(FINDINGS_CACHE_BLOCK, CHAIN_ID, FINDINGS_CACHE_BLOCK_KEY)
