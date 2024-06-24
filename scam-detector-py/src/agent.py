@@ -59,7 +59,6 @@ FINDINGS_CACHE_ALERT = []
 FINDINGS_CACHE_TRANSACTION = []
 REACTIVE_LIKELY_FPS = {}  # address -> list of label metadata (addresses that are yet to be checked)
 SCAMMER_ASSOCIATION_LABELS = None
-SIMILAR_CONTRACT_LABELS = None
 DF_CONTRACT_SIGNATURES = None
 
 MODEL = None
@@ -908,7 +907,6 @@ def emit_new_fp_finding(w3) -> list:
             raise Exception("CHAIN_ID not set")
     findings = []
 
-    similar_contract_labels = None
     scammer_association_labels = None
 
     try:
@@ -924,10 +922,8 @@ def emit_new_fp_finding(w3) -> list:
                     for address in cluster.split(','):
                         if scammer_association_labels is None:
                             scammer_association_labels = get_scammer_association_labels(w3, forta_explorer)
-                        if similar_contract_labels is None:
-                            similar_contract_labels = get_similar_contract_labels(w3, forta_explorer)
                         
-                        for (entity, label, metadata, unique_key) in obtain_all_fp_labels(w3, address, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, CHAIN_ID):
+                        for (entity, label, metadata, unique_key) in obtain_all_fp_labels(w3, address, block_chain_indexer, forta_explorer, scammer_association_labels, CHAIN_ID):
                             logging.info(f"{BOT_VERSION}: Emitting FP mitigation finding for {entity} {label}")
                             update_list(ALERTED_FP_CLUSTERS, ALERTED_FP_CLUSTERS_QUEUE_SIZE, entity, "SCAM-DETECTOR-FALSE-POSITIVE", "ALERTED_FP_CLUSTERS")
                             findings.append(ScamDetectorFinding.alert_FP(w3, entity, label, metadata, [unique_key]))
@@ -949,7 +945,6 @@ def update_reactive_likely_fps(w3, current_date) -> list:
     logging.info(f"{BOT_VERSION}: update reactive likely fps called")
     global REACTIVE_LIKELY_FPS
     global ALERTED_FP_CLUSTERS
-    global SIMILAR_CONTRACT_LABELS
     global SCAMMER_ASSOCIATION_LABELS
     global LAST_PROCESSED_TIME
     findings = []
@@ -1006,7 +1001,6 @@ def update_reactive_likely_fps(w3, current_date) -> list:
         if REACTIVE_LIKELY_FPS:
             if current_date.minute == 5:
                 # Refresh the data every hour (at the 05 minute)
-                SIMILAR_CONTRACT_LABELS = None
                 SCAMMER_ASSOCIATION_LABELS = None
 
             address = next(iter(REACTIVE_LIKELY_FPS), None)
@@ -1018,9 +1012,7 @@ def update_reactive_likely_fps(w3, current_date) -> list:
                 findings.append(ScamDetectorFinding.alert_FP(w3, address, "scammer", metadata_array, unique_keys_array))
                 if SCAMMER_ASSOCIATION_LABELS is None:
                         SCAMMER_ASSOCIATION_LABELS = get_scammer_association_labels(w3, forta_explorer)
-                if SIMILAR_CONTRACT_LABELS is None:
-                    SIMILAR_CONTRACT_LABELS = get_similar_contract_labels(w3, forta_explorer)
-                for (entity, label, metadata, unique_key) in obtain_all_fp_labels(w3, address, block_chain_indexer, forta_explorer, SIMILAR_CONTRACT_LABELS, SCAMMER_ASSOCIATION_LABELS, CHAIN_ID):
+                for (entity, label, metadata, unique_key) in obtain_all_fp_labels(w3, address, block_chain_indexer, forta_explorer, SCAMMER_ASSOCIATION_LABELS, CHAIN_ID):
                         logging.info(f"{BOT_VERSION}: Processing entity: {entity} - {label}")
                         if entity != address:
                             logging.info(f"{BOT_VERSION}: Emitting FP mitigation finding for {entity} {label}")
@@ -1041,19 +1033,6 @@ def get_value(items: dict, key: str):
 
     return v
 
-# contains from_entity, from_entity_deployer, to_entity, to_entity_deployer
-def get_similar_contract_labels(w3, forta_explorer) -> pd.DataFrame:
-    source_id = SCAM_DETECTOR_BETA_ALT_BOT_ID if Utils.is_beta_alt() else (SCAM_DETECTOR_BETA_BOT_ID if Utils.is_beta() else SCAM_DETECTOR_BOT_ID)
-    df_labels = forta_explorer.get_labels(source_id, datetime(2023,3,1), datetime.now(), label_query = "similar-contract")
-    df_labels.rename(columns={'entity': 'to_entity'}, inplace=True)
-    df_labels['from_entity'] = df_labels['metadata'].apply(lambda x: get_value(x, "associated_scammer_contract"))
-    df_labels['deployer_info'] = df_labels['metadata'].apply(lambda x: get_value(x, "deployer_info"))
-    df_labels['from_entity_deployer'] = df_labels['deployer_info'].apply(lambda x: x[216:216+42])
-    df_labels['to_entity_deployer'] = df_labels['deployer_info'].apply(lambda x: x[9:9+42])
-    # drop all but from_entity and to_entity
-    df_labels.drop(df_labels.columns.difference(['from_entity', 'from_entity_deployer', 'to_entity', 'to_entity_deployer']), axis=1, inplace=True)                                      
-    return df_labels
-
 
 
 # contains from_entity and to_entity
@@ -1073,7 +1052,7 @@ def get_scammer_association_labels(w3, forta_explorer) -> pd.DataFrame:
 # this function returns a list of all labels that need to be removed with the address as a starting point
 # it contain a queue of addresses to process and a set of addresses that have already been processed
 # returns a tuple of (entity, threat_category, metadata); metadata is a tuple of key=value pairs because its not hashable otherwise
-def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_explorer, similar_contract_labels: pd.DataFrame, scammer_association_labels: pd.DataFrame, chain_id: int) -> set:
+def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_explorer, scammer_association_labels: pd.DataFrame, chain_id: int) -> set:
     global ALERTED_FP_CLUSTERS
     global ALERTED_FP_CLUSTERS_QUEUE_SIZE
 
@@ -1103,20 +1082,6 @@ def obtain_all_fp_labels(w3, starting_address: str, block_chain_indexer, forta_e
                     unique_key = row['uniqueKey']
                     logging.info(f"{BOT_VERSION}: {starting_address} adding FP label threat category {threat_category} for contract {address}")
                     fp_labels.add((address,label, tuple([f"{k}={v}" for k, v in row['metadata'].items()]), unique_key))
-
-                    similar_contract_labels_for_address = similar_contract_labels[similar_contract_labels['from_entity'] == address]
-                    for index, row in similar_contract_labels_for_address.iterrows():
-                        logging.info(f"{BOT_VERSION}: {starting_address} adding to process due to contract similarity from_entity {address} -> to_entity {row['to_entity']}, to_entity_deployer {row['to_entity_deployer']}, from_entity_deployer {row['from_entity_deployer']}")
-                        to_process.add(row['to_entity'])
-                        to_process.add(row['to_entity_deployer'])
-                        to_process.add(row['from_entity_deployer'])
-
-                    similar_contract_labels_for_address = similar_contract_labels[similar_contract_labels['to_entity'] == address]
-                    for index, row in similar_contract_labels_for_address.iterrows():
-                        logging.info(f"{BOT_VERSION}: {starting_address} adding to process due to contract similarity to_entity {address} -> from_entity {row['from_entity']}, from_entity_deployer {row['from_entity_deployer']}, to_entity_deployer {row['to_entity_deployer']}")
-                        to_process.add(row['from_entity'])
-                        to_process.add(row['from_entity_deployer'])
-                        to_process.add(row['to_entity_deployer'])
 
 
         else:
