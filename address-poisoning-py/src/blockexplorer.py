@@ -1,14 +1,18 @@
-from src.storage import get_secrets
+from storage import get_secrets
 from functools import lru_cache
 import requests
 import logging
 import json
+import asyncio
+
 
 class BlockExplorer():
 
     def __init__(self, chain_id):
-        self.api_keys = get_secrets()
+        self.initialize_task = asyncio.create_task(self.initialize(chain_id))
 
+    async def initialize(self, chain_id):
+        self.api_keys = await get_secrets()
         if chain_id == 1:
             self.host = "https://api.etherscan.io/api"
             self.api_key = self.api_keys['apiKeys']['ETHERSCAN_TOKEN']
@@ -30,7 +34,9 @@ class BlockExplorer():
         elif chain_id == 43114:
             self.host = "https://api.snowtrace.io/api"
             self.api_key = self.api_keys['apiKeys']['SNOWTRACE_TOKEN']
-
+        elif chain_id == 59144:
+            self.host = "https://api.lineascan.build/api"
+            self.api_key = self.api_keys['apiKeys']['LINEASCAN_TOKEN']
 
     @lru_cache(maxsize=100)
     def make_token_history_query(self, address_info):
@@ -44,7 +50,7 @@ class BlockExplorer():
 
         response = requests.get(self.host, params=params)
         values = [transfer['value'] for transfer in response.json()['result'] if transfer['from'] == str.lower(address_info[0])]
-        
+
         return values[-5:]
 
     def is_verified(self, address):
@@ -56,6 +62,6 @@ class BlockExplorer():
                 logging.info("Contract is verified...exiting")
                 return True
         else:
-            logging.warn("Unable to check if contract is verified. Etherscan returned status code " + str(response.status_code))
+            logging.warning("Unable to check if contract is verified. Etherscan returned status code " + str(response.status_code))
         logging.info("Contract is not verified")
         return False
