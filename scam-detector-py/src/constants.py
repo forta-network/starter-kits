@@ -74,7 +74,6 @@ BASE_BOTS = [("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-1", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing with a social eng component (aka a function parameter)
                 ("0x8732dbb3858d65844d940f5de3705b4161c05258bdfedf1ff5afb6683e1274e5", "NFT-WASH-TRADE", "PassThrough", "SCAM-DETECTOR-WASH-TRADE"),  # wash trading bot maintained by nethermind
                 ("0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732", "NFT-WASH-TRADE", "Combination", ""),  # wash trading bot - for ML bot; need to replace after retraining
-                ("0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560", "NEW-SCAMMER-CONTRACT-CODE-HASH", "PassThrough", "SCAM-DETECTOR-SIMILAR-CONTRACT"),  # contract similarity bot
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-5", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing using soc eng contract (static)
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-6", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing using soc eng contract (dynamic)
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-8", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing using soc eng contract (dynamic)
@@ -291,7 +290,6 @@ CONFIDENCE_MAPPINGS = {
         "address-poisoner": 0.85,
         "impersonating-token": 0.99,
         "attack-stages": 0.25,
-        "similar-contract": 0.99,
         "scammer-deployed-contract": 0.99,
         "scammer-association": 0.60,
         "private-key-compromise": 0.4,
