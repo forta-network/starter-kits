@@ -1,4 +1,4 @@
-from forta_bot_sdk import scan_ethereum, run_health_check, get_chain_id, TransactionEvent
+from forta_bot_sdk import scan_ethereum, get_chain_id, TransactionEvent
 from web3 import AsyncWeb3
 from findings import AddressPoisoningFinding
 from rules import AddressPoisoningRules
@@ -321,11 +321,10 @@ async def main():
 
     await asyncio.gather(
         scan_ethereum({
-            'rpc_url': secrets['jsonRpc']['linea'],
+            'rpc_url': 'https://rpc.linea.build',
             'local_rpc_url': "59144",
             'handle_transaction': handle_transaction
         }),
-        run_health_check()
     )
 
 
