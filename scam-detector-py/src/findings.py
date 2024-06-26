@@ -81,8 +81,6 @@ class ScamDetectorFinding:
             return "rake-token"
         elif alert_id == "SCAM-DETECTOR-IMPERSONATING-TOKEN":
             return "impersonating-token"
-        elif alert_id == "SCAM-DETECTOR-SIMILAR-CONTRACT":
-            return "similar-contract"
         elif alert_id == "SCAM-DETECTOR-SCAMMER-ASSOCIATION":
             return "scammer-association"
         elif alert_id == "SCAM-DETECTOR-SCAMMER-DEPLOYED-CONTRACT":
