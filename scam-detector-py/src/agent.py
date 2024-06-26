@@ -22,7 +22,7 @@ import forta_agent
 from forta_agent import Finding, FindingType, FindingSeverity, get_alerts, get_labels
 from web3 import Web3
 
-from src.constants import (BASE_BOTS, ALERTED_ENTITIES_ML_KEY, ALERTED_ENTITIES_ML_QUEUE_SIZE, ALERTED_ENTITIES_PASSTHROUGH_KEY, ALERTED_ENTITIES_PASSTHROUGH_QUEUE_SIZE, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE, ALERTED_ENTITIES_MANUAL_KEY, ALERTED_ENTITIES_MANUAL_QUEUE_SIZE, ALERTED_ENTITIES_MANUAL_METAMASK_KEY, ALERTED_ENTITIES_MANUAL_METAMASK_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS, ENTITY_CLUSTER_BOTS,
+from src.constants import (BASE_BOTS, ALERTED_ENTITIES_ML_KEY, ALERTED_ENTITIES_ML_QUEUE_SIZE, ALERTED_ENTITIES_PASSTHROUGH_KEY, ALERTED_ENTITIES_PASSTHROUGH_QUEUE_SIZE, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY, ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE, ALERTED_ENTITIES_MANUAL_KEY, ALERTED_ENTITIES_MANUAL_QUEUE_SIZE, ALERTED_ENTITIES_MANUAL_METAMASK_KEY, ALERTED_ENTITIES_MANUAL_METAMASK_QUEUE_SIZE, ALERT_LOOKBACK_WINDOW_IN_DAYS,
                        FINDINGS_CACHE_ALERT_KEY, FINDINGS_CACHE_BLOCK_KEY, ALERTED_FP_CLUSTERS_KEY, FINDINGS_CACHE_TRANSACTION_KEY,
                        ALERTED_FP_CLUSTERS_QUEUE_SIZE, SCAM_DETECTOR_BOT_ID, SCAM_DETECTOR_BETA_BOT_ID, SCAM_DETECTOR_BETA_ALT_BOT_ID, EOA_ASSOCIATION_BOTS,
                        EOA_ASSOCIATION_BOT_THRESHOLDS, PAIRCREATED_EVENT_ABI, SWAP_FACTORY_ADDRESSES, POOLCREATED_EVENT_ABI, ENCRYPTED_BOTS,
@@ -144,7 +144,7 @@ def initialize(test = False):
         global MODEL
         MODEL = joblib.load(MODEL_NAME)
 
-        # subscribe to the base bots, FP mitigation and entity clustering bot
+        # subscribe to the base bots and FP mitigation
         global BASE_BOTS
         subscription_json = []
         for botId, alertId, alert_logic, target_alert_id in BASE_BOTS:
@@ -252,39 +252,6 @@ def update_list(items: dict, max_size: int, item: str, alert_id: str, list_name:
     if count > 0:
         logging.warning(f"Removed {count} items from {list_name} list to reduce size.")
 
-
-def put_entity_cluster(alert_created_at_str: str, address: str, cluster: str):
-    global CHAIN_ID
-    global BOT_VERSION
-
-    logging.debug(f"putting entity clustering alert for {address} in dynamo DB")
-    alert_created_at = datetime.strptime(alert_created_at_str[0:19], "%Y-%m-%dT%H:%M:%S").timestamp()
-    logging.debug(f"alert_created_at: {alert_created_at}")
-    itemId = f"{item_id_prefix}|{CHAIN_ID}|entity_cluster|{address}"
-    logging.debug(f"itemId: {itemId}")
-    sortId = f"{address}"
-    logging.debug(f"sortId: {sortId}")
-    
-    expiry_offset = ALERT_LOOKBACK_WINDOW_IN_DAYS * 24 * 60 * 60
-    
-    expiresAt = int(alert_created_at) + int(expiry_offset)
-    logging.debug(f"expiresAt: {expiresAt}")
-    response = dynamo.put_item(Item={
-        "itemId": itemId,
-        "sortKey": sortId,
-        "address": address,
-        "cluster": cluster,
-        "expiresAt": expiresAt
-    })
-
-    if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-        logging.error(f"Error putting alert in dynamoDB: {response}")
-        Utils.ERROR_CACHE.add(Utils.alert_error(f'dynamo.put_item HTTPStatusCode {response["ResponseMetadata"]["HTTPStatusCode"]}', "agent.put_entity_cluster", ""))
-        return
-    else:
-        logging.info(f"Successfully put alert in dynamoDB: {response}")
-        return
-
 # put in item alerts per cluster
 # note, given sort key is part of the key, alerts with different hashes will result in different entries
 # whereas alerts with the same hash will be overwritten
@@ -325,27 +292,6 @@ def put_alert(alert_event: forta_agent.alert_event.AlertEvent, cluster: str):
 
 
 
-def read_entity_clusters(address: str) -> OrderedDict:
-    global CHAIN_ID
-
-    entity_clusters = OrderedDict()
-    itemId = f"{item_id_prefix}|{CHAIN_ID}|entity_cluster|{address}"
-    logging.debug(f"Reading entity clusters for address {address} from itemId {itemId}")
-    logging.debug(f"Dynamo : {dynamo}")
-    response = dynamo.query(KeyConditionExpression='itemId = :id',
-                            ExpressionAttributeValues={
-                                ':id': itemId
-                            }
-                            )
-
-    # Print retrieved item
-    items = response.get('Items', [])
-    logging.debug(f"Items retrieved: {len(items)}")
-    for item in items:
-        logging.debug(f"Item retrieved: {item}")
-        entity_clusters[address] = item["cluster"]
-    logging.info(f"Read entity clusters for address {address}. Retrieved {len(entity_clusters)} alert_clusters.")
-    return entity_clusters
 
 def read_alerts(cluster: str) -> list:
     global CHAIN_ID
@@ -814,7 +760,6 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
     if clear_state_flag:
         clear_state()
 
-    global ENTITY_CLUSTER_BOTS
     global CHAIN_ID
     global BASE_BOTS
     global secrets
@@ -843,14 +788,6 @@ def detect_scam(w3, alert_event: forta_agent.alert_event.AlertEvent, clear_state
                     private_key = secrets['decryptionKeys'][decryption_key_name]
                     logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - decrypting alert. Private key length for {decryption_key_name}: {len(private_key)}")
                     alert_event = Utils.decrypt_alert_event(alert_event, private_key)
-
-            # update entity clusters
-            if in_list(alert_event, ENTITY_CLUSTER_BOTS):
-                logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} is entity cluster alert")
-                cluster = alert_event.alert.metadata["entityAddresses"].lower()
-
-                for address in cluster.split(','):
-                    put_entity_cluster(alert_event.alert.created_at, address, cluster)
 
             # for basebots, three paths:
             # for passthroughs, simply emit an alert (pot with some adjustments on mappings)
