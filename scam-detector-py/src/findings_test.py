@@ -181,14 +181,14 @@ class TestScamFindings:
 
         
     def test_alert_FP(self):
-        finding = ScamDetectorFinding.alert_FP(w3, EOA_ADDRESS_LARGE_TX, "scammer", ("threat_category=similar-contract", "address_type=EOA", "logic=propagation"), [""])
+        finding = ScamDetectorFinding.alert_FP(w3, EOA_ADDRESS_LARGE_TX, "scammer", ("threat_category=scammer-association", "address_type=EOA", "logic=propagation"), [""])
         assert finding.alert_id == "SCAM-DETECTOR-FALSE-POSITIVE", "should be FP"
         assert finding.description == f'{EOA_ADDRESS_LARGE_TX} likely not involved in a scam (SCAM-DETECTOR-FALSE-POSITIVE, manual)', "should be FP"
         assert len(finding.labels) == 1, "should be 1"
         assert finding.labels[0].label == "scammer"
         assert finding.labels[0].remove == 'true', "should be remove"
         assert finding.labels[0].metadata["address_type"] == "EOA"
-        assert finding.labels[0].metadata["threat_category"] == "similar-contract"
+        assert finding.labels[0].metadata["threat_category"] == "scammer-association"
         assert finding.labels[0].metadata["logic"] == "propagation"
 
         assert finding.labels[0].entity == EOA_ADDRESS_LARGE_TX, "should be EOA_ADDRESS_LARGE_TX"
