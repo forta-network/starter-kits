@@ -34,7 +34,7 @@ in `constants.py`. A contract similarity bot would need to emit the following fi
 - similarity_hash
 - similarity_score
     
-The Scam Detector's logic itself would then need to be updated for the newly added items listed above.
+The Scam Detector's logic itself would then need to be updated for the newly added items listed above. A previous implementation of such logic can be found at this commit, [420ce3cced8ee7acb7e1ddb23ccf4e27019da8dc](https://github.com/forta-network/starter-kits/tree/420ce3cced8ee7acb7e1ddb23ccf4e27019da8dc/scam-detector-py), to more easily reintroduce.
 
 In addition, the deployer of the new contract needs to be extracted. This should be configured in the `basebot_parsing_config.csv`.
 
