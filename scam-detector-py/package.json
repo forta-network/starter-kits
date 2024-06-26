@@ -1,7 +1,7 @@
 {
   "name": "scam-detector-feed",
   "displayName": "Scam Detector Feed",
-  "version": "2.24.6",
+  "version": "2.24.7",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/scam-detector-py",
   "description": "Provides real-time intelligence on scammers engaged in over 10 unique scam types.",
   "longDescription": "The Scam Detector data feed provides real-time intelligence about EOAs, contracts and URLs involved in a variety of Web3 scams. It is jointly maintained by the Forta Foundation, Nethermind, Blocksec, ChainPatrol and members of the Forta developer community. It features market leading scam type coverage on ice phishing, address poisoning, rake tokens, token impersonation, fraudulent NFT orders, pig butchering, gas minting, sleep minting, hard rug pulls, soft rug pulls, and wash trading. Used by Web3 wallets, exchanges, crypto compliance companies and other Web3 security teams and tools. Teams can use Scam Detector labels to warn end-users during the pre-signing transaction approval process, to identify and prevent money laundering through regulated platforms, and to supplement existing blacklists among other use cases. Learn more in the documentation below, and request a free trial today.",
