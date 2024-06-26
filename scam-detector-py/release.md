@@ -1,6 +1,10 @@
 # Scam Detector Bot Release Notes
 
-## 2.24.4 (prod - 4/3/2024)
+## 2.24.6 (beta - 6/26/2024)
+
+- removed Contract Similarity base bot and corresponding logic
+
+## 2.24.5 (prod - 4/3/2024)
 
 - removed ADDRESS-POISONING-FAKE-TOKEN alert
 
