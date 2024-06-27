@@ -445,12 +445,7 @@ def emit_ml_finding(w3, alert_event: forta_agent.alert_event.AlertEvent) -> list
 
         scammer_contract_addresses = scammer_addresses_dict[scammer_address]['scammer-contracts'] if 'scammer-contracts' in scammer_addresses_dict[scammer_address] else set()
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got scammer address {scammer_address_lower}")
-        cluster = scammer_address_lower
-        entity_cluster = read_entity_clusters(scammer_address_lower)
-        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - read {len(entity_cluster.keys())} clusters for scammer address {scammer_address_lower}. Processing took {time.time() - start_time} seconds.")
-        if scammer_address_lower in entity_cluster.keys():
-            cluster = entity_cluster[scammer_address_lower]
-        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got alert for cluster {cluster}")
+        cluster = scammer_address_lower #@TODO: Update to not use word `cluster` to prevent confusion
 
         if Utils.is_contract(w3, cluster):
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} is contract, skipping")
@@ -514,11 +509,7 @@ def emit_passthrough_finding(w3, alert_event: forta_agent.alert_event.AlertEvent
 
         scammer_contract_addresses = scammer_addresses_dict[scammer_address]['scammer-contracts'] if 'scammer-contracts' in scammer_addresses_dict[scammer_address] else set()
         logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got scammer address {scammer_address_lower}")
-        cluster = scammer_address_lower
-        entity_cluster = read_entity_clusters(scammer_address_lower)
-        if scammer_address_lower in entity_cluster.keys():
-            cluster = entity_cluster[scammer_address_lower]
-        logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - got alert for cluster {cluster}")
+        cluster = scammer_address_lower #@TODO: Update to not use word `cluster` to prevent confusion
 
         if Utils.is_contract(w3, cluster):
             logging.info(f"{BOT_VERSION}: alert {alert_event.alert_hash} {alert_event.bot_id} {alert_event.alert.alert_id} - cluster {cluster} is contract, skipping")
@@ -694,11 +685,8 @@ def emit_manual_finding(w3, test = False) -> list:
                         logging.info(f"Skipped alert for {scammer_address_lower} as it is in the manual FP list.")
                         continue
 
-                    cluster = scammer_address_lower
+                    cluster = scammer_address_lower #@TODO: Update to not use word `cluster` to prevent confusion
                     logging.info(f"Manual finding: Have manual entry for {scammer_address_lower}")
-                    entity_clusters = read_entity_clusters(scammer_address_lower)
-                    if scammer_address_lower in entity_clusters.keys():
-                        cluster = entity_clusters[scammer_address_lower]
 
                     if Utils.is_contract(w3, cluster):
                         logging.info(f"Manual finding: Address {cluster} is a contract. Not alerting.")
