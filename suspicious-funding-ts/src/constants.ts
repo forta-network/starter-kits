@@ -1,6 +1,7 @@
 export const BOTS_TO_MONITOR = [
   "0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400", // funding tornado cash
   "0x2d3bb89e9cecc0024d8ae1a9c93ca42664472cb074cc200fa2c0f77f2be34bf3", // funding fixed float
+  "0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e", // funding change now
   "0x80ed808b586aeebe9cdd4088ea4dea0a8e322909c0e4493c993e060e89c09ed1", // attack detector
   "0x90596fcef715e22cc073fdc7018039e7af742276dda1baed03032411480c65fd", // suspicious funding
 ];
@@ -21,6 +22,7 @@ export const VALUE_THRESHOLDS: Record<number, number> = {
 export const alertOriginMap = {
   "TORNADO-CASH": "Tornado Cash",
   "FIXED-FLOAT": "Fixed Float",
+  "CHANGENOW": "ChangeNow",
   "ATTACK-DETECTOR": "Attack Detector",
 };
 
@@ -34,4 +36,5 @@ export const THREE_SECOND_BLOCKS_IN_ONE_DAY = ONE_DAY / THREE_SECOND_BLOCK_TIME;
 
 export const TRUE_POSITIVE_LIST_PATH = "../tp_list.csv";
 // Using the Early Attack Detector True Positive list as source of truth
-export const TRUE_POSITIVE_LIST_URL = "https://raw.githubusercontent.com/forta-network/starter-kits/main/early-attack-detector-py/tp_list.csv"
+export const TRUE_POSITIVE_LIST_URL =
+  "https://raw.githubusercontent.com/forta-network/starter-kits/main/early-attack-detector-py/tp_list.csv";
