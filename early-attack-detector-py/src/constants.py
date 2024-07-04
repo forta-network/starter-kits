@@ -32,3 +32,11 @@ EXTRA_TIME_BOTS = [
     '0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400'  # funding tornado cash
 ]
 EXTRA_TIME_DAYS = 180
+
+ONE_DAY = 60 * 60 * 24
+THREE_SECOND_BLOCK_TIME = 3
+ETH_BLOCK_TIME = 12
+ETH_BLOCKS_IN_ONE_DAY = ONE_DAY / ETH_BLOCK_TIME
+# Amount of blocks in a day for faster chains
+# Using 3 second block times as the average
+THREE_SECOND_BLOCKS_IN_ONE_DAY = ONE_DAY / THREE_SECOND_BLOCK_TIME

@@ -2,12 +2,12 @@
 
 ## V0.2.3
 
-- [beta] Added True Positive list and Hops beta bot.
+- [beta] Added Hops beta bot.
 
 ## V0.2.2
 
-- [beta] Added squid, 1-hops, and SWFT Swap funding sources
-- [prod] Added 1-hops, and SWFT Swap funding sources
+- [beta] Added True Positive list, squid, 1-hops, and SWFT Swap funding sources
+- [prod] Added True Positive list, 1-hops, and SWFT Swap funding sources
 
 ## V0.2.1
 
