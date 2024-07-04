@@ -260,7 +260,7 @@ def process_finding(iter_finding, address_from, created_contract_address, tx_tim
             finding.metadata['combinator_threshold'] = str(COMBINATOR_THRESHOLD)
             finding.metadata['both_scores'] = ','.join([str(score) for score in both_scores])
             if len(info_labels) > 0:
-                finding.metadata['alert_hash'] = alert_hash
+                finding.metadata['funding_alerts'] = alert_hash
                 finding.metadata['label_hash'] = label_hash
             return finding
     return None
