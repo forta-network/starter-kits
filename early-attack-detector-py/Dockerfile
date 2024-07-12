@@ -24,6 +24,7 @@ ENV NODE_ENV=production
 LABEL "network.forta.settings.agent-logs.enable"="true"
 WORKDIR /app
 COPY ./src ./src
+COPY ./tp_list.csv ./
 COPY ./deployed_models ./deployed_models
 COPY package*.json ./
 COPY requirements.txt ./
