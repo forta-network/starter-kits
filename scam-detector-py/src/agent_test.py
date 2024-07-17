@@ -824,56 +824,6 @@ class TestScamDetector:
         assert finding.metadata is not None, "metadata should not be empty"
         assert len(finding.labels) > 0, "labels should not be empty"
 
-    def test_detect_alert_similar_contract(self):
-        agent.initialize()
-        agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
-
-        # Read the content of package.json and store the original "name" field
-        original_name = ""
-        with open("package.json", "r") as package_file:
-            package_data = json.load(package_file)
-            original_name = package_data["name"]
-
-        # Modify the "name" field to "beta" (as alt doesn't return labels for the test)
-        package_data["name"] = "beta"
-        with open("package.json", "w") as package_file:
-            json.dump(package_data, package_file, indent=2)
-        
-        bot_id = "0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560"
-        alert_id = "NEW-SCAMMER-CONTRACT-CODE-HASH"
-        description = "0xd359b4058cfbc9a5ef2889bc484cbbffbe3fa254f6f36845be6a4f5618531bd5 (NEW-SCAMMER-CONTRACT-CODE-HASH)"
-
-        metadata = {"alert_hash":"0xcfc5f89ac8c801901724621470fb7e3efec1b0cb5e1af625b82d587b788cdc86","new_scammer_contract_address":"0xfe551e214563283c8ab5df967d7d69f630b64079","new_scammer_eoa":"0xa4f58353711f9f29b483fe41be8f0dcc893d9f8a","scammer_contract_address":"0x200c5fa46720e40c375dd276a816da905b19081e","scammer_eoa":"0x43cf4c4759ebe43aa6e21e13ece8546dcfcb728c","similarity_hash":"20d794469ef5c3f5937d8b2ad1505e57a97b6fa0205b9fba965d71e9a4f66ea6","similarity_score":"0.9768354296684265"}
-        alert_event = TestScamDetector.generate_alert(bot_id, alert_id, description, metadata)
-
-        findings = agent.detect_scam(w3, alert_event, True)
-
-        # Revert the "name" field back to its original value
-        package_data["name"] = original_name
-        with open("package.json", "w") as package_file:
-            json.dump(package_data, package_file, indent=2)
-
-        assert len(findings) == 1, "this should have triggered a finding"
-        assert findings[0].alert_id == "SCAM-DETECTOR-SIMILAR-CONTRACT"
-        assert findings[0].metadata['scammer_address'] == "0xa4f58353711f9f29b483fe41be8f0dcc893d9f8a", "metadata should not be empty"
-        assert findings[0].metadata['scammer_contract_address'] == "0xfe551e214563283c8ab5df967d7d69f630b64079", "metadata should not be empty"
-        assert findings[0].metadata['existing_scammer_address'] == "0x43cf4c4759ebe43aa6e21e13ece8546dcfcb728c", "metadata should not be empty"
-        assert findings[0].metadata['existing_scammer_contract_address'] == "0x200c5fa46720e40c375dd276a816da905b19081e", "metadata should not be empty"
-        assert findings[0].metadata['similarity_score'] == "0.9768354296684265", "metadata should not be empty"
-        assert findings[0].metadata['involved_threat_categories'] == "soft-rug-pull", "metadata should not be empty"
-        assert findings[0].metadata['involved_alert_hash_1'] == "0xcfc5f89ac8c801901724621470fb7e3efec1b0cb5e1af625b82d587b788cdc86", "metadata should not be empty"
-
-        assert findings[0].labels is not None, "labels should not be empty"
-        label = findings[0].labels[0]
-        assert label.entity == "0xa4f58353711f9f29b483fe41be8f0dcc893d9f8a", "entity should be attacker address"
-        assert label.label == "scammer", "entity should labeled as scam"
-        assert label.confidence == Utils.get_confidence_value('similar-contract'), "entity should labeled with 0.7 confidence"
-
-        label = findings[0].labels[1]
-        assert label.entity == "0xfe551e214563283c8ab5df967d7d69f630b64079", "entity should be attacker address"
-        assert label.label == "scammer", "entity should labeled as scam"
-        assert label.confidence == Utils.get_confidence_value('similar-contract'), "entity should labeled with 0.7 confidence"
-
     def test_put_entity_cluster(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
@@ -1051,6 +1001,7 @@ class TestScamDetector:
         score = agent.get_model_score(df_expected_feature_vector)
         assert score < MODEL_ALERT_THRESHOLD_LOOSE, "should less than model threshold"
 
+    # TODO: Update test because score is below threshold
     def test_scam_critical(self):
         agent.initialize()
         agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
@@ -1152,21 +1103,6 @@ class TestScamDetector:
         assert label.entity == "0x8cc6b83d52b67f629fb3c5978cda3a6c2a456edc"
         assert label.metadata['address_type'] == "EOA"
 
-    def test_get_similar_contract_labels(self):
-        agent.clear_state()
-        agent.initialize()
-        similar_contract_labels = agent.get_similar_contract_labels(w3, forta_explorer)
-
-        # from_address was detected first and it propagated its label to the to_address
-        from_address = "0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc6"
-        from_address_deployer = "0x2320a28f52334d62622cc2eafa15de55f9987ecc"
-        to_address = "0xfa8c1a1dddea2c06364c9e6ab31772f020f5efc5"
-        to_address_deployer = "0x2320a28f52334d62622cc2eafa15de55f9987eaa"
-
-        assert similar_contract_labels[similar_contract_labels['from_entity'] == from_address].iloc[0]['to_entity'] == to_address
-        assert similar_contract_labels[similar_contract_labels['from_entity'] == from_address].iloc[0]['from_entity_deployer'] == from_address_deployer
-        assert similar_contract_labels[similar_contract_labels['to_entity'] == to_address].iloc[0]['to_entity_deployer'] == to_address_deployer
-
     def test_get_scammer_association_labels(self):
         agent.clear_state()
         agent.initialize()
@@ -1183,10 +1119,9 @@ class TestScamDetector:
         agent.clear_state()
         agent.initialize()
 
-        similar_contract_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
         scammer_association_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
 
-        fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_SMALL_TX, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, 1)
+        fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_SMALL_TX, block_chain_indexer, forta_explorer, scammer_association_labels, 1)
         sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
         sorted_fp_labels = list(sorted_fp_labels)
         assert len(sorted_fp_labels) == 2, "should have two FP label; one for the EOA, one for the contract"
@@ -1208,11 +1143,10 @@ class TestScamDetector:
         agent.clear_state()
         agent.initialize()
 
-        similar_contract_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
         scammer_association_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
         scammer_association_labels = pd.concat([scammer_association_labels, pd.DataFrame({'from_entity': [EOA_ADDRESS_LARGE_TX.lower()], 'to_entity': [EOA_ADDRESS_SMALL_TX.lower()]})], ignore_index=True)
 
-        fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_LARGE_TX, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, 1)
+        fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_LARGE_TX, block_chain_indexer, forta_explorer, scammer_association_labels, 1)
         sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
         sorted_fp_labels = list(sorted_fp_labels)
         assert len(sorted_fp_labels) == 4, "should have four FP labels; one for each EOA and contract"
@@ -1229,22 +1163,7 @@ class TestScamDetector:
         assert 'threat_category=address-poisoner' in label_3[2]
         
        
-    def test_obtain_all_fp_labels_similar_contract(self):
-        # got address A that deployed contract B; contract B propagated to contract D
-        agent.clear_state()
-        agent.initialize()
-
-        similar_contract_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
-        new_labels = pd.DataFrame({'from_entity': [CONTRACT.lower()], 'from_entity_deployer': [EOA_ADDRESS_LARGE_TX.lower()], 'to_entity_deployer': [EOA_ADDRESS_SMALL_TX.lower()], 'to_entity': [CONTRACT2.lower()]})
-        similar_contract_labels = pd.concat([similar_contract_labels, new_labels], ignore_index=True)
-        scammer_association_labels = pd.DataFrame(columns=['from_entity', 'to_entity'])
-        
-        fp_labels = agent.obtain_all_fp_labels(w3, EOA_ADDRESS_LARGE_TX, block_chain_indexer, forta_explorer, similar_contract_labels, scammer_association_labels, 1)
-        sorted_fp_labels = sorted(fp_labels, key=lambda x: x[0])
-        sorted_fp_labels = list(sorted_fp_labels)
-        assert len(sorted_fp_labels) == 4, "should have four FP labels; one for each EOA and contract"
-
-    # 11/22/2023 - removed because we have not been able to ship this for some time now
+     # 11/22/2023 - removed because we have not been able to ship this for some time now
     # def test_detect_ice_phishing_ml(self):
     #     agent.initialize()
     #     agent.item_id_prefix = "test_" + str(random.randint(0, 1000000))
