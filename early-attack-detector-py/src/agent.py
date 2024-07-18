@@ -215,7 +215,7 @@ def detect_malicious_contract_tx(
             ):
                 if finding.severity == FindingSeverity.Critical:
                     # We priorize when there are critical findings
-                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=FUNDING_TIME, 
+                    funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=FUNDING_TIME,
                                                                           extra_time_bots=EXTRA_TIME_BOTS, extra_time=EXTRA_TIME_DAYS)
                     if len(funding_labels) > 0:
                         finding.metadata["funding_alerts"] = ','.join(funding_alerts)
@@ -289,7 +289,7 @@ def detect_malicious_contract(
             env_t = time.time()
             storage_addresses = get_storage_addresses(w3, created_contract_address)
             if ENV == 'dev':
-                logger.info(f"Time taken to get storage addresses: {time.time() - env_t}")            
+                logger.info(f"Time taken to get storage addresses: {time.time() - env_t}")
             finding = ContractFindings(
                 from_,
                 created_contract_address,
