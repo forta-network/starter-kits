@@ -11,6 +11,7 @@ class ContractFindings:
         function_signatures: set,
         model_score: float,
         model_threshold: float,
+        from_eoa_in_tp_list: bool,
         error: str = None,
     ):
         self.metadata = {
@@ -23,7 +24,9 @@ class ContractFindings:
             "oko_contract_explorer"
         ] = f"https://oko.palkeo.com/{contract_address}/"
         self.metadata["model_score"] = str(model_score)
-        self.metadata["model_threshold"] = str(model_threshold)
+        self.metadata["model_threshold"] = str(model_threshold),
+        if from_eoa_in_tp_list:
+            self.metadata["from_eoa_in_tp_list"] = str(from_eoa_in_tp_list)
         self.description = (
             f"{from_address} created contract {contract_address}"
             if error is None

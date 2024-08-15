@@ -79,6 +79,7 @@ The metadata for each alert will contain the following fields:
 - funding_labels: [optional] When there are potential fundings, the hash(es) to the funding label(s)
 - model_score: Model score. In case where the alert was raised due to the high precision model, the score will be from the high precision model.
 - model_threshold: Recall threshold that was being used in the model at the moment of raising the alert
+- from_eoa_in_tp_list: [optional] When the transaction initiator is found in a list of known attackers, this value will be set to `"True"`.
 - oko_contract_explorer: Link to contract explorer
 
 Example of high precision model:

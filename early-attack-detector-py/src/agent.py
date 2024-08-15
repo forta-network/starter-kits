@@ -159,7 +159,7 @@ def detect_malicious_contract_tx(
                     contract_address = calc_contract_address(w3, trace.action.from_, nonce)
                 else:
                     # For contracts creating other contracts, get the nonce using Web3
-                    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(trace.action.from_), transaction_event.block_number)
+                    nonce = w3.eth.getTransactionCount(Web3.to_checksum_address(trace.action.from_), transaction_event.block_number)
                     contract_address = calc_contract_address(w3, trace.action.from_, nonce - 1)
 
                 logger.warn(
@@ -200,12 +200,12 @@ def detect_malicious_contract_tx(
                         finding.metadata["funding_labels"] = ','.join(funding_labels)
                     if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
                         finding.metadata['high_precision_model'] = True
-                    # If the model is working in high precision, or it has a 1-day funding alert, we raise the alert and continue
-                    if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys():
+                    # If the model is working in high precision, has a 1-day funding alert, or the txn `from` is in the TP list, we raise the alert and continue
+                    if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys() or 'from_eoa_in_tp_list' in finding.metadata.keys():
                         all_findings.append(finding)
                         continue
                 # This should only trigger in beta and if no critical alert has been raised
-                if BETA:
+                elif BETA:
                     if ENV == 'dev':
                         logger.info(f"Checking funding alerts for {trace.action.from_}")
                     funding_alerts, funding_labels = check_funding_labels(trace.action.from_, tx_timestamp=tx_timestamp, n_days=365)
@@ -243,12 +243,12 @@ def detect_malicious_contract_tx(
                         finding.metadata["funding_labels"] = ','.join(funding_labels)
                     if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
                         finding.metadata['high_precision_model'] = True
-                    # If the model is working in high precision, or it has a 1-day funding alert, we raise the alert and continue
-                    if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys():
+                    # If the model is working in high precision, has a 1-day funding alert, or the txn `from` is in the TP list, we raise the alert and continue
+                    if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys() or 'from_eoa_in_tp_list' in finding.metadata.keys():
                         all_findings.append(finding)
                         continue
                 # This should only trigger in beta and if no critical alert has been raised
-                if BETA:
+                elif BETA:
                     if ENV == 'dev':
                         logger.info(f"Checking funding labels for {transaction_event.from_}")
                     funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=365)
@@ -322,6 +322,7 @@ def detect_malicious_contract(
                 function_signatures,
                 model_score,
                 MODEL_THRESHOLD,
+                from_eoa_in_tp_list,
                 error=error,
             )
             if (model_score is not None and model_score >= MODEL_INFO_THRESHOLD) or from_eoa_in_tp_list:
