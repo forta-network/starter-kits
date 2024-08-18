@@ -201,7 +201,7 @@ def detect_malicious_contract_tx(
                     if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
                         finding.metadata['high_precision_model'] = True
                     # If the model is working in high precision, has a 1-day funding alert, or the txn `from` is in the TP list, we raise the alert and continue
-                    if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys() or 'from_eoa_in_tp_list' in finding.metadata.keys():
+                    if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys() or 'known_past_attacker' in finding.metadata.keys():
                         all_findings.append(finding)
                         continue
                 # This should only trigger in beta and if no critical alert has been raised
@@ -244,7 +244,7 @@ def detect_malicious_contract_tx(
                     if float(finding.metadata['model_score']) >= MODEL_PRECISION_THRESHOLD:
                         finding.metadata['high_precision_model'] = True
                     # If the model is working in high precision, has a 1-day funding alert, or the txn `from` is in the TP list, we raise the alert and continue
-                    if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys() or 'from_eoa_in_tp_list' in finding.metadata.keys():
+                    if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys() or 'known_past_attacker' in finding.metadata.keys():
                         all_findings.append(finding)
                         continue
                 # This should only trigger in beta and if no critical alert has been raised
@@ -283,9 +283,9 @@ def detect_malicious_contract(
     findings = []
 
     if created_contract_address is not None and code is not None:
-        from_eoa_in_tp_list = from_ in TP_ATTACKER_LIST
+        known_past_attacker = from_ in TP_ATTACKER_LIST
 
-        if (len(code) > BYTE_CODE_LENGTH_THRESHOLD) or from_eoa_in_tp_list:
+        if (len(code) > BYTE_CODE_LENGTH_THRESHOLD) or known_past_attacker:
             try:
                 opcodes = EvmBytecode(code).disassemble()
             except Exception as e:
@@ -298,7 +298,7 @@ def detect_malicious_contract(
             function_signatures = get_function_signatures(w3, opcodes)
             logger.info(f"{created_contract_address}: score={model_score}")
 
-            if not from_eoa_in_tp_list:
+            if not known_past_attacker:
                 if model_score is None or model_score < MODEL_INFO_THRESHOLD:
                     if ENV == 'dev':
                         logger.info(f"Score is less than threshold: {model_score} < {MODEL_INFO_THRESHOLD}. Not creating alert.")
@@ -322,13 +322,13 @@ def detect_malicious_contract(
                 function_signatures,
                 model_score,
                 MODEL_THRESHOLD,
-                from_eoa_in_tp_list,
+                known_past_attacker,
                 error=error,
             )
-            if (model_score is not None and model_score >= MODEL_INFO_THRESHOLD) or from_eoa_in_tp_list:
-                from_label_type = "eoa" if from_eoa_in_tp_list or not is_contract(w3, from_) else "contract"
+            if (model_score is not None and model_score >= MODEL_INFO_THRESHOLD) or known_past_attacker:
+                from_label_type = "eoa" if known_past_attacker or not is_contract(w3, from_) else "contract"
                 # If it's a potential alert, we create labels. Otherwise, we don't
-                if (model_score >= MODEL_THRESHOLD) or from_eoa_in_tp_list:
+                if (model_score >= MODEL_THRESHOLD) or known_past_attacker:
                     labels = [
                         {
                             "entity": created_contract_address,
@@ -346,13 +346,13 @@ def detect_malicious_contract(
                             "entity": created_contract_address,
                             "entity_type": EntityType.Address,
                             "label": "attacker",
-                            "confidence": 1.0 if from_eoa_in_tp_list else model_score,
+                            "confidence": 1.0 if known_past_attacker else model_score,
                         },
                         {
                             "entity": from_,
                             "entity_type": EntityType.Address,
                             "label": "attacker",
-                            "confidence": 1.0 if from_eoa_in_tp_list else model_score,
+                            "confidence": 1.0 if known_past_attacker else model_score,
                         },
                         ]
                     severity = FindingSeverity.Critical
