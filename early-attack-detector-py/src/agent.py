@@ -203,9 +203,11 @@ def detect_malicious_contract_tx(
                     # If the model is working in high precision, has a 1-day funding alert, or the txn `from` is in the TP list, we raise the alert and continue
                     if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys() or 'known_past_attacker' in finding.metadata.keys():
                         all_findings.append(finding)
+                        # if critical alert raised, no need to continue loop's current iteration
                         continue
-                # This should only trigger in beta and if no critical alert has been raised
-                elif BETA:
+                # This should only trigger in beta and if no critical alert has been raised,
+                # due to `continue`ing once critical alert raised
+                if BETA:
                     if ENV == 'dev':
                         logger.info(f"Checking funding alerts for {trace.action.from_}")
                     funding_alerts, funding_labels = check_funding_labels(trace.action.from_, tx_timestamp=tx_timestamp, n_days=365)
@@ -246,9 +248,11 @@ def detect_malicious_contract_tx(
                     # If the model is working in high precision, has a 1-day funding alert, or the txn `from` is in the TP list, we raise the alert and continue
                     if 'high_precision_model' in finding.metadata.keys() or 'funding_labels' in finding.metadata.keys() or 'known_past_attacker' in finding.metadata.keys():
                         all_findings.append(finding)
+                        # if critical alert raised, no need to continue loop's current iteration
                         continue
-                # This should only trigger in beta and if no critical alert has been raised
-                elif BETA:
+                # This should only trigger in beta and if no critical alert has been raised,
+                # due to `continue`ing once critical alert raised
+                if BETA:
                     if ENV == 'dev':
                         logger.info(f"Checking funding labels for {transaction_event.from_}")
                     funding_alerts, funding_labels = check_funding_labels(transaction_event.from_, tx_timestamp=tx_timestamp, n_days=365)
