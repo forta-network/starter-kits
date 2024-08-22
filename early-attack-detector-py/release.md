@@ -1,5 +1,9 @@
 # V0
 
+## V0.2.4
+
+- [beta] Fixed True Positive list fetching logic.
+
 ## V0.2.3
 
 - [beta] Added True Positive list and Hops beta bot.
