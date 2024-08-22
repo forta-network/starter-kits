@@ -124,8 +124,12 @@ def alert_count(chain_id: int, alert_id: str) -> int:
 
 def get_tp_attacker_list() -> list:
     res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/early-attack-detector-py/tp_list.csv')
-    logging.info(f"Made request to fetch tp list: {res.status_code}")
-    content = res.content.decode('utf-8') if res.status_code == 200 else open('tp_list.csv', 'r').read()
+    if res.status_code == 200:
+        logging.info(f"Successfully made request to fetch tp list: {res.status_code}.")
+        content = res.content.decode('utf-8')
+    else:
+        logging.info(f"Made request to fetch tp list and failed. status code: {res.status_code}. Fetching from 'tp_list.csv'.")
+        content = open('tp_list.csv', 'r').read()
 
     df_fps = pd.read_csv(io.StringIO(content), sep=',')
     attacker_list = set(df_fps['Attacker'].tolist())
