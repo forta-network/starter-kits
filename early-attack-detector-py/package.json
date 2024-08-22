@@ -1,7 +1,7 @@
 {
   "name": "early-attack-detector-py-beta",
   "displayName": "Early Attack Detector Beta",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "description": "Attack detector focused on detection during preparation",
   "longDescription": "This bot is designed to detect attacks during the contract deployment phase, before the attack is executed.",
   "repository": "https://github.com/forta-network/starter-kits/tree/main/early-attack-detector-py",

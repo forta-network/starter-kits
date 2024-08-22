@@ -24,7 +24,7 @@ FUNDING_BOTS = [
         '0xf2ee3554a13ee126dae179918e89010afc1bfc1ffabd3a381b529632ebf7497a',  # funding thorchain
         '0x29daabf74506f2aa4feb93fa8ec0f4ac61c4e9ba3f3190072bc680bc70e71bd7',  # funding eXch
         '0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e',  # funding ChangeNow
-        '0x90596fcef715e22cc073fdc7018039e7af742276dda1baed03032411480c65fd',  # funding with hops
+        '0x42e35e2f439bb673c8fdb705f48f502b532b4ab41088c30e84792d0bcc3b885a',  # funding with hops
         '0xf1c75d2674ecf85be5e95b4959284ce8ed758885ddd7be64923c893ceff49efe',  # SWFT swap
     ]
 FUNDING_TIME = 1  # How many days in the past to look for labels
@@ -34,3 +34,11 @@ EXTRA_TIME_BOTS = [
     '0xa91a31df513afff32b9d85a2c2b7e786fdd681b3cdd8d93d6074943ba31ae400'  # funding tornado cash
 ]
 EXTRA_TIME_DAYS = 180
+
+ONE_DAY = 60 * 60 * 24
+THREE_SECOND_BLOCK_TIME = 3
+ETH_BLOCK_TIME = 12
+ETH_BLOCKS_IN_ONE_DAY = ONE_DAY / ETH_BLOCK_TIME
+# Amount of blocks in a day for faster chains
+# Using 3 second block times as the average
+THREE_SECOND_BLOCKS_IN_ONE_DAY = ONE_DAY / THREE_SECOND_BLOCK_TIME
