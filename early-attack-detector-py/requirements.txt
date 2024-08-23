@@ -3,7 +3,7 @@ setuptools>=61.3.1
 hexbytes>=0.2.2
 evmdasm>=0.1.10
 rlp>=2.0.1
-scikit-learn>=1.4.1
+scikit-learn==1.4.1.post1
 bot-alert-rate>=0.0.4
 web3==5.23.0
 imbalanced-learn>=0.12.0

@@ -6,6 +6,10 @@ from time import time
 from concurrent.futures import ThreadPoolExecutor
 import functools
 import operator
+import pandas as pd
+import logging
+import io
+import re
 
 from src.constants import CONTRACT_SLOT_ANALYSIS_DEPTH, MASK, BOT_ID
 from src.logger import logger
@@ -117,3 +121,44 @@ def alert_count(chain_id: int, alert_id: str) -> int:
         logger.error(f"Error obtaining alert counts: {err}")
 
     return alert_id_counts, alert_counts
+
+def get_tp_attacker_list() -> list:
+    res = requests.get('https://raw.githubusercontent.com/forta-network/starter-kits/main/early-attack-detector-py/tp_list.csv')
+    if res.status_code == 200:
+        logging.info(f"Successfully made request to fetch tp list: {res.status_code}.")
+        content = res.content.decode('utf-8')
+    else:
+        logging.info(f"Made request to fetch tp list and failed. status code: {res.status_code}. Fetching from 'tp_list.csv'.")
+        content = open('tp_list.csv', 'r').read()
+
+    df_fps = pd.read_csv(io.StringIO(content), sep=',')
+    attacker_list = set(df_fps['Attacker'].tolist())
+
+    eth_address_pattern = re.compile(r'^0x[a-fA-F0-9]{40}$')
+
+    unique_attacker_addresses = set()
+    # Could be populated by random strings
+    # and non-Ethereum addresses
+    non_eth_entries = []
+
+    for entry in attacker_list:
+        # some values were sneaking in as `float` types
+        # (e.g. 'nan')
+        if isinstance(entry, str):
+            parts = [part.strip() for part in entry.split(',')]
+            for part in parts:
+                if eth_address_pattern.match(part):
+                    unique_attacker_addresses.add(part.lower())
+                else:
+                    non_eth_entries.append(part.lower())
+            
+    return list(unique_attacker_addresses)
+
+def update_tp_attacker_list(current_tp_list) -> list:
+    fetched_tp_list = get_tp_attacker_list()
+
+    for entry in fetched_tp_list:
+        if entry not in current_tp_list:
+            current_tp_list.append(entry)
+
+    return current_tp_list

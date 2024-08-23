@@ -4,10 +4,9 @@
 
 The Early Attack Detector identifies smart contract exploits (protocol attacks) in real-time; before any digital assets are stolen. It does so by combining Machine Learning (ML) analysis of newly deployed smart contracts with funding analysis of the deployer address. This version of the attack detector focuses on the two initial attack stages (Funding and Preparation). By doing so, the Early Attack Detector can greatly improve its precision rate.
 
-
 ## Approach
 
-This bot has two different thresholds (for each compatible chain, as of version 0.1.0 only eth). The high-precision threshold represents a risk score focused on very-high precision, and slightly lower recall (i.e., if the model thinks a smart contract is malicious, it's very likely to be malicious, but it may miss some smart contracts that are not so clear). 
+This bot has two different thresholds (for each compatible chain, as of version 0.1.0 only eth). The high-precision threshold represents a risk score focused on very-high precision, and slightly lower recall (i.e., if the model thinks a smart contract is malicious, it's very likely to be malicious, but it may miss some smart contracts that are not so clear).
 
 For a high-recall threshold, targeted more towards researchers and post-incident response, precision is slightly reduced in order to find as many malicious smart contracts as possible.
 
@@ -19,8 +18,9 @@ This bot only generates critical alerts. The logic behind these alerts is as fol
 4. If the risk score is under both thresholds, no alert is raised.
 
 ## Alerts
+
 - **EARLY-ATTACK-DETECTOR-1**, severity Critical. Alerts raised when the model is over the precision threshold and has been funded in the last 24 hours, or if the model precision is over the high precision threshold.
-- **EARLY-AD-INFO**, [only for beta], severity Info. Auxiliary alerts for continuous improvement. 
+- **EARLY-AD-INFO**, [only for beta], severity Info. Auxiliary alerts for continuous improvement.
 
 ### Alert Schema
 
@@ -62,7 +62,7 @@ This bot only generates critical alerts. The logic behind these alerts is as fol
               "chainIds": null
             }
           }
-        },
+        }
       ]
     }
   }
@@ -79,9 +79,11 @@ The metadata for each alert will contain the following fields:
 - funding_labels: [optional] When there are potential fundings, the hash(es) to the funding label(s)
 - model_score: Model score. In case where the alert was raised due to the high precision model, the score will be from the high precision model.
 - model_threshold: Recall threshold that was being used in the model at the moment of raising the alert
+- known_past_attacker: [optional] When the transaction initiator is found to be a known past attacker, (i.e. associated with a public disclosed attack in the past) this value will be set to `"True"`.
 - oko_contract_explorer: Link to contract explorer
 
 Example of high precision model:
+
 ```json
 {
   "function_signatures": "0x57ea89b6,0x2b42b941,0xe2d73ccd,0xeaf67ab9,0xf39d8c65,0x9763d29b,0xbedf0f4a,0xe26d7a70,0xffffffff",
@@ -93,6 +95,7 @@ Example of high precision model:
 ```
 
 Example of alert with labels:
+
 ```json
 {
   "function_signatures": "",
@@ -103,6 +106,7 @@ Example of alert with labels:
   "oko_contract_explorer": "https://oko.palkeo.com/0x34C36d6382FbF7885da6C46eAeB96a5A41F23CE8/"
 }
 ```
+
 In the second example, we can see that model_score is smaller than model_threshold. This can only happen in `EARLY-AD-INFO`, and it is used for improvement of the underlying ML models.
 
 #### Querying the Early Attack Detector for labels
@@ -131,28 +135,26 @@ In the second example, we can see that model_score is smaller than model_thresho
       ]
     }
  }
-       
+
 ```
-
-
 
 ## Metrics
 
-Metrics are calculated using a 5-fold CV fashion (Divide data in 5 splits, train 4 of them, predict on the unseen 5th, then calculate metrics over the whole dataset). 
+Metrics are calculated using a 5-fold CV fashion (Divide data in 5 splits, train 4 of them, predict on the unseen 5th, then calculate metrics over the whole dataset).
 
-|version|eth f1|eth p|eth r|oc f1|oc p|oc r|ehp f1|ehp p|ehp r|ochp f1|ochp p|ochp r|
-|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
-|v0.2.0|0.47|0.32|0.92|0.38|0.24|0.9|0.48|0.99|0.31|0.26|0.96|0.15|
-|v0.1.0|0.47|0.32|0.92|0.38|0.24|0.9|0.184|0.93|0.1|-|-|-|
-|v0.0.1|0.54|0.39|0.9|0.36|0.23|0.89|0.78|0.89|0.69|0.26|0.84|0.15|
+| version | eth f1 | eth p | eth r | oc f1 | oc p | oc r | ehp f1 | ehp p | ehp r | ochp f1 | ochp p | ochp r |
+| :-----: | :----: | :---: | :---: | :---: | :--: | :--: | :----: | :---: | :---: | :-----: | :----: | :----: |
+| v0.2.0  |  0.47  | 0.32  | 0.92  | 0.38  | 0.24 | 0.9  |  0.48  | 0.99  | 0.31  |  0.26   |  0.96  |  0.15  |
+| v0.1.0  |  0.47  | 0.32  | 0.92  | 0.38  | 0.24 | 0.9  | 0.184  | 0.93  |  0.1  |    -    |   -    |   -    |
+| v0.0.1  |  0.54  | 0.39  |  0.9  | 0.36  | 0.23 | 0.89 |  0.78  | 0.89  | 0.69  |  0.26   |  0.84  |  0.15  |
 
 Legend:
+
 - oc - other chains
 - p - precision
 - r - recall
 - ehp - eth high precision
 - ochp - other chains high precision
-
 
 ## Integrations
 
@@ -164,8 +166,6 @@ Your API key will be required. You can go [HERE](https://docs.forta.network/en/l
 
 Click [HERE](https://docs.forta.network/en/latest/forta-api-reference/?_gl=1*zxaxka*_ga*Njg5MDIxNjQ5LjE2ODU5OTEyODE.*_ga_3ERDDVRGQQ*MTcxMDc5MDk3NS4xNjIuMS4xNzEwNzkyMDMzLjAuMC4w#query-labels) for a complete reference to the Forta GraphQL API parameters.
 
-
 ### Openzeppelin Defender
 
 The OpenZeppelin Defender platform is a developer security platform that allows you to audit, deploy and monitor blockchain applications. Within Defender, you can easily and quickly begin utilizing the Attack Detector in order to protect your protocol’s smart contracts. Defender can take action of the Attack Detector’s alerts automatically pausing the protocol preventing loss of funds. Please visit the OpenZeppelin Defender docs [here](https://docs.openzeppelin.com/defender) regarding any questions about how to use Defender.
-
