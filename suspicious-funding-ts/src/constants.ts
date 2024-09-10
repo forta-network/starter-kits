@@ -7,15 +7,15 @@ export const BOTS_TO_MONITOR = [
 
 export const DAYS_TO_LOOK_BACK = 3;
 
-// Around $5000 at the time of the update
+// Around $11500 at the time of the update
 export const VALUE_THRESHOLDS: Record<number, number> = {
-  1: 1.4,
-  10: 1.4,
-  56: 9,
-  137: 8300,
-  250: 8000,
-  42161: 1.4,
-  43114: 160,
+  1: 5,
+  10: 5,
+  56: 22,
+  137: 30000,
+  250: 24000,
+  42161: 5,
+  43114: 485,
 };
 
 export const alertOriginMap = {
@@ -34,4 +34,5 @@ export const THREE_SECOND_BLOCKS_IN_ONE_DAY = ONE_DAY / THREE_SECOND_BLOCK_TIME;
 
 export const TRUE_POSITIVE_LIST_PATH = "../tp_list.csv";
 // Using the Early Attack Detector True Positive list as source of truth
-export const TRUE_POSITIVE_LIST_URL = "https://raw.githubusercontent.com/forta-network/starter-kits/main/early-attack-detector-py/tp_list.csv"
+export const TRUE_POSITIVE_LIST_URL =
+  "https://raw.githubusercontent.com/forta-network/starter-kits/main/early-attack-detector-py/tp_list.csv";
