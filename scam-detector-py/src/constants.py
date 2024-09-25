@@ -65,15 +65,11 @@ BASE_BOTS = [("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9
                 ("0x11b3d9ffb13a72b776e1aed26616714d879c481d7a463020506d1fb5f33ec1d4", "forta-text-messages-possible-hack", "Combination", ""),  # forta-text-messages-agent
                 ("0xbc06a40c341aa1acc139c900fd1b7e3999d71b80c13a9dd50a369d8f923757f5", "FLASHBOT-TRANSACTION", "Combination", ""),  # Flashbot
                 ("0x4c7e56a9a753e29ca92bd57dd593bdab0c03e762bdd04e2bc578cb82b842c1f3", "UNVERIFIED-CODE-CONTRACT-CREATION", "Combination", ""),  # unverified contract creation
-                ("0xd935a697faab13282b3778b2cb8dd0aa4a0dde07877f9425f3bf25ac7b90b895", "AE-MALICIOUS-ADDR", "Combination", ""),  # malicious address bot
                 ("0x33faef3222e700774af27d0b71076bfa26b8e7c841deb5fb10872a78d1883dba", "SLEEPMINT-3", "Combination", "SCAM-DETECTOR-SLEEP-MINTING"),  # sleep minting
                 ("0xf496e3f522ec18ed9be97b815d94ef6a92215fc8e9a1a16338aee9603a5035fb", "CEX-FUNDING-1", "Combination", ""),  # CEX Funding
-                ("0x47b86137077e18a093653990e80cb887be98e7445291d8cf811d3b2932a3c4d2", "AK-AZTEC-PROTOCOL-DEPOSIT-EVENT", "Combination", ""),  # Aztec MoneyLaundering
                 ("0xdba64bc69511d102162914ef52441275e651f817e297276966be16aeffe013b0", "UMBRA-RECEIVE", "Combination", ""),  # umbra receive
-                ("0x2df302b07030b5ff8a17c91f36b08f9e2b1e54853094e2513f7cda734cf68a46", "MALICIOUS-ACCOUNT-FUNDING", "Combination", ""),  # Malicious Account Funding
                 ("0x9324d7865e1bcb933c19825be8482e995af75c9aeab7547631db4d2cd3522e0e", "FUNDING-CHANGENOW-NEW-ACCOUNT", "Combination", ""),  # Changenow funding
                 ("0x887678a85e645ad060b2f096812f7c71e3d20ed6ecf5f3acde6e71baa4cf86ad", "SUSPICIOUS-TOKEN-CONTRACT-CREATION", "Combination", ""),  # Malicious Token ML Model
-                ("0xac82fb2a572c7c0d41dc19d24790db17148d1e00505596ebe421daf91c837799", "ATTACK-DETECTOR-1", "PassThrough", "SCAM-DETECTOR-1"),  # Attack Detector V3 - has lots of rug pulls and rake tokens
                 ("0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502", "ADDRESS-POISONING", "PassThrough", "SCAM-DETECTOR-ADDRESS-POISONING"),  # Malicious Token ML Model
                 ("0x98b87a29ecb6c8c0f8e6ea83598817ec91e01c15d379f03c7ff781fd1141e502", "ADDRESS-POISONING-LOW-VALUE", "PassThrough", "SCAM-DETECTOR-ADDRESS-POISONING"),  # Malicious Token ML Model
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-1", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing with a social eng component (aka a function parameter)
@@ -133,8 +129,6 @@ BASE_BOTS = [("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9
                 ("0xe4a8660b5d79c0c64ac6bfd3b9871b77c98eaaa464aa555c00635e9d8b33f77f", "ASSET-DRAINED", "Combination", ""),
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-CREATION", "Combination", ""),
                 ("0xf234f56095ba6c4c4782045f6d8e95d22da360bdc41b75c0549e2713a93231a4", "SOFT-RUG-PULL-SUS-LIQ-POOL-RESERVE-CHANGE", "Combination", ""),
-                ("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-1", "Combination", ""),
-                ("0x6ec42b92a54db0e533575e4ebda287b7d8ad628b14a2268398fd4b794074ea03", "PKC-2", "Combination", ""),
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "omitted", "Combination", ""),
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Ice-phishing-web", "PassThrough", "SCAM-DETECTOR-ICE-PHISHING"),
                 ("0x9ba66b24eb2113ca3217c5e02ac6671182247c354327b27f645abb7c8a3e4534", "Fraudulent-nft-order", "PassThrough", "SCAM-DETECTOR-FRAUDULENT-NFT-ORDER"),
