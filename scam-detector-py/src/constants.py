@@ -3,11 +3,6 @@ ENABLE_METAMASK_CONSUMPTION = True
 
 ALERT_LOOKBACK_WINDOW_IN_DAYS = 7
 
-ENTITY_CLUSTER_BOTS = [("0xd3061db4662d5b3406b52b20f34234e462d2c275b99414d76dc644e2486be3e9", "ENTITY-CLUSTER")]
-
-CONTRACT_SIMILARITY_BOTS = [("0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560", "NEW-SCAMMER-CONTRACT-CODE-HASH")]
-CONTRACT_SIMILARITY_BOT_THRESHOLDS = [0.97]
-
 EOA_ASSOCIATION_BOTS = [("0xcd9988f3d5c993592b61048628c28a7424235794ada5dc80d55eeb70ec513848", "SCAMMER-LABEL-PROPAGATION-1")]
 EOA_ASSOCIATION_BOT_THRESHOLDS = [0.0]
 
@@ -23,8 +18,6 @@ ALERTED_ENTITIES_PASSTHROUGH_KEY = "alerted_entities_passthrough_per_alert_id_ke
 ALERTED_ENTITIES_PASSTHROUGH_QUEUE_SIZE = 75000
 ALERTED_ENTITIES_SCAMMER_ASSOCIATION_KEY = "alerted_entities_scammer_association_per_alert_id_key"
 ALERTED_ENTITIES_SCAMMER_ASSOCIATION_QUEUE_SIZE = 100000
-ALERTED_ENTITIES_SIMILAR_CONTRACT_KEY = "alerted_entities_similar_contract_per_alert_id_key"
-ALERTED_ENTITIES_SIMILAR_CONTRACT_QUEUE_SIZE = 100000
 ALERTED_ENTITIES_MANUAL_KEY = "alerted_entities_manual_per_alert_id_key"
 ALERTED_ENTITIES_MANUAL_QUEUE_SIZE = 100000
 ALERTED_ENTITIES_MANUAL_METAMASK_KEY = "alerted_entities_manual_metamask_per_alert_id_key"
@@ -75,7 +68,6 @@ BASE_BOTS = [("0x15e9b3cd277d3be1fcfd5e23d61b3496026d8c3d9c98ef47a48e37b3c216ab9
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-1", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing with a social eng component (aka a function parameter)
                 ("0x8732dbb3858d65844d940f5de3705b4161c05258bdfedf1ff5afb6683e1274e5", "NFT-WASH-TRADE", "PassThrough", "SCAM-DETECTOR-WASH-TRADE"),  # wash trading bot maintained by nethermind
                 ("0x067e4c4f771f288c686efa574b685b98a92918f038a478b82c9ac5b5b6472732", "NFT-WASH-TRADE", "Combination", ""),  # wash trading bot - for ML bot; need to replace after retraining
-                ("0x3acf759d5e180c05ecabac2dbd11b79a1f07e746121fc3c86910aaace8910560", "NEW-SCAMMER-CONTRACT-CODE-HASH", "PassThrough", "SCAM-DETECTOR-SIMILAR-CONTRACT"),  # contract similarity bot
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-5", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing using soc eng contract (static)
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-6", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing using soc eng contract (dynamic)
                 ("0x1a69f5ec8ef436e4093f9ec4ce1a55252b7a9a2d2c386e3f950b79d164bc99e0", "NIP-8", "PassThrough", "SCAM-DETECTOR-SOCIAL-ENG-NATIVE-ICE-PHISHING"),  # Native ice phishing using soc eng contract (dynamic)
@@ -290,7 +282,6 @@ CONFIDENCE_MAPPINGS = {
         "address-poisoner": 0.85,
         "impersonating-token": 0.99,
         "attack-stages": 0.25,
-        "similar-contract": 0.99,
         "scammer-deployed-contract": 0.99,
         "scammer-association": 0.60,
         "private-key-compromise": 0.4,
