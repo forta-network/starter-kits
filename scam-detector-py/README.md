@@ -51,8 +51,6 @@ The Scam Detector is opinionated, and consumes evidence of and issues judgment a
    - **Scammer Deployed Contracts**: When an EOA is labeled a scammer, the Scam Detector queries for all contracts created by the EOA at the time the EOA was labeled. This includes direct contract creations (e.g. scammer deploys a token) as well as indirect contract creations (e.g. scammer adds liquidity to a pool that may result in the pool creation). To capture future contract creations, the Scam Detector also monitors for new contract creations by known scammers and emits a new ‘scammer’ label.
    
    - **Scammer Association**: When an EOA is labeled a scammer, label propagation will label associated scammers (e.g. addresses that are a destination for stolen assets) as scammers. [A graph-based approach](https://forta.org/blog/discovering-scammer-networks-with-machine-learning/) is utilized. The threat category of these labels is ‘scammer-association’.
-   
-   - **Similar to Scammer**: For all contracts labeled scam by the Scam Detector, a contract similarity bot will identify and emit labels about contracts that resemble known scammer contacts. The threat category of these labels is ‘similar-contract’.
 
 **False Positive Mitigation**
 
@@ -162,11 +160,6 @@ The complete list of scammer label threat-categories, and conditions under which
     <td>At times, the specific threat category can not be identified, but there is confidence in the address being associated with a scam. In those cases, the threat category is set to unknown.</td>
   </tr>
   <tr>
-    <td>similar-contract</td>
-    <td>Propagation Label</td>
-    <td>Emitted to identify a newly deployed contract that is similar to a known scammer contract</td>
-  </tr>
-  <tr>
     <td>scammer-deployed-contract</td>
     <td>Propagation Label</td>
     <td>Emitted to identify a contract deployed by a known scammer EOA. Emitted to identify a new contract deployed by a known scammer EOA.</td>
@@ -241,11 +234,11 @@ For reference, each field is described below:
   </tr>
   <tr>
     <td>base_bot_alert_ids</td>
-    <td>When the label is emitted via passthrough, ML, similar contract, or an association alert, this field will contain the alert ids of the base bot alerts utilized to derive the label.</td>
+    <td>When the label is emitted via passthrough, ML, or an association alert, this field will contain the alert ids of the base bot alerts utilized to derive the label.</td>
   </tr>
   <tr>
     <td>base_bot_alert_hashes</td>
-    <td>When the label is emitted via passthrough, ML, similar contract, or an association alert, this field will contain the alert hashes of the base bot alerts utilized to derive the label.</td>
+    <td>When the label is emitted via passthrough, ML, or an association alert, this field will contain the alert hashes of the base bot alerts utilized to derive the label.</td>
   </tr>
   <tr>
     <td>deployer_info</td>
@@ -327,7 +320,7 @@ Address poisoners are the initiator of the address poisoning activity. A simple 
 
 Native ice phishing are straight transfers of native assets to the scammer. Matching the to address of the transaction against Forta threat intelligence yield transactions for this type of scam.
 
-### soft-rug-pull, hard-rug-pull, rake-token, impersonating-token, similar-contract, scammer-deployed-contract
+### soft-rug-pull, hard-rug-pull, rake-token, impersonating-token, scammer-deployed-contract
 
 These threat categories all point to contracts that a user should not be interacting with. A check of the to address or the transaction trace data against Forta threat intelligence yields transactions where this may be the case. 
 
