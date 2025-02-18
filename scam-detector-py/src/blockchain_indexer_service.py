@@ -112,7 +112,7 @@ class BlockChainIndexer:
     # Note, this doesnt work well with contracts; caller needs to check whether address is an EOA or not
     @staticmethod
     @RateLimiter(max_calls=1, period=1)
-    def get_contracts(address, chain_id, disable_etherscan=False, disable_zettablock=False) -> set:
+    def get_contracts(address, chain_id, disable_etherscan=False, disable_zettablock=True) -> set:
         logging.info(f"get_contracts for {address} on {chain_id} called.")
         contracts = set()
 
