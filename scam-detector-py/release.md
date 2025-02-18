@@ -1,6 +1,10 @@
 # Scam Detector Bot Release Notes
 
-## 2.24.4 (prod - 4/3/2024)
+## 2.24.6 (prod - 2/18/2025)
+
+- fix FP mitigation
+
+## 2.24.5 (prod - 4/3/2024)
 
 - removed ADDRESS-POISONING-FAKE-TOKEN alert
 
