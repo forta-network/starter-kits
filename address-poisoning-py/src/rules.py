@@ -42,7 +42,7 @@ class AddressPoisoningRules:
             return 0
 
         for log in logs:
-            if str.lower(log['address']) in STABLECOIN_CONTRACTS[chain_id] or log['address'] in BASE_TOKENS:
+            if log['address'].lower() in STABLECOIN_CONTRACTS[chain_id] or log['address'].lower() in BASE_TOKENS:
                 stablecoin_or_base_count += 1
 
         return (1.0 * stablecoin_or_base_count) / len(logs)
