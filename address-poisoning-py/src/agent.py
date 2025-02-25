@@ -275,7 +275,8 @@ def detect_address_poisoning(w3, blockexplorer, heuristic, transaction_event):
                 low_value_alert_count += 1
                 score = (1.0 * low_value_alert_count) / denominator_count
                 low_value_phishing_contracts.update([transaction_event.to])
-                attackers.append(transaction_event.from_)
+                if transaction_event.from_ not in attackers:
+                    attackers.append(transaction_event.from_)
 
     if ALERT_TYPE != "":
         logging.info("Appending finding...")
