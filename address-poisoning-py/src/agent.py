@@ -233,7 +233,7 @@ def detect_address_poisoning(w3, blockexplorer, heuristic, transaction_event):
         
         # Zero value address poisoning heuristic ->
         if (log_length >= 3 
-        and heuristic.are_all_logs_stablecoins(logs, CHAIN_ID) >= 0.4 
+        and heuristic.are_all_logs_stablecoins_or_base_coins(logs, CHAIN_ID) >= 0.4 
         and heuristic.are_all_logs_transfers_or_approvals(logs) 
         and heuristic.is_zero_value_tx(logs, CHAIN_ID)): 
             logging.info(f"Detected phishing transaction from EOA: {transaction_event.from_}, and Contract: {transaction_event.to}")
@@ -261,21 +261,22 @@ def detect_address_poisoning(w3, blockexplorer, heuristic, transaction_event):
        
         # Low value address poisoning heuristic ->
         elif (log_length >= 10
-        and heuristic.are_all_logs_stablecoins(logs, CHAIN_ID) >= 0.9
+        and heuristic.are_all_logs_stablecoins_or_base_coins(logs, CHAIN_ID) >= 0.9
         and heuristic.are_all_logs_transfers_or_approvals(logs)
         and heuristic.is_data_field_repeated(logs)):
             logging.info(f"Possible low-value address poisoning - making additional checks...")
             PENDING_ALERT_TYPE = "ADDRESS-POISONING-LOW-VALUE"
             transfer_logs = parse_logs_for_transfer_and_approval_info(transaction_event, STABLECOIN_CONTRACTS[CHAIN_ID])
             attackers, victims = get_attacker_victim_lists(w3, transfer_logs, PENDING_ALERT_TYPE)
-            if ((len(attackers) - len(victims)) == 1
+            if (((len(attackers) - len(victims)) == 1 or len(attackers) == 1)
             and check_for_similar_transfer(blockexplorer, transfer_logs, victims)):
                 logging.info(f"Detected phishing transaction from EOA: {transaction_event.from_}, and Contract: {transaction_event.to}")
                 ALERT_TYPE = PENDING_ALERT_TYPE
                 low_value_alert_count += 1
                 score = (1.0 * low_value_alert_count) / denominator_count
                 low_value_phishing_contracts.update([transaction_event.to])
-                attackers.append(transaction_event.from_)
+                if transaction_event.from_ not in attackers:
+                    attackers.append(transaction_event.from_)
 
     if ALERT_TYPE != "":
         logging.info("Appending finding...")

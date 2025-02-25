@@ -50,14 +50,14 @@ class TestAddressPoisoningRules:
         ) == "", "Address should be flagged as being in the zero_value_contracts"
 
 
-    def test_are_all_logs_stablecoins_positive(self):
-        assert heuristic.are_all_logs_stablecoins(
+    def test_are_all_logs_stablecoins_or_base_coins_positive(self):
+        assert heuristic.are_all_logs_stablecoins_or_base_coins(
             MOCK_TX_HASH_LOGS_MAPPING['0xpositive_zero']['logs'], w3.eth.chain_id
         ) >= 0.8 
 
 
-    def test_are_all_logs_stablecoins_negative(self):
-        assert (heuristic.are_all_logs_stablecoins(
+    def test_are_all_logs_stablecoins_or_base_coins_negative(self):
+        assert (heuristic.are_all_logs_stablecoins_or_base_coins(
             MOCK_TX_HASH_LOGS_MAPPING['0xnegative_zero']['logs'], 
             w3.eth.chain_id
         ) >= 0.8) is False 
