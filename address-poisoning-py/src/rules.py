@@ -35,17 +35,17 @@ class AddressPoisoningRules:
 
 
     @staticmethod
-    def are_all_logs_stablecoins(logs, chain_id):
-        stablecoin_count = 0
+    def are_all_logs_stablecoins_or_base_coins(logs, chain_id):
+        stablecoin_or_base_count = 0
 
         if len(logs) == 0:
             return 0
 
         for log in logs:
-            if str.lower(log['address']) in STABLECOIN_CONTRACTS[chain_id]:
-                stablecoin_count += 1
+            if str.lower(log['address']) in STABLECOIN_CONTRACTS[chain_id] or log['address'] in BASE_TOKENS:
+                stablecoin_or_base_count += 1
 
-        return (1.0 * stablecoin_count) / len(logs)
+        return (1.0 * stablecoin_or_base_count) / len(logs)
 
 
     @staticmethod    
@@ -94,7 +94,7 @@ class AddressPoisoningRules:
         valid_contracts = 0
 
         for address in contracts:
-            if str.lower(address) in STABLECOIN_CONTRACTS[chain_id] or address in BASE_TOKENS:
+            if str.lower(address) in STABLECOIN_CONTRACTS[chain_id] or address.lower() in BASE_TOKENS:
                 valid_contracts += 1
             else:
                 try:
