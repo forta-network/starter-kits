@@ -19,7 +19,7 @@ This agent detects when a new account is funded by a set of CEXes. Initially, it
   - Metadata exposes the anomaly_score for the alert (calculated by dividing unverified contract creations by all contract creations)
   - Metadata will contain amount funded, the funded address, as well as the name of the CEX
 
-- CEX-FUNDING-2
+- CEX-FUNDING-2 (Removed as of March 2025)
   - Fired when a funding transaction is made to a new EOA using native asset in small amounts. It is particularly focused on transactions from mainstream or well-regulated centralized exchanges (CEXes) with robust KYC processes.
   - Severity is always set to "low"
   - Type is always set to "suspicious"
