@@ -50,7 +50,7 @@ Describe each of the type of alerts fired by this agent
 
 Notes:
 
-- If the the transfer uses ERC20 and the price is not retrivable it will be fired with the name "nft-sale-erc20-price-unknown"
+- If the transfer uses ERC20 and the price is not retrivable it will be fired with the name "nft-sale-erc20-price-unknown"
 - If no floorPrice is detected it will be fired with the name "nft-sale-floor-price-unknown"
 
 **nft-sold-above-floor-price**
@@ -126,7 +126,7 @@ Notes:
 
 **stolen-nft-sale**
 
-- Fired when a previously indexed nft id has a record that points to a a possible phishing attack.
+- Fired when a previously indexed nft id has a record that points to a possible phishing attack.
 - Verifies by comparing the addresses between records and calculating the difference between values and floorPrice differences.
 - Includes standard metadata
 - Severity is always set to "High"
