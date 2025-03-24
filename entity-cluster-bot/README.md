@@ -34,27 +34,46 @@ It store the metadata of the shared graph and also manage the mutex (There is on
 The mutex also has a expire time of 10s at application level and a dynamo ttl at infrastructure level to avoid the mutex being lock if an intance is shutdown in the forta network. 
 The Mutex only use dynamo write capacity
 
-Definition:
+#### set up a dynamo db on AWS
+1. create table
+table name : your-table-name
 Table class: DynamoDB standard
 Partition Key: itemId(String)
 Sort Key: sortKey(String)
+Customize settings
+DynamoDB standard
+Read capacity : minimum 2
+Write capacity : minimum 2
+leave the rest as default
+Create table 
+
+2. Set up the ttl:
 ttl feature: on
 ttl name field: expiresAt
-Capacity: 2 write, 2 read
 
+place the instance in the same region as the s3 bucket 
 
 ### S3_BUCKET= "prod-research-bot-data"
 S3 bucket to store the shared graph, one chared graph per chain.
-Definition:
-Just the standard s3
 
+1. create a S3 bucket
+bucket name: your-bucket-name
+Leave the rest as default
+creatre bucket
 
-### Infrastructure cost
-Each instance updates the graph every TX_SAVE_STEP, asking for the mutex, saving metadata, reading from s3,  writing in s3 and releasing the mutex all these operations cost $$$. The lower the TX_SAVE_STEP, the more accurate the alert are as the 
-instances "knows what is hapening in the other" but there are more operation over the infrastructure so the cost are higher. By design there is a relationship betweeen cost and accuracy. 
+### Set up IAM permission
 
+#### Create a policy for the bot
+1. go to IAM
+2. go to policies
+3. create policy
+4. go to JSON tab
+5. paste the following policy
+6. replace the bucket name and the table name with the ones you created (S3_ARN and TABLE_ARN) ARN(Amazon Ressource Name) can be found in the bucket and table details. 
+7. click on next
+8. Set up the name of the policy
+9. click on create policy
 
-### IAM permission
 
 Keep them as low as possible, here a template:
 
@@ -73,7 +92,7 @@ Keep them as low as possible, here a template:
                 "dynamodb:Query",
                 "dynamodb:UpdateItem"
             ],
-            "Resource": "HIDDEN"
+            "Resource": "TABLE_ARN"
         },
         {
             "Sid": "VisualEditor1",
@@ -82,11 +101,40 @@ Keep them as low as possible, here a template:
                 "s3:PutObject",
                 "s3:GetObject"
             ],
-            "Resource": "HIDDEN"
+            "Resource": "S3_ARN"
         }
     ]
 }
 
+#### Assign permission to a user 
+1. go to IAM
+2. go to users
+3. create or select a user
+4. go to permissions tab
+5. click on add permission
+6. click on attach existing policies directly
+7. search for the policy you created
+8. click on next
+9. click on add permission
+
+
+#### Get the credentials
+1. go to IAM
+2. go to users
+3. select a user
+4. go to security credentials tab
+5. click on create access key
+6. click on show
+7. copy the access key and the secret key
+8. paste them in the secret.json file
+
+
+### Infrastructure cost
+Each instance updates the graph every TX_SAVE_STEP, asking for the mutex, saving metadata, reading from s3,  writing in s3 and releasing the mutex all these operations cost $$$. The lower the TX_SAVE_STEP, the more accurate the alert are as the 
+instances "knows what is hapening in the other" but there are more operation over the infrastructure so the cost are higher. By design there is a relationship betweeen cost and accuracy. 
+
+
+## Credentials configuration
 Credential should be in secret.json, a template to start could be:
 
 {   
@@ -101,6 +149,9 @@ Credential should be in secret.json, a template to start could be:
 
 ZETTABLOCK for alert stats
 AWS.* infrastructure
+
+### constants.py
+you may have to change the constants.py file to match your infrastructure, zone and ressource names.
 
 
 ## RPC Timeout

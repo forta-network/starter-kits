@@ -1,12 +1,31 @@
+import sys
 from agent import EntityClusterAgent
-from forta_agent import create_transaction_event
+from forta_agent import create_transaction_event, create_alert_event, AlertEvent
 from datetime import datetime, timedelta
 import time
 import networkx as nx
 
 from web3 import Web3
-from web3_mock import CONTRACT, EOA_ADDRESS_LARGE_TX, EOA_ADDRESS_NEW, EOA_ADDRESS_OLD, EOA_ADDRESS_SMALL_TX, EOA_ADDRESS_FUNDED_NEW, EOA_ADDRESS_FUNDED_OLD, EOA_ADDRESS_FUNDER_NEW, EOA_ADDRESS_FUNDER_OLD, Web3Mock
-from constants import ALERTED_ADDRESSES_KEY, GRAPH_KEY
+from web3_mock import (
+    CONTRACT,
+    EOA_ADDRESS_LARGE_TX,
+    EOA_ADDRESS_NEW,
+    EOA_ADDRESS_OLD,
+    EOA_ADDRESS_SMALL_TX,
+    EOA_ADDRESS_FUNDED_NEW,
+    EOA_ADDRESS_FUNDED_OLD,
+    EOA_ADDRESS_FUNDER_NEW,
+    EOA_ADDRESS_FUNDER_OLD,
+    Web3Mock,
+)
+from constants import (
+    ALERTED_ADDRESSES_KEY,
+    GRAPH_KEY,
+    MALICIOUS_SMART_CONTRACT_BOT_ID,
+    SEVERITY_ALERT_FILTER,
+    CLUSTER_SENDER,
+)
+
 from forta_agent import get_alerts, get_json_rpc_url
 import timeit
 
@@ -649,3 +668,193 @@ class TestEntityClusterBot:
 
         findings = agent2.cluster_entities(real_w3, native_transfer2)
         assert len(findings) == 1, "Finding should be returned as it is bidirectional"
+
+
+    def test_alert_suspicious_contract_creation(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent = EntityClusterAgent(DynamoPersistance())
+        # https://app.forta.network/alerts/0xfac79700fcf706bee8452e699ad036c1de32c00b8e578f82181ecbc55c796ac6
+        address_creator = "0x5df8c7c0725cdb6268f4503de880c38c45f69c61"
+        contract = "0x5be8df99c1b0b3e5512e29c6e1dd018f35758942"
+        description = f"{address_creator} created contract {contract}"
+        metadata = {}
+        high_alert = generate_alert(
+            bot_id=MALICIOUS_SMART_CONTRACT_BOT_ID,
+            alert_id="",
+            description=description,
+            metadata=metadata,
+            severity="HIGH",
+        )
+        findings = agent.provide_handle_alert(high_alert, cluster_sender=False)
+        assert (
+            len(findings) == 1
+        ), "Finding should be returned as it is a contract creation with high severity"
+
+    def test_alert_suspicious_contract_creation_low_severity(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent = EntityClusterAgent(DynamoPersistance())
+        address_creator = "0x5df8c7c0725cdb6268f4503de880c38c45f69c61"
+        contract = "0x5be8df99c1b0b3e5512e29c6e1dd018f35758942"
+        description = f"{address_creator} created contract {contract}"
+        metadata = {}
+        low_alert = generate_alert(
+            bot_id=MALICIOUS_SMART_CONTRACT_BOT_ID,
+            alert_id="",
+            description=description,
+            metadata=metadata,
+            severity="LOW",
+        )
+        findings = agent.provide_handle_alert(low_alert, cluster_sender=False)
+        assert (
+            len(findings) == 0
+        ), "Finding should not be returned as it is a contract creation with low severity"
+
+    def test_alert_suspicious_wrong_chain_id(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent = EntityClusterAgent(DynamoPersistance())
+        address_creator = "0x5df8c7c0725cdb6268f4503de880c38c45f69c61"
+        contract = "0x5be8df99c1b0b3e5512e29c6e1dd018f35758942"
+        description = f"{address_creator} created contract {contract}"
+        metadata = {}
+        alert = generate_alert(
+            bot_id=MALICIOUS_SMART_CONTRACT_BOT_ID,
+            alert_id="",
+            description=description,
+            metadata=metadata,
+            severity="HIGH",
+            chain_id=56,
+        )
+        findings = agent.provide_handle_alert(alert, cluster_sender=False)
+        assert (
+            len(findings) == 0
+        ), "Finding should not be returned as it is a contract creation with wrong chain id"
+
+    def test_alert_suspicious_wrong_bot_id(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent = EntityClusterAgent(DynamoPersistance())
+        address_creator = "0x5df8c7c0725cdb6268f4503de880c38c45f69c61"
+        contract = "0x5be8df99c1b0b3e5512e29c6e1dd018f35758942"
+        description = f"{address_creator} created contract {contract}"
+        metadata = {}
+        alert = generate_alert(
+            bot_id="0xfakebotid",
+            alert_id="",
+            description=description,
+            metadata=metadata,
+            severity="HIGH",
+        )
+        findings = agent.provide_handle_alert(alert, cluster_sender=False)
+        assert (
+            len(findings) == 0
+        ), "Finding should not be returned as it is a contract creation with wrong bot id"
+
+    def test_alert_suspicious_contract_missing_description(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent = EntityClusterAgent(DynamoPersistance())
+        address_creator = "0x5df8c7c0725cdb6268f4503de880c38c45f69c61"
+        contract = "0x5be8df99c1b0b3e5512e29c6e1dd018f35758942"
+        metadata = {}
+        alert = generate_alert(
+            bot_id=MALICIOUS_SMART_CONTRACT_BOT_ID,
+            alert_id="",
+            description="",
+            metadata=metadata,
+            severity="HIGH",
+        )
+        findings = agent.provide_handle_alert(alert, cluster_sender=False)
+        assert (
+            len(findings) == 0
+        ), "Finding should not be returned as it is a contract creation with missing description"
+
+    def test_alert_suspicious_contract_creation_and_different_sender(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent = EntityClusterAgent(DynamoPersistance())
+        address_sender = "0xaaaf0666a916bdf97710a8e44e42ba250490e5b8"
+        address_creator = "0x5df8c7c0725cdb6268f4503de880c38c45f69c61"
+        contract = "0x5be8df99c1b0b3e5512e29c6e1dd018f35758942"
+        description = f"{address_creator} created contract {contract}"
+        metadata = {}
+        alert = generate_alert(
+            bot_id=MALICIOUS_SMART_CONTRACT_BOT_ID,
+            alert_id="",
+            description=description,
+            metadata=metadata,
+            severity="HIGH",
+            transaction_hash="0x7b5c7f34821b8782a04c6e8f7bfe25115fa1fb6360c2e93ccc0d6e84655445aa",
+        )
+        findings = agent.provide_handle_alert(alert, cluster_sender=True)
+        assert (
+            len(findings) == 2
+        ), "Finding should be returned as it is a contract creation with high severity"
+
+    def test_alert_suspicious_contract_creation_and_same_sender(self):
+        TestEntityClusterBot.remove_persistent_state()
+        agent = EntityClusterAgent(DynamoPersistance())
+        address_sender = "0xaaaf0666a916bdf97710a8e44e42ba250490e5b8"
+        address_creator = "0xaaaf0666a916bdf97710a8e44e42ba250490e5b8"
+        contract = "0x5be8df99c1b0b3e5512e29c6e1dd018f35758942"
+        description = f"{address_creator} created contract {contract}"
+        metadata = {}
+        alert = generate_alert(
+            bot_id=MALICIOUS_SMART_CONTRACT_BOT_ID,
+            alert_id="",
+            description=description,
+            metadata=metadata,
+            severity="HIGH",
+            transaction_hash="0x7b5c7f34821b8782a04c6e8f7bfe25115fa1fb6360c2e93ccc0d6e84655445aa",
+        )
+        findings = agent.provide_handle_alert(alert, cluster_sender=True)
+        assert (
+            len(findings) == 1
+        ), "1 Finding should be returned as it is a contract creation with high severity and sender = contract creator"
+
+
+def generate_alert(
+    bot_id: str,
+    alert_id: str,
+    description: str,
+    severity: str,
+    metadata: dict = {},
+    addresses: list = [],
+    contracts: list = [],
+    transaction_hash: str = "0xabc",
+    labels: list = [],
+    chain_id: int = 1,
+) -> AlertEvent:
+
+    alert_event = {
+        "alertId": alert_id,
+        "chainId": chain_id,
+        "addresses": addresses,
+        "labels": labels,
+        "contracts": contracts,
+        "createdAt": "",
+        "description": description,
+        "name": "test_alert_name",
+        "protocol": "",
+        "scan_node_count": 0,
+        "hash": "",
+        "source": {
+            "transactionHash": transaction_hash,
+            "block": {"timestamp": "", "chainId": chain_id, "hash": "", "number": 0},
+            "bot": {
+                "id": bot_id,
+                "reference": "",
+                "image": "",
+                "sourceAlert": {
+                    "hash": "",
+                    "botId": bot_id,
+                    "timestamp": "",
+                    "chainId": chain_id,
+                },
+            },
+        },
+        "projects": [],
+        "contacts": [],
+        "findingType": "Unknown",
+        "severity": severity,
+        "metadata": metadata,
+    }
+
+    alert = {"alert": alert_event}
+    return create_alert_event(alert)
