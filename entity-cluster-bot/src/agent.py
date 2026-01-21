@@ -18,11 +18,38 @@ from dotenv import load_dotenv
 load_dotenv()
 
 try:
-    from src.constants import MAX_AGE_IN_DAYS, MAX_NONCE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING, BOT_ID, PROD_TAG
+    from src.constants import (
+        MAX_AGE_IN_DAYS,
+        MAX_NONCE,
+        GRAPH_KEY,
+        ONE_WAY_WEI_TRANSFER_THRESHOLD,
+        NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD,
+        NEW_FUNDED_MAX_NONCE,
+        TX_SAVE_STEP,
+        HTTP_RPC_TIMEOUT,
+        PROFILING,
+        BOT_ID,
+        PROD_TAG,
+        SEVERITY_ALERT_FILTER,
+        MALICIOUS_SMART_CONTRACT_BOT_ID,
+        CLUSTER_SENDER,
+    )
     from src.persistance import DynamoPersistance
     from src.storage import get_secrets
 except ModuleNotFoundError:
-    from constants import MAX_AGE_IN_DAYS, MAX_NONCE, GRAPH_KEY, ONE_WAY_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD, NEW_FUNDED_MAX_NONCE, TX_SAVE_STEP, HTTP_RPC_TIMEOUT, PROFILING, BOT_ID, PROD_TAG
+    from constants import (
+        MAX_AGE_IN_DAYS,
+        MAX_NONCE,
+        GRAPH_KEY,
+        ONE_WAY_WEI_TRANSFER_THRESHOLD,
+        NEW_FUNDED_MAX_WEI_TRANSFER_THRESHOLD,
+        NEW_FUNDED_MAX_NONCE,
+        TX_SAVE_STEP,
+        HTTP_RPC_TIMEOUT,
+        PROFILING,
+        BOT_ID,
+        PROD_TAG,
+    )
     from persistance import DynamoPersistance
     from storage import get_secrets
 
@@ -337,6 +364,79 @@ class EntityClusterAgent:
     def persist_state(self):
         self.persistance.persist(self.GRAPH, GRAPH_KEY, EntityClusterAgent.prune_graph)
 
-entity_cluster_agent =  EntityClusterAgent(DynamoPersistance(PROD_TAG, web3.eth.chain_id), TX_SAVE_STEP, web3.eth.chain_id)
-def handle_transaction(transaction_event: forta_agent.transaction_event.TransactionEvent) -> list:
+
+    def provide_handle_alert(self, alert_event: forta_agent.alert_event.AlertEvent, cluster_sender=CLUSTER_SENDER):
+        logging.debug("provide_handle_alert called")
+
+        if alert_event.chain_id != self.chain_id:
+            logging.debug("Alert not processed because it is not from the same chain")
+        else:
+            if alert_event.bot_id != MALICIOUS_SMART_CONTRACT_BOT_ID:
+                logging.debug(
+                    f"Alert not processed not monitoring that bot {alert_event.bot_id} - alert id : {alert_event.alert.alert_id} - chain id {self.chain_id}"
+                )
+            else:
+                if alert_event.alert.severity != SEVERITY_ALERT_FILTER:
+                    logging.debug(
+                        f"Alert not processed not monitoring that severity {alert_event.alert.severity} - alert id : {alert_event.alert.alert_id} - chain id {self.chain_id}"
+                    )
+                else:
+                    logging.debug(
+                        f"Processing alert {alert_event.alert.alert_id} - chain id {self.chain_id} - bot id {alert_event.bot_id} - severity {alert_event.alert.severity}"
+                    )
+                    return self.process_alert(alert_event, cluster_sender=cluster_sender)
+        return []
+
+    def process_alert(self, alert_event: forta_agent.alert_event.AlertEvent, cluster_sender=CLUSTER_SENDER):
+        findings = []
+        finding = None
+        description = alert_event.alert.description
+        if "created contract" in description:
+            description_split = description.split(" ")
+            creator_address = description_split[0]
+            contract_address = description_split[-1]
+            self.add_address(contract_address)
+            self.add_address(creator_address)
+            self.add_directed_edge(web3, creator_address, contract_address)
+            self.add_directed_edge(web3, contract_address, creator_address) #fake bidirectionnal edge to prevent filtering
+            finding = self.create_finding(
+                creator_address, "Triggered by high risk contract creation"
+            )
+            if finding is not None:
+                findings.append(finding)
+                finding = None
+
+        if cluster_sender:
+            transaction = web3.eth.get_transaction(
+                alert_event.transaction_hash
+            )
+            sender_address = transaction["from"]
+            if str.lower(sender_address) != str.lower(creator_address):
+                self.add_address(sender_address)
+                self.add_directed_edge(web3, sender_address, creator_address)
+                self.add_directed_edge(web3, creator_address, sender_address)
+                finding = self.create_finding(
+                    sender_address, "Triggered by high risk contract creation, transaction sender"
+                )
+            if finding is not None:
+                findings.append(finding)
+            
+
+        return findings
+
+
+entity_cluster_agent = EntityClusterAgent(
+    DynamoPersistance(PROD_TAG, web3.eth.chain_id), TX_SAVE_STEP, web3.eth.chain_id
+)
+
+
+def handle_transaction(
+    transaction_event: forta_agent.transaction_event.TransactionEvent,
+) -> list:
     return entity_cluster_agent.real_handle_transaction(transaction_event)
+
+
+def handle_alert(alert_event: forta_agent.alert_event.AlertEvent):
+    logging.debug("handle_alert called")
+
+    return entity_cluster_agent.provide_handle_alert(alert_event)
